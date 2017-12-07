@@ -1,7 +1,7 @@
 ﻿/**
  * @file
  *
- * @brief Testing support for network simulation frameworks.
+ * @brief Test support for network simulation frameworks.
  *
  * @version 1.0
  * @author  Fuzzier Tang <gauchyler@gmail.com>
@@ -29,6 +29,8 @@
 
 
 /**
+ * @ingroup Test
+ *
  * @brief Define test tools.
  *
  * The following test tools are defined.
@@ -54,6 +56,8 @@
  * NSFX_TEST_ASSERT_RC(actual, limit, tolerance)
  * @endcode
  */
+
+// Define class templates.
 #define NSFX_TEST_TOOL_FILENAME <nsfx/test/tool.h>
 #include <nsfx/test/tool-iterate.h>
 
@@ -61,7 +65,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Predicate./*{{{*/
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Implement testing assertion.
  *
@@ -89,7 +93,7 @@
         oss
 
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Expected testing assertion.
  *
@@ -102,7 +106,7 @@
         #actual, actual)
 
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Required testing assertion.
  *
@@ -118,7 +122,7 @@
 
 // Equal./*{{{*/
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Implements testing assertion.
  *
@@ -147,7 +151,7 @@
         oss
 
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Expected testing assertion.
  *
@@ -161,7 +165,7 @@
         #actual " == " #limit, actual, limit)
 
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Required testing assertion.
  *
@@ -178,7 +182,7 @@
 
 // Not equal./*{{{*/
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Implements testing assertion.
  *
@@ -207,7 +211,7 @@
         oss
 
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Expected testing assertion.
  *
@@ -221,7 +225,7 @@
         #actual " != " #limit, actual, limit)
 
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Required testing assertion.
  *
@@ -238,7 +242,7 @@
 
 // Less than./*{{{*/
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Implements testing assertion.
  *
@@ -267,7 +271,7 @@
         oss
 
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Expected testing assertion.
  *
@@ -281,7 +285,7 @@
         #actual " < " #limit, actual, limit)
 
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Required testing assertion.
  *
@@ -298,7 +302,7 @@
 
 // Less equal./*{{{*/
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Implements testing assertion.
  *
@@ -327,7 +331,7 @@
         oss
 
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Expected testing assertion.
  *
@@ -341,7 +345,7 @@
         #actual " <= " #limit, actual, limit)
 
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Required testing assertion.
  *
@@ -358,7 +362,7 @@
 
 // Greater than./*{{{*/
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Implements testing assertion.
  *
@@ -387,7 +391,7 @@
         oss
 
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Expected testing assertion.
  *
@@ -401,7 +405,7 @@
         #actual " > " #limit, actual, limit)
 
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Required testing assertion.
  *
@@ -418,7 +422,7 @@
 
 // Greater equal./*{{{*/
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Implements testing assertion.
  *
@@ -447,7 +451,7 @@
         oss
 
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Expected testing assertion.
  *
@@ -461,7 +465,7 @@
         #actual " >= " #limit, actual, limit)
 
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Required testing assertion.
  *
@@ -478,7 +482,7 @@
 
 // Absolute closeness./*{{{*/
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Implements testing assertion.
  *
@@ -508,7 +512,7 @@
         oss
 
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Expected testing assertion.
  *
@@ -524,7 +528,7 @@
             actual, limit, tolerance)
 
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Required testing assertion.
  *
@@ -543,7 +547,7 @@
 
 // Relative closeness./*{{{*/
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Implements testing assertion.
  *
@@ -573,7 +577,7 @@
         oss
 
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Expected testing assertion.
  *
@@ -589,7 +593,7 @@
             actual, limit, tolerance)
 
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
  * @brief Required testing assertion.
  *
@@ -617,7 +621,7 @@ NSFX_TEST_OPEN_NAMESPACE
 
 // Checker
 template<class Actual>
-class NSFX_TEST_TOOL_CHECKER
+class NSFX_TEST_TOOL_CHECKER /*{{{*/
 {
 public:
     NSFX_TEST_TOOL_CHECKER(const Actual& actual) :
@@ -656,7 +660,7 @@ private:
     const Actual& actual_;
     bool result_;
 
-};
+}; /*}}}*/
 
 // MakeChecker
 template<class Actual>
@@ -669,8 +673,8 @@ NSFX_TEST_TOOL_MAKE_CHECKER(const Actual& actual)
 #elif (NSFX_TEST_TOOL_NUM_OPERANDS == 2)
 
 // Checker
-template<class Actual, class Limit> /*{{{*/
-class NSFX_TEST_TOOL_CHECKER
+template<class Actual, class Limit>
+class NSFX_TEST_TOOL_CHECKER /*{{{*/
 {
 public:
     NSFX_TEST_TOOL_CHECKER(const Actual& actual, const Limit& limit) :
@@ -726,8 +730,8 @@ NSFX_TEST_TOOL_MAKE_CHECKER(const Actual& actual, const Limit& limit)
 #elif (NSFX_TEST_TOOL_NUM_OPERANDS == 3)
 
 // Checker
-template<class Actual, class Limit, class Tol> /*{{{*/
-class NSFX_TEST_TOOL_CHECKER
+template<class Actual, class Limit, class Tol>
+class NSFX_TEST_TOOL_CHECKER /*{{{*/
 {
 public:
     NSFX_TEST_TOOL_CHECKER(const Actual& actual, const Limit& limit, const Tol& tol) :

@@ -1,7 +1,7 @@
 ﻿/**
  * @file
  *
- * @brief Testing support for network simulation frameworks.
+ * @brief Test support for network simulation frameworks.
  *
  * @version 1.0
  * @author  Fuzzier Tang <gauchyler@gmail.com>
@@ -23,102 +23,104 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////
-NSFX_TEST_OPEN_NAMESPACE /*{{{*/
+NSFX_TEST_OPEN_NAMESPACE
 
 
 /**
+ * @ingroup Test
+ *
  * @brief The test runner.
  */
-class Runner /*{{{*/
+class Runner
 {
 private:
-    // Constructors./*{{{*/
+    // Constructors.
 private:
-    Runner(void) :/*{{{*/
+    Runner(void) :
         activeCase_(nullptr),
         stop_(false),
         numCases_(0),
         numTestedCases_(0),
         nextProgress_(0)
     {
-    }/*}}}*/
+    }
 
-    /*}}}*/
-
-    // Non-copyable./*{{{*/
+    // Non-copyable.
 private:
-    NSFX_DELETED_FUNCTION(Runner(const Runner&));
-    NSFX_DELETED_FUNCTION(Runner& operator=(const Runner&));
-    /*}}}*/
+    BOOST_DELETED_FUNCTION(Runner(const Runner&));
+    BOOST_DELETED_FUNCTION(Runner& operator=(const Runner&));
 
-    // Methods./*{{{*/
+
+    // Methods.
 public:
-    Logger* GetLogger(void)/*{{{*/
+    Logger* getLogger(void)
     {
         return &logger_;
-    }/*}}}*/
+    }
 
-    Suite* GetMasterSuite(void) /*{{{*/
+    Suite* getMasterSuite(void)
     {
         return &masterSuite_;
-    }/*}}}*/
+    }
 
 private:
-    void SetStopFlag(void)/*{{{*/
+    void setStopFlag(void)
     {
         stop_ = true;
-    }/*}}}*/
+    }
 
 public:
-    bool GetStopFlag(void) const /*{{{*/
+    bool getStopFlag(void) const
     {
         return stop_;
-    }/*}}}*/
+    }
 
 private:
-    void SetActiveCase(Case* activeCase)/*{{{*/
+    void setActiveCase(Case* activeCase)
     {
         activeCase_ = activeCase;
-    }/*}}}*/
+    }
 
-    Case* GetActiveCase(void) const /*{{{*/
+    Case* getActiveCase(void) const
     {
         return activeCase_;
-    }/*}}}*/
+    }
 
 public:
     /**
      * @brief Commit a test result to the active test case.
      *
+     * @remarks The result is also logged.
+     *
      * A test result is committed when a test assertion has failed.
      * If the test level is \c TestLevel::ASSERT, the stop flag is set.
      */
-    void CommitResult(Result&& result)/*{{{*/
+    void commitResult(Result&& result)
     {
-        if (result.GetToolLevel() == ToolLevel::ASSERT)
+        if (result.getToolLevel() == ToolLevel::ASSERT)
         {
-            SetStopFlag();
+            setStopFlag();
         }
-        ShowResult(result);
-        GetActiveCase()->AddResult(std::move(result));
-    }/*}}}*/
+        showResult(result);
+        getActiveCase()->addResult(std::move(result));
+    }
 
-    void Run(void)/*{{{*/
+    void run(void)
     {
-        numCases_ = masterSuite_.GetNumberOfCases();
+        numCases_ = masterSuite_.getNumberOfCases();
         numTestedCases_ = 0;
         nextProgress_ = 1;
         prevSuite_ = &masterSuite_;
         prevCase_ = nullptr;
-        ShowMessage("Test started:");
-        RunSuite(masterSuite_);
-        ShowSummary();
-    }/*}}}*/
+        showMessage("Test started:");
+        runSuite(masterSuite_);
+        showSummary();
+    }
 
 private:
-    void ShowMessage(const std::string& message)/*{{{*/
+    void showMessage(const std::string& message)
     {
-        struct Visitor
+        struct Visitor /*{{{*/
         {
             Visitor(const std::string& message) :
                 message_(message)
@@ -131,13 +133,14 @@ private:
             }
 
             const std::string& message_;
-        };
-        logger_.VisitStreams(Visitor(message));
-    }/*}}}*/
+        }; // struct Visitor /*}}}*/
 
-    void ShowProgress(void)/*{{{*/
+        logger_.visitStreams(Visitor(message));
+    }
+
+    void showProgress(void)
     {
-        struct Visitor/*{{{*/
+        struct Visitor /*{{{*/
         {
             Visitor(size_t progress) :
                 progress_(progress)
@@ -151,7 +154,8 @@ private:
 
         private:
             size_t progress_;
-        };/*}}}*/
+        }; // struct Visitor /*}}}*/
+
 
         bool show = false;
         while ((double)numTestedCases_ / numCases_ * 10 >= nextProgress_)
@@ -161,13 +165,13 @@ private:
         }
         if (show)
         {
-            logger_.VisitStreams(Visitor(nextProgress_ - 1));
+            logger_.visitStreams(Visitor(nextProgress_ - 1));
         }
-    }/*}}}*/
+    }
 
-    void ShowResult(const Result& result)/*{{{*/
+    void showResult(const Result& result)
     {
-        struct Visitor/*{{{*/
+        struct Visitor /*{{{*/
         {
             Visitor(Suite* prevSuite, Case* prevCase, Case* activeCase,
                     const Result& result) :
@@ -180,49 +184,49 @@ private:
 
             void operator()(std::ostream& os)
             {
-                Suite* activeSuite = activeCase_->GetParent();
-                size_t depth = activeSuite->GetDepth();
+                Suite* activeSuite = activeCase_->getParent();
+                size_t depth = activeSuite->getDepth();
                 if (activeSuite != prevSuite_)
                 {
-                    DisplaySuite(os, activeSuite, depth);
+                    displaySuite(os, activeSuite, depth);
                 }
-                DisplayCase(os, activeCase_, depth);
-                DisplayResult(os, result_, depth);
+                displayCase(os, activeCase_, depth);
+                displayResult(os, result_, depth);
             }
 
         private:
             // Precondition: suite is not displayed.
-            void DisplaySuite(std::ostream& os, Suite* suite, size_t depth)
+            void displaySuite(std::ostream& os, Suite* suite, size_t depth)
             {
-                if (!suite->IsMaster())
+                if (!suite->isMaster())
                 {
-                    DisplaySuite(os, suite->GetParent(), depth - 1);
+                    displaySuite(os, suite->getParent(), depth - 1);
                     os << std::string(depth - 1, ' ');
                     os << "+";
-                    os << suite->GetName() << std::endl;
+                    os << suite->getName() << std::endl;
                 }
             }
 
-            void DisplayCase(std::ostream& os, Case* casei, size_t depth)
+            void displayCase(std::ostream& os, Case* casei, size_t depth)
             {
                 os << std::string(depth, ' ');
                 os << "-";
-                os << casei->GetName() << std::endl;
+                os << casei->getName() << std::endl;
             }
 
-            void DisplayResult(std::ostream& os, const Result& result,
+            void displayResult(std::ostream& os, const Result& result,
                                size_t depth)
             {
                 os << std::string(depth + 2, ' ');
                 // Make clear the position of error.
-                os << result.GetFileName();
-                os << "(" << result.GetLineNumber() << "): ";
-                os << result.GetToolLevel() << ". ";
-                os << "\"" << result.GetDescription() << "\" ";
-                os << "[" << result.GetDetail() <<  "].";
-                if (!result.GetMessage().empty())
+                os << result.getFileName();
+                os << "(" << result.getLineNumber() << "): ";
+                os << result.getToolLevel() << ". ";
+                os << "\"" << result.getDescription() << "\" ";
+                os << "[" << result.getDetail() <<  "].";
+                if (!result.getMessage().empty())
                 {
-                    os << " " << result.GetMessage() << ".";
+                    os << " " << result.getMessage();
                 }
                 os << std::endl;
             }
@@ -232,22 +236,24 @@ private:
             Case*  prevCase_;
             Case*  activeCase_;
             const Result& result_;
-        };/*}}}*/
 
-        logger_.VisitStreams(Visitor(prevSuite_, prevCase_, activeCase_, result));
+        }; // struct Visitor /*}}}*/
+
+        logger_.visitStreams(Visitor(prevSuite_, prevCase_, activeCase_, result));
         prevCase_ = activeCase_;
-        prevSuite_ = prevCase_->GetParent();
-    }/*}}}*/
+        prevSuite_ = prevCase_->getParent();
+    }
 
-    void ShowSummary(void)/*{{{*/
+    void showSummary(void)
     {
-        struct Visitor/*{{{*/
+        struct Visitor /*{{{*/
         {
             Visitor(bool stopped, Suite* suite) :
                 stopped_(stopped),
                 suite_(suite)
             {
             }
+
 
             void operator()(std::ostream& os)
             {
@@ -256,54 +262,55 @@ private:
                     os << "Test stopped due to fatal error." << std::endl;
                 }
                 os << "Total number of test failures: "
-                   << suite_->GetNumberOfFailures() << "." << std::endl;
+                   << suite_->getNumberOfFailures() << "." << std::endl;
             }
+
 
         private:
             bool   stopped_;
             Suite* suite_;
-        };/*}}}*/
 
-        logger_.VisitStreams(Visitor(stop_, &masterSuite_));
-    }/*}}}*/
+        }; // struct Visitor /*}}}*/
+
+        logger_.visitStreams(Visitor(stop_, &masterSuite_));
+    }
 
 private:
-    void RunSuite(Suite& suite)/*{{{*/
+    void runSuite(Suite& suite)
     {
         if (!stop_)
         {
-            suite.VisitCases([this] (Case& casei) { RunCase(casei); });
+            suite.visitCases([this] (Case& casei) { runCase(casei); });
         }
         if (!stop_)
         {
-            suite.VisitSuites([this] (Suite& suite) { RunSuite(suite); });
+            suite.visitSuites([this] (Suite& suite) { runSuite(suite); });
         }
-    }/*}}}*/
+    }
 
-    void RunCase(Case& casei)/*{{{*/
+    void runCase(Case& casei)
     {
         if (!stop_)
         {
-            SetActiveCase(&casei);
-            casei.Run();
+            setActiveCase(&casei);
+            casei.run();
             ++numTestedCases_;
-            ShowProgress();
+            showProgress();
         }
-    }/*}}}*/
+    }
 
-    /*}}}*/
 
-    // Singleton./*{{{*/
+
+    // Singleton.
 public:
-    static Runner* GetInstance(void)/*{{{*/
+    static Runner* getInstance(void)
     {
         static Runner runner;
         return &runner;
-    }/*}}}*/
+    }
 
-    /*}}}*/
 
-    // Properties./*{{{*/
+    // Properties.
 private:
     Logger logger_;
     Suite  masterSuite_;
@@ -333,45 +340,45 @@ private:
      */
     Case*  prevCase_;
 
-    /*}}}*/
-}; // class Runner /*}}}*/
+}; // class Runner
 
 
 ////////////////////////////////////////////////////////////////////////////////
-namespace runner /*{{{*/
+// Utility functions to access the singleton of Runner.
+namespace runner
 {
 
 
-Logger* GetLogger(void)/*{{{*/
+Logger* getLogger(void)
 {
-    return Runner::GetInstance()->GetLogger();
-}/*}}}*/
+    return Runner::getInstance()->getLogger();
+}
 
-Suite* GetMasterSuite(void) /*{{{*/
+Suite* getMasterSuite(void)
 {
-    return Runner::GetInstance()->GetMasterSuite();
-}/*}}}*/
+    return Runner::getInstance()->getMasterSuite();
+}
 
-bool GetStopFlag(void)/*{{{*/
+bool getStopFlag(void)
 {
-    return Runner::GetInstance()->GetStopFlag();
-}/*}}}*/
+    return Runner::getInstance()->getStopFlag();
+}
 
-void CommitResult(Result&& result)/*{{{*/
+void commitResult(Result&& result)
 {
-    Runner::GetInstance()->CommitResult(std::move(result));
-}/*}}}*/
+    Runner::getInstance()->commitResult(std::move(result));
+}
 
-void Run(void)/*{{{*/
+void run(void)
 {
-    Runner::GetInstance()->Run();
-}/*}}}*/
+    Runner::getInstance()->run();
+}
 
 
-} // namespace runner /*}}}*/
+} // namespace runner
 
 
-NSFX_TEST_CLOSE_NAMESPACE /*}}}*/
+NSFX_TEST_CLOSE_NAMESPACE
 
 
 #endif // RUNNER_H__30677E1A_807A_4439_9F3F_93DA9D08841C

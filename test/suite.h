@@ -20,10 +20,9 @@
 #include <nsfx/test/config.h>
 #include <nsfx/test/visitor-concept.h>
 #include <nsfx/test/case.h>
-#include <nsfx/exception.h>
 #include <memory>
 #include <string>
-#include <boost/container/vector>
+#include <boost/container/vector.hpp>
 #include <boost/unordered_map.hpp>
 
 
@@ -41,10 +40,10 @@ NSFX_TEST_OPEN_NAMESPACE
  *          e.g. \c Suite cannot be stored directly inside a vector,
  *          as the vector may reallocate space, and move \c Suite around.
  *          <p>
- *          The current solution is to store \c Suite in an \c unordered_map
- *          to avoid the usage of \c shared_ptr.
+ *          The current solution is to store \c Suite objects in an
+ *          \c unordered_map to avoid the dirty work of memory management.
  */
-class Suite /*{{{*/
+class Suite
 {
     // Typedefs.
 public:
@@ -154,7 +153,7 @@ public:
         return casei;
     }
 
-    const std::string& GetName(void) const
+    const std::string& getName(void) const
     {
         return name_;
     }
@@ -240,7 +239,7 @@ private:
     SuiteVectorType suiteVector_;
     SuiteMapType    suiteMap_;
 
-}; // class Suite /*}}}*/
+}; // class Suite
 
 
 NSFX_TEST_CLOSE_NAMESPACE

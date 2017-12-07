@@ -1,7 +1,7 @@
 ﻿/**
  * @file
  *
- * @brief Testing support for network simulation frameworks.
+ * @brief Test support for network simulation frameworks.
  *
  * @version 1.0
  * @author  Fuzzier Tang <gauchyler@gmail.com>
@@ -21,11 +21,19 @@
 #include <ostream>
 
 
-NSFX_TEST_OPEN_NAMESPACE /*{{{*/
+NSFX_TEST_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
-class ToolType /*{{{*/
+/**
+ * @ingroup Test
+ *
+ * @brief The type of test assertion/expectation.
+ *
+ * @remarks It is essentially an enumeration.
+ *          It is encapsulated in a class to enable ostream operations.
+ */
+class ToolType
 {
 public:
     enum Value
@@ -47,10 +55,11 @@ public:
 
     operator Value() const { return type_; }
 
-    size_t ToInteger(void) const { return type_; }
-    const char* ToString(void) const/*{{{*/
+    unsigned int toInteger(void) const { return type_; }
+
+    const char* toString(void) const
     {
-        size_t index = ToInteger();
+        unsigned int index = toInteger();
         static const char* types[] =
         {
             "!!",
@@ -70,22 +79,22 @@ public:
         }
         const char* str = types[index];
         return str;
-    }/*}}}*/
+    }
 
 private:
     Value type_;
-}; // class ToolType /*}}}*/
+}; // class ToolType
 
 
 template<class Char, class CharTraits>
 inline std::basic_ostream<Char, CharTraits>&
-operator<<(std::basic_ostream<Char, CharTraits>& os, const ToolType& type)/*{{{*/
+operator<<(std::basic_ostream<Char, CharTraits>& os, const ToolType& type)
 {
-    return os << type.ToString();
-}/*}}}*/
+    return os << type.toString();
+}
 
 
-NSFX_TEST_CLOSE_NAMESPACE /*}}}*/
+NSFX_TEST_CLOSE_NAMESPACE
 
 
 #endif // TOOL_TYPE_H__D71D998A_95DB_4354_80D8_560904B9071A

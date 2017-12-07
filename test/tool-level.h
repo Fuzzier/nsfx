@@ -21,11 +21,19 @@
 #include <ostream>
 
 
-NSFX_TEST_OPEN_NAMESPACE /*{{{*/
+NSFX_TEST_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
-class ToolLevel /*{{{*/
+/**
+ * @ingroup Test
+ *
+ * @brief The severity level of test assertion/expectation.
+ *
+ * @remarks It is essentially an enumeration.
+ *          It is encapsulated in a class to enable ostream operations.
+ */
+class ToolLevel
 {
 public:
     enum Value
@@ -40,10 +48,10 @@ public:
 
     operator Value() const { return level_; }
 
-    size_t ToInteger(void) const { return level_; }
-    const char* ToString(void) const/*{{{*/
+    unsigned int toInteger(void) const { return level_; }
+    const char* toString(void) const
     {
-        size_t index = ToInteger();
+        unsigned int index = toInteger();
         static const char* levels[] =
         {
             "error",
@@ -56,22 +64,22 @@ public:
         }
         const char* str = levels[index];
         return str;
-    }/*}}}*/
+    }
 
 private:
     Value level_;
-}; // class ToolLevel /*}}}*/
+}; // class ToolLevel
 
 
 template<class Char, class CharTraits>
 inline std::basic_ostream<Char, CharTraits>&
-operator<<(std::basic_ostream<Char, CharTraits>& os, const ToolLevel& level)/*{{{*/
+operator<<(std::basic_ostream<Char, CharTraits>& os, const ToolLevel& level)
 {
-    return os << level.ToString();
-}/*}}}*/
+    return os << level.toString();
+}
 
 
-NSFX_TEST_CLOSE_NAMESPACE /*}}}*/
+NSFX_TEST_CLOSE_NAMESPACE
 
 
 #endif // TOOL_LEVEL_H__C03D486B_021E_4F81_AE60_E0954C790EB0
