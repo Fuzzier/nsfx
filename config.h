@@ -125,8 +125,7 @@ typedef decltype(nullptr) nullptr_t;
 ////////////////////////////////////////////////////////////////////////////////
 // Import standard integer types.
 #include <boost/cstdint.hpp>
-NSFX_OPEN_NAMESPACE/*{{{*/
-
+NSFX_OPEN_NAMESPACE
 using boost::int8_t;
 using boost::int16_t;
 using boost::int32_t;
@@ -156,84 +155,94 @@ using boost::uint_fast32_t;
 using boost::uint_fast64_t;
 using boost::uintmax_t;
 using boost::uintptr_t;
-
-NSFX_CLOSE_NAMESPACE/*}}}*/
+NSFX_CLOSE_NAMESPACE
 
 
 #include <cstddef>
-NSFX_OPEN_NAMESPACE/*{{{*/
+NSFX_OPEN_NAMESPACE
 using std::size_t;
 using std::ptrdiff_t;
-NSFX_CLOSE_NAMESPACE/*}}}*/
+NSFX_CLOSE_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Import standard containers (MSVC).
+// Import standard containers.
 #if defined(NSFX_MSVC)
 # include <array>
 # include <vector>
 # include <deque>
 # include <list>
 # include <string>
-  using std::array;
-  using std::vector;
-  using std::deque;
-  using std::list;
-  using std::string;
+   NSFX_OPEN_NAMESPACE
+   using std::array;
+   using std::vector;
+   using std::deque;
+   using std::list;
+   using std::string;
+   NSFX_CLOSE_NAMESPACE
 
-// set, map, unordered_set, unordered_map
+   // set, map, unordered_set, unordered_map
 # if NSFX_MSVC >= 1700 // Microsoft Visual C++ 2012+
 #  include <set>
 #  include <map>
 #  include <unordered_set>
 #  include <munordered_ap>
+   NSFX_OPEN_NAMESPACE
    using std::set;
    using std::map;
    using std::unordered_set;
    using std::unordered_map;
+   NSFX_CLOSE_NAMESPACE
 # else // if NSFX_MSVC < 1700
    // Microsoft Visual Studio 2010 provides broken 'emplace()'.
 #  include <boost/container/set.hpp>
 #  include <boost/container/map.hpp>
 #  include <boost/unordered_set.hpp>
 #  include <boost/unordered_map.hpp>
+   NSFX_OPEN_NAMESPACE
    using boost::container::set;
    using boost::container::map;
    using boost::unordered_set;
    using boost::unordered_map;
+   NSFX_CLOSE_NAMESPACE
 # endif // NSFX_MSVC >= 1700
 
 #endif // defined(NSFX_MSVC)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Import standard containers (GCC).
 #if defined(NSFX_GCC)
 # include <array>
 # include <vector>
 # include <deque>
 # include <list>
+# include <string>
 # include <set>
 # include <map>
-# include <string>
+   NSFX_OPEN_NAMESPACE
    using std::array;
    using std::vector;
    using std::deque;
    using std::list;
+   using std::string;
    using std::set;
    using std::map;
-   using std::string;
+   NSFX_OPEN_NAMESPACE
 
 # if !defined(BOOST_NO_CXX11_STD_UNORDERED)
 #  include <unordered_set>
 #  include <unordered_map>
+   NSFX_OPEN_NAMESPACE
    using std::unordered_set;
    using std::unordered_map;
+   NSFX_OPEN_NAMESPACE
 # else // if defined(BOOST_NO_CXX11_STD_UNORDERED)
 #  include <boost/unordered_set.hpp>
 #  include <boost/unordered_map.hpp>
+   NSFX_OPEN_NAMESPACE
    using boost::unordered_set;
    using boost::unordered_map;
+   NSFX_OPEN_NAMESPACE
 # endif // !defined(BOOST_NO_CXX11_STD_UNORDERED)
 
 #endif // defined(NSFX_GCC)
