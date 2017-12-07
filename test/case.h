@@ -19,8 +19,6 @@
 #include <nsfx/test/config.h>
 #include <nsfx/test/result.h>
 #include <nsfx/test/visitor-concept.h>
-#include <string>
-#include <vector>
 #include <memory>
 
 
@@ -69,7 +67,7 @@ public:
      * @brief Users must use \c Suite::addCase() to create test cases.
      */
     template<class Functor>
-    Case(Suite* parent, const std::string& name, Functor&& functor);
+    Case(Suite* parent, const string& name, Functor&& functor);
 
     // Non-copyable.
 private:
@@ -121,7 +119,7 @@ public:
         return parent_;
     }
 
-    const std::string& getName(void) const
+    const string& getName(void) const
     {
         return name_;
     }
@@ -149,12 +147,12 @@ private:
      * @brief The name of the test case, which must be unique within it parent
      *        test suite.
      */
-    std::string name_;
+    string name_;
 
     /**
      * @brief The test results of failed tests.
      */
-    std::vector<Result> results_;
+    vector<Result> results_;
 
     std::unique_ptr<Impl> impl_;
 
@@ -207,7 +205,7 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 template<class Functor>
-inline Case::Case(Suite* parent, const std::string& name, Functor&& functor) :
+inline Case::Case(Suite* parent, const string& name, Functor&& functor) :
     parent_(parent),
     name_(name),
     impl_(new CaseImpl<Functor>(std::forward<Functor>(functor)))

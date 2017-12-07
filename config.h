@@ -46,11 +46,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <boost/config.hpp>
 
+// NSFX_MSVC
 // NSFX_X86, NSFX_X64
 #if defined(BOOST_MSVC)
-# if BOOST_MSVC < 1600 // Lower than Microsoft Visual C++ 2010
+# define NSFX_MSVC  BOOST_MSVC
+# if NSFX_MSVC < 1600 // Lower than Microsoft Visual C++ 2010
 #  error Microsoft Visual C++ 2010 or above version is required.
-# endif // BOOST_MSVC < 1600
+# endif // NSFX_MSVC < 1600
 
 # if defined(_M_IX86)
 #  define NSFX_X86 1
@@ -63,11 +65,13 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// NSFX_GCC
 // NSFX_X86, NSFX_X64
 #if defined(BOOST_GCC)
-# if BOOST_GCC < 40600 // Lower than GCC 4.6.0
+# define NSFX_GCC  BOOST_GCC
+# if NSFX_GCC < 40600 // Lower than GCC 4.6.0
 #  error GCC version 4.6.0 or above version is required.
-# endif // BOOST_GCC < 40700
+# endif // NSFX_GCC < 40700
 
 # if defined(__LP64__)
 #  define NSFX_X64 1
@@ -79,15 +83,47 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 // nullptr_t
-#if defined(BOOST_GCC)
-# if BOOST_GCC < 40800
+#if defined(NSFX_GCC)
+# if NSFX_GCC < 40800
 typedef decltype(nullptr) nullptr_t;
 # endif // GCC_VERSION < 40800
-#endif // defined(BOOST_GCC)
+#endif // defined(NSFX_GCC)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Basic integer types.
+// NSFX_OVERRIDE
+#if defined(NSFX_MSVC)
+# define NSFX_OVERRIDE override
+#endif // defined(NSFX_MSVC)
+
+
+#if defined(NSFX_GCC)
+# if NSFX_GCC >= 40700
+#  define NSFX_OVERRIDE override
+# else // if !(NSFX_GCC >= 40700)
+#  define NSFX_OVERRIDE
+# endif // NSFX_GCC >= 40700
+#endif // defined(NSFX_GCC)
+
+
+////////////////////////////////////////////////////////////////////////////////
+// NSFX_FINAL
+#if defined(NSFX_MSVC)
+# if NSFX_MSVC >= 1700 // Microsoft Visual C++ 2012+
+#  define NSFX_FINAL final
+# else // if !(NSFX_MSVC >= 1700)
+#  define NSFX_FINAL sealed
+# endif // NSFX_MSVC >= 1700
+#endif // defined(NSFX_MSVC)
+
+
+#if defined(NSFX_GCC)
+# define NSFX_FINAL final
+#endif // defined(NSFX_GCC)
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Import standard integer types.
 #include <boost/cstdint.hpp>
 NSFX_OPEN_NAMESPACE/*{{{*/
 
@@ -132,35 +168,75 @@ NSFX_CLOSE_NAMESPACE/*}}}*/
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// NSFX_OVERRIDE
-#if defined(BOOST_MSVC)
-# define NSFX_OVERRIDE override
-#endif // defined(BOOST_MSVC)
+// Import standard containers (MSVC).
+#if defined(NSFX_MSVC)
+# include <array>
+# include <vector>
+# include <deque>
+# include <list>
+# include <string>
+  using std::array;
+  using std::vector;
+  using std::deque;
+  using std::list;
+  using std::string;
 
+// set, map, unordered_set, unordered_map
+# if NSFX_MSVC >= 1700 // Microsoft Visual C++ 2012+
+#  include <set>
+#  include <map>
+#  include <unordered_set>
+#  include <munordered_ap>
+   using std::set;
+   using std::map;
+   using std::unordered_set;
+   using std::unordered_map;
+# else // if NSFX_MSVC < 1700
+   // Microsoft Visual Studio 2010 provides broken 'emplace()'.
+#  include <boost/container/set.hpp>
+#  include <boost/container/map.hpp>
+#  include <boost/unordered_set.hpp>
+#  include <boost/unordered_map.hpp>
+   using boost::container::set;
+   using boost::container::map;
+   using boost::unordered_set;
+   using boost::unordered_map;
+# endif // NSFX_MSVC >= 1700
 
-#if defined(BOOST_GCC)
-# if BOOST_GCC >= 40700
-#  define NSFX_OVERRIDE override
-# else // if !(BOOST_GCC >= 40700)
-#  define NSFX_OVERRIDE
-# endif // BOOST_GCC >= 40700
-#endif // defined(BOOST_GCC)
+#endif // defined(NSFX_MSVC)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// NSFX_FINAL
-#if defined(BOOST_MSVC)
-# if BOOST_MSVC >= 1700 // Visual C++ 2012+
-#  define NSFX_FINAL final
-# else // if !(BOOST_MSVC >= 1700)
-#  define NSFX_FINAL sealed
-# endif // BOOST_MSVC >= 1700
-#endif // defined(BOOST_MSVC)
+// Import standard containers (GCC).
+#if defined(NSFX_GCC)
+# include <array>
+# include <vector>
+# include <deque>
+# include <list>
+# include <set>
+# include <map>
+# include <string>
+   using std::array;
+   using std::vector;
+   using std::deque;
+   using std::list;
+   using std::set;
+   using std::map;
+   using std::string;
 
+# if !defined(BOOST_NO_CXX11_STD_UNORDERED)
+#  include <unordered_set>
+#  include <unordered_map>
+   using std::unordered_set;
+   using std::unordered_map;
+# else // if defined(BOOST_NO_CXX11_STD_UNORDERED)
+#  include <boost/unordered_set.hpp>
+#  include <boost/unordered_map.hpp>
+   using boost::unordered_set;
+   using boost::unordered_map;
+# endif // !defined(BOOST_NO_CXX11_STD_UNORDERED)
 
-#if defined(BOOST_GCC)
-# define NSFX_FINAL final
-#endif // defined(BOOST_GCC)
+#endif // defined(NSFX_GCC)
 
 
 #endif // CONFIG_H__544DA909_13DC_4D4F_AD4F_BE62ECF454E2

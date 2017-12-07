@@ -21,9 +21,6 @@
 #include <nsfx/test/visitor-concept.h>
 #include <nsfx/test/case.h>
 #include <memory>
-#include <string>
-#include <boost/container/vector.hpp>
-#include <boost/unordered_map.hpp>
 
 
 NSFX_TEST_OPEN_NAMESPACE
@@ -47,11 +44,11 @@ class Suite
 {
     // Typedefs.
 public:
-    typedef boost::container::vector<Case* > CaseVectorType;
-    typedef boost::container::vector<Suite*> SuiteVectorType;
+    typedef vector<Case* > CaseVectorType;
+    typedef vector<Suite*> SuiteVectorType;
 
-    typedef boost::unordered_map<std::string, Case > CaseMapType;
-    typedef boost::unordered_map<std::string, Suite> SuiteMapType;
+    typedef unordered_map<string, Case > CaseMapType;
+    typedef unordered_map<string, Suite> SuiteMapType;
 
 
     // Constructors.
@@ -68,7 +65,7 @@ public:
     /**
      * @brief Users must use \c addSuite() to create test suites.
      */
-    Suite(Suite* parent, const std::string& name) :
+    Suite(Suite* parent, const string& name) :
         parent_(parent),
         name_(name)
     {
@@ -114,7 +111,7 @@ public:
      * @return If a test suite with the specified name already exists,
      *         a reference to the existing test suite is returned.
      */
-    Suite* addSuite(const std::string& name)
+    Suite* addSuite(const string& name)
     {
         Suite* suite = nullptr;
         auto it = suiteMap_.find(name);
@@ -135,7 +132,7 @@ public:
      * @brief Add test case.
      */
     template<class Functor>
-    Case* addCase(const std::string& name, Functor&& functor)
+    Case* addCase(const string& name, Functor&& functor)
     {
         Case* casei = nullptr;
         auto it = caseMap_.find(name);
@@ -153,7 +150,7 @@ public:
         return casei;
     }
 
-    const std::string& getName(void) const
+    const string& getName(void) const
     {
         return name_;
     }
@@ -231,7 +228,7 @@ public:
     // Properties.
 private:
     Suite* parent_;
-    std::string name_;
+    string name_;
 
     CaseVectorType caseVector_;
     CaseMapType    caseMap_;

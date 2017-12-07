@@ -632,14 +632,14 @@ public:
 
     // Methods.
 public:
-    std::string getActual(void) const
+    string getActual(void) const
     {
         std::ostringstream oss;
         oss << std::boolalpha << std::setprecision(9) << actual_;
         return oss.str();
     }
 
-    std::string getLimit(void) const
+    string getLimit(void) const
     {
         return "true";
     }
@@ -686,14 +686,14 @@ public:
 
     // Methods.
 public:
-    std::string getActual(void) const
+    string getActual(void) const
     {
         std::ostringstream oss;
         oss << std::boolalpha << std::setprecision(9) << actual_;
         return oss.str();
     }
 
-    std::string getLimit(void) const
+    string getLimit(void) const
     {
         std::ostringstream oss;
         oss << std::boolalpha << std::setprecision(9) << limit_;
@@ -749,14 +749,14 @@ public:
 
     // Methods.
 public:
-    std::string getActual(void) const
+    string getActual(void) const
     {
         std::ostringstream oss;
         oss << std::boolalpha << std::setprecision(9) << actual_;
         return oss.str();
     }
 
-    std::string getLimit(void) const
+    string getLimit(void) const
     {
         std::ostringstream oss;
         oss << std::boolalpha << std::setprecision(9) << limit_;
@@ -766,7 +766,7 @@ public:
     /**
      * @brief Get the absolute tolerance value.
      */
-    std::string getTolerance(void) const
+    string getTolerance(void) const
     {
         std::ostringstream oss;
         oss << std::boolalpha << std::setprecision(9) << limit_ * tol_;

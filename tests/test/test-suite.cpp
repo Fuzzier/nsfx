@@ -89,6 +89,8 @@ int main(void)
     nsfx::test::runner::getLogger()->addFileSink("test.log");
     nsfx::test::runner::run();
 
+    std::cout << "The total number of test failures should be 7." << std::endl;
+
     return 0;
 }
 
