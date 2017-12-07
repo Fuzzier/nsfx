@@ -23,7 +23,7 @@
 /**
  * @defgroup Test
  *
- * @brief Test support.
+ * @brief Test library.
  *
  * Tests are organized in a tree structure.
  * The root of the tree is a master test suite.
@@ -35,6 +35,13 @@
  * their code.
  * If a test assertion fails, a test result is generated.
  * The test results are logged.
+ *
+ * @remarks The test library is made because of the convient trailing streaming.
+ *          For example,
+ *          @code
+ *          NSFX_TEST_EXPECT_EQ(a, b) << "trailing " << "message";
+ *          @endcode
+ *          The test tools in BOOST test library lack such feature.
  */
 
 
