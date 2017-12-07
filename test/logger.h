@@ -22,7 +22,6 @@
 #include <ostream>
 #include <fstream>
 #include <memory>
-#include <boost/container/vector.hpp>
 
 
 NSFX_TEST_OPEN_NAMESPACE
@@ -111,7 +110,7 @@ class Logger /*{{{*/
 {
 public:
     typedef std::unique_ptr<StreamSink>  StreamSinkPtr;
-    typedef boost::container::vector<StreamSinkPtr>  SinkContainerType;
+    typedef vector<StreamSinkPtr>  SinkContainerType;
 
 
     // Methods.
@@ -121,7 +120,7 @@ public:
         sinks_.emplace_back(new StreamSink(os));
     }
 
-    void addFileSink(const std::string& filename, std::ios_base::openmode mode = std::ios_base::out)
+    void addFileSink(const string& filename, std::ios_base::openmode mode = std::ios_base::out)
     {
         sinks_.emplace_back(new FileSink(filename, mode));
     }
