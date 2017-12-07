@@ -33,7 +33,7 @@ NSFX_TEST_OPEN_NAMESPACE
  *
  * @brief Result of failed test assertions.
  */
-class Result /*{{{*/
+class Result
 {
 public:
     template<class Desc, class Actual, class Limit, class Tol>
@@ -221,7 +221,7 @@ private:
     std::string filename_;
     size_t      lineno_;
 
-}; // class Result /*}}}*/
+}; // class Result
 
 
 NSFX_TEST_CLOSE_NAMESPACE

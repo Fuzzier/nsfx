@@ -28,6 +28,13 @@
 NSFX_TEST_OPEN_NAMESPACE
 
 
+/**
+ * @ingroup Test
+ *
+ * @brief The default test fixture.
+ *
+ * @internal
+ */
 class NullFixture
 {
 }; // class NullFixture
@@ -53,11 +60,11 @@ NSFX_TEST_CLOSE_NAMESPACE
  * cases can be provided.
  *
  * The value is not updated at runtime, so don't access it at runtime.
- * Use \c Runner::GetActiveCase() to access the currently running test case,
- * and use \c Case::GetSuite() to access the test suite that contains the case.
+ * Use \c Runner::getActiveCase() to access the currently running test case,
+ * and use \c Case::getSuite() to access the test suite that contains the case.
  */
 static ::nsfx::test::Suite* NSFX_ACTIVE_TEST_SUITE =
-        ::nsfx::test::runner::GetMasterSuite();
+        ::nsfx::test::runner::getMasterSuite();
 
 /**
  * @ingroup Test

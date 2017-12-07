@@ -22,14 +22,17 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////
-NSFX_TEST_OPEN_NAMESPACE /*{{{*/
+NSFX_TEST_OPEN_NAMESPACE
 
 
 /**
+ * @ingroup Test
+ *
  * @brief Visitor concept check.
  *
  * @tparam Visitor A functor type. An instance of \c Visitor can be invoked
  *                 by passing an lvalue reference of \c Visited.
+ *                 A visitor can be stateful.
  * @tparam Visited The visited type.
  *
  * e.g.
@@ -48,7 +51,7 @@ NSFX_TEST_OPEN_NAMESPACE /*{{{*/
  * @endcode
  */
 template<class Visitor, class Visited>
-class VisitorConcept/*{{{*/
+class VisitorConcept
 {
 private:
     typedef typename std::decay<Visitor>::type VisitorType;
@@ -67,10 +70,10 @@ private:
         VisitedType* visited = nullptr;
         (*visitor)(*visited);
     }
-};/*}}}*/
+};
 
 
-NSFX_TEST_CLOSE_NAMESPACE /*}}}*/
+NSFX_TEST_CLOSE_NAMESPACE
 
 
 #endif // VISITOR_CONCEPT_H__A0C7938A_88A6_4FE3_8DE8_A9D12597AC5E

@@ -1,7 +1,7 @@
 ﻿/**
  * @file
  *
- * @brief Testing support for network simulation frameworks.
+ * @brief Test support for network simulation frameworks.
  *
  * @version 1.0
  * @author  Fuzzier Tang <gauchyler@gmail.com>
@@ -13,60 +13,65 @@
  *            All rights reserved.
  */
 
-#include <nsfx/preprocessor/tuple-elem.h>
+#include <boost/preprocessor/tuple/elem.hpp>
 
 
-#if !defined (NSFX_TEST_TOOL_FILENAME)
+#if !defined(NSFX_TEST_TOOL_FILENAME)
 # error NSFX_TEST_TOOL_ITERATE_ERROR: iteration filename is not defined.
-#endif // !defined (NSFX_TEST_TOOL_FILENAME)
+#endif // !defined(NSFX_TEST_TOOL_FILENAME)
 
-#if !defined (NSFX_TEST_TOOL_INFO)
+#if !defined(NSFX_TEST_TOOL_INFO)
 
+// Part 1: Define a tuple that provides necessary information.
+//         Each time a tuple is defined, include Part 2 to define
+//         class templates.
 // (number of operands, operator, class, maker, tool type, impl, expect, assert)
-# define NSFX_TEST_TOOL_INFO  (1, !!, PredicateChecker, MakePredicateChecker)
+# define NSFX_TEST_TOOL_INFO  (1, !!, PredicateChecker, makePredicateChecker)
 # include <nsfx/test/tool-iterate.h>
 # undef  NSFX_TEST_TOOL_INFO
 
-# define NSFX_TEST_TOOL_INFO  (2, ==, EqualChecker, MakeEqualChecker)
+# define NSFX_TEST_TOOL_INFO  (2, ==, EqualChecker, makeEqualChecker)
 # include <nsfx/test/tool-iterate.h>
 # undef  NSFX_TEST_TOOL_INFO
 
-# define NSFX_TEST_TOOL_INFO  (2, !=, NotEqualChecker, MakeNotEqualChecker)
+# define NSFX_TEST_TOOL_INFO  (2, !=, NotEqualChecker, makeNotEqualChecker)
 # include <nsfx/test/tool-iterate.h>
 # undef  NSFX_TEST_TOOL_INFO
 
-# define NSFX_TEST_TOOL_INFO  (2, < , LessThanChecker, MakeLessThanChecker)
+# define NSFX_TEST_TOOL_INFO  (2, < , LessThanChecker, makeLessThanChecker)
 # include <nsfx/test/tool-iterate.h>
 # undef  NSFX_TEST_TOOL_INFO
 
-# define NSFX_TEST_TOOL_INFO  (2, <=, LessEqualChecker, MakeLessEqualChecker)
+# define NSFX_TEST_TOOL_INFO  (2, <=, LessEqualChecker, makeLessEqualChecker)
 # include <nsfx/test/tool-iterate.h>
 # undef  NSFX_TEST_TOOL_INFO
 
-# define NSFX_TEST_TOOL_INFO  (2, > , GreaterThanChecker, MakeGreaterThanChecker)
+# define NSFX_TEST_TOOL_INFO  (2, > , GreaterThanChecker, makeGreaterThanChecker)
 # include <nsfx/test/tool-iterate.h>
 # undef  NSFX_TEST_TOOL_INFO
 
-# define NSFX_TEST_TOOL_INFO  (2, >=, GreaterEqualChecker, MakeGreaterEqualChecker)
+# define NSFX_TEST_TOOL_INFO  (2, >=, GreaterEqualChecker, makeGreaterEqualChecker)
 # include <nsfx/test/tool-iterate.h>
 # undef  NSFX_TEST_TOOL_INFO
 
-# define NSFX_TEST_TOOL_INFO  (3, 0 , AbsoluteClosenessChecker, MakeAbsoluteClosenessChecker)
+# define NSFX_TEST_TOOL_INFO  (3, 0 , AbsoluteClosenessChecker, makeAbsoluteClosenessChecker)
 # include <nsfx/test/tool-iterate.h>
 # undef  NSFX_TEST_TOOL_INFO
 
-# define NSFX_TEST_TOOL_INFO  (3, 1 , RelativeClosenessChecker, MakeRelativeClosenessChecker)
+# define NSFX_TEST_TOOL_INFO  (3, 1 , RelativeClosenessChecker, makeRelativeClosenessChecker)
 # include <nsfx/test/tool-iterate.h>
 # undef  NSFX_TEST_TOOL_INFO
 
 # undef NSFX_TEST_TOOL_FILENAME
 
-#else // defined (NSFX_TEST_TOOL_INFO)
+#else // if defined(NSFX_TEST_TOOL_INFO)
 
-# define NSFX_TEST_TOOL_NUM_OPERANDS  NSFX_PP_TUPLE_ELEM(4, 0, NSFX_TEST_TOOL_INFO)
-# define NSFX_TEST_TOOL_OPERATOR      NSFX_PP_TUPLE_ELEM(4, 1, NSFX_TEST_TOOL_INFO)
-# define NSFX_TEST_TOOL_CHECKER       NSFX_PP_TUPLE_ELEM(4, 2, NSFX_TEST_TOOL_INFO)
-# define NSFX_TEST_TOOL_MAKE_CHECKER  NSFX_PP_TUPLE_ELEM(4, 3, NSFX_TEST_TOOL_INFO)
+// Part 2: Extract information from the tuple.
+//         Then include the macro template file to define class templates.
+# define NSFX_TEST_TOOL_NUM_OPERANDS  BOOST_PP_TUPLE_ELEM(4, 0, NSFX_TEST_TOOL_INFO)
+# define NSFX_TEST_TOOL_OPERATOR      BOOST_PP_TUPLE_ELEM(4, 1, NSFX_TEST_TOOL_INFO)
+# define NSFX_TEST_TOOL_CHECKER       BOOST_PP_TUPLE_ELEM(4, 2, NSFX_TEST_TOOL_INFO)
+# define NSFX_TEST_TOOL_MAKE_CHECKER  BOOST_PP_TUPLE_ELEM(4, 3, NSFX_TEST_TOOL_INFO)
 
 # define NSFX_TEST_TOOL_IS_ITERATING  1
 # include NSFX_TEST_TOOL_FILENAME
@@ -77,7 +82,7 @@
 # undef NSFX_TEST_TOOL_OPERATOR
 # undef NSFX_TEST_TOOL_NUM_OPERANDS
 
-#endif // !defined (NSFX_TEST_TOOL_INFO)
+#endif // !defined(NSFX_TEST_TOOL_INFO)
 
 
 

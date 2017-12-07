@@ -66,7 +66,7 @@ public:
 
 public:
     /**
-     * @brief Users must use \c Suite::AddCase() to create test cases.
+     * @brief Users must use \c Suite::addCase() to create test cases.
      */
     template<class Functor>
     Case(Suite* parent, const std::string& name, Functor&& functor);

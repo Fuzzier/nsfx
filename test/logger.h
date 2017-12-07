@@ -21,112 +21,131 @@
 #include <nsfx/test/visitor-concept.h>
 #include <ostream>
 #include <fstream>
-#include <vector>
 #include <memory>
+#include <boost/container/vector.hpp>
 
 
-NSFX_TEST_OPEN_NAMESPACE /*{{{*/
+NSFX_TEST_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
- * @brief Log sink.
+ * @ingroup Test
+ *
+ * @brief Log sink that consumes test results.
  */
 class StreamSink /*{{{*/
 {
 public:
-    StreamSink(std::ostream& os) :/*{{{*/
+    StreamSink(std::ostream& os) :
         os_(os)
     {
-    }/*}}}*/
+    }
+
+    BOOST_DELETED_FUNCTION(StreamSink(const StreamSink&));
+    BOOST_DELETED_FUNCTION(StreamSink& operator=(const StreamSink&));
+
 
 public:
-    virtual ~StreamSink(void) {}
+    virtual ~StreamSink(void) BOOST_NOEXCEPT_OR_NOTHROW {}
 
-    // Methods./*{{{*/
+
+    // Methods.
 public:
-    std::ostream& GetStream(void) const /*{{{*/
+    std::ostream& getStream(void) const
     {
         return os_;
-    }/*}}}*/
+    }
 
-    /*}}}*/
 
-    // Properties./*{{{*/
+    // Properties.
 private:
     std::ostream& os_;
 
-    /*}}}*/
-}; // class LogSink /*}}}*/
-
-
-////////////////////////////////////////////////////////////////////////////////
-class FileSink : public StreamSink /*{{{*/
-{
-public:
-    FileSink(const std::string& filename, std::ios_base::openmode mode = std::ios_base::out) :/*{{{*/
-        StreamSink(ofs_),
-        ofs_(filename, mode)
-    {
-    }/*}}}*/
-
-    virtual ~FileSink(void) {}
-
-    // Properties./*{{{*/
-private:
-    std::ofstream ofs_;
-    /*}}}*/
 }; // class StreamSink /*}}}*/
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
- * @ingroup Testing
+ * @ingroup Test
  *
- * @brief Output formatted test results to log sinks.
+ * @brief File-based log sink that consumes test results.
+ */
+class FileSink : public StreamSink /*{{{*/
+{
+public:
+    FileSink(const std::string& filename, std::ios_base::openmode mode = std::ios_base::out) :
+        StreamSink(ofs_),
+        ofs_(filename, mode)
+    {
+    }
+
+    virtual ~FileSink(void) {}
+
+    BOOST_DELETED_FUNCTION(FileSink(const FileSink&));
+    BOOST_DELETED_FUNCTION(FileSink& operator=(const FileSink&));
+
+
+    // Methods.
+public:
+    std::ostream& getStream(void)
+    {
+        return *static_cast<std::ostream*>(&ofs_);
+    }
+
+
+    // Properties.
+private:
+    std::ofstream ofs_;
+
+}; // class FileSink /*}}}*/
+
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+ * @ingroup Test
+ *
+ * @brief A collection of log sinks that allows visitors to visit each log sink.
  */
 class Logger /*{{{*/
 {
 public:
-    typedef std::vector<std::unique_ptr<StreamSink> > SinkContainerType;
+    typedef std::unique_ptr<StreamSink>  StreamSinkPtr;
+    typedef boost::container::vector<StreamSinkPtr>  SinkContainerType;
 
-    // Methods./*{{{*/
+
+    // Methods.
 public:
-    void AddStreamSink(std::ostream& os)/*{{{*/
+    void addStreamSink(std::ostream& os)
     {
-        std::unique_ptr<StreamSink> sink(new StreamSink(os));
-        sinks_.push_back(std::move(sink));
-    }/*}}}*/
+        sinks_.emplace_back(new StreamSink(os));
+    }
 
-    void AddFileSink(const std::string& filename, std::ios_base::openmode mode = std::ios_base::out)/*{{{*/
+    void addFileSink(const std::string& filename, std::ios_base::openmode mode = std::ios_base::out)
     {
-        std::unique_ptr<StreamSink> sink(new FileSink(filename, mode));
-        sinks_.push_back(std::move(sink));
-    }/*}}}*/
+        sinks_.emplace_back(new FileSink(filename, mode));
+    }
 
     template<class StreamVisitor>
-    void VisitStreams(StreamVisitor&& visitor) /*{{{*/
+    void visitStreams(StreamVisitor&& visitor)
     {
         BOOST_CONCEPT_ASSERT((VisitorConcept<StreamVisitor, std::ostream&>));
         for (auto it = sinks_.cbegin(); it != sinks_.cend(); ++it)
         {
-            const std::unique_ptr<StreamSink>& sink = *it;
-            visitor(sink->GetStream());
+            const StreamSinkPtr& sink = *it;
+            visitor(sink->getStream());
         }
-    }/*}}}*/
+    }
 
-    /*}}}*/
 
-    // Properties./*{{{*/
+    // Properties.
 private:
     SinkContainerType sinks_;
-
-    /*}}}*/
 
 }; // class Logger /*}}}*/
 
 
-NSFX_TEST_CLOSE_NAMESPACE /*}}}*/
+NSFX_TEST_CLOSE_NAMESPACE
 
 
 #endif // LOGGER_H__325C0CE8_FB30_418E_B823_6365EBDF8503
