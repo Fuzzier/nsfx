@@ -60,11 +60,11 @@ NSFX_TEST_CLOSE_NAMESPACE
  * cases can be provided.
  *
  * The value is not updated at runtime, so don't access it at runtime.
- * Use \c Runner::getActiveCase() to access the currently running test case,
- * and use \c Case::getSuite() to access the test suite that contains the case.
+ * Use \c Runner::GetActiveCase() to access the currently running test case,
+ * and use \c Case::GetSuite() to access the test suite that contains the case.
  */
 static ::nsfx::test::Suite* NSFX_ACTIVE_TEST_SUITE =
-        ::nsfx::test::runner::getMasterSuite();
+        ::nsfx::test::runner::GetMasterSuite();
 
 /**
  * @ingroup Test
@@ -109,7 +109,7 @@ typedef ::nsfx::test::NullFixture NSFX_ACTIVE_FIXTURE;
         /* It's suffice to support combining multiple test suites    */         \
         /* with the same identity from different translation units.  */         \
         static ::nsfx::test::Suite* NSFX_ACTIVE_TEST_SUITE_0 =                  \
-                    NSFX_ACTIVE_TEST_SUITE->addSuite(#name);                    \
+                    NSFX_ACTIVE_TEST_SUITE->AddSuite(#name);                    \
         /* Override the NSFX_ACTIVE_TEST_SUITE in the outer namespace.  */      \
         /* The test cases defined in this namespace enjoy the overrided */      \
         /* NSFX_ACTIVE_TEST_SUITE.                                      */      \
@@ -145,7 +145,7 @@ typedef ::nsfx::test::NullFixture NSFX_ACTIVE_FIXTURE;
     /* A test case with a fixture. */                                           \
     struct case_name : public FixtureType                                       \
     {                                                                           \
-        void run(void);                                                         \
+        void Run(void);                                                         \
     };                                                                          \
     /* Register a test case by defining a static variable. */                   \
     static struct register_name                                                 \
@@ -153,11 +153,11 @@ typedef ::nsfx::test::NullFixture NSFX_ACTIVE_FIXTURE;
         register_name(void)                                                         \
         {                                                                       \
             /* Use lambda expression to encourage inlining. */                  \
-            NSFX_ACTIVE_TEST_SUITE->addCase(#name, [] { case_name().run(); });  \
+            NSFX_ACTIVE_TEST_SUITE->AddCase(#name, [] { case_name().Run(); });  \
         }                                                                       \
     } NSFX_TEST_REGISTER_##case_name;                                                         \
     /* Let user define test runner in braces. */                                \
-    void case_name::run(void)
+    void case_name::Run(void)
 
 /**
  * @ingroup Test

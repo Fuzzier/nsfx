@@ -26,39 +26,39 @@
 //         Each time a tuple is defined, include Part 2 to define
 //         class templates.
 // (number of operands, operator, class, maker, tool type, impl, expect, assert)
-# define NSFX_TEST_TOOL_INFO  (1, !!, PredicateChecker, makePredicateChecker)
+# define NSFX_TEST_TOOL_INFO  (1, !!, PredicateChecker, MakePredicateChecker)
 # include <nsfx/test/tool-iterate.h>
 # undef  NSFX_TEST_TOOL_INFO
 
-# define NSFX_TEST_TOOL_INFO  (2, ==, EqualChecker, makeEqualChecker)
+# define NSFX_TEST_TOOL_INFO  (2, ==, EqualChecker, MakeEqualChecker)
 # include <nsfx/test/tool-iterate.h>
 # undef  NSFX_TEST_TOOL_INFO
 
-# define NSFX_TEST_TOOL_INFO  (2, !=, NotEqualChecker, makeNotEqualChecker)
+# define NSFX_TEST_TOOL_INFO  (2, !=, NotEqualChecker, MakeNotEqualChecker)
 # include <nsfx/test/tool-iterate.h>
 # undef  NSFX_TEST_TOOL_INFO
 
-# define NSFX_TEST_TOOL_INFO  (2, < , LessThanChecker, makeLessThanChecker)
+# define NSFX_TEST_TOOL_INFO  (2, < , LessThanChecker, MakeLessThanChecker)
 # include <nsfx/test/tool-iterate.h>
 # undef  NSFX_TEST_TOOL_INFO
 
-# define NSFX_TEST_TOOL_INFO  (2, <=, LessEqualChecker, makeLessEqualChecker)
+# define NSFX_TEST_TOOL_INFO  (2, <=, LessEqualChecker, MakeLessEqualChecker)
 # include <nsfx/test/tool-iterate.h>
 # undef  NSFX_TEST_TOOL_INFO
 
-# define NSFX_TEST_TOOL_INFO  (2, > , GreaterThanChecker, makeGreaterThanChecker)
+# define NSFX_TEST_TOOL_INFO  (2, > , GreaterThanChecker, MakeGreaterThanChecker)
 # include <nsfx/test/tool-iterate.h>
 # undef  NSFX_TEST_TOOL_INFO
 
-# define NSFX_TEST_TOOL_INFO  (2, >=, GreaterEqualChecker, makeGreaterEqualChecker)
+# define NSFX_TEST_TOOL_INFO  (2, >=, GreaterEqualChecker, MakeGreaterEqualChecker)
 # include <nsfx/test/tool-iterate.h>
 # undef  NSFX_TEST_TOOL_INFO
 
-# define NSFX_TEST_TOOL_INFO  (3, 0 , AbsoluteClosenessChecker, makeAbsoluteClosenessChecker)
+# define NSFX_TEST_TOOL_INFO  (3, 0 , AbsoluteClosenessChecker, MakeAbsoluteClosenessChecker)
 # include <nsfx/test/tool-iterate.h>
 # undef  NSFX_TEST_TOOL_INFO
 
-# define NSFX_TEST_TOOL_INFO  (3, 1 , RelativeClosenessChecker, makeRelativeClosenessChecker)
+# define NSFX_TEST_TOOL_INFO  (3, 1 , RelativeClosenessChecker, MakeRelativeClosenessChecker)
 # include <nsfx/test/tool-iterate.h>
 # undef  NSFX_TEST_TOOL_INFO
 

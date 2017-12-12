@@ -48,10 +48,10 @@ public:
 
     operator Value() const { return level_; }
 
-    unsigned int toInteger(void) const { return level_; }
-    const char* toString(void) const
+    unsigned int ToInteger(void) const { return level_; }
+    const char* ToString(void) const
     {
-        unsigned int index = toInteger();
+        unsigned int index = ToInteger();
         static const char* levels[] =
         {
             "error",
@@ -75,7 +75,7 @@ template<class Char, class CharTraits>
 inline std::basic_ostream<Char, CharTraits>&
 operator<<(std::basic_ostream<Char, CharTraits>& os, const ToolLevel& level)
 {
-    return os << level.toString();
+    return os << level.ToString();
 }
 
 
