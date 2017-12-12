@@ -57,14 +57,14 @@ public:
          *
          * @param currentCase The current test case.
          */
-        virtual void run(void) = 0;
+        virtual void Run(void) = 0;
 
     }; // class Impl
 
 
 public:
     /**
-     * @brief Users must use \c Suite::addCase() to create test cases.
+     * @brief Users must use \c Suite::AddCase() to create test cases.
      */
     template<class Functor>
     Case(Suite* parent, const string& name, Functor&& functor);
@@ -99,33 +99,33 @@ public:
 
     // Methods.
 public:
-    void run(void)
+    void Run(void)
     {
-        impl_->run();
+        impl_->Run();
     }
 
-    void addResult(Result&& result)
+    void AddResult(Result&& result)
     {
         results_.push_back(std::move(result));
     }
 
-    size_t getNumberOfFailures(void) const
+    size_t GetNumberOfFailures(void) const
     {
         return results_.size();
     }
 
-    Suite* getParent(void) const
+    Suite* GetParent(void) const
     {
         return parent_;
     }
 
-    const string& getName(void) const
+    const string& GetName(void) const
     {
         return name_;
     }
 
     template<class ResultVisitor>
-    void visitResults(const ResultVisitor& visitor)
+    void VisitResults(const ResultVisitor& visitor)
     {
         BOOST_CONCEPT_ASSERT((VisitorConcept<ResultVisitor, const Result&>));
         for (auto it = results_.cbegin(); it != results_.cend(); ++it)
@@ -190,7 +190,7 @@ private:
 
     // Case::Impl operations.
 public:
-    virtual void run(void) NSFX_OVERRIDE
+    virtual void Run(void) NSFX_OVERRIDE
     {
         functor_();
     }

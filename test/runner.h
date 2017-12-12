@@ -53,35 +53,35 @@ private:
 
     // Methods.
 public:
-    Logger* getLogger(void)
+    Logger* GetLogger(void)
     {
         return &logger_;
     }
 
-    Suite* getMasterSuite(void)
+    Suite* GetMasterSuite(void)
     {
         return &masterSuite_;
     }
 
 private:
-    void setStopFlag(void)
+    void SetStopFlag(void)
     {
         stop_ = true;
     }
 
 public:
-    bool getStopFlag(void) const
+    bool GetStopFlag(void) const
     {
         return stop_;
     }
 
 private:
-    void setActiveCase(Case* activeCase)
+    void SetActiveCase(Case* activeCase)
     {
         activeCase_ = activeCase;
     }
 
-    Case* getActiveCase(void) const
+    Case* GetActiveCase(void) const
     {
         return activeCase_;
     }
@@ -95,30 +95,30 @@ public:
      * A test result is committed when a test assertion has failed.
      * If the test level is \c TestLevel::ASSERT, the stop flag is set.
      */
-    void commitResult(Result&& result)
+    void CommitResult(Result&& result)
     {
-        if (result.getToolLevel() == ToolLevel::ASSERT)
+        if (result.GetToolLevel() == ToolLevel::ASSERT)
         {
-            setStopFlag();
+            SetStopFlag();
         }
-        showResult(result);
-        getActiveCase()->addResult(std::move(result));
+        ShowResult(result);
+        GetActiveCase()->AddResult(std::move(result));
     }
 
-    void run(void)
+    void Run(void)
     {
-        numCases_ = masterSuite_.getNumberOfCases();
+        numCases_ = masterSuite_.GetNumberOfCases();
         numTestedCases_ = 0;
         nextProgress_ = 1;
         prevSuite_ = &masterSuite_;
         prevCase_ = nullptr;
-        showMessage("Test started:");
-        runSuite(masterSuite_);
-        showSummary();
+        ShowMessage("Test started:");
+        RunSuite(masterSuite_);
+        ShowSummary();
     }
 
 private:
-    void showMessage(const string& message)
+    void ShowMessage(const string& message)
     {
         struct Visitor /*{{{*/
         {
@@ -135,10 +135,10 @@ private:
             const string& message_;
         }; // struct Visitor /*}}}*/
 
-        logger_.visitStreams(Visitor(message));
+        logger_.VisitStreams(Visitor(message));
     }
 
-    void showProgress(void)
+    void ShowProgress(void)
     {
         struct Visitor /*{{{*/
         {
@@ -165,11 +165,11 @@ private:
         }
         if (show)
         {
-            logger_.visitStreams(Visitor(nextProgress_ - 1));
+            logger_.VisitStreams(Visitor(nextProgress_ - 1));
         }
     }
 
-    void showResult(const Result& result)
+    void ShowResult(const Result& result)
     {
         struct Visitor /*{{{*/
         {
@@ -184,49 +184,49 @@ private:
 
             void operator()(std::ostream& os)
             {
-                Suite* activeSuite = activeCase_->getParent();
-                size_t depth = activeSuite->getDepth();
+                Suite* activeSuite = activeCase_->GetParent();
+                size_t depth = activeSuite->GetDepth();
                 if (activeSuite != prevSuite_)
                 {
-                    displaySuite(os, activeSuite, depth);
+                    DisplaySuite(os, activeSuite, depth);
                 }
-                displayCase(os, activeCase_, depth);
-                displayResult(os, result_, depth);
+                DisplayCase(os, activeCase_, depth);
+                DisplayResult(os, result_, depth);
             }
 
         private:
             // Precondition: suite is not displayed.
-            void displaySuite(std::ostream& os, Suite* suite, size_t depth)
+            void DisplaySuite(std::ostream& os, Suite* suite, size_t depth)
             {
-                if (!suite->isMaster())
+                if (!suite->IsMaster())
                 {
-                    displaySuite(os, suite->getParent(), depth - 1);
+                    DisplaySuite(os, suite->GetParent(), depth - 1);
                     os << string(depth - 1, ' ');
                     os << "+";
-                    os << suite->getName() << std::endl;
+                    os << suite->GetName() << std::endl;
                 }
             }
 
-            void displayCase(std::ostream& os, Case* casei, size_t depth)
+            void DisplayCase(std::ostream& os, Case* casei, size_t depth)
             {
                 os << string(depth, ' ');
                 os << "-";
-                os << casei->getName() << std::endl;
+                os << casei->GetName() << std::endl;
             }
 
-            void displayResult(std::ostream& os, const Result& result,
+            void DisplayResult(std::ostream& os, const Result& result,
                                size_t depth)
             {
                 os << string(depth + 2, ' ');
                 // Make clear the position of error.
-                os << result.getFileName();
-                os << "(" << result.getLineNumber() << "): ";
-                os << result.getToolLevel() << ". ";
-                os << "\"" << result.getDescription() << "\" ";
-                os << "[" << result.getDetail() <<  "].";
-                if (!result.getMessage().empty())
+                os << result.GetFileName();
+                os << "(" << result.GetLineNumber() << "): ";
+                os << result.GetToolLevel() << ". ";
+                os << "\"" << result.GetDescription() << "\" ";
+                os << "[" << result.GetDetail() <<  "].";
+                if (!result.GetMessage().empty())
                 {
-                    os << " " << result.getMessage();
+                    os << " " << result.GetMessage();
                 }
                 os << std::endl;
             }
@@ -239,12 +239,12 @@ private:
 
         }; // struct Visitor /*}}}*/
 
-        logger_.visitStreams(Visitor(prevSuite_, prevCase_, activeCase_, result));
+        logger_.VisitStreams(Visitor(prevSuite_, prevCase_, activeCase_, result));
         prevCase_ = activeCase_;
-        prevSuite_ = prevCase_->getParent();
+        prevSuite_ = prevCase_->GetParent();
     }
 
-    void showSummary(void)
+    void ShowSummary(void)
     {
         struct Visitor /*{{{*/
         {
@@ -262,7 +262,7 @@ private:
                     os << "Test stopped due to fatal error." << std::endl;
                 }
                 os << "Total number of test failures: "
-                   << suite_->getNumberOfFailures() << "." << std::endl;
+                   << suite_->GetNumberOfFailures() << "." << std::endl;
             }
 
 
@@ -272,30 +272,30 @@ private:
 
         }; // struct Visitor /*}}}*/
 
-        logger_.visitStreams(Visitor(stop_, &masterSuite_));
+        logger_.VisitStreams(Visitor(stop_, &masterSuite_));
     }
 
 private:
-    void runSuite(Suite& suite)
+    void RunSuite(Suite& suite)
     {
         if (!stop_)
         {
-            suite.visitCases([this] (Case& casei) { runCase(casei); });
+            suite.VisitCases([this] (Case& casei) { RunCase(casei); });
         }
         if (!stop_)
         {
-            suite.visitSuites([this] (Suite& suite) { runSuite(suite); });
+            suite.VisitSuites([this] (Suite& suite) { RunSuite(suite); });
         }
     }
 
-    void runCase(Case& casei)
+    void RunCase(Case& casei)
     {
         if (!stop_)
         {
-            setActiveCase(&casei);
-            casei.run();
+            SetActiveCase(&casei);
+            casei.Run();
             ++numTestedCases_;
-            showProgress();
+            ShowProgress();
         }
     }
 
@@ -303,7 +303,7 @@ private:
 
     // Singleton.
 public:
-    static Runner* getInstance(void)
+    static Runner* GetInstance(void)
     {
         static Runner runner;
         return &runner;
@@ -349,29 +349,29 @@ namespace runner
 {
 
 
-Logger* getLogger(void)
+Logger* GetLogger(void)
 {
-    return Runner::getInstance()->getLogger();
+    return Runner::GetInstance()->GetLogger();
 }
 
-Suite* getMasterSuite(void)
+Suite* GetMasterSuite(void)
 {
-    return Runner::getInstance()->getMasterSuite();
+    return Runner::GetInstance()->GetMasterSuite();
 }
 
-bool getStopFlag(void)
+bool GetStopFlag(void)
 {
-    return Runner::getInstance()->getStopFlag();
+    return Runner::GetInstance()->GetStopFlag();
 }
 
-void commitResult(Result&& result)
+void CommitResult(Result&& result)
 {
-    Runner::getInstance()->commitResult(std::move(result));
+    Runner::GetInstance()->CommitResult(std::move(result));
 }
 
-void run(void)
+void Run(void)
 {
-    Runner::getInstance()->run();
+    Runner::GetInstance()->Run();
 }
 
 

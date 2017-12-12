@@ -54,7 +54,7 @@ public:
     // Constructors.
 public:
     /**
-     * @brief Users must use \c addSuite() to create test suites.
+     * @brief Users must use \c AddSuite() to create test suites.
      */
     Suite(void) :
         parent_(nullptr),
@@ -63,7 +63,7 @@ public:
     }
 
     /**
-     * @brief Users must use \c addSuite() to create test suites.
+     * @brief Users must use \c AddSuite() to create test suites.
      */
     Suite(Suite* parent, const string& name) :
         parent_(parent),
@@ -111,7 +111,7 @@ public:
      * @return If a test suite with the specified name already exists,
      *         a reference to the existing test suite is returned.
      */
-    Suite* addSuite(const string& name)
+    Suite* AddSuite(const string& name)
     {
         Suite* suite = nullptr;
         auto it = suiteMap_.find(name);
@@ -132,7 +132,7 @@ public:
      * @brief Add test case.
      */
     template<class Functor>
-    Case* addCase(const string& name, Functor&& functor)
+    Case* AddCase(const string& name, Functor&& functor)
     {
         Case* casei = nullptr;
         auto it = caseMap_.find(name);
@@ -150,52 +150,52 @@ public:
         return casei;
     }
 
-    const string& getName(void) const
+    const string& GetName(void) const
     {
         return name_;
     }
 
-    size_t getNumberOfCases(void) const
+    size_t GetNumberOfCases(void) const
     {
         size_t numCases = 0;
         numCases += caseVector_.size();
         for (auto it = suiteVector_.cbegin(); it != suiteVector_.cend(); ++it)
         {
-            numCases += (*it)->getNumberOfCases();
+            numCases += (*it)->GetNumberOfCases();
         }
         return numCases;
     }
 
-    size_t getNumberOfFailures(void) const
+    size_t GetNumberOfFailures(void) const
     {
         size_t numFailures = 0;
         for (auto it = caseVector_.cbegin(); it != caseVector_.cend(); ++it)
         {
-            numFailures += (*it)->getNumberOfFailures();
+            numFailures += (*it)->GetNumberOfFailures();
         }
         for (auto it = suiteVector_.cbegin(); it != suiteVector_.cend(); ++it)
         {
-            numFailures += (*it)->getNumberOfFailures();
+            numFailures += (*it)->GetNumberOfFailures();
         }
         return numFailures;
     }
 
-    bool isMaster(void) const
+    bool IsMaster(void) const
     {
         return !parent_;
     }
 
-    Suite* getParent(void) const
+    Suite* GetParent(void) const
     {
         return parent_;
     }
 
-    size_t getDepth(void) const
+    size_t GetDepth(void) const
     {
         size_t depth = 0;
         for (const Suite* suite = this;
-             !suite->isMaster();
-             suite = suite->getParent())
+             !suite->IsMaster();
+             suite = suite->GetParent())
         {
             ++depth;
         }
@@ -203,7 +203,7 @@ public:
     }
 
     template<class CaseVisitor>
-    void visitCases(CaseVisitor&& visitor)
+    void VisitCases(CaseVisitor&& visitor)
     {
         BOOST_CONCEPT_ASSERT((VisitorConcept<CaseVisitor, Case&>));
         for (auto it = caseVector_.begin(); it != caseVector_.end(); ++it)
@@ -214,7 +214,7 @@ public:
     }
 
     template<class SuiteVisitor>
-    void visitSuites(SuiteVisitor&& visitor)
+    void VisitSuites(SuiteVisitor&& visitor)
     {
         BOOST_CONCEPT_ASSERT((VisitorConcept<SuiteVisitor, Suite&>));
         for (auto it = suiteVector_.begin(); it != suiteVector_.end(); ++it)

@@ -3,9 +3,9 @@
 #include <iostream>
 
 
-void foo(void)
+void Foo(void)
 {
-    std::cout << "foo" << std::endl;
+    std::cout << "Foo" << std::endl;
 }
 
 class A
@@ -13,9 +13,9 @@ class A
 public:
     A(int i) : i_(i) {}
 
-    void bar(void)
+    void Bar(void)
     {
-        std::cout << "A::bar " << i_ << std::endl;
+        std::cout << "A::Bar " << i_ << std::endl;
     }
     int i_;
 };
@@ -41,22 +41,22 @@ public:
 int main(void)
 {
     nsfx::test::Case* c1 =
-        nsfx::test::runner::getMasterSuite()->addCase("case1", [] {
+        nsfx::test::runner::GetMasterSuite()->AddCase("case1", [] {
             std::cout << "Hello world!" << std::endl;
         });
-    c1->run();
+    c1->Run();
 
-    c1 = nsfx::test::runner::getMasterSuite()->addCase("case2", &foo);
-    c1->run();
+    c1 = nsfx::test::runner::GetMasterSuite()->AddCase("case2", &Foo);
+    c1->Run();
 
     A a(1);
-    c1 = nsfx::test::runner::getMasterSuite()->addCase(
-        "case3", std::bind(&A::bar, &a));
-    c1->run();
+    c1 = nsfx::test::runner::GetMasterSuite()->AddCase(
+        "case3", std::bind(&A::Bar, &a));
+    c1->Run();
 
     B b;
-    c1 = nsfx::test::runner::getMasterSuite()->addCase("case4", b);
-    c1->run();
+    c1 = nsfx::test::runner::GetMasterSuite()->AddCase("case4", b);
+    c1->Run();
 
     return 0;
 }

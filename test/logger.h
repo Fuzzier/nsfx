@@ -51,7 +51,7 @@ public:
 
     // Methods.
 public:
-    std::ostream& getStream(void) const
+    std::ostream& GetStream(void) const
     {
         return os_;
     }
@@ -87,7 +87,7 @@ public:
 
     // Methods.
 public:
-    std::ostream& getStream(void)
+    std::ostream& GetStream(void)
     {
         return *static_cast<std::ostream*>(&ofs_);
     }
@@ -115,24 +115,24 @@ public:
 
     // Methods.
 public:
-    void addStreamSink(std::ostream& os)
+    void AddStreamSink(std::ostream& os)
     {
         sinks_.emplace_back(new StreamSink(os));
     }
 
-    void addFileSink(const string& filename, std::ios_base::openmode mode = std::ios_base::out)
+    void AddFileSink(const string& filename, std::ios_base::openmode mode = std::ios_base::out)
     {
         sinks_.emplace_back(new FileSink(filename, mode));
     }
 
     template<class StreamVisitor>
-    void visitStreams(StreamVisitor&& visitor)
+    void VisitStreams(StreamVisitor&& visitor)
     {
         BOOST_CONCEPT_ASSERT((VisitorConcept<StreamVisitor, std::ostream&>));
         for (auto it = sinks_.cbegin(); it != sinks_.cend(); ++it)
         {
             const StreamSinkPtr& sink = *it;
-            visitor(sink->getStream());
+            visitor(sink->GetStream());
         }
     }
 

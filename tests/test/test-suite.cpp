@@ -82,12 +82,12 @@ void case4(void)
 int main(void)
 {
     nsfx::test::Suite* s =
-        nsfx::test::runner::getMasterSuite()->addSuite("suite3");
-    s->addCase("case4", &case4);
+        nsfx::test::runner::GetMasterSuite()->AddSuite("suite3");
+    s->AddCase("case4", &case4);
 
-    nsfx::test::runner::getLogger()->addStreamSink(std::cerr);
-    nsfx::test::runner::getLogger()->addFileSink("test.log");
-    nsfx::test::runner::run();
+    nsfx::test::runner::GetLogger()->AddStreamSink(std::cerr);
+    nsfx::test::runner::GetLogger()->AddFileSink("test.log");
+    nsfx::test::runner::Run();
 
     std::cout << "The total number of test failures should be 7." << std::endl;
 

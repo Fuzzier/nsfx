@@ -123,22 +123,22 @@ public:
 
     // Methods.
 public:
-    const ToolType& getToolType(void) const
+    const ToolType& GetToolType(void) const
     {
         return type_;
     }
 
-    const ToolLevel& getToolLevel(void) const
+    const ToolLevel& GetToolLevel(void) const
     {
         return level_;
     }
 
-    const string& getDescription(void) const
+    const string& GetDescription(void) const
     {
         return description_;
     }
 
-    string getDetail(void) const
+    string GetDetail(void) const
     {
         std::ostringstream oss;
         switch (type_)
@@ -167,42 +167,42 @@ public:
         return oss.str();
     }
 
-    const string& getActual(void) const
+    const string& GetActual(void) const
     {
         return actual_;
     }
 
-    const string& getLimit(void) const
+    const string& GetLimit(void) const
     {
         return limit_;
     }
 
-    const string& getTolerance(void) const
+    const string& GetTolerance(void) const
     {
         return tolerance_;
     }
 
-    void setMessage(string&& message)
+    void SetMessage(string&& message)
     {
         message_ = std::move(message);
     }
 
-    const string& getMessage(void) const
+    const string& GetMessage(void) const
     {
         return message_;
     }
 
-    const string& getFunction(void) const
+    const string& GetFunction(void) const
     {
         return function_;
     }
 
-    const string& getFileName(void) const
+    const string& GetFileName(void) const
     {
         return filename_;
     }
 
-    size_t getLineNumber(void) const
+    size_t GetLineNumber(void) const
     {
         return lineno_;
     }
@@ -210,16 +210,16 @@ public:
 
     // Properties.
 private:
-    ToolType    type_;
-    ToolLevel   level_;
-    string description_;
-    string actual_;
-    string limit_;
-    string tolerance_;
-    string message_;
-    string function_;
-    string filename_;
-    size_t      lineno_;
+    ToolType  type_;
+    ToolLevel level_;
+    string    description_;
+    string    actual_;
+    string    limit_;
+    string    tolerance_;
+    string    message_;
+    string    function_;
+    string    filename_;
+    size_t    lineno_;
 
 }; // class Result
 

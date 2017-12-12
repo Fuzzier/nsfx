@@ -78,18 +78,18 @@
  */
 #define NSFX_TEST_PREDICATE_IMPL(TYPE, LEVEL, DESC, ACT)                        \
     /* If the testing is not stopped.  */                                       \
-    for (bool go = true; go && !::nsfx::test::runner::getStopFlag(); go = false)\
+    for (bool go = true; go && !::nsfx::test::runner::GetStopFlag(); go = false)\
     /* If the actual value is false.   */                                       \
-    for (auto pred = ::nsfx::test::makePredicateChecker(ACT);                   \
+    for (auto pred = ::nsfx::test::MakePredicateChecker(ACT);                   \
          go && !pred; go = false)                                               \
     /* Construct and commit a result.  */                                       \
     for (::nsfx::test::Result result(                                           \
             TYPE, LEVEL, DESC,                                                  \
-            pred.getActual(),                                                   \
+            pred.GetActual(),                                                   \
             __FUNCTION__, __FILE__, __LINE__); go;                              \
-            ::nsfx::test::runner::commitResult(std::move(result)), go = false)  \
+            ::nsfx::test::runner::CommitResult(std::move(result)), go = false)  \
     /* Set the message for the result. */                                       \
-    for (std::ostringstream oss; go; result.setMessage(oss.str()), go = false)  \
+    for (std::ostringstream oss; go; result.SetMessage(oss.str()), go = false)  \
         oss
 
 /**
@@ -136,18 +136,18 @@
  */
 #define NSFX_TEST_EQUAL_IMPL(TYPE, LEVEL, DESC, ACT, LIM)                       \
     /* If the testing is not stopped.  */                                       \
-    for (bool go = true; go && !::nsfx::test::runner::getStopFlag(); go = false)\
+    for (bool go = true; go && !::nsfx::test::runner::GetStopFlag(); go = false)\
     /* If the actual value is false.   */                                       \
-    for (auto pred = ::nsfx::test::makeEqualChecker((ACT), (LIM));              \
+    for (auto pred = ::nsfx::test::MakeEqualChecker((ACT), (LIM));              \
          go && !pred; go = false)                                               \
     /* Construct and commit a result.  */                                       \
     for (::nsfx::test::Result result(                                           \
             TYPE, LEVEL, DESC,                                                  \
-            pred.getActual(), pred.getLimit(),                                  \
+            pred.GetActual(), pred.GetLimit(),                                  \
             __FUNCTION__, __FILE__, __LINE__); go;                              \
-            ::nsfx::test::runner::commitResult(std::move(result)), go = false)  \
+            ::nsfx::test::runner::CommitResult(std::move(result)), go = false)  \
     /* Set the message for the result. */                                       \
-    for (std::ostringstream oss; go; result.setMessage(oss.str()), go = false)  \
+    for (std::ostringstream oss; go; result.SetMessage(oss.str()), go = false)  \
         oss
 
 /**
@@ -196,18 +196,18 @@
  */
 #define NSFX_TEST_NOT_EQUAL_IMPL(TYPE, LEVEL, DESC, ACT, LIM)                   \
     /* If the testing is not stopped.  */                                       \
-    for (bool go = true; go && !::nsfx::test::runner::getStopFlag(); go = false)\
+    for (bool go = true; go && !::nsfx::test::runner::GetStopFlag(); go = false)\
     /* If the actual value is false.   */                                       \
-    for (auto pred = ::nsfx::test::makeNotEqualChecker((ACT), (LIM));           \
+    for (auto pred = ::nsfx::test::MakeNotEqualChecker((ACT), (LIM));           \
          go && !pred; go = false)                                               \
     /* Construct and commit a result.  */                                       \
     for (::nsfx::test::Result result(                                           \
             TYPE, LEVEL, DESC,                                                  \
-            pred.getActual(), pred.getLimit(),                                  \
+            pred.GetActual(), pred.GetLimit(),                                  \
             __FUNCTION__, __FILE__, __LINE__); go;                              \
-            ::nsfx::test::runner::commitResult(std::move(result)), go = false)  \
+            ::nsfx::test::runner::CommitResult(std::move(result)), go = false)  \
     /* Set the message for the result. */                                       \
-    for (std::ostringstream oss; go; result.setMessage(oss.str()), go = false)  \
+    for (std::ostringstream oss; go; result.SetMessage(oss.str()), go = false)  \
         oss
 
 /**
@@ -256,18 +256,18 @@
  */
 #define NSFX_TEST_LESS_THAN_IMPL(TYPE, LEVEL, DESC, ACT, LIM)                   \
     /* If the testing is not stopped.  */                                       \
-    for (bool go = true; go && !::nsfx::test::runner::getStopFlag(); go = false)\
+    for (bool go = true; go && !::nsfx::test::runner::GetStopFlag(); go = false)\
     /* If the actual value is false.   */                                       \
-    for (auto pred = ::nsfx::test::makeLessThanChecker((ACT), (LIM));           \
+    for (auto pred = ::nsfx::test::MakeLessThanChecker((ACT), (LIM));           \
          go && !pred; go = false)                                               \
     /* Construct and commit a result.  */                                       \
     for (::nsfx::test::Result result(                                           \
             TYPE, LEVEL, DESC,                                                  \
-            pred.getActual(), pred.getLimit(),                                  \
+            pred.GetActual(), pred.GetLimit(),                                  \
             __FUNCTION__, __FILE__, __LINE__); go;                              \
-            ::nsfx::test::runner::commitResult(std::move(result)), go = false)  \
+            ::nsfx::test::runner::CommitResult(std::move(result)), go = false)  \
     /* Set the message for the result. */                                       \
-    for (std::ostringstream oss; go; result.setMessage(oss.str()), go = false)  \
+    for (std::ostringstream oss; go; result.SetMessage(oss.str()), go = false)  \
         oss
 
 /**
@@ -316,18 +316,18 @@
  */
 #define NSFX_TEST_LESS_EQUAL_IMPL(TYPE, LEVEL, DESC, ACT, LIM)                  \
     /* If the testing is not stopped.  */                                       \
-    for (bool go = true; go && !::nsfx::test::runner::getStopFlag(); go = false)\
+    for (bool go = true; go && !::nsfx::test::runner::GetStopFlag(); go = false)\
     /* If the actual value is false.   */                                       \
-    for (auto pred = ::nsfx::test::makeLessEqualChecker((ACT), (LIM));          \
+    for (auto pred = ::nsfx::test::MakeLessEqualChecker((ACT), (LIM));          \
          go && !pred; go = false)                                               \
     /* Construct and commit a result.  */                                       \
     for (::nsfx::test::Result result(                                           \
             TYPE, LEVEL, DESC,                                                  \
-            pred.getActual(), pred.getLimit(),                                  \
+            pred.GetActual(), pred.GetLimit(),                                  \
             __FUNCTION__, __FILE__, __LINE__); go;                              \
-            ::nsfx::test::runner::commitResult(std::move(result)), go = false)  \
+            ::nsfx::test::runner::CommitResult(std::move(result)), go = false)  \
     /* Set the message for the result. */                                       \
-    for (std::ostringstream oss; go; result.setMessage(oss.str()), go = false)  \
+    for (std::ostringstream oss; go; result.SetMessage(oss.str()), go = false)  \
         oss
 
 /**
@@ -376,18 +376,18 @@
  */
 #define NSFX_TEST_GREATER_THAN_IMPL(TYPE, LEVEL, DESC, ACT, LIM)                \
     /* If the testing is not stopped.  */                                       \
-    for (bool go = true; go && !::nsfx::test::runner::getStopFlag(); go = false)\
+    for (bool go = true; go && !::nsfx::test::runner::GetStopFlag(); go = false)\
     /* If the actual value is false.   */                                       \
-    for (auto pred = ::nsfx::test::makeGreaterThanChecker((ACT), (LIM));        \
+    for (auto pred = ::nsfx::test::MakeGreaterThanChecker((ACT), (LIM));        \
          go && !pred; go = false)                                               \
     /* Construct and commit a result.  */                                       \
     for (::nsfx::test::Result result(                                           \
             TYPE, LEVEL, DESC,                                                  \
-            pred.getActual(), pred.getLimit(),                                  \
+            pred.GetActual(), pred.GetLimit(),                                  \
             __FUNCTION__, __FILE__, __LINE__); go;                              \
-            ::nsfx::test::runner::commitResult(std::move(result)), go = false)  \
+            ::nsfx::test::runner::CommitResult(std::move(result)), go = false)  \
     /* Set the message for the result. */                                       \
-    for (std::ostringstream oss; go; result.setMessage(oss.str()), go = false)  \
+    for (std::ostringstream oss; go; result.SetMessage(oss.str()), go = false)  \
         oss
 
 /**
@@ -436,18 +436,18 @@
  */
 #define NSFX_TEST_GREATER_EQUAL_IMPL(TYPE, LEVEL, DESC, ACT, LIM)               \
     /* If the testing is not stopped.  */                                       \
-    for (bool go = true; go && !::nsfx::test::runner::getStopFlag(); go = false)\
+    for (bool go = true; go && !::nsfx::test::runner::GetStopFlag(); go = false)\
     /* If the actual value is false.   */                                       \
-    for (auto pred = ::nsfx::test::makeGreaterEqualChecker((ACT), (LIM));       \
+    for (auto pred = ::nsfx::test::MakeGreaterEqualChecker((ACT), (LIM));       \
          go && !pred; go = false)                                               \
     /* Construct and commit a result.  */                                       \
     for (::nsfx::test::Result result(                                           \
             TYPE, LEVEL, DESC,                                                  \
-            pred.getActual(), pred.getLimit(),                                  \
+            pred.GetActual(), pred.GetLimit(),                                  \
             __FUNCTION__, __FILE__, __LINE__); go;                              \
-            ::nsfx::test::runner::commitResult(std::move(result)), go = false)  \
+            ::nsfx::test::runner::CommitResult(std::move(result)), go = false)  \
     /* Set the message for the result. */                                       \
-    for (std::ostringstream oss; go; result.setMessage(oss.str()), go = false)  \
+    for (std::ostringstream oss; go; result.SetMessage(oss.str()), go = false)  \
         oss
 
 /**
@@ -497,18 +497,18 @@
  */
 #define NSFX_TEST_ABSOLUTE_CLOSENESS_IMPL(TYPE, LEVEL, DESC, ACT, LIM, TOL)             \
     /* If the testing is not stopped.  */                                               \
-    for (bool go = true; go && !::nsfx::test::runner::getStopFlag(); go = false)        \
+    for (bool go = true; go && !::nsfx::test::runner::GetStopFlag(); go = false)        \
     /* If the actual value is false.   */                                               \
-    for (auto pred = ::nsfx::test::makeAbsoluteClosenessChecker((ACT), (LIM), (TOL));   \
+    for (auto pred = ::nsfx::test::MakeAbsoluteClosenessChecker((ACT), (LIM), (TOL));   \
          go && !pred; go = false)                                                       \
     /* Construct and commit a result.  */                                               \
     for (::nsfx::test::Result result(                                                   \
             TYPE, LEVEL, DESC,                                                          \
-            pred.getActual(), pred.getLimit(), pred.getTolerance(),                     \
+            pred.GetActual(), pred.GetLimit(), pred.GetTolerance(),                     \
             __FUNCTION__, __FILE__, __LINE__); go;                                      \
-            ::nsfx::test::runner::commitResult(std::move(result)), go = false)          \
+            ::nsfx::test::runner::CommitResult(std::move(result)), go = false)          \
     /* Set the message for the result. */                                               \
-    for (std::ostringstream oss; go; result.setMessage(oss.str()), go = false)          \
+    for (std::ostringstream oss; go; result.SetMessage(oss.str()), go = false)          \
         oss
 
 /**
@@ -562,18 +562,18 @@
  */
 #define NSFX_TEST_RELATIVE_CLOSENESS_IMPL(TYPE, LEVEL, DESC, ACT, LIM, TOL)             \
     /* If the testing is not stopped.  */                                               \
-    for (bool go = true; go && !::nsfx::test::runner::getStopFlag(); go = false)        \
+    for (bool go = true; go && !::nsfx::test::runner::GetStopFlag(); go = false)        \
     /* If the actual value is false.   */                                               \
-    for (auto pred = ::nsfx::test::makeRelativeClosenessChecker((ACT), (LIM), (TOL));   \
+    for (auto pred = ::nsfx::test::MakeRelativeClosenessChecker((ACT), (LIM), (TOL));   \
          go && !pred; go = false)                                                       \
     /* Construct and commit a result.  */                                               \
     for (::nsfx::test::Result result(                                                   \
             TYPE, LEVEL, DESC,                                                          \
-            pred.getActual(), pred.getLimit(), pred.getTolerance(),                     \
+            pred.GetActual(), pred.GetLimit(), pred.GetTolerance(),                     \
             __FUNCTION__, __FILE__, __LINE__); go;                                      \
-            ::nsfx::test::runner::commitResult(std::move(result)), go = false)          \
+            ::nsfx::test::runner::CommitResult(std::move(result)), go = false)          \
     /* Set the message for the result. */                                               \
-    for (std::ostringstream oss; go; result.setMessage(oss.str()), go = false)          \
+    for (std::ostringstream oss; go; result.SetMessage(oss.str()), go = false)          \
         oss
 
 /**
@@ -632,19 +632,19 @@ public:
 
     // Methods.
 public:
-    string getActual(void) const
+    string GetActual(void) const
     {
         std::ostringstream oss;
         oss << std::boolalpha << std::setprecision(9) << actual_;
         return oss.str();
     }
 
-    string getLimit(void) const
+    string GetLimit(void) const
     {
         return "true";
     }
 
-    bool getResult(void) const
+    bool GetResult(void) const
     {
         return result_;
     }
@@ -686,21 +686,21 @@ public:
 
     // Methods.
 public:
-    string getActual(void) const
+    string GetActual(void) const
     {
         std::ostringstream oss;
         oss << std::boolalpha << std::setprecision(9) << actual_;
         return oss.str();
     }
 
-    string getLimit(void) const
+    string GetLimit(void) const
     {
         std::ostringstream oss;
         oss << std::boolalpha << std::setprecision(9) << limit_;
         return oss.str();
     }
 
-    bool getResult(void) const
+    bool GetResult(void) const
     {
         return result_;
     }
@@ -749,14 +749,14 @@ public:
 
     // Methods.
 public:
-    string getActual(void) const
+    string GetActual(void) const
     {
         std::ostringstream oss;
         oss << std::boolalpha << std::setprecision(9) << actual_;
         return oss.str();
     }
 
-    string getLimit(void) const
+    string GetLimit(void) const
     {
         std::ostringstream oss;
         oss << std::boolalpha << std::setprecision(9) << limit_;
@@ -766,14 +766,14 @@ public:
     /**
      * @brief Get the absolute tolerance value.
      */
-    string getTolerance(void) const
+    string GetTolerance(void) const
     {
         std::ostringstream oss;
         oss << std::boolalpha << std::setprecision(9) << limit_ * tol_;
         return oss.str();
     }
 
-    bool getResult(void) const
+    bool GetResult(void) const
     {
         return result_;
     }
