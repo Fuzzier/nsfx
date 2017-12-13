@@ -202,85 +202,25 @@ NSFX_CLOSE_NAMESPACE
 
 ////////////////////////////////////////////////////////////////////////////////
 // Import standard containers.
-#if defined(NSFX_MSVC)
-# include <array>
-# include <vector>
-# include <deque>
-# include <list>
-# include <string>
-   NSFX_OPEN_NAMESPACE
-   using std::array;
-   using std::vector;
-   using std::deque;
-   using std::list;
-   using std::string;
-   NSFX_CLOSE_NAMESPACE
+#include <string>
+#include <boost/container/vector.hpp>
+#include <boost/container/deque.hpp>
+#include <boost/container/list.hpp>
+#include <boost/container/set.hpp>
+#include <boost/container/map.hpp>
+#include <boost/unordered_set.hpp>
+#include <boost/unordered_map.hpp>
 
-   // set, map, unordered_set, unordered_map
-# if NSFX_MSVC >= 1700 // Microsoft Visual C++ 2012+
-#  include <set>
-#  include <map>
-#  include <unordered_set>
-#  include <munordered_ap>
-   NSFX_OPEN_NAMESPACE
-   using std::set;
-   using std::map;
-   using std::unordered_set;
-   using std::unordered_map;
-   NSFX_CLOSE_NAMESPACE
-# else // if NSFX_MSVC < 1700
-   // Microsoft Visual Studio 2010 provides broken 'emplace()'.
-#  include <boost/container/set.hpp>
-#  include <boost/container/map.hpp>
-#  include <boost/unordered_set.hpp>
-#  include <boost/unordered_map.hpp>
-   NSFX_OPEN_NAMESPACE
-   using boost::container::set;
-   using boost::container::map;
-   using boost::unordered_set;
-   using boost::unordered_map;
-   NSFX_CLOSE_NAMESPACE
-# endif // NSFX_MSVC >= 1700
-
-#endif // defined(NSFX_MSVC)
-
-
-////////////////////////////////////////////////////////////////////////////////
-#if defined(NSFX_GCC)
-# include <array>
-# include <vector>
-# include <deque>
-# include <list>
-# include <string>
-# include <set>
-# include <map>
-   NSFX_OPEN_NAMESPACE
-   using std::array;
-   using std::vector;
-   using std::deque;
-   using std::list;
-   using std::string;
-   using std::set;
-   using std::map;
-   NSFX_OPEN_NAMESPACE
-
-# if !defined(BOOST_NO_CXX11_STD_UNORDERED)
-#  include <unordered_set>
-#  include <unordered_map>
-   NSFX_OPEN_NAMESPACE
-   using std::unordered_set;
-   using std::unordered_map;
-   NSFX_OPEN_NAMESPACE
-# else // if defined(BOOST_NO_CXX11_STD_UNORDERED)
-#  include <boost/unordered_set.hpp>
-#  include <boost/unordered_map.hpp>
-   NSFX_OPEN_NAMESPACE
-   using boost::unordered_set;
-   using boost::unordered_map;
-   NSFX_OPEN_NAMESPACE
-# endif // !defined(BOOST_NO_CXX11_STD_UNORDERED)
-
-#endif // defined(NSFX_GCC)
+NSFX_OPEN_NAMESPACE
+using std::string;
+using boost::container::vector;
+using boost::container::deque;
+using boost::container::list;
+using boost::container::set;
+using boost::container::map;
+using boost::unordered_set;
+using boost::unordered_map;
+NSFX_CLOSE_NAMESPACE
 
 
 #endif // CONFIG_H__544DA909_13DC_4D4F_AD4F_BE62ECF454E2
