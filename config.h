@@ -123,6 +123,39 @@ typedef decltype(nullptr) nullptr_t;
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// NSFX_EXPLICIT
+#if defined(BOOST_NO_CXX11_EXPLICIT_CONVERSION_OPERATORS)
+# define NSFX_EXPLICIT
+#else // if !defined(BOOST_NO_CXX11_EXPLICIT_CONVERSION_OPERATORS)
+# define NSFX_EXPLICIT  explicit
+#endif // defined(BOOST_NO_CXX11_EXPLICIT_CONVERSION_OPERATORS)
+
+
+////////////////////////////////////////////////////////////////////////////////
+// NSFX_BEGIN_TEMPLATE_CONST(type)
+// NSFX_NEXT_TEMPLATE_CONST(type)
+// NSFX_END_TEMPLATE_CONST()
+#if defined(NSFX_MSVC)
+# define NSFX_BEGIN_TEMPLATE_CONST(type)   BOOST_STATIC_CONSTEXPR type
+# define NSFX_NEXT_TEMPLATE_CONST(type)  ; BOOST_STATIC_CONSTEXPR type
+# define NSFX_END_TEMPLATE_CONST()       ;
+#endif // defined(NSFX_MSVC)
+
+
+#if defined(NSFX_GCC)
+# if !defined(BOOST_NO_CXX11_CONSTEXPR)
+#  define NSFX_BEGIN_TEMPLATE_CONST(type)   BOOST_STATIC_CONSTEXPR type
+#  define NSFX_NEXT_TEMPLATE_CONST(type)  ; BOOST_STATIC_CONSTEXPR type
+#  define NSFX_END_TEMPLATE_CONST()       ;
+# else // if defined(BOOST_NO_CXX11_CONSTEXPR)
+#  define NSFX_BEGIN_TEMPLATE_CONST(type) enum {
+#  define NSFX_NEXT_TEMPLATE_CONST(type)  ,
+#  define NSFX_END_TEMPLATE_CONST()       };
+# endif // !defined(BOOST_NO_CXX11_CONSTEXPR)
+#endif // defined(NSFX_GCC)
+
+
+////////////////////////////////////////////////////////////////////////////////
 // Import standard integer types.
 #include <boost/cstdint.hpp>
 NSFX_OPEN_NAMESPACE
