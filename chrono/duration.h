@@ -406,11 +406,6 @@ Days(Duration::Rep n) BOOST_NOEXCEPT
 /*}}}*/
 
 
-////////////////////////////////////////////////////////////////////////////////
-// Inject boost::hash<Duration>./*{{{*/
-/*}}}*/
-
-
 NSFX_CHRONO_CLOSE_NAMESPACE
 
 
