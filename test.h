@@ -1,7 +1,7 @@
 ﻿/**
  * @file
  *
- * @brief Testing support for network simulation framework.
+ * @brief Testing support for network simulation Framework.
  *
  * @version 1.0
  * @author  Fuzzier Tang <gauchyler@gmail.com>
