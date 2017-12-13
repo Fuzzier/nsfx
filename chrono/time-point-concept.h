@@ -94,8 +94,8 @@ private:
     void Hashable(void)
     {
         TimePoint t;
-        size_t h = t.GetHash();
-        h = std::hash<TimePoint>()(t);
+        size_t h = hash_value(t);
+        h = boost::hash<TimePoint>()(t);
     }
 
     void IO(void)
@@ -120,23 +120,6 @@ operator<<(std::basic_ostream<CharT, TraitsT>& os, const TimePoint<Epoch>& rhs)
 
 
 NSFX_CHRONO_CLOSE_NAMESPACE
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Inject std::hash<TimePoint<Epoch> >./*{{{*/
-namespace std
-{
-    template<class Epoch> struct hash<nsfx::chrono::TimePoint<Epoch> >
-    {
-        typedef nsfx::chrono::TimePoint<Epoch>  argument_type;
-        typedef size_t  result_type;
-        BOOST_CONSTEXPR result_type operator()(const argument_type& t) const BOOST_NOEXCEPT
-        {
-            return t.GetHash();
-        }
-    };
-}
-/*}}}*/
 
 
 #endif // TIME_POINT_CONCEPT_H__A02D88FE_623D_4897_A2CE_C8C270901D1A

@@ -18,7 +18,7 @@
 
 
 #include <nsfx/chrono/config.h>
-#include <functional>
+#include <boost/functional/hash.hpp>
 #include <sstream>
 
 
@@ -120,7 +120,7 @@ public:
      */
     BOOST_CONSTEXPR Rep ModuloDay(void) BOOST_NOEXCEPT;
 
-    BOOST_CONSTEXPR size_t GetHash(void) const BOOST_NOEXCEPT;
+    friend size_t hash_value(const Duration& d) BOOST_NOEXCEPT;
 
     friend BOOST_CONSTEXPR Duration operator+ (const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT;
     friend BOOST_CONSTEXPR Duration operator- (const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT;
@@ -265,10 +265,13 @@ Duration::ModuloDay(void) BOOST_NOEXCEPT
     return days;
 }
 
-inline BOOST_CONSTEXPR size_t
-Duration::GetHash(void) const BOOST_NOEXCEPT
+/**
+ * @brief Supports <code>boost::hash<Duration></code>.
+ */
+inline size_t
+hash_value(const Duration& d) BOOST_NOEXCEPT
 {
-    return std::hash<Rep>()(rep_);
+    return boost::hash<Duration::Rep>()(d.rep_);
 }
 
 inline BOOST_CONSTEXPR Duration
@@ -403,24 +406,12 @@ Days(Duration::Rep n) BOOST_NOEXCEPT
 /*}}}*/
 
 
-NSFX_CHRONO_CLOSE_NAMESPACE
-
-
 ////////////////////////////////////////////////////////////////////////////////
-// Inject std::hash<Duration>./*{{{*/
-namespace std
-{
-    template<> struct hash<nsfx::chrono::Duration>
-    {
-        typedef nsfx::chrono::Duration  argument_type;
-        typedef size_t  result_type;
-        BOOST_CONSTEXPR result_type operator()(const argument_type& d) const BOOST_NOEXCEPT
-        {
-            return d.GetHash();
-        }
-    };
-}
+// Inject boost::hash<Duration>./*{{{*/
 /*}}}*/
+
+
+NSFX_CHRONO_CLOSE_NAMESPACE
 
 
 #endif // DURATION_H__E90A15BC_96A8_4FA8_99A1_E3DC5B5A2A66

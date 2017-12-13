@@ -66,6 +66,14 @@ NSFX_TEST_SUITE(VirtualTimePoint)
         NSFX_TEST_EXPECT_EQ(t2, t1 + td);
     }
 
+    NSFX_TEST_CASE(Hash)
+    {
+        TimePoint t(Duration(10));
+        size_t h0 = hash_value(t);
+        size_t h1 = boost::hash<TimePoint>()(t);
+        NSFX_TEST_EXPECT_EQ(h0, h1);
+    }
+
 }
 
 
