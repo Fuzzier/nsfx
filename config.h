@@ -132,6 +132,8 @@ typedef decltype(nullptr) nullptr_t;
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// Sometimes, BOOST_STATIC_CONSTANT(type, expr) doesn't work, if the second
+// parameter is too complex.
 // NSFX_BEGIN_TEMPLATE_CONST(type)
 // NSFX_NEXT_TEMPLATE_CONST(type)
 // NSFX_END_TEMPLATE_CONST()
