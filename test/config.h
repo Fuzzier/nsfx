@@ -25,18 +25,18 @@
  *
  * @brief Test library.
  *
- * Tests are organized in a tree structure.
- * The root of the tree is a master test suite.
- * A test suite contains test suites and test cases.
+ * Tests are organized in a tree structure.<br/>
+ * The root of the tree is a master test suite.<br/>
+ * A test suite contains test suites and test cases.<br/>
  * A test case is a leaf of the tree, i.e.,
  * test cases cannot contain test suites or cases.
  *
  * In a test case, users invoke test assertions to check the results of
- * their code.
- * If a test assertion fails, a test result is generated.
- * The test results are logged.
+ * their code.<br/>
+ * If a test assertion fails, a test result is generated.<br/>
+ * The test results are logged.<br/>
  *
- * @remarks The test library is made because of the convient trailing streaming.
+ * @remarks The test library is made because of the convient trailing streaming.<br/>
  *          For example,
  *          @code
  *          NSFX_TEST_EXPECT_EQ(a, b) << "trailing " << "message";
