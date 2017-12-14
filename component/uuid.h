@@ -19,10 +19,7 @@
 
 #include <nsfx/component/config.h>
 #include <boost/uuid/uuid.hpp>
-#include <boost/uuid/nil_generator.hpp>
-#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <boost/preprocessor/cat.hpp>
 
 
 NSFX_OPEN_NAMESPACE
