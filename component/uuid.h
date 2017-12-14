@@ -45,7 +45,7 @@ using boost::uuids::uuid;
  * defines a uuid "{01234567-89ab-cdef-0123-456789abcdef}".
  */
 #define NSFX_DEFINE_UUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8)  \
-    const uuid name = {                                                    \
+    const ::nsfx::uuid name = {                                            \
         (l >> 24) & 0xff, (l >> 16) & 0xff, (l >> 8) & 0xff, l & 0xff,     \
         (w1 >> 8) & 0xff, (w1     ) & 0xff,                                \
         (w2 >> 8) & 0xff, (w2     ) & 0xff,                                \
@@ -80,7 +80,7 @@ using boost::uuids::uuid;
  * @ingroup Component
  * @brief Declare a const uuid with external linkage.
  */
-#define NSFX_DECLARE_UUID(name)  extern const uuid name
+#define NSFX_DECLARE_UUID(name)  extern const ::nsfx::uuid name
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -115,7 +115,7 @@ using boost::uuids::uuid;
  */
 #define NSFX_DEFINE_CLASS_UUID4(l, w1, w2, ll)        \
     public:                                           \
-    static const uuid& GetUuid_(void) BOOST_NOEXCEPT  \
+    static const ::nsfx::uuid& GetUuid_(void) BOOST_NOEXCEPT  \
     {                                                 \
         static NSFX_DEFINE_UUID4(id, l, w1, w2, ll);  \
         return id;                                    \
