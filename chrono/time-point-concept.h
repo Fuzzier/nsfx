@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Chrono support for Network Simulation Framework.
+ * @brief Chrono support for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
