@@ -1,7 +1,7 @@
 ﻿/**
  * @file
  *
- * @brief Test support for network simulation Framework.
+ * @brief Test support for network simulation Frameworks.
  *
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
  * @date    2016-05-11
