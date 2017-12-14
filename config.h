@@ -222,5 +222,9 @@ using boost::unordered_map;
 NSFX_CLOSE_NAMESPACE
 
 
+#include <cassert>
+#define NSFX_ASSERT(p)  std::assert(p)
+
+
 #endif // CONFIG_H__544DA909_13DC_4D4F_AD4F_BE62ECF454E2
 
