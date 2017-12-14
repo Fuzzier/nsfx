@@ -118,11 +118,11 @@ public:
     }
 
 private:
-    void ShowMessage(const string& message)
+    void ShowMessage(const std::string& message)
     {
         struct Visitor /*{{{*/
         {
-            Visitor(const string& message) :
+            Visitor(const std::string& message) :
                 message_(message)
             {
             }
@@ -132,7 +132,7 @@ private:
                 os << message_ << std::endl;
             }
 
-            const string& message_;
+            const std::string& message_;
         }; // struct Visitor /*}}}*/
 
         logger_.VisitStreams(Visitor(message));
@@ -201,7 +201,7 @@ private:
                 if (!suite->IsMaster())
                 {
                     DisplaySuite(os, suite->GetParent(), depth - 1);
-                    os << string(depth - 1, ' ');
+                    os << std::string(depth - 1, ' ');
                     os << "+";
                     os << suite->GetName() << std::endl;
                 }
@@ -209,7 +209,7 @@ private:
 
             void DisplayCase(std::ostream& os, Case* casei, size_t depth)
             {
-                os << string(depth, ' ');
+                os << std::string(depth, ' ');
                 os << "-";
                 os << casei->GetName() << std::endl;
             }
@@ -217,7 +217,7 @@ private:
             void DisplayResult(std::ostream& os, const Result& result,
                                size_t depth)
             {
-                os << string(depth + 2, ' ');
+                os << std::string(depth + 2, ' ');
                 // Make clear the position of error.
                 os << result.GetFileName();
                 os << "(" << result.GetLineNumber() << "): ";

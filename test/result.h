@@ -133,12 +133,12 @@ public:
         return level_;
     }
 
-    const string& GetDescription(void) const
+    const std::string& GetDescription(void) const
     {
         return description_;
     }
 
-    string GetDetail(void) const
+    std::string GetDetail(void) const
     {
         std::ostringstream oss;
         switch (type_)
@@ -167,37 +167,37 @@ public:
         return oss.str();
     }
 
-    const string& GetActual(void) const
+    const std::string& GetActual(void) const
     {
         return actual_;
     }
 
-    const string& GetLimit(void) const
+    const std::string& GetLimit(void) const
     {
         return limit_;
     }
 
-    const string& GetTolerance(void) const
+    const std::string& GetTolerance(void) const
     {
         return tolerance_;
     }
 
-    void SetMessage(string&& message)
+    void SetMessage(std::string&& message)
     {
         message_ = std::move(message);
     }
 
-    const string& GetMessage(void) const
+    const std::string& GetMessage(void) const
     {
         return message_;
     }
 
-    const string& GetFunction(void) const
+    const std::string& GetFunction(void) const
     {
         return function_;
     }
 
-    const string& GetFileName(void) const
+    const std::string& GetFileName(void) const
     {
         return filename_;
     }
@@ -210,16 +210,16 @@ public:
 
     // Properties.
 private:
-    ToolType  type_;
-    ToolLevel level_;
-    string    description_;
-    string    actual_;
-    string    limit_;
-    string    tolerance_;
-    string    message_;
-    string    function_;
-    string    filename_;
-    size_t    lineno_;
+    ToolType       type_;
+    ToolLevel      level_;
+    std::string    description_;
+    std::string    actual_;
+    std::string    limit_;
+    std::string    tolerance_;
+    std::string    message_;
+    std::string    function_;
+    std::string         filename_;
+    size_t         lineno_;
 
 }; // class Result
 

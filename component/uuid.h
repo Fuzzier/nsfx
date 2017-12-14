@@ -19,7 +19,6 @@
 
 #include <nsfx/component/config.h>
 #include <boost/uuid/uuid.hpp>
-#include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -30,10 +29,27 @@ NSFX_OPEN_NAMESPACE
 class Uuid
 {
 public:
-    Uuid(void) BOOST_NOEXCEPT
+    BOOST_CONSTEXPR Uuid(void) BOOST_NOEXCEPT
     {
-        boost::uuids::nil_generator gen;
-        id_ = gen();
+        id_.data[0]  = 0;
+        id_.data[1]  = 0;
+        id_.data[2]  = 0;
+        id_.data[3]  = 0;
+
+        id_.data[4]  = 0;
+        id_.data[5]  = 0;
+
+        id_.data[6]  = 0;
+        id_.data[7]  = 0;
+
+        id_.data[8]  = 0;
+        id_.data[9]  = 0;
+        id_.data[10] = 0;
+        id_.data[11] = 0;
+        id_.data[12] = 0;
+        id_.data[13] = 0;
+        id_.data[14] = 0;
+        id_.data[15] = 0;
     }
 
     /**
@@ -44,7 +60,7 @@ public:
      * @param d3 The second group of 4 hexadecimal digits. Big-endian.
      * @param d4 The third group of 4 hexadecimal digits and the final 12 hexadecimal digits. Big-endian.
      */
-    Uuid(uint32_t d1, uint16_t d2, uint16_t d3, uint64_t d4) BOOST_NOEXCEPT
+    BOOST_CONSTEXPR Uuid(uint32_t d1, uint16_t d2, uint16_t d3, uint64_t d4) BOOST_NOEXCEPT
     {
         id_.data[0]  = (d1 >> 24) & 0xff;
         id_.data[1]  = (d1 >> 16) & 0xff;
