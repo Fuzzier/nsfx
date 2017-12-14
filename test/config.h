@@ -36,7 +36,9 @@
  * If a test assertion fails, a test result is generated.<br/>
  * The test results are logged.<br/>
  *
- * @remarks The test library is made because of the convient trailing streaming.<br/>
+ * @remarks The test library is made because of the convenient syntactic suger
+ *          that allows trailing <code>operator<<</code>, instead of having to
+ *          put them ugly within parenthesis.<br/>
  *          For example,
  *          @code
  *          NSFX_TEST_EXPECT_EQ(a, b) << "trailing " << "message";
