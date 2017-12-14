@@ -3,44 +3,21 @@
 #include <iostream>
 
 
-NSFX_TEST_SUITE(Uuid)
+NSFX_TEST_SUITE(uuid)
 {
-    typedef nsfx::Uuid  Uuid;
+    typedef nsfx::uuid  uuid;
 
-    NSFX_TEST_CASE(Ctor0)
+    NSFX_TEST_CASE(DEFINE)
     {
-        Uuid id;
-        NSFX_TEST_EXPECT(id.IsNil());
-    }
+        NSFX_DEFINE_UUID4(id0, 0, 0, 0, 0LL);
+        NSFX_TEST_EXPECT(id0.is_nil());
 
-    NSFX_TEST_CASE(Ctor1)
-    {
-        Uuid id(0x01234567, 0x89ab, 0xcdef, 0x0123456789abcdef);
-        std::string s = id.ToString();
-        NSFX_TEST_EXPECT_EQ(s, "01234567-89ab-cdef-0123-456789abcdef");
-    }
-
-    NSFX_TEST_CASE(Ctor2)
-    {
-        Uuid id1(0x01234567, 0x89ab, 0xcdef, 0x0123456789abcdef);
-        Uuid id2("01234567-89ab-cdef-0123-456789abcdef");
+        NSFX_DEFINE_UUID (id1, 0x01234567, 0x89ab, 0xcdef, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef);
+        NSFX_DEFINE_UUID4(id2, 0x01234567, 0x89ab, 0xcdef, 0x0123456789abcdefLL);
         NSFX_TEST_EXPECT_EQ(id1, id2);
-    }
 
-    NSFX_TEST_CASE(Comparisons)
-    {
-        Uuid id1("01234567-89ab-cdef-0123-456789abcdef");
-        Uuid id2("11234567-89ab-cdef-0123-456789abcdef");
-        NSFX_TEST_EXPECT_EQ(id1, id1);
-        NSFX_TEST_EXPECT_NE(id1, id2);
-    }
-
-    NSFX_TEST_CASE(Hash)
-    {
-        Uuid id(0x01234567, 0x89ab, 0xcdef, 0x0123456789abcdef);
-        std::size_t h1 = hash_value(id);
-        std::size_t h2 = boost::hash<Uuid>()(id);
-        NSFX_TEST_EXPECT_EQ(h1, h2);
+        std::string s1 = to_string(id1);
+        NSFX_TEST_EXPECT_EQ(s1, "01234567-89ab-cdef-0123-456789abcdef");
     }
 
 }
