@@ -73,7 +73,7 @@ private:
 class FileSink : public StreamSink /*{{{*/
 {
 public:
-    FileSink(const string& filename, std::ios_base::openmode mode = std::ios_base::out) :
+    FileSink(const std::string& filename, std::ios_base::openmode mode = std::ios_base::out) :
         StreamSink(ofs_),
         ofs_(filename, mode)
     {
@@ -120,7 +120,7 @@ public:
         sinks_.emplace_back(new StreamSink(os));
     }
 
-    void AddFileSink(const string& filename, std::ios_base::openmode mode = std::ios_base::out)
+    void AddFileSink(const std::string& filename, std::ios_base::openmode mode = std::ios_base::out)
     {
         sinks_.emplace_back(new FileSink(filename, mode));
     }

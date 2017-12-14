@@ -47,8 +47,8 @@ public:
     typedef vector<Case* > CaseVectorType;
     typedef vector<Suite*> SuiteVectorType;
 
-    typedef unordered_map<string, Case > CaseMapType;
-    typedef unordered_map<string, Suite> SuiteMapType;
+    typedef unordered_map<std::string, Case > CaseMapType;
+    typedef unordered_map<std::string, Suite> SuiteMapType;
 
 
     // Constructors.
@@ -65,7 +65,7 @@ public:
     /**
      * @brief Users must use \c AddSuite() to create test suites.
      */
-    Suite(Suite* parent, const string& name) :
+    Suite(Suite* parent, const std::string& name) :
         parent_(parent),
         name_(name)
     {
@@ -111,7 +111,7 @@ public:
      * @return If a test suite with the specified name already exists,
      *         a reference to the existing test suite is returned.
      */
-    Suite* AddSuite(const string& name)
+    Suite* AddSuite(const std::string& name)
     {
         Suite* suite = nullptr;
         auto it = suiteMap_.find(name);
@@ -132,7 +132,7 @@ public:
      * @brief Add test case.
      */
     template<class Functor>
-    Case* AddCase(const string& name, Functor&& functor)
+    Case* AddCase(const std::string& name, Functor&& functor)
     {
         Case* casei = nullptr;
         auto it = caseMap_.find(name);
@@ -150,7 +150,7 @@ public:
         return casei;
     }
 
-    const string& GetName(void) const
+    const std::string& GetName(void) const
     {
         return name_;
     }
@@ -228,7 +228,7 @@ public:
     // Properties.
 private:
     Suite* parent_;
-    string name_;
+    std::string name_;
 
     CaseVectorType caseVector_;
     CaseMapType    caseMap_;

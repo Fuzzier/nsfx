@@ -67,7 +67,7 @@ public:
      * @brief Users must use \c Suite::AddCase() to create test cases.
      */
     template<class Functor>
-    Case(Suite* parent, const string& name, Functor&& functor);
+    Case(Suite* parent, const std::string& name, Functor&& functor);
 
     // Non-copyable.
 private:
@@ -119,7 +119,7 @@ public:
         return parent_;
     }
 
-    const string& GetName(void) const
+    const std::string& GetName(void) const
     {
         return name_;
     }
@@ -147,7 +147,7 @@ private:
      * @brief The name of the test case, which must be unique within it parent
      *        test suite.
      */
-    string name_;
+    std::string name_;
 
     /**
      * @brief The test results of failed tests.
@@ -205,7 +205,7 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 template<class Functor>
-inline Case::Case(Suite* parent, const string& name, Functor&& functor) :
+inline Case::Case(Suite* parent, const std::string& name, Functor&& functor) :
     parent_(parent),
     name_(name),
     impl_(new CaseImpl<Functor>(std::forward<Functor>(functor)))

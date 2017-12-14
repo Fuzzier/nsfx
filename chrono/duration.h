@@ -187,7 +187,7 @@ public:
      *
      * The "D" days part is omitted, if the duration is less than a day.
      */
-    string ToString(void) const;
+    std::string ToString(void) const;
 
     /**
      * @brief Convert from formatted string "D HH:MM:SS.mmm.uuu.nnn".
@@ -320,7 +320,7 @@ operator% (const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT
 
 ////////////////////////////////////////////////////////////////////////////////
 // I/O./*{{{*/
-inline string
+inline std::string
 Duration::ToString(void) const
 {
     std::stringstream oss;

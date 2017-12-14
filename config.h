@@ -202,20 +202,19 @@ NSFX_CLOSE_NAMESPACE
 
 ////////////////////////////////////////////////////////////////////////////////
 // Import standard containers.
-#include <string>
-#include <boost/container/vector.hpp>
-#include <boost/container/deque.hpp>
-#include <boost/container/list.hpp>
+#include <vector>
+#include <deque>
+#include <list>
+#include <boost/functional/hash.hpp>  // use boost::hash<> for extensibility.
 #include <boost/container/set.hpp>
 #include <boost/container/map.hpp>
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
 
 NSFX_OPEN_NAMESPACE
-using std::string;
-using boost::container::vector;
-using boost::container::deque;
-using boost::container::list;
+using std::vector;
+using std::deque;
+using std::list;
 using boost::container::set;
 using boost::container::map;
 using boost::unordered_set;

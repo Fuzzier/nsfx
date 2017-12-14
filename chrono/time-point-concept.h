@@ -101,7 +101,7 @@ private:
     void IO(void)
     {
         TimePoint t0;
-        string s = t0.ToString();
+        std::string s = t0.ToString();
         std::cout << t0;
     }
 

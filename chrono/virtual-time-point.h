@@ -123,7 +123,7 @@ public:
     /**
      * @brief Convert to formatted string "HH:MM:SS.mmm.uuu.nnn".
      */
-    string ToString(void) const;
+    std::string ToString(void) const;
 
     /*}}}*/
 
@@ -219,7 +219,7 @@ operator-(const VirtualTimePoint& lhs, const VirtualTimePoint& rhs) BOOST_NOEXCE
 
 ////////////////////////////////////////////////////////////////////////////////
 // I/O./*{{{*/
-inline string
+inline std::string
 VirtualTimePoint::ToString(void) const
 {
     return dt_.ToString();
