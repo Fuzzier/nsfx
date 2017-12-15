@@ -20,6 +20,7 @@
 #include <nsfx/component/config.h>
 #include <nsfx/component/uuid.h>
 #include <nsfx/component/exception.h>
+#include <boost/type_traits/is_base_of.hpp>
 
 
 NSFX_OPEN_NAMESPACE
@@ -56,10 +57,8 @@ public:
      *         <p>
      *         If \c nullptr is returned, the object does not have the queried
      *         interface.
-     *
-     * @remarks This method may throw exceptions to indicate errors.
      */
-    virtual void* QueryInterface(const uuid& iid) = 0;
+    virtual void* QueryInterface(const uuid& iid) BOOST_NOEXCEPT = 0;
 
 }; // class IObject /*}}}*/
 
@@ -70,11 +69,16 @@ public:
  * @ingroup Component
  * @brief IObject concept.
  *
- * @tparam T A class that extends or implements \c IObject.
+ * @tparam T A class that is, extends or implements \c IObject, as well as
+ *           it is associated with a uuid.
  */
 template<class T>
 class IObjectConcept
 {
+public:
+    static_assert(boost::is_base_of<IObject, T>::value,
+                  "The type is not an IObject");
+
 public:
     BOOST_CONCEPT_USAGE(IObjectConcept)
     {

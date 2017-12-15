@@ -19,6 +19,7 @@
 
 #include <nsfx/component/config.h>
 #include <nsfx/component/iobject.h>
+#include <utility>
 
 
 NSFX_OPEN_NAMESPACE
@@ -30,12 +31,15 @@ NSFX_OPEN_NAMESPACE
  * @ingroup Component
  * @brief A smart pointer that manages the lifetime of an object.
  *
- * @tparam T An class that implements \c IObject.
+ * @tparam T A type that conforms to \c IObjectConcept.
  */
 template<class T>
 class Ptr/*{{{*/
 {
 public:
+    template<class U>
+    friend class Ptr;
+
     BOOST_CONCEPT_ASSERT((IObjectConcept<T>));
 
 public:
@@ -44,10 +48,10 @@ public:
     {
     }
 
-    explicit Ptr(T* p) BOOST_NOEXCEPT :
+    Ptr(T* p, bool addRef) BOOST_NOEXCEPT :
         p_(p)
     {
-        if (p_)
+        if (p_ && addRef)
         {
             p_->AddRef();
         }
@@ -72,14 +76,16 @@ public:
         Reset();
     }
 
+    /**
+     * @brief Manages a pointer, and calls \c IObject::AddRef().
+     *
+     * @param rhs The pointer still holds a reference count of the object.
+     */
     Ptr& operator=(T* rhs) BOOST_NOEXCEPT
     {
         if (p_ != rhs)
         {
-            if (p_)
-            {
-                p_->Release();
-            }
+            Reset();
             p_ = rhs;
             if (p_)
             {
@@ -98,10 +104,7 @@ public:
     {
         if (p_ != rhs.p_)
         {
-            if (p_)
-            {
-                p_->Release();
-            }
+            Reset();
             p_ = rhs.Detach();
         }
         return *this;
@@ -110,15 +113,13 @@ public:
     /**
      * @brief Query-copy constructor.
      *
-     * @tparam U An interface type.
+     * @tparam U A type that conforms to \c IObjectConcept.
      *
-     * This operator queries and manages a pointer of interface \c T from
-     * the pointer \c rhs of interface \c U.
-     * <p>
-     * It may throw exceptions from \c IObject::QueryInterface().
+     * This operator queries and manages a pointer of type \c T from
+     * the pointer \c rhs of type \c U.
      */
     template<class U>
-    Ptr(const Ptr<U>& rhs) :
+    Ptr(const Ptr<U>& rhs) BOOST_NOEXCEPT :
         p_(nullptr)
     {
         BOOST_CONCEPT_ASSERT((IObjectConcept<U>));
@@ -131,15 +132,13 @@ public:
     /**
      * @brief Query-move contructor.
      *
-     * @tparam U An interface type.
+     * @tparam U A type that conforms to \c IObjectConcept.
      *
-     * This operator queries and manages a pointer of interface \c T from
-     * the pointer \c rhs of interface \c U.
-     * <p>
-     * It may throw exceptions from \c IObject::QueryInterface().
+     * This operator queries and manages a pointer of type \c T from
+     * the pointer \c rhs of type \c U.
      */
     template<class U>
-    Ptr(Ptr<U>&& rhs) :
+    Ptr(Ptr<U>&& rhs) BOOST_NOEXCEPT :
         p_(nullptr)
     {
         BOOST_CONCEPT_ASSERT((IObjectConcept<U>));
@@ -153,15 +152,13 @@ public:
     /**
      * @brief Query-copy assignment.
      *
-     * @tparam U An interface type.
+     * @tparam U A type that conforms to \c IObjectConcept.
      *
-     * This operator queries and manages a pointer of interface \c T from
-     * the pointer \c rhs of interface \c U.
-     * <p>
-     * It may throw exceptions from \c IObject::QueryInterface().
+     * This operator queries and manages a pointer of type \c T from
+     * the pointer \c rhs of type \c U.
      */
     template<class U>
-    Ptr& operator=(const Ptr<U>& rhs)
+    Ptr& operator=(const Ptr<U>& rhs) BOOST_NOEXCEPT
     {
         BOOST_CONCEPT_ASSERT((IObjectConcept<U>));
         if (p_)
@@ -179,15 +176,13 @@ public:
     /**
      * @brief Query-move assignment.
      *
-     * @tparam U An interface type.
+     * @tparam U A type that conforms to \c IObjectConcept.
      *
-     * This operator queries and manages a pointer of interface \c T from
-     * the pointer \c rhs of interface \c U.
-     * <p>
-     * It may throw exceptions from \c IObject::QueryInterface().
+     * This operator queries and manages a pointer of type \c T from
+     * the pointer \c rhs of type \c U.
      */
     template<class U>
-    Ptr& operator=(Ptr<U>&& rhs)
+    Ptr& operator=(Ptr<U>&& rhs) BOOST_NOEXCEPT
     {
         BOOST_CONCEPT_ASSERT((IObjectConcept<U>));
         if (p_)
@@ -201,11 +196,6 @@ public:
             rhs.Reset();
         }
         return *this;
-    }
-
-    operator T*() const BOOST_NOEXCEPT
-    {
-        return p_;
     }
 
     T& operator*() const BOOST_NOEXCEPT
@@ -225,6 +215,22 @@ public:
         return !p_;
     }
 
+#if !defined(BOOST_NO_CXX11_EXPLICIT_CONVERSION_OPERATORS)
+    explicit operator bool() const BOOST_NOEXCEPT
+    {
+        return !!p_;
+    }
+#else // defined(BOOST_NO_CXX11_EXPLICIT_CONVERSION_OPERATORS)
+private:
+    bool ToBool(void) const BOOST_NOEXCEPT { return !!p_; }
+public:
+    typedef bool (Ptr::* BoolType)(void) const BOOST_NOEXCEPT;
+    operator BoolType() const BOOST_NOEXCEPT
+    {
+        return !!p_ ? &Ptr::ToBool : nullptr;
+    }
+#endif // !defined(BOOST_NO_CXX11_EXPLICIT_CONVERSION_OPERATORS)
+
     bool operator==(const Ptr& rhs) const BOOST_NOEXCEPT
     {
         return (p_ == rhs.p_);
@@ -238,16 +244,14 @@ public:
     /**
      * @brief Equality comparison with querying.
      *
-     * @tparam U An interface type.
+     * @tparam U A type that conforms to \c IObjectConcept.
      *
-     * This operator queries a pointer of interface \c T from
-     * the pointer \c rhs of interface \c U.<br/>
+     * This operator queries a pointer of type \c T from
+     * the pointer \c rhs of type \c U.<br/>
      * Then, it performs comparison.
-     * <p>
-     * It may throw exceptions from \c IObject::QueryInterface().
      */
     template<class U>
-    bool operator==(const Ptr<U>& rhs) const
+    bool operator==(const Ptr<U>& rhs) const BOOST_NOEXCEPT
     {
         BOOST_CONCEPT_ASSERT((IObjectConcept<U>));
         Ptr<T> tmp(rhs);
@@ -257,16 +261,14 @@ public:
     /**
      * @brief Inequality comparison with querying.
      *
-     * @tparam U An interface type.
+     * @tparam U A type that conforms to \c IObjectConcept.
      *
-     * This operator queries a pointer of interface \c T from
-     * the pointer \c rhs of interface \c U.<br/>
+     * This operator queries a pointer of type \c T from
+     * the pointer \c rhs of type \c U.<br/>
      * Then, it performs comparison.
-     * <p>
-     * It may throw exceptions from \c IObject::QueryInterface().
      */
     template<class U>
-    bool operator!=(const Ptr<U>& rhs) const
+    bool operator!=(const Ptr<U>& rhs) const BOOST_NOEXCEPT
     {
         BOOST_CONCEPT_ASSERT((IObjectConcept<U>));
         Ptr<T> tmp(rhs);
@@ -274,7 +276,15 @@ public:
     }
 
     /**
-     * @brief Release the managed interface and reset the pointer to \c nullptr.
+     * @brief Get the stored pointer without calling \c IObject::AddRef().
+     */
+    T* Get(void) const BOOST_NOEXCEPT
+    {
+        return p_;
+    }
+
+    /**
+     * @brief Releases the managed object and resets to \c nullptr.
      */
     void Reset(void) BOOST_NOEXCEPT
     {
@@ -286,17 +296,29 @@ public:
     }
 
     /**
-     * @brief Take the ownership of a pointer without calling \c IObject::AddRef().
-     *
-     * @param p Do not call \c IObject::Release() on the pointer after attached.
+     * @brief Resets to pointer \c p, and calls \c IObject::AddRef().
      */
-    void Attach(T* rhs) BOOST_NOEXCEPT
+    void Reset(T* p) BOOST_NOEXCEPT
     {
+        Reset();
+        p_ = p;
         if (p_)
         {
-            p_->Release();
+            p_->AddRef();
         }
-        p_ = rhs;
+    }
+
+    /**
+     * @brief Resets to pointer \c p.
+     */
+    void Reset(T* p, bool addRef) BOOST_NOEXCEPT
+    {
+        Reset();
+        p_ = p;
+        if (p_ && addRef)
+        {
+            p_->AddRef();
+        }
     }
 
     /**
@@ -313,18 +335,65 @@ public:
         return result;
     }
 
+    void swap(T*& p) BOOST_NOEXCEPT
+    {
+        std::swap(p_, p);
+    }
+
+    void swap(Ptr& rhs) BOOST_NOEXCEPT
+    {
+        std::swap(p_, rhs.p_);
+    }
+
+    template<class U>
+    friend void swap(Ptr<U>& lhs, Ptr<U>& rhs) BOOST_NOEXCEPT;
+    template<class U>
+    friend void swap(T*& lhs, Ptr<U>& rhs) BOOST_NOEXCEPT;
+    template<class U>
+    friend void swap(Ptr<U>& lhs, T*& rhs) BOOST_NOEXCEPT;
+
 private:
     T* p_;
 
 }; // class Ptr /*}}}*/
 
 
+template<class T>
+inline void swap(Ptr<T>& lhs, Ptr<T>& rhs) BOOST_NOEXCEPT
+{
+    lhs.swap(rhs);
+}
+
+template<class T>
+inline void swap(T*& lhs, Ptr<T>& rhs) BOOST_NOEXCEPT
+{
+    rhs.swap(lhs);
+}
+
+template<class T>
+inline void swap(Ptr<T>& lhs, T*& rhs) BOOST_NOEXCEPT
+{
+    lhs.swap(rhs);
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
+// Enables boost::hash<Ptr<T> >.
+template<class T>
+inline size_t hash_value(const Ptr<T>& p) BOOST_NOEXCEPT
+{
+    return boost::hash<uintptr_t>(p.Get());
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Extend uuid_of() to work for Ptr<T>./*{{{*/
 template<class T>
 const uuid& uuid_of(const Ptr<T>& ) BOOST_NOEXCEPT
 {
     return uuid_of<T>::GetUuid_();
 }
+/*}}}*/
 
 
 NSFX_CLOSE_NAMESPACE
