@@ -20,6 +20,7 @@
 #include <nsfx/component/config.h>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/mpl/identity.hpp>
 
 
 NSFX_OPEN_NAMESPACE
@@ -84,41 +85,58 @@ using boost::uuids::uuid;
 
 
 ////////////////////////////////////////////////////////////////////////////////
+template<class T>
+struct uuid_guard {};
+
+////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Component
- * @brief Define a uuid and associate it with a class.
+ * @brief Define a uuid and associate it with a class in a non-intrusive way.
  *
  * For example:
  * @code
- * class Interface
- * {
- *   NSFX_DEFINE_CLASS_UUID4(0x01234567, 0x89ab, 0xcdef, 0x0123456789abcdefLL);
- * };
- * uuid id = uuid_of<Interface>();
- * Interface* p = nullptr;
+ * class Class {};
+ * NSFX_DEFINE_IID4(Class, 0x01234567, 0x89ab, 0xcdef, 0x0123456789abcdefLL);
+ * // Template-based query.
+ * uuid id0 = uuid_of<Class>();
+ * // Pointer-based query.
+ * Class* p = nullptr;
  * id = uuid_of(p);
  * @endcode
  *
- * @remarks This macro <b>must</b> be used within class scope.<br/>
- *          It defines a static member function
- *          <code>const uuid& GetUuid_(void) BOOST_NOEXCEPT</code>.<br/>
- *          This way avoids declaring a const uuid in a header file, and define
- *          it in a source file.<br/>
- *          The static member function is suffixed with an underscore, so it is
- *          <i>not</i> intended to be called by users.<br/>
- *          Users should call the \c uuid_of() function to obtain the uuid of
- *          an interface.
- *          <p>
- *          For convenience, this macro changes the access right to \c public.
+ * To enable macro-based query, define a macro like this:
+ * @code
+ * #define IID_Class  uuid_of<Class>()
+ * @endcode
  *
- * @see \c NSFX_DEFINE_UUID, \c NSFX_DEFINE_UUID4.
+ * @remarks This macro should <b>not</b> be used within class scope.
+ *          <p>
+ *          An intrusive way is always troublesome, as it involves defining
+ *          some public members in the class.<br/>
+ *          If a user forgets to define the public member in a derived class,
+ *          the derived class derives the public member from its parent, and
+ *          exposes wrong information.
+ *          <p>
+ *          This macro defines a free function
+ *          <code>const uuid& uuid_value() BOOST_NOEXCEPT</code> in the
+ *          current namespace.<br/>
+ *          The free function \c uuid_of() calls \c uuid_value().<br/>
+ *          Even if \c uuid_of() is defined in the namespace of \c nsfx,
+ *          it depends upon <i>argument-dependent lookup</i> to call the
+ *          correct overload of \c uuid_value().
+ *          <p>
+ *          \c uuid_guard is placed here as a guard to prevent the compiler from
+ *          automatically converting a pointer from a child type to its parent
+ *          type.
+ *
+ * @see \c NSFX_DEFINE_UUID4, \c uuid_of().
  */
-#define NSFX_DEFINE_CLASS_UUID4(l, w1, w2, ll)        \
-    public:                                           \
-    static const ::nsfx::uuid& GetUuid_(void) BOOST_NOEXCEPT  \
-    {                                                 \
-        static NSFX_DEFINE_UUID4(id, l, w1, w2, ll);  \
-        return id;                                    \
+#define NSFX_DEFINE_CLASS_UUID4(type, l, w1, w2, ll)       \
+    inline const ::nsfx::uuid& uuid_value(                 \
+        type* p, ::nsfx::uuid_guard<type>) BOOST_NOEXCEPT  \
+    {                                                      \
+        static NSFX_DEFINE_UUID4(id, l, w1, w2, ll);       \
+        return id;                                         \
     }
 
 
@@ -130,12 +148,21 @@ using boost::uuids::uuid;
  *
  * @param  p A pointer to an object of the class.
  *
+ * @remarks \c boost::mpl::identity is used here to prevent automatical template
+ *          argument deduction.<br/>
+ *          Users have to explicitly specialize this function template in order
+ *          to use it.
+ *
  * @see \c NSFX_DEFINE_CLASS_UUID4.
  */
 template<class T>
-const uuid& uuid_of(T* p = nullptr) BOOST_NOEXCEPT
+const uuid& uuid_of(typename boost::mpl::identity<T>::type* p = nullptr) BOOST_NOEXCEPT
 {
-    return T::GetUuid_();
+    // The uuid_value() is unqualified, it depends upon argument-dependent
+    // lookup to call the correct overload.
+    // A dummy<T> is placed here to prevent p from being converted to its
+    // parent type.
+    return uuid_value(p, uuid_guard<T>());
 }
 
 
