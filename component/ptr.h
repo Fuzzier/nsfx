@@ -468,7 +468,7 @@ inline void swap(Ptr<T>& lhs, T*& rhs) BOOST_NOEXCEPT
 template<class T>
 inline size_t hash_value(const Ptr<T>& p) BOOST_NOEXCEPT
 {
-    return boost::hash<uintptr_t>(p.Get());
+    return boost::hash<T*>()(p.Get());
 }
 
 
