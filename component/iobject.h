@@ -35,9 +35,6 @@ NSFX_OPEN_NAMESPACE
 class IObject /*{{{*/
 {
 public:
-    NSFX_DEFINE_CLASS_UUID4(0, 0, 0, 0LL);
-
-public:
     virtual ~IObject(void) {}
 
 public:
@@ -63,6 +60,9 @@ public:
 }; // class IObject /*}}}*/
 
 
+NSFX_DEFINE_CLASS_UUID4(IObject, 0, 0, 0, 0LL);
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // IObject concept
 /**
@@ -83,7 +83,7 @@ public:
     BOOST_CONCEPT_USAGE(IObjectConcept)
     {
         T* o = nullptr;
-        uuid iid = uuid_of(o);
+        uuid iid = uuid_of<T>(o);
         uint32_t r1 = o->AddRef();
         uint32_t r2 = o->Release();
         T* p = static_cast<T*>(o->QueryInterface(iid));
