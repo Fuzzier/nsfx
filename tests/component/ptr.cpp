@@ -573,6 +573,13 @@ NSFX_TEST_SUITE(Ptr)
         t->Release();
     }
 
+    NSFX_TEST_CASE(Hashable)
+    {
+        nsfx::Ptr<ITest> q(new Test, true);
+        auto h = boost::hash<nsfx::Ptr<ITest> >();
+        size_t v = h(q);
+    }
+
 }
 
 
