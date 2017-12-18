@@ -141,7 +141,7 @@ protected:
     {
         if (!outer)
         {
-            BOOST_THROW_EXCEPTION(NoAggregation);
+            BOOST_THROW_EXCEPTION(NoAggregation());
         }
     }
 
