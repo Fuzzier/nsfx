@@ -56,6 +56,18 @@ struct ClassNotAvaiable : virtual ComponentException {};
 struct ClassNotRegistered : virtual ComponentException {};
 struct InterfaceNotRegistered : virtual ComponentException {};
 struct BadThreadingModel : virtual ComponentException {};
+/**
+ * @brief The event provider cannot accept additional connections any more.
+ */
+struct ConnectionLimit : virtual ComponentException {};
+/**
+ * @brief The sink does not support the required interface.
+ */
+struct CannotConnect : virtual ComponentException {};
+/**
+ * @brief No sink has been connected.
+ */
+struct NotConnected : virtual ComponentException {};
 
 
 NSFX_CLOSE_NAMESPACE

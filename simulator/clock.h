@@ -37,10 +37,10 @@ class Clock :
     virtual public AggObject
 {
 public:
-    TimePoint(IObject* outer) :
+    Clock(IObject* outer) :
         AggObject(outer) {}
 
-    virtual ~TimePoint(void) {}
+    virtual ~TimePoint(void) BOOST_NOEXCEPT {}
 
     // IClock./*{{{*/
     virtual TimePoint Now(void) NSFX_OVERRIDE
