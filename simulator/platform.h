@@ -33,7 +33,7 @@ NSFX_OPEN_NAMESPACE
  * @brief The simulator platform (non-aggregatable, singleton).
  */
 class Platform :
-    public virtual Object
+    virtual public Object
 {
 public:
     virtual ~Platform(void) {}

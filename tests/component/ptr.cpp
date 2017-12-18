@@ -5,6 +5,10 @@
 
 NSFX_TEST_SUITE(Ptr)
 {
+    using nsfx::refcount_t;
+
+    // WARN: for test only. The refcount should be 0 at construction,
+    //       and incremented at QueryInterface().
     struct Object : virtual nsfx::IObject/*{{{*/
     {
         Object(void) BOOST_NOEXCEPT :
@@ -17,15 +21,15 @@ NSFX_TEST_SUITE(Ptr)
             NSFX_ASSERT(refCount_ == 0);
         }
 
-        virtual uint32_t AddRef(void) BOOST_NOEXCEPT NSFX_OVERRIDE
+        virtual refcount_t AddRef(void) BOOST_NOEXCEPT NSFX_OVERRIDE
         {
             return ++refCount_;
         }
 
-        virtual uint32_t Release(void) BOOST_NOEXCEPT NSFX_OVERRIDE
+        virtual refcount_t Release(void) BOOST_NOEXCEPT NSFX_OVERRIDE
         {
-            uint32_t result = --refCount_;
-            if (refCount_ == 0)
+            refcount_t result = --refCount_;
+            if (!refCount_)
             {
                 delete this;
             }
@@ -37,14 +41,14 @@ NSFX_TEST_SUITE(Ptr)
             void* result = nullptr;
             if (iid == nsfx::uuid_of<nsfx::IObject>())
             {
-                ++refCount_;
+                AddRef();
                 result = static_cast<nsfx::IObject*>(this);
             }
             return result;
         }
 
     private:
-        uint32_t refCount_;
+        refcount_t refCount_;
     };/*}}}*/
 
     NSFX_DEFINE_CLASS_UUID4(Object, 0, 0, 1, 0LL);
@@ -56,6 +60,8 @@ NSFX_TEST_SUITE(Ptr)
 
     NSFX_DEFINE_CLASS_UUID4(ITest, 0, 0, 0, 1LL);
 
+    // WARN: for test only. The refcount should be 0 at construction,
+    //       and incremented at QueryInterface().
     struct Test : virtual ITest/*{{{*/
     {
         Test(void) BOOST_NOEXCEPT :
@@ -68,15 +74,15 @@ NSFX_TEST_SUITE(Ptr)
             NSFX_ASSERT(refCount_ == 0);
         }
 
-        virtual uint32_t AddRef(void) BOOST_NOEXCEPT NSFX_OVERRIDE
+        virtual refcount_t AddRef(void) BOOST_NOEXCEPT NSFX_OVERRIDE
         {
             return ++refCount_;
         }
 
-        virtual uint32_t Release(void) BOOST_NOEXCEPT NSFX_OVERRIDE
+        virtual refcount_t Release(void) BOOST_NOEXCEPT NSFX_OVERRIDE
         {
-            uint32_t result = --refCount_;
-            if (refCount_ == 0)
+            refcount_t result = --refCount_;
+            if (!refCount_)
             {
                 delete this;
             }
@@ -88,26 +94,26 @@ NSFX_TEST_SUITE(Ptr)
             void* result = nullptr;
             if (iid == nsfx::uuid_of<nsfx::IObject>())
             {
-                ++refCount_;
+                AddRef();
                 result = static_cast<nsfx::IObject*>(this);
             }
             else if (iid == nsfx::uuid_of<ITest>())
             {
-                ++refCount_;
+                AddRef();
                 result = static_cast<ITest*>(this);
             }
             return result;
         }
 
     private:
-        uint32_t refCount_;
+        refcount_t refCount_;
     };/*}}}*/
 
     NSFX_DEFINE_CLASS_UUID4(Test, 0, 0, 1, 1LL);
 
-    uint32_t RefCount(nsfx::IObject* p)/*{{{*/
+    refcount_t RefCount(nsfx::IObject* p)/*{{{*/
     {
-        uint32_t result = 0;
+        refcount_t result = 0;
         if (p)
         {
             p->AddRef();

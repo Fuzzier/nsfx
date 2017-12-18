@@ -46,7 +46,7 @@ struct IllegalMethodCall : virtual ComponentException {};
 struct AdviseNotSupported : virtual ComponentException {};
 struct Uninitialized : virtual ComponentException {};
 /**
- * @brief The class does not support aggregation.
+ * @brief Practice aggregation in a wrong way.
  */
 struct NoAggregation : virtual ComponentException {};
 /**
