@@ -26,7 +26,15 @@
  */
 
 
+NSFX_OPEN_NAMESPACE
+
+/**
+ * @ingroup Component
+ * @brief The type of reference count.
+ */
 typedef uint32_t  refcount_t;
+
+NSFX_CLOSE_NAMESPACE
 
 
 #endif // CONFIG_H__5B879679_8DC6_42C4_A3F8_5CDF1E3F302B
