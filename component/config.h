@@ -26,5 +26,8 @@
  */
 
 
+typedef uint32_t  refcount_t;
+
+
 #endif // CONFIG_H__5B879679_8DC6_42C4_A3F8_5CDF1E3F302B
 

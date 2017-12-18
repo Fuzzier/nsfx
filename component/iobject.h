@@ -38,8 +38,8 @@ public:
     virtual ~IObject(void) {}
 
 public:
-    virtual uint32_t AddRef(void) BOOST_NOEXCEPT = 0;
-    virtual uint32_t Release(void) BOOST_NOEXCEPT = 0;
+    virtual refcount_t AddRef(void) BOOST_NOEXCEPT = 0;
+    virtual refcount_t Release(void) BOOST_NOEXCEPT = 0;
     /**
      * @brief Query an interface of the object.
      *
@@ -84,8 +84,8 @@ public:
     {
         T* o = nullptr;
         uuid iid = uuid_of<T>(o);
-        uint32_t r1 = o->AddRef();
-        uint32_t r2 = o->Release();
+        refcount_t r1 = o->AddRef();
+        refcount_t r2 = o->Release();
         T* p = static_cast<T*>(o->QueryInterface(iid));
     }
 };

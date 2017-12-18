@@ -56,19 +56,21 @@ NSFX_OPEN_NAMESPACE
 // Object
 /**
  * @ingroup Component
- * @brief A non-aggregatable object.
+ * @brief A non-aggregable object.
  *
- * A non-aggregatable object possesses a reference counter.
+ * A non-aggretable object possesses a reference counter.<br/>
+ * However, it does not hold a pointer to a controller, thus it cannot be
+ * managed by a controller.
  */
-class Object : public virtual IObject/*{{{*/
+class Object : virtual public IObject/*{{{*/
 {
 protected:
     Object(void) BOOST_NOEXCEPT :
-        refCount_(1)
+        refCount_(0)
     {
     }
 
-    virtual ~Object(void)
+    virtual ~Object(void) BOOST_NOEXCEPT
     {
         NSFX_ASSERT(!refCount_);
     }
@@ -78,7 +80,7 @@ protected:
      *
      * @remarks It is a \c final method that cannot be overridden.
      */
-    virtual size_t AddRef(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+    virtual refcount_t AddRef(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
     {
         ++refCount_;
     }
@@ -88,9 +90,9 @@ protected:
      *
      * @remarks It is a \c final method that cannot be overridden.
      */
-    virtual size_t Release(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+    virtual refcount_t Release(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
     {
-        uint32_t result = --refCount_;
+        refcount_t result = --refCount_;
         if (!result)
         {
             delete this;
@@ -103,13 +105,14 @@ protected:
         void * result = nullptr;
         if (iid == uuid_of<IObject>())
         {
+            AddRef();
             result = static_cast<IObject*>(this);
         }
         return result;
     }
 
 protected:
-    uint32_t refCount_;
+    refcount_t refCount_;
 }; // class Object /*}}}*/
 
 
@@ -117,12 +120,13 @@ protected:
 // AggObject
 /**
  * @ingroup Component
- * @brief An aggregatable object.
+ * @brief An aggregate-only object.
  *
- * An aggregatable object does <b>not</b> possess a reference counter.<br/>
- * Instead, its lifetime is managed by an outer object (controller).
+ * An aggregate-only object does <b>not</b> possess a reference counter.<br/>
+ * Instead, it holds a pointer to a controller, and its lifetime is managed by
+ * the controller.
  */
-class AggObject : public virtual IObject/*{{{*/
+class AggObject : virtual public IObject/*{{{*/
 {
 protected:
     /**
@@ -130,18 +134,18 @@ protected:
      *
      * @param outer The controller object. Must <b>not</b> be \c nullptr.
      *
-     * @throw InvalidPointer When the controller object is \c nullptr.
+     * @throw NoAggregation When the controller object is \c nullptr.
      */
-    Object(IObject* outer) :
+    AggObject(IObject* outer) :
         outer_(outer)
     {
         if (!outer)
         {
-            BOOST_THROW_EXCEPTION(InvalidPointer);
+            BOOST_THROW_EXCEPTION(NoAggregation);
         }
     }
 
-    virtual ~Object(void)
+    virtual ~AggObject(void) BOOST_NOEXCEPT
     {
     }
 
@@ -152,7 +156,7 @@ protected:
      *
      * @remarks It is a \c final method that cannot be overridden.
      */
-    virtual size_t AddRef(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+    virtual refcount_t AddRef(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
     {
         return outer_->AddRef();
     }
@@ -164,15 +168,14 @@ protected:
      *
      * @remarks It is a \c final method that cannot be overridden.
      */
-    virtual size_t Release(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+    virtual refcount_t Release(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
     {
         return outer_->Release();
     }
 
     virtual void* QueryInterface(const uuid& iid) BOOST_NOEXCEPT NSFX_OVERRIDE
     {
-        void* result = outer_->QueryInterface(iid);
-        return result;
+        return outer_->QueryInterface(iid);
     }
 
 protected:
