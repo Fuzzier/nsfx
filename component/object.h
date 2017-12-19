@@ -34,30 +34,30 @@
 /**
  * @brief Expose an interface implemented by the object.
  *
- * @param intf The type of the interface.
+ * @remarks The macros changes the access rights to \c private.
  */
-#define NSFX_BEGIN_INTERFACE_OBJECT_MAP()                              \
-    public:                                                            \
-    void* InnerQueryInterface(const ::nsfx::uuid& iid) BOOST_NOEXCEPT  \
-    {                                                                  \
-        void* result = nullptr;                                        \
-        if (iid == ::nsfx::uuid_of<IObject>())                         \
-        {                                                              \
-            static_assert(                                             \
-                boost::is_base_of<                                     \
-                    IObject,                                           \
-                    boost::remove_cv_ref<decltype(*this)>::type        \
-                >::value,                                              \
-                "Cannot expose an unimplemented interface");           \
-            result = static_cast<IObject*>(this);                      \
+#define NSFX_NAVIGATOR_MAP_BEGIN()                                         \
+    private:                                                               \
+    void* NavigatorQueryInterface(const ::nsfx::uuid& iid) BOOST_NOEXCEPT  \
+    {                                                                      \
+        void* result = nullptr;                                            \
+        if (iid == ::nsfx::uuid_of<IObject>())                             \
+        {                                                                  \
+            static_assert(                                                 \
+                boost::is_base_of<                                         \
+                    IObject,                                               \
+                    boost::remove_cv_ref<decltype(*this)>::type            \
+                >::value,                                                  \
+                "Cannot expose an unimplemented interface");               \
+            result = static_cast<IObject*>(this);                          \
         }
 
 /**
  * @brief Expose an interface implemented by the object.
  *
- * @param intf The type of the interface.
+ * @param intf The type of the interface. It must <b>not</b> be \c IObject.
  */
-#define NSFX_INTERFACE_OBJECT_ENTRY(intf)                         \
+#define NSFX_NAVIGATOR_ENTRY(intf)                                \
         else if (iid == ::nsfx::uuid_of<intf>())                  \
         {                                                         \
             static_assert(                                        \
@@ -72,21 +72,21 @@
 /**
  * @brief Expose an interface implemented by an aggregated object.
  *
- * @param intf The type of the interface.
- * @param iobj The \c IObject interface of the aggregated object.
+ * @param intf The type of the interface. It must <b>not</b> be \c IObject.
+ * @param iobj The \c IObject interface on the navigator object.
  */
-#define NSFX_INTERFACE_OBJECT_ENTRY_AGGREGATE(intf, iobj)              \
+#define NSFX_NAVIGATOR_ENTRY_AGGREGATE(intf, navi)                     \
         else if (iid == ::nsfx::uuid_of<intf>())                       \
         {                                                              \
-            result = static_cast<intf*>((iobj)->QueryInterface(iid));  \
+            result = static_cast<intf*>((navi)->QueryInterface(iid));  \
         }
 
-#define NSFX_END_INTERFACE_OBJECT_MAP()  \
-        if (result)                      \
-        {                                \
-            AddRef();                    \
-        }                                \
-        return result;                   \
+#define NSFX_NAVIGATOR_MAP_END()  \
+        if (result)               \
+        {                         \
+            AddRef();             \
+        }                         \
+        return result;            \
     }
 
 
@@ -99,72 +99,105 @@ NSFX_OPEN_NAMESPACE
  * @ingroup Component
  * @brief The base class for implementing \c IObject.
  *
- * 1. Object aggregation.<br/>
- * 1.1 Non-aggregated object.<br/>
- * The object provides a reference count, and implements all interfaces.<br/>
- * Thus, \c IObject::AddRef() and \c IObject::Release() operate upon its own
- * reference count.<br/>
- * When the object provides a queried interface, the interface must be managed
- * by its own reference count.<br/>
+ * Usually, an object provides a reference count for lifetime management.<br/>
+ * When an object want to implement an interface, it may reuse an existing
+ * object that implementes the interface.<br/>
+ * The container creates an instance of the contained object, and delegates the
+ * calls on the interface to the contained object.<br/>
  *
- * 1.2 Aggregated object.<br/>
- * An interface queried from an aggregated object <i>acts like</i> an interface
+ * The problem is that the container cannot expose the interfaces on the
+ * contained object directly to the users.<br/>
+ * Because the contained object cannot expose other interfaces on the container
+ * object.<br/>
+ * From an interface on the contained object, a user cannot query other
+ * interfaces exposed by the container object.<br/>
+ * Therefore, a container have to create an extra layer of virtual function call
+ * to delegate the interface to the contained object.<br/>
+ * It places extra burden upon coding, memory and CPU cycles.<br/>
+ *
+ * Object aggregation allows a container (controller) object to expose the
+ * interfaces on the contained (aggregated) object directly to the users.<br/>
+ *
+ * An interface exposed by an aggregated object <i>acts like</i> an interface
  * implemented by its controller.<br/>
  * A user cannot distinguish whether the interface is implemented by an
  * aggregated object or not.<br/>
  *
- * 1.2.1 Lifetime management.<br/>
- * An aggregated object has the same lifetime as the controller.<br/>
- * i.e., aggregated objects and their controllers share a single instance of
- * reference count.<br/>
- * The reference count is ultimately provided by a single outter-most controller.<br/>
- * An aggregated object holds a pointer to the outter-most controller.<br/>
- * \c IObject::AddRef() and \c IObject::Release() are delegated to the
- * outter-most controller.<br/>
+ * The key idea is to <b>separate the responsibility</b> of the aggregated
+ * object.<br/>
+ * The aggregated object is responsible to implement interfaces, the lifetime
+ * management and navigability functions of \c IObject are delegated to the
+ * \c IObject on its controller.<br/>
+ * In order for the controller to query interfaces on the aggregated object,
+ * a separate navigator object is responsible to expose the interfaces on the
+ * aggregated object.<br/>
  *
- * 1.2.2 Interface navigation.<br/>
- * The interface queried from an aggregated object is provided directly to users.<br/>
+ * 1. Lifetime management.<br/>
+ * An aggregated object has the same lifetime as its controller.<br/>
+ * i.e., aggregated objects and its controller share a single reference count.<br/>
+ * The reference count is ultimately provided by the outter-most controller.<br/>
+ * An aggregated object holds a pointer to the \c IObject interface on the
+ * controller.<br/>
+ * Calls to \c IObject::AddRef() and \c IObject::Release() are delegated to the
+ * controller.<br/>
+ *
+ * 2. Interface navigation.<br/>
+ * The interface exposed by an aggregated object is exposed directly to users.<br/>
  * This frees the controller from having to create an extra layer to access the
  * aggregated object indirectly, which saves codes, memory and CPU cycles.<br/>
  *
- * When users query an interface from the controller, and the controller itself
- * doesn't have the interface, it delegates the query to the aggregated objects
- * by calling their \c IObject::QueryInterface() method.<br/>
- * The returned interface must be able to navigate all interfaces of the
- * controller.<br/>
- * Thus, when users query an interface from an aggregated object, the aggregated
- * object would delegate the query to its controller.<br/>
- * It would create an infinite call loop when a non-supported interface is
- * queried.<br/>
+ * The \c IObject interface on an aggregated object must be able to expose all
+ * interfaces exposed by the controller.<br/>
+ * Only the controller knows the set of interfaces it exposes.<br/>
+ * So an aggregated object has to delegate calls to \c IObject::QueryInterface()
+ * to its controller.<br/>
+ * However, an aggregated object cannot distinguish whether the caller of
+ * \c IObject::QueryInterface() is a user or its controller.<br/>
+ * Therefore, the \c IObject on the aggregated object loses the ability to
+ * navigate its own interfaces.<br/>
  *
- * The key is that the aggregated object has dual \c IObject implementations.<br/>
- * One is for \c IObject interface, the other for other interfaces.<br/>
- * Users can only see a single implementation of \c IObject interface that is
- * implemented by the controller.<br/>
- * The implementation of \c IObject of an aggregated object is never exposed to
- * users.<br/>
- * While other interfaces of an aggregated object are exposed to users.<br/>
- *
- * The \c IObject interface of an aggregated object is held by the controller,
- * which exposes all other interfaces of the aggregated object.<br/>
- * The controller use this implementation to query other interfaces from the
+ * To solve this problem, an separate <b>navigator object</b> must be created.<br/>
+ * It implements \c IObject and exposes the interfaces on the aggregated object.<br/>
+ * The controller uses the navigator object to query the interfaces on the
  * aggregated object.<br/>
- * This implementation also manages its own reference count.<br/>
+ * The navigator object may not have a reference count, since it is only held by
+ * the controller, and the controller will never expose this object to others.<br/>
+ * If it ever has a reference count, the reference count shall always be \c 1.<br/>
+ * When the controller is deleted, it is deleted along with the controller.<br/>
+ * In practice, the navigator object is implemented by an nested class.<br/>
  *
- * For other interfaces of an aggregated object, the implementation of
- * \c IObject is delegated directly to the controller's implementation.<br/>
+ * To provide a uniform approach to support both non-aggregated and aggregated
+ * objects, the navigator object is abstracted out.<br/>
+ * \c ObjectBase provides a virtual function \c NavigatorQueryInterface().<br/>
+ * A user-defined object implements \c NavigatorQueryInterface().<br/>
+ * This virtual funtion exposes interfaces on an object.<br/>
+ * Users can use \c NSFX_NAVIGATOR_XXX() macros to ease the implementation of
+ * \c NavigatorQueryInterface().<br/>
  *
- * In practice, \c IObject of an aggregated object is implemented by an nested
- * class.<br/>
- * While other interfaces share a common implemention of \c IObject that
- * delegates to the controller.<br/>
+ * For a non-aggregated object, the navigator is itself.<br/>
+ * Its \c IObject::QueryInterface() calls the \c NavigatorQueryInterface().<br/>
+ *
+ * For an aggregated object, the navigator is an object of a nested class.<br/>
+ * The navigator holds a pointer to the aggregated object, and its
+ * \c IObject::QueryInterface() calls the \c NavigatorQueryInterface() of the
+ * aggregated object.<br/>
+ *
+ * Such design does add extra layers of virtual function calls for
+ * \c IObject::QueryInterface().<br/>
+ * However, most calls to \c IObject::QueryInterface() happen at program or
+ * component initialization, and it is not likely to cause performance problem.
+ *
+ * @see \c NSFX_NAVIGATOR_MAP_BEGIN,
+ *      \c NSFX_NAVIGATOR_ENTRY,
+ *      \c NSFX_NAVIGATOR_ENTRY_AGGREGATE,
+ *      \c NSFX_NAVIGATOR_MAP_END.
  */
 class ObjectBase
 {
 public:
     virtual ~ObjectBase(void) BOOST_NOEXCEPT {}
 
-    virtual void* InnerQueryInterface(const uuid& iid) BOOST_NOEXCEPT = 0;
+    void* NavigatorQueryInterface(const uuid& iid) BOOST_NOEXCEPT = 0;
 
 };
 
@@ -179,8 +212,8 @@ public:
  * However, it does not hold a pointer to a controller, thus it cannot be
  * managed by a controller.
  *
- * The derived object may implement \c ObjectBase::InnerQueryInterface() via
- * \c NSFX_INTERFACE_OBJECT_XXX() macros.
+ * The derived object may implement \c ObjectBase::NavigatorQueryInterface() via
+ * \c NSFX_NAVIGATOR_XXX() macros.
  */
 template<class Derived>
 class Object :/*{{{*/
@@ -219,21 +252,26 @@ public:
     virtual refcount_t Release(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
     {
         refcount_t result = --refCount_;
-        if (!result)
+        if (!refCount_)
         {
             delete this;
         }
         return result;
     }
 
+    /**
+     * @brief Queries an interface on the object.
+     *
+     * @remarks It is a \c final method that cannot be overridden.
+     */
     virtual void* QueryInterface(const uuid& iid) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
     {
-        return InnerQueryInterface(iid);
+        return NavigatorQueryInterface(iid);
     }
 
     /*}}}*/
 
-protected:
+private:
     refcount_t refCount_;
 }; // class Object /*}}}*/
 
@@ -246,8 +284,8 @@ protected:
  *
  * @tparam Derived The derived class that is aggregate-only.
  *
- * The derived object may implement \c ObjectBase::InnerQueryInterface() via
- * \c NSFX_INTERFACE_OBJECT_XXX() macros.
+ * The derived object may implement \c ObjectBase::NavigatorQueryInterface() via
+ * \c NSFX_NAVIGATOR_XXX() macros.
  */
 template<class Derived>
 class AggObject :/*{{{*/
@@ -256,22 +294,26 @@ class AggObject :/*{{{*/
 {
 private:
     /**
-     * @brief A nested class that implements \c IObject for the aggregated object.
+     * @brief The interface navigator of the aggregated object.
      *
-     * This \c IObject is held by the controller to query interfaces exposed
-     * by the derived aggregated object.
+     * This \c IObject is held by the controller to query the interfaces exposed
+     * by \c Derived.
      */
-    class IObjectImpl : virtual public IObject /*{{{*/
+    class Navigator :/*{{{*/
+        virtual public IObject
     {
     public:
-        IObjectImpl(void) BOOST_NOEXCEPT :
+        Navigator(void) BOOST_NOEXCEPT :
             obj_(nullptr)
         {
         }
 
-        virtual ~IObjectImpl(void) BOOST_NOEXCEPT {}
+        virtual ~Navigator(void) BOOST_NOEXCEPT {}
 
-        void SetObjectBase(ObjectBase* obj) BOOST_NOEXCEPT
+        // Set after construction.
+        // This prevents the warning that 'this' pointer is accessed at
+        // constructor initialization list.
+        void SetObject(ObjectBase* obj) BOOST_NOEXCEPT
         {
             obj_ = obj;
         }
@@ -298,13 +340,13 @@ private:
          */
         virtual void* QueryInterface(const uuid& iid) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
         {
-            return obj_->InnerQueryInterface(iid);
+            return obj_->NavigatorQueryInterface(iid);
         }
 
         /*}}}*/
 
         ObjectBase* obj_;
-    };/*}}}*/
+    }; // class Navigator /*}}}*/
 
 protected:
     /**
@@ -317,7 +359,7 @@ protected:
     AggObject(IObject* outer) :
         outer_(outer)
     {
-        iobj_.SetObjectBase(this);
+        navi_.SetObject(this);
         if (!outer)
         {
             BOOST_THROW_EXCEPTION(NoAggregation());
@@ -358,22 +400,24 @@ public:
      * @brief Shared implementation for other interfaces of \c Derived.
      *
      * The call is delegated to the controller.
+     *
+     * @remarks It is a \c final method that cannot be overridden.
      */
-    virtual void* QueryInterface(const uuid& iid) BOOST_NOEXCEPT NSFX_OVERRIDE
+    virtual void* QueryInterface(const uuid& iid) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
     {
         return outer_->QueryInterface(iid);
     }
 
     /*}}}*/
 
-    IObject* GetInner(void) BOOST_NOEXCEPT
+    IObject* GetNavigator(void) BOOST_NOEXCEPT
     {
-        return &iobj_;
+        return &navi_;
     }
 
-protected:
-    IObjectImpl iobj_; /// The implementation of \c IObject.
-    IObject* outer_;   /// The controller.
+private:
+    Navigator navi_;  /// The navigator.
+    IObject* outer_;  /// The controller.
 
 }; // class AggObject /*}}}*/
 
