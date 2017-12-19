@@ -20,36 +20,153 @@
 #include <nsfx/component/config.h>
 #include <nsfx/component/iobject.h>
 #include <nsfx/component/exception.h>
+#include <boost/type_traits.hpp>
 
 
-#define NSFX_OBJECT_MAP()                                       \
-    void* QueryInterfaceImpl(const uuid& iid) BOOST_NOEXCEPT    \
-    {                                                           \
-        void* result = nullptr;                                 \
-        if (false)                                              \
-        {                                                       \
-        }                                                       \
+// #if defined(NSFX_MSVC)
+// // Allow 'this' pointer to be used in constructor initialization list.
+// #pragma warning(disable: 4355)
+// #endif // defined(NSFX_MSVC)
 
-#define NSFX_OBJECT_INTERFACE_ENTRY(type)       \
-        else if (iid == uuid_of<type>())        \
-        {                                       \
-            AddRef();                           \
-            result = static_cast<type*>(this);  \
+
+////////////////////////////////////////////////////////////////////////////////
+// Macros.
+/**
+ * @brief Expose an interface implemented by the object.
+ *
+ * @param intf The type of the interface.
+ */
+#define NSFX_BEGIN_INTERFACE_OBJECT_MAP()                              \
+    public:                                                            \
+    void* InnerQueryInterface(const ::nsfx::uuid& iid) BOOST_NOEXCEPT  \
+    {                                                                  \
+        void* result = nullptr;                                        \
+        if (iid == ::nsfx::uuid_of<IObject>())                         \
+        {                                                              \
+            static_assert(                                             \
+                boost::is_base_of<                                     \
+                    IObject,                                           \
+                    boost::remove_cv_ref<decltype(*this)>::type        \
+                >::value,                                              \
+                "Cannot expose an unimplemented interface");           \
+            result = static_cast<IObject*>(this);                      \
         }
 
-#define NSFX_OBJECT_INTERFACE_ENTRY_AGGREGATE(type)                 \
-        else if (result = outer_->QueryInterface(uuid_of<type>()))  \
-        {                                                           \
-            AddRef();                                               \
-            result = static_cast<type*>(this);                      \
+/**
+ * @brief Expose an interface implemented by the object.
+ *
+ * @param intf The type of the interface.
+ */
+#define NSFX_INTERFACE_OBJECT_ENTRY(intf)                         \
+        else if (iid == ::nsfx::uuid_of<intf>())                  \
+        {                                                         \
+            static_assert(                                        \
+                boost::is_base_of<                                \
+                    intf,                                         \
+                    boost::remove_cv_ref<decltype(*this)>::type   \
+                >::value,                                         \
+                "Cannot expose an unimplemented interface");      \
+            result = static_cast<intf*>(this);                    \
         }
 
-#define NSFX_END_DECLARE_INTERFACE()  \
-    return result;                    \
+/**
+ * @brief Expose an interface implemented by an aggregated object.
+ *
+ * @param intf The type of the interface.
+ * @param iobj The \c IObject interface of the aggregated object.
+ */
+#define NSFX_INTERFACE_OBJECT_ENTRY_AGGREGATE(intf, iobj)              \
+        else if (iid == ::nsfx::uuid_of<intf>())                       \
+        {                                                              \
+            result = static_cast<intf*>((iobj)->QueryInterface(iid));  \
+        }
+
+#define NSFX_END_INTERFACE_OBJECT_MAP()  \
+        if (result)                      \
+        {                                \
+            AddRef();                    \
+        }                                \
+        return result;                   \
     }
 
 
 NSFX_OPEN_NAMESPACE
+
+
+////////////////////////////////////////////////////////////////////////////////
+// ObjectBase
+/**
+ * @ingroup Component
+ * @brief The base class for implementing \c IObject.
+ *
+ * 1. Object aggregation.<br/>
+ * 1.1 Non-aggregated object.<br/>
+ * The object provides a reference count, and implements all interfaces.<br/>
+ * Thus, \c IObject::AddRef() and \c IObject::Release() operate upon its own
+ * reference count.<br/>
+ * When the object provides a queried interface, the interface must be managed
+ * by its own reference count.<br/>
+ *
+ * 1.2 Aggregated object.<br/>
+ * An interface queried from an aggregated object <i>acts like</i> an interface
+ * implemented by its controller.<br/>
+ * A user cannot distinguish whether the interface is implemented by an
+ * aggregated object or not.<br/>
+ *
+ * 1.2.1 Lifetime management.<br/>
+ * An aggregated object has the same lifetime as the controller.<br/>
+ * i.e., aggregated objects and their controllers share a single instance of
+ * reference count.<br/>
+ * The reference count is ultimately provided by a single outter-most controller.<br/>
+ * An aggregated object holds a pointer to the outter-most controller.<br/>
+ * \c IObject::AddRef() and \c IObject::Release() are delegated to the
+ * outter-most controller.<br/>
+ *
+ * 1.2.2 Interface navigation.<br/>
+ * The interface queried from an aggregated object is provided directly to users.<br/>
+ * This frees the controller from having to create an extra layer to access the
+ * aggregated object indirectly, which saves codes, memory and CPU cycles.<br/>
+ *
+ * When users query an interface from the controller, and the controller itself
+ * doesn't have the interface, it delegates the query to the aggregated objects
+ * by calling their \c IObject::QueryInterface() method.<br/>
+ * The returned interface must be able to navigate all interfaces of the
+ * controller.<br/>
+ * Thus, when users query an interface from an aggregated object, the aggregated
+ * object would delegate the query to its controller.<br/>
+ * It would create an infinite call loop when a non-supported interface is
+ * queried.<br/>
+ *
+ * The key is that the aggregated object has dual \c IObject implementations.<br/>
+ * One is for \c IObject interface, the other for other interfaces.<br/>
+ * Users can only see a single implementation of \c IObject interface that is
+ * implemented by the controller.<br/>
+ * The implementation of \c IObject of an aggregated object is never exposed to
+ * users.<br/>
+ * While other interfaces of an aggregated object are exposed to users.<br/>
+ *
+ * The \c IObject interface of an aggregated object is held by the controller,
+ * which exposes all other interfaces of the aggregated object.<br/>
+ * The controller use this implementation to query other interfaces from the
+ * aggregated object.<br/>
+ * This implementation also manages its own reference count.<br/>
+ *
+ * For other interfaces of an aggregated object, the implementation of
+ * \c IObject is delegated directly to the controller's implementation.<br/>
+ *
+ * In practice, \c IObject of an aggregated object is implemented by an nested
+ * class.<br/>
+ * While other interfaces share a common implemention of \c IObject that
+ * delegates to the controller.<br/>
+ */
+class ObjectBase
+{
+public:
+    virtual ~ObjectBase(void) BOOST_NOEXCEPT {}
+
+    virtual void* InnerQueryInterface(const uuid& iid) BOOST_NOEXCEPT = 0;
+
+};
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -61,8 +178,14 @@ NSFX_OPEN_NAMESPACE
  * A non-aggretable object possesses a reference counter.<br/>
  * However, it does not hold a pointer to a controller, thus it cannot be
  * managed by a controller.
+ *
+ * The derived object may implement \c ObjectBase::InnerQueryInterface() via
+ * \c NSFX_INTERFACE_OBJECT_XXX() macros.
  */
-class Object : virtual public IObject/*{{{*/
+template<class Derived>
+class Object :/*{{{*/
+    virtual public ObjectBase,
+    virtual public IObject
 {
 protected:
     Object(void) BOOST_NOEXCEPT :
@@ -75,6 +198,8 @@ protected:
         NSFX_ASSERT(!refCount_);
     }
 
+    // IObject./*{{{*/
+public:
     /**
      * @brief Increment the reference counter.
      *
@@ -83,6 +208,7 @@ protected:
     virtual refcount_t AddRef(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
     {
         ++refCount_;
+        return refCount_;
     }
 
     /**
@@ -100,16 +226,12 @@ protected:
         return result;
     }
 
-    virtual void* QueryInterface(const uuid& iid) BOOST_NOEXCEPT NSFX_OVERRIDE
+    virtual void* QueryInterface(const uuid& iid) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
     {
-        void * result = nullptr;
-        if (iid == uuid_of<IObject>())
-        {
-            AddRef();
-            result = static_cast<IObject*>(this);
-        }
-        return result;
+        return InnerQueryInterface(iid);
     }
+
+    /*}}}*/
 
 protected:
     refcount_t refCount_;
@@ -122,12 +244,68 @@ protected:
  * @ingroup Component
  * @brief An aggregate-only object.
  *
- * An aggregate-only object does <b>not</b> possess a reference counter.<br/>
- * Instead, it holds a pointer to a controller, and its lifetime is managed by
- * the controller.
+ * @tparam Derived The derived class that is aggregate-only.
+ *
+ * The derived object may implement \c ObjectBase::InnerQueryInterface() via
+ * \c NSFX_INTERFACE_OBJECT_XXX() macros.
  */
-class AggObject : virtual public IObject/*{{{*/
+template<class Derived>
+class AggObject :/*{{{*/
+    virtual public ObjectBase,
+    virtual public IObject
 {
+private:
+    /**
+     * @brief A nested class that implements \c IObject for the aggregated object.
+     *
+     * This \c IObject is held by the controller to query interfaces exposed
+     * by the derived aggregated object.
+     */
+    class IObjectImpl : virtual public IObject /*{{{*/
+    {
+    public:
+        IObjectImpl(void) BOOST_NOEXCEPT :
+            obj_(nullptr)
+        {
+        }
+
+        virtual ~IObjectImpl(void) BOOST_NOEXCEPT {}
+
+        void SetObjectBase(ObjectBase* obj) BOOST_NOEXCEPT
+        {
+            obj_ = obj;
+        }
+
+        // IObject./*{{{*/
+        /**
+         * @brief Dummy.
+         */
+        virtual refcount_t AddRef(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+        {
+            return 1;
+        }
+
+        /**
+         * @brief Dummy.
+         */
+        virtual refcount_t Release(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+        {
+            return 1;
+        }
+
+        /**
+         * @brief Exposes interfaces implemented by the aggregated object.
+         */
+        virtual void* QueryInterface(const uuid& iid) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+        {
+            return obj_->InnerQueryInterface(iid);
+        }
+
+        /*}}}*/
+
+        ObjectBase* obj_;
+    };/*}}}*/
+
 protected:
     /**
      * @brief Construct an aggregated object.
@@ -139,6 +317,7 @@ protected:
     AggObject(IObject* outer) :
         outer_(outer)
     {
+        iobj_.SetObjectBase(this);
         if (!outer)
         {
             BOOST_THROW_EXCEPTION(NoAggregation());
@@ -149,8 +328,10 @@ protected:
     {
     }
 
+    // IObject./*{{{*/
+public:
     /**
-     * @brief Increment the reference counter.
+     * @brief Shared implementation for other interfaces of \c Derived.
      *
      * The call is delegated to the controller.
      *
@@ -162,7 +343,7 @@ protected:
     }
 
     /**
-     * @brief Decrement the reference counter.
+     * @brief Shared implementation for other interfaces of \c Derived.
      *
      * The call is delegated to the controller.
      *
@@ -173,13 +354,27 @@ protected:
         return outer_->Release();
     }
 
+    /**
+     * @brief Shared implementation for other interfaces of \c Derived.
+     *
+     * The call is delegated to the controller.
+     */
     virtual void* QueryInterface(const uuid& iid) BOOST_NOEXCEPT NSFX_OVERRIDE
     {
         return outer_->QueryInterface(iid);
     }
 
+    /*}}}*/
+
+    IObject* GetInner(void) BOOST_NOEXCEPT
+    {
+        return &iobj_;
+    }
+
 protected:
-    IObject* outer_;
+    IObjectImpl iobj_; /// The implementation of \c IObject.
+    IObject* outer_;   /// The controller.
+
 }; // class AggObject /*}}}*/
 
 
