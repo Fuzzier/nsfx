@@ -36,7 +36,7 @@ NSFX_OPEN_NAMESPACE
  */
 class OpnetAlarm :
     virtual public IAlarm,
-    virtual public Object
+    virtual public AggObject
 {
 public:
     typedef OpnetAlarm  ThisType;
@@ -46,19 +46,19 @@ public:
 
     virtual ~OpnetAlarm(void) BOOST_NOEXCEPT {}
 
-    void SetClock(IUnknown* clock)
+    // IObject./*{{{*/
+    virtual void* QueryInterface(const uuid& iid) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
     {
-        if (!clock)
+        void* result = nullptr;
+        if (iid == )
         {
-            BOOST_THROW_EXCEPTION(InvalidPointer());
+            // code
         }
-        clock_.Reset(clock);
-        if (!clock_)
-        {
-            BOOST_THROW_EXCEPTION(NoInterface());
-        }
+        return result;
     }
+    /*}}}*/
 
+    // IAlarm./*{{{*/
     virtual void Connect(IUnknown* sink) NSFX_FINAL NSFX_OVERRIDE
     {
         if (sink_)
@@ -130,7 +130,9 @@ public:
     {
         ::op_ev_cancel_if_pending(evh_);
     }
+    /*}}}*/
 
+private:
     static void OnTimeout(IAlarmSink* sink, int /* code */ )
     {
         if (!sink)
@@ -147,7 +149,7 @@ private:
 };
 
 
-NSFX_DEFINE_CLASS_UUID4(IAlarm, 0x0FC1DAC2, 0x82D2, 0x46A6, 0x9C61E23484B8608CLL);
+NSFX_DEFINE_CLASS_UUID4(OpnetAlarm, 0x0FC1DAC2, 0x82D2, 0x46A6, 0x9C61E23484B8608CLL);
 
 
 NSFX_CLOSE_NAMESPACE

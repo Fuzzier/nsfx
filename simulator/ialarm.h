@@ -40,6 +40,8 @@ public:
     /**
      * @brief Connect to a sink.
      *
+     * @pre No sink has been connected yet.
+     *
      * @param sink An alarm must query \c IAlarmSink interface from the sink.
      *
      * @throw InvalidPointer  The sink is \c nullptr.
@@ -50,6 +52,8 @@ public:
 
     /**
      * @brief Disconnect from the sink.
+     *
+     * @pre A sink has already been connected.
      *
      * The scheduled alarm (if any) is also cancelled.
      *
@@ -68,13 +72,16 @@ public:
     /**
      * @brief Schedule an alarm.
      *
+     * @pre A sink has already been connected.<br/>
+     *      The alarm has not been scheduled yet.
+     *
      * @throw NotConnected No sink has been connected.
      * @throw InvalidArgument The duration is negative.
      */
     virtual void ScheduleFor(const Duration& dt) = 0;
 
     /**
-     * @brief Check whether an alarm is pending.
+     * @brief Whether the alarm is scheduled.
      */
     virtual bool IsPending(void) BOOST_NOEXCEPT = 0;
 
