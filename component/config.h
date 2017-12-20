@@ -32,7 +32,7 @@ NSFX_OPEN_NAMESPACE
  * @ingroup Component
  * @brief The type of reference count.
  */
-typedef uint32_t  refcount_t;
+typedef ptrdiff_t  refcount_t;
 
 NSFX_CLOSE_NAMESPACE
 

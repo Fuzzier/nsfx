@@ -48,7 +48,7 @@ struct Uninitialized : virtual ComponentException {};
 /**
  * @brief Practice aggregation in a wrong way.
  */
-struct NoAggregation : virtual ComponentException {};
+struct BadAggregation : virtual ComponentException {};
 /**
  * @brief The object factory does not produce the requested class.
  */

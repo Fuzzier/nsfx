@@ -36,16 +36,16 @@
  *
  * @remarks The macros changes the access rights to \c private.
  */
-#define NSFX_NAVIGATOR_MAP_BEGIN()                                         \
-    private:                                                               \
-    void* NavigatorQueryInterface(const ::nsfx::uuid& iid) BOOST_NOEXCEPT  \
+#define NSFX_INTERFACE_MAP_BEGIN()                                         \
+    public:                                                                \
+    void* InnerQueryInterface(const ::nsfx::uuid& iid) BOOST_NOEXCEPT      \
     {                                                                      \
         void* result = nullptr;                                            \
         if (iid == ::nsfx::uuid_of<IObject>())                             \
         {                                                                  \
             static_assert(                                                 \
                 boost::is_base_of<                                         \
-                    IObject,                                               \
+                    ::nsfx::IObject,                                       \
                     boost::remove_cv_ref<decltype(*this)>::type            \
                 >::value,                                                  \
                 "Cannot expose an unimplemented interface");               \
@@ -57,7 +57,7 @@
  *
  * @param intf The type of the interface. It must <b>not</b> be \c IObject.
  */
-#define NSFX_NAVIGATOR_ENTRY(intf)                                \
+#define NSFX_INTERFACE_ENTRY(intf)                                \
         else if (iid == ::nsfx::uuid_of<intf>())                  \
         {                                                         \
             static_assert(                                        \
@@ -75,13 +75,13 @@
  * @param intf The type of the interface. It must <b>not</b> be \c IObject.
  * @param iobj The \c IObject interface on the navigator object.
  */
-#define NSFX_NAVIGATOR_ENTRY_AGGREGATE(intf, navi)                     \
+#define NSFX_INTERFACE_ENTRY_AGGREGATE(intf, navi)                     \
         else if (iid == ::nsfx::uuid_of<intf>())                       \
         {                                                              \
             result = static_cast<intf*>((navi)->QueryInterface(iid));  \
         }
 
-#define NSFX_NAVIGATOR_MAP_END()  \
+#define NSFX_INTERFACE_MAP_END()  \
         if (result)               \
         {                         \
             AddRef();             \
@@ -163,8 +163,9 @@ NSFX_OPEN_NAMESPACE
  * aggregated object.<br/>
  * The navigator object may not have a reference count, since it is only held by
  * the controller, and the controller will never expose this object to others.<br/>
- * If it ever has a reference count, the reference count shall always be \c 1.<br/>
- * When the controller is deleted, it is deleted along with the controller.<br/>
+ * The navigator object can be a member variable hold an aggregated object, thus
+ * share the same lifetime of the aggregated object.<br/>
+ * If it ever has a reference count, the reference count can always be \c 1.<br/>
  * In practice, the navigator object can be implemented by an nested class of
  * the aggregated class.<br/>
  *
@@ -184,8 +185,8 @@ NSFX_OPEN_NAMESPACE
  * implemented by the aggregated object.<br/>
  *
  * 4. Poly object.<br/>
- * For a user-defined poly object that supports both usage of being aggregated
- * or non-aggregated, the navigator object is an object of a nested class.<br/>
+ * A poly object supports both non-aggregated and aggregated usage.<br/>
+ *
  * The navigator object always exposes the interfaces on the user-defined
  * object, no matter whether it is aggregated or not.<br/>
  * The key difference is on the lifetime management.<br/>
@@ -201,17 +202,17 @@ NSFX_OPEN_NAMESPACE
  * Otherwise, the lifetime manager provides implementation for the lifetime
  * management of the user-defined object.<br/>
  *
- * 5. Template-based virtual function implmentation.
- * A base class provides necessary data and non-virtual functions.
- * A virtual function calls the appropriate non-virtual functions.
+ * 5. Template-based virtual function implmentation.<br/>
+ * A base class provides necessary data and non-virtual functions.<br/>
+ * A virtual function calls the appropriate non-virtual functions.<br/>
  *
  * 5.1 Data
- * A non-aggregated object has a reference count.
- * An aggregated object has a pointer to the controller's \c IObject.
+ * A non-aggregated object has a reference count.<br/>
+ * An aggregated object has a pointer to the controller's \c IObject.<br/>
  * A poly object uses one of the data according to whether a valid pointer to
- * the controller is specified at creation.
+ * the controller is specified at creation.<br/>
  *
- * Users can use \c NSFX_NAVIGATOR_XXX() macros to ease the implementation of
+ * Users can use \c NSFX_INTERFACE_XXX() macros to ease the implementation of
  * \c NavigatorQueryInterface().<br/>
  *
  * Such design does add extra layers of virtual function calls for
@@ -219,31 +220,66 @@ NSFX_OPEN_NAMESPACE
  * However, most calls to \c IObject::QueryInterface() happen at program or
  * component initialization, and it is not likely to cause performance problem.
  *
- * @see \c NSFX_NAVIGATOR_MAP_BEGIN,
- *      \c NSFX_NAVIGATOR_ENTRY,
- *      \c NSFX_NAVIGATOR_ENTRY_AGGREGATE,
- *      \c NSFX_NAVIGATOR_MAP_END.
+ * @see \c NSFX_INTERFACE_MAP_BEGIN,
+ *      \c NSFX_INTERFACE_ENTRY,
+ *      \c NSFX_INTERFACE_ENTRY_AGGREGATE,
+ *      \c NSFX_INTERFACE_MAP_END.
  */
-class ObjectBase
+class ObjectBase/*{{{*/
 {
 public:
+    ObjectBase(void) BOOST_NOEXCEPT :
+        controller_(nullptr)
+    {
+    }
+
+    ObjectBase(IObject* controller) BOOST_NOEXCEPT :
+        controller_(controller)
+    {
+    }
+
     virtual ~ObjectBase(void) BOOST_NOEXCEPT {}
 
-    refcount_t InnerAddRef(const uuid& iid) BOOST_NOEXCEPT;
-    refcount_t InnerRelease(const uuid& iid) BOOST_NOEXCEPT;
-    void* InnerQueryInterface(const uuid& iid) BOOST_NOEXCEPT;
+    refcount_t InnerAddRef(void) BOOST_NOEXCEPT
+    {
+        refcount_t result = ++refCount_;
+        return result;
+    }
 
-    refcount_t OuterAddRef(const uuid& iid) BOOST_NOEXCEPT;
-    refcount_t OuterRelease(const uuid& iid) BOOST_NOEXCEPT;
-    void* OuterQueryInterface(const uuid& iid) BOOST_NOEXCEPT;
+    refcount_t InnerRelease(void) BOOST_NOEXCEPT
+    {
+        refcount_t result = --refCount_;
+        if (!refCount_)
+        {
+            delete this;
+        }
+        return result;
+    }
+
+    virtual void* InnerQueryInterface(const uuid& iid) BOOST_NOEXCEPT = 0;
+
+    refcount_t OuterAddRef(void) BOOST_NOEXCEPT
+    {
+        return controller_->AddRef();
+    }
+
+    refcount_t OuterRelease(void) BOOST_NOEXCEPT
+    {
+        return controller_->Release();
+    }
+
+    void* OuterQueryInterface(const uuid& iid) BOOST_NOEXCEPT
+    {
+        return controller_->QueryInterface(iid);
+    }
 
 private:
     union
     {
-        refcount_t refCount_;
-        IObject*   outer_;
+        refcount_t refCount_; /// The reference count.
+        IObject*   controller_;    /// The controller.
     };
-};
+}; // class ObjectBase /*}}}*/
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -256,8 +292,8 @@ private:
  * However, it does not hold a pointer to a controller, thus it cannot be
  * managed by a controller.
  *
- * The derived object may implement \c ObjectBase::NavigatorQueryInterface() via
- * \c NSFX_NAVIGATOR_XXX() macros.
+ * The derived object may implement \c ObjectBase::InnerQueryInterface() via
+ * \c NSFX_INTERFACE_XXX() macros.
  */
 template<class Derived>
 class Object :/*{{{*/
@@ -265,14 +301,12 @@ class Object :/*{{{*/
     virtual public IObject
 {
 protected:
-    Object(void) BOOST_NOEXCEPT :
-        refCount_(0)
+    Object(void) BOOST_NOEXCEPT
     {
     }
 
     virtual ~Object(void) BOOST_NOEXCEPT
     {
-        NSFX_ASSERT(!refCount_);
     }
 
     // IObject./*{{{*/
@@ -309,8 +343,6 @@ public:
 
     /*}}}*/
 
-private:
-    refcount_t refCount_;
 }; // class Object /*}}}*/
 
 
@@ -322,8 +354,8 @@ private:
  *
  * @tparam Derived The derived class that is aggregate-only.
  *
- * The derived object may implement \c ObjectBase::NavigatorQueryInterface() via
- * \c NSFX_NAVIGATOR_XXX() macros.
+ * The derived object may implement \c ObjectBase::InnerQueryInterface() via
+ * \c NSFX_INTERFACE_XXX() macros.
  */
 template<class Derived>
 class AggObject :/*{{{*/
@@ -378,7 +410,7 @@ private:
          */
         virtual void* QueryInterface(const uuid& iid) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
         {
-            return obj_->NavigatorQueryInterface(iid);
+            return obj_->OuterQueryInterface(iid);
         }
 
         /*}}}*/
@@ -390,17 +422,17 @@ protected:
     /**
      * @brief Construct an aggregated object.
      *
-     * @param outer The controller object. Must <b>not</b> be \c nullptr.
+     * @param controller The controller object. Must <b>not</b> be \c nullptr.
      *
-     * @throw NoAggregation When the controller object is \c nullptr.
+     * @throw BadAggregation When the controller object is \c nullptr.
      */
-    AggObject(IObject* outer) :
-        outer_(outer)
+    AggObject(IObject* controller) :
+        ObjectBase(controller)
     {
         navi_.SetObject(this);
-        if (!outer)
+        if (!controller)
         {
-            BOOST_THROW_EXCEPTION(NoAggregation());
+            BOOST_THROW_EXCEPTION(BadAggregation());
         }
     }
 
@@ -419,7 +451,7 @@ public:
      */
     virtual refcount_t AddRef(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
     {
-        return outer_->AddRef();
+        return OuterAddRef();
     }
 
     /**
@@ -431,7 +463,7 @@ public:
      */
     virtual refcount_t Release(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
     {
-        return outer_->Release();
+        return OuterRelease();
     }
 
     /**
@@ -443,19 +475,27 @@ public:
      */
     virtual void* QueryInterface(const uuid& iid) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
     {
-        return outer_->QueryInterface(iid);
+        return OuterQueryInterface(iid);
     }
 
     /*}}}*/
 
-    IObject* GetNavigator(void) BOOST_NOEXCEPT
+    static IObject* CreateInstance(const uuid& iid)
     {
-        return &navi_;
+        if (iid != uuid_of<IObject>())
+        {
+            BOOST_THROW_EXCEPTION(BadAggregation());
+        }
+        Derived* p = new Derived;
+        if (!p)
+        {
+            BOOST_THROW_EXCEPTION(OutOfMemory());
+        }
+        return &(p->navi_);
     }
 
 private:
     Navigator navi_;  /// The navigator.
-    IObject* outer_;  /// The controller.
 
 }; // class AggObject /*}}}*/
 
@@ -468,8 +508,8 @@ private:
  *
  * @tparam Derived The derived class that is aggregate-only.
  *
- * The derived object may implement \c ObjectBase::NavigatorQueryInterface() via
- * \c NSFX_NAVIGATOR_XXX() macros.
+ * The derived object may implement \c ObjectBase::InnerQueryInterface() via
+ * \c NSFX_INTERFACE_XXX() macros.
  */
 template<class Derived>
 class PolyObject :/*{{{*/
@@ -524,7 +564,7 @@ private:
          */
         virtual void* QueryInterface(const uuid& iid) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
         {
-            return obj_->NavigatorQueryInterface(iid);
+            return InnerQueryInterface(iid);
         }
 
         /*}}}*/
@@ -532,81 +572,22 @@ private:
         ObjectBase* obj_;
     }; // class Navigator /*}}}*/
 
-    class LifetimeManager
-    {
-    public:
-        LifetimeManager(void) :
-            refCount_(0)
-        {
-        }
-
-        LifetimeManager(IObject* outer) :
-            outer_(outer)
-        {
-        }
-
-        refcount_t OuterAddRef(void)
-        {
-            outer_->AddRef();
-        }
-
-        refcount_t InnerAddRef(void)
-        {
-            refcount_t result = ++refCount_;
-            return result;
-        }
-
-        refcount_t InnerRelease(void)
-        {
-            refcount_t result = --refCount_;
-            return result;
-        }
-
-        refcount_t OuterRelease(void)
-        {
-            return outer_->Release();
-        }
-
-    private:
-        union
-        {
-            refcount_t refCount_;
-            IObject*   outer_;
-        };
-    };
-
-    class InnerLifetimeManager :
-        public LifetimeManager,
-        virtual public IObject
-    {
-    public:
-        void refcount_t AddRef()
-        {
-            return InnerAddRef();
-        }
-
-        void refcount_t Release()
-        {
-            return InnerRelease();
-        }
-    };
-
 
 protected:
     /**
      * @brief Construct an aggregated object.
      *
-     * @param outer The controller object. Must <b>not</b> be \c nullptr.
+     * @param controller The controller object. Must <b>not</b> be \c nullptr.
      *
-     * @throw NoAggregation When the controller object is \c nullptr.
+     * @throw BadAggregation When the controller object is \c nullptr.
      */
-    PolyObject(IObject* outer) :
-        outer_(outer)
+    PolyObject(IObject* controller) :
+        ObjectBase(controller)
     {
         navi_.SetObject(this);
-        if (!outer)
+        if (!controller)
         {
-            BOOST_THROW_EXCEPTION(NoAggregation());
+            // TODO
         }
     }
 
@@ -625,7 +606,7 @@ public:
      */
     virtual refcount_t AddRef(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
     {
-        return outer_->AddRef();
+        return addRef_(this);
     }
 
     /**
@@ -637,7 +618,7 @@ public:
      */
     virtual refcount_t Release(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
     {
-        return outer_->Release();
+        return release_(this);
     }
 
     /**
@@ -649,7 +630,7 @@ public:
      */
     virtual void* QueryInterface(const uuid& iid) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
     {
-        return outer_->QueryInterface(iid);
+        return queryInterface_(this, iid);
     }
 
     /*}}}*/
@@ -659,9 +640,16 @@ public:
         return &navi_;
     }
 
+    typedef refcount_t (* AddRefType)(IObject* obj);
+    typedef refcount_t (* ReleaseType)(IObject* obj);
+    typedef void* (* QueryInterfaceType)(IObject* obj, const uuid& iid);
+
 private:
     Navigator navi_;  /// The navigator.
-    IObject* outer_;  /// The controller.
+
+    AddRefType  addRef_;
+    ReleaseType release_;
+    QueryInterfaceType queryInterface_;
 
 }; // class PolyObject /*}}}*/
 

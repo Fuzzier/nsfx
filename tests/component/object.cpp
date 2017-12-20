@@ -30,9 +30,9 @@ NSFX_TEST_SUITE(Object)
             return Release();
         }
 
-        NSFX_BEGIN_INTERFACE_OBJECT_MAP()
-            NSFX_INTERFACE_OBJECT_ENTRY(ITest)
-        NSFX_END_INTERFACE_OBJECT_MAP()
+        NSFX_INTERFACE_MAP_BEGIN()
+            NSFX_INTERFACE_ENTRY(ITest)
+        NSFX_INTERFACE_MAP_END()
 
     };/*}}}*/
 
