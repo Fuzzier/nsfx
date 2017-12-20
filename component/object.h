@@ -99,9 +99,10 @@ NSFX_OPEN_NAMESPACE
  * @ingroup Component
  * @brief The base class for implementing \c IObject.
  *
+ * 1. Introduction.
  * Usually, an object provides a reference count for lifetime management.<br/>
  * When an object want to implement an interface, it may reuse an existing
- * object that implementes the interface.<br/>
+ * object that has implemented the interface.<br/>
  * The container creates an instance of the contained object, and delegates the
  * calls on the interface to the contained object.<br/>
  *
@@ -109,7 +110,7 @@ NSFX_OPEN_NAMESPACE
  * contained object directly to the users.<br/>
  * Because the contained object cannot expose other interfaces on the container
  * object.<br/>
- * From an interface on the contained object, a user cannot query other
+ * i.e., from an interface on the contained object, a user cannot query other
  * interfaces exposed by the container object.<br/>
  * Therefore, a container have to create an extra layer of virtual function call
  * to delegate the interface to the contained object.<br/>
@@ -132,7 +133,7 @@ NSFX_OPEN_NAMESPACE
  * a separate navigator object is responsible to expose the interfaces on the
  * aggregated object.<br/>
  *
- * 1. Lifetime management.<br/>
+ * 2. Lifetime management.<br/>
  * An aggregated object has the same lifetime as its controller.<br/>
  * i.e., aggregated objects and its controller share a single reference count.<br/>
  * The reference count is ultimately provided by the outter-most controller.<br/>
@@ -141,46 +142,77 @@ NSFX_OPEN_NAMESPACE
  * Calls to \c IObject::AddRef() and \c IObject::Release() are delegated to the
  * controller.<br/>
  *
- * 2. Interface navigation.<br/>
+ * 3. Interface navigation.<br/>
  * The interface exposed by an aggregated object is exposed directly to users.<br/>
  * This frees the controller from having to create an extra layer to access the
  * aggregated object indirectly, which saves codes, memory and CPU cycles.<br/>
  *
- * The \c IObject interface on an aggregated object must be able to expose all
- * interfaces exposed by the controller.<br/>
- * Only the controller knows the set of interfaces it exposes.<br/>
+ * The \c IObject interface on an aggregated object must be able to navigate all
+ * other interfaces exposed by the controller.<br/>
+ * However, only the controller knows the set of interfaces it exposes.<br/>
  * So an aggregated object has to delegate calls to \c IObject::QueryInterface()
- * to its controller.<br/>
- * However, an aggregated object cannot distinguish whether the caller of
- * \c IObject::QueryInterface() is a user or its controller.<br/>
+ * to its controller's \c IObject::QueryInterface().<br/>
+ * However, an aggregated object cannot distinguish who calls its
+ * \c IObject::QueryInterface(), whether it is a user or its controller.<br/>
  * Therefore, the \c IObject on the aggregated object loses the ability to
  * navigate its own interfaces.<br/>
  *
  * To solve this problem, an separate <b>navigator object</b> must be created.<br/>
  * It implements \c IObject and exposes the interfaces on the aggregated object.<br/>
- * The controller uses the navigator object to query the interfaces on the
+ * The controller can use the navigator object to query the interfaces on the
  * aggregated object.<br/>
  * The navigator object may not have a reference count, since it is only held by
  * the controller, and the controller will never expose this object to others.<br/>
  * If it ever has a reference count, the reference count shall always be \c 1.<br/>
  * When the controller is deleted, it is deleted along with the controller.<br/>
- * In practice, the navigator object is implemented by an nested class.<br/>
+ * In practice, the navigator object can be implemented by an nested class of
+ * the aggregated class.<br/>
  *
  * To provide a uniform approach to support both non-aggregated and aggregated
  * objects, the navigator object is abstracted out.<br/>
  * \c ObjectBase provides a virtual function \c NavigatorQueryInterface().<br/>
- * A user-defined object implements \c NavigatorQueryInterface().<br/>
- * This virtual funtion exposes interfaces on an object.<br/>
- * Users can use \c NSFX_NAVIGATOR_XXX() macros to ease the implementation of
- * \c NavigatorQueryInterface().<br/>
+ * The user-defined object must implement \c NavigatorQueryInterface().<br/>
+ * This virtual funtion exposes the interfaces on the user-defined object.<br/>
  *
- * For a non-aggregated object, the navigator is itself.<br/>
+ * For a user-defined non-aggregated object, the navigator is itself.<br/>
  * Its \c IObject::QueryInterface() calls the \c NavigatorQueryInterface().<br/>
  *
- * For an aggregated object, the navigator is an object of a nested class.<br/>
- * The navigator holds a pointer to the aggregated object, and its
- * \c IObject::QueryInterface() calls the \c NavigatorQueryInterface() of the
- * aggregated object.<br/>
+ * For a user-defined aggregated object, the navigator is an object of a nested
+ * class.<br/>
+ * The navigator object holds a pointer to the aggregated object, and its
+ * \c IObject::QueryInterface() calls the \c NavigatorQueryInterface()
+ * implemented by the aggregated object.<br/>
+ *
+ * 4. Poly object.<br/>
+ * For a user-defined poly object that supports both usage of being aggregated
+ * or non-aggregated, the navigator object is an object of a nested class.<br/>
+ * The navigator object always exposes the interfaces on the user-defined
+ * object, no matter whether it is aggregated or not.<br/>
+ * The key difference is on the lifetime management.<br/>
+ * For this purpose, another lifetime manager object is defined to virtualize
+ * the lifetime management.<br/>
+ *
+ * The user-defined object delegates its own \c IObject::AddRef() and
+ * \c IObject::Release() to the lifetime manager object.<br/>
+ * The lifetime manager object holds a reference count, and provides
+ * \c IObject::AddRef() and \c IObject::Release() that virtualize current usage.<br/>
+ * If a controller is specified at the creation of the user-defined object,
+ * the lifetime manager delegates the lifetime management to the controller;
+ * Otherwise, the lifetime manager provides implementation for the lifetime
+ * management of the user-defined object.<br/>
+ *
+ * 5. Template-based virtual function implmentation.
+ * A base class provides necessary data and non-virtual functions.
+ * A virtual function calls the appropriate non-virtual functions.
+ *
+ * 5.1 Data
+ * A non-aggregated object has a reference count.
+ * An aggregated object has a pointer to the controller's \c IObject.
+ * A poly object uses one of the data according to whether a valid pointer to
+ * the controller is specified at creation.
+ *
+ * Users can use \c NSFX_NAVIGATOR_XXX() macros to ease the implementation of
+ * \c NavigatorQueryInterface().<br/>
  *
  * Such design does add extra layers of virtual function calls for
  * \c IObject::QueryInterface().<br/>
@@ -197,8 +229,20 @@ class ObjectBase
 public:
     virtual ~ObjectBase(void) BOOST_NOEXCEPT {}
 
-    void* NavigatorQueryInterface(const uuid& iid) BOOST_NOEXCEPT = 0;
+    refcount_t InnerAddRef(const uuid& iid) BOOST_NOEXCEPT;
+    refcount_t InnerRelease(const uuid& iid) BOOST_NOEXCEPT;
+    void* InnerQueryInterface(const uuid& iid) BOOST_NOEXCEPT;
 
+    refcount_t OuterAddRef(const uuid& iid) BOOST_NOEXCEPT;
+    refcount_t OuterRelease(const uuid& iid) BOOST_NOEXCEPT;
+    void* OuterQueryInterface(const uuid& iid) BOOST_NOEXCEPT;
+
+private:
+    union
+    {
+        refcount_t refCount_;
+        IObject*   outer_;
+    };
 };
 
 
@@ -240,8 +284,7 @@ public:
      */
     virtual refcount_t AddRef(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
     {
-        ++refCount_;
-        return refCount_;
+        return InnerAddRef();
     }
 
     /**
@@ -251,12 +294,7 @@ public:
      */
     virtual refcount_t Release(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
     {
-        refcount_t result = --refCount_;
-        if (!refCount_)
-        {
-            delete this;
-        }
-        return result;
+        return InnerRelease();
     }
 
     /**
@@ -266,7 +304,7 @@ public:
      */
     virtual void* QueryInterface(const uuid& iid) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
     {
-        return NavigatorQueryInterface(iid);
+        return InnerQueryInterface(iid);
     }
 
     /*}}}*/
@@ -420,6 +458,212 @@ private:
     IObject* outer_;  /// The controller.
 
 }; // class AggObject /*}}}*/
+
+
+////////////////////////////////////////////////////////////////////////////////
+// PolyObject
+/**
+ * @ingroup Component
+ * @brief An object that can be either non-aggregated or aggregated.
+ *
+ * @tparam Derived The derived class that is aggregate-only.
+ *
+ * The derived object may implement \c ObjectBase::NavigatorQueryInterface() via
+ * \c NSFX_NAVIGATOR_XXX() macros.
+ */
+template<class Derived>
+class PolyObject :/*{{{*/
+    virtual public ObjectBase,
+    virtual public IObject
+{
+private:
+    /**
+     * @brief The interface navigator of the aggregated object.
+     *
+     * This \c IObject is held by the controller to query the interfaces exposed
+     * by \c Derived.
+     */
+    class Navigator :/*{{{*/
+        virtual public IObject
+    {
+    public:
+        Navigator(void) BOOST_NOEXCEPT :
+            obj_(nullptr)
+        {
+        }
+
+        virtual ~Navigator(void) BOOST_NOEXCEPT {}
+
+        // Set after construction.
+        // This prevents the warning that 'this' pointer is accessed at
+        // constructor initialization list.
+        void SetObject(ObjectBase* obj) BOOST_NOEXCEPT
+        {
+            obj_ = obj;
+        }
+
+        // IObject./*{{{*/
+        /**
+         * @brief Dummy.
+         */
+        virtual refcount_t AddRef(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+        {
+            return 1;
+        }
+
+        /**
+         * @brief Dummy.
+         */
+        virtual refcount_t Release(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+        {
+            return 1;
+        }
+
+        /**
+         * @brief Exposes interfaces implemented by the aggregated object.
+         */
+        virtual void* QueryInterface(const uuid& iid) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+        {
+            return obj_->NavigatorQueryInterface(iid);
+        }
+
+        /*}}}*/
+
+        ObjectBase* obj_;
+    }; // class Navigator /*}}}*/
+
+    class LifetimeManager
+    {
+    public:
+        LifetimeManager(void) :
+            refCount_(0)
+        {
+        }
+
+        LifetimeManager(IObject* outer) :
+            outer_(outer)
+        {
+        }
+
+        refcount_t OuterAddRef(void)
+        {
+            outer_->AddRef();
+        }
+
+        refcount_t InnerAddRef(void)
+        {
+            refcount_t result = ++refCount_;
+            return result;
+        }
+
+        refcount_t InnerRelease(void)
+        {
+            refcount_t result = --refCount_;
+            return result;
+        }
+
+        refcount_t OuterRelease(void)
+        {
+            return outer_->Release();
+        }
+
+    private:
+        union
+        {
+            refcount_t refCount_;
+            IObject*   outer_;
+        };
+    };
+
+    class InnerLifetimeManager :
+        public LifetimeManager,
+        virtual public IObject
+    {
+    public:
+        void refcount_t AddRef()
+        {
+            return InnerAddRef();
+        }
+
+        void refcount_t Release()
+        {
+            return InnerRelease();
+        }
+    };
+
+
+protected:
+    /**
+     * @brief Construct an aggregated object.
+     *
+     * @param outer The controller object. Must <b>not</b> be \c nullptr.
+     *
+     * @throw NoAggregation When the controller object is \c nullptr.
+     */
+    PolyObject(IObject* outer) :
+        outer_(outer)
+    {
+        navi_.SetObject(this);
+        if (!outer)
+        {
+            BOOST_THROW_EXCEPTION(NoAggregation());
+        }
+    }
+
+    virtual ~PolyObject(void) BOOST_NOEXCEPT
+    {
+    }
+
+    // IObject./*{{{*/
+public:
+    /**
+     * @brief Shared implementation for other interfaces of \c Derived.
+     *
+     * The call is delegated to the controller.
+     *
+     * @remarks It is a \c final method that cannot be overridden.
+     */
+    virtual refcount_t AddRef(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+    {
+        return outer_->AddRef();
+    }
+
+    /**
+     * @brief Shared implementation for other interfaces of \c Derived.
+     *
+     * The call is delegated to the controller.
+     *
+     * @remarks It is a \c final method that cannot be overridden.
+     */
+    virtual refcount_t Release(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+    {
+        return outer_->Release();
+    }
+
+    /**
+     * @brief Shared implementation for other interfaces of \c Derived.
+     *
+     * The call is delegated to the controller.
+     *
+     * @remarks It is a \c final method that cannot be overridden.
+     */
+    virtual void* QueryInterface(const uuid& iid) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+    {
+        return outer_->QueryInterface(iid);
+    }
+
+    /*}}}*/
+
+    IObject* GetNavigator(void) BOOST_NOEXCEPT
+    {
+        return &navi_;
+    }
+
+private:
+    Navigator navi_;  /// The navigator.
+    IObject* outer_;  /// The controller.
+
+}; // class PolyObject /*}}}*/
 
 
 NSFX_CLOSE_NAMESPACE
