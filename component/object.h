@@ -32,55 +32,63 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Macros.
 /**
- * @brief Expose an interface implemented by the object.
+ * @ingroup Component
+ * @brief Begin the interface map.
  *
- * @remarks The macros changes the access rights to \c private.
+ * @param ThisClass The class that defines the interface map.
+ *                  It is the class that provides the defined interfaces.
+ *
+ * @remarks The macros changes the access rights to \c public, in order for
+ *          its parent class template to access the defined static function.
  */
-#define NSFX_INTERFACE_MAP_BEGIN()                                         \
-    public:                                                                \
-    void* InnerQueryInterface(const ::nsfx::uuid& iid) BOOST_NOEXCEPT      \
-    {                                                                      \
-        void* result = nullptr;                                            \
-        if (iid == ::nsfx::uuid_of<IObject>())                             \
-        {                                                                  \
-            static_assert(                                                 \
-                boost::is_base_of<                                         \
-                    ::nsfx::IObject,                                       \
-                    boost::remove_cv_ref<decltype(*this)>::type            \
-                >::value,                                                  \
-                "Cannot expose an unimplemented interface");               \
-            result = static_cast<IObject*>(this);                          \
+#define NSFX_INTERFACE_MAP_BEGIN(ThisClass)                             \
+    private:                                                            \
+        typedef ThisClass  ThisClass_;                                  \ 
+    public:                                                             \
+    static void* InnerQueryInterface(                                   \
+        ThisClass_* prov, const ::nsfx::uuid& iid) BOOST_NOEXCEPT       \
+    {                                                                   \
+        void* result = nullptr;                                         \
+        if (iid == ::nsfx::uuid_of<IObject>())                          \
+        {                                                               \
+            static_assert(                                              \
+                boost::is_base_of<::nsfx::IObject, ThisClass_>::value,  \
+                "Cannot expose an unimplemented interface");            \
+            result = static_cast<IObject*>(prov);                       \
         }
 
 /**
+ * @ingroup Component
  * @brief Expose an interface implemented by the object.
  *
- * @param intf The type of the interface. It must <b>not</b> be \c IObject.
+ * @param intf The type of the interface. It should <b>not</b> be \c IObject.
  */
 #define NSFX_INTERFACE_ENTRY(intf)                                \
         else if (iid == ::nsfx::uuid_of<intf>())                  \
         {                                                         \
             static_assert(                                        \
-                boost::is_base_of<                                \
-                    intf,                                         \
-                    boost::remove_cv_ref<decltype(*this)>::type   \
-                >::value,                                         \
+                boost::is_base_of<intf, ThisClass_>::value,       \
                 "Cannot expose an unimplemented interface");      \
-            result = static_cast<intf*>(this);                    \
+            result = static_cast<intf*>(prov);                    \
         }
 
 /**
+ * @ingroup Component
  * @brief Expose an interface implemented by an aggregated object.
  *
- * @param intf The type of the interface. It must <b>not</b> be \c IObject.
- * @param iobj The \c IObject interface on the navigator object.
+ * @param intf The type of the interface. It should <b>not</b> be \c IObject.
+ * @param navi The \c IObject interface on the navigator object.
  */
-#define NSFX_INTERFACE_ENTRY_AGGREGATE(intf, navi)                     \
+#define NSFX_INTERFACE_AGGREGATED_ENTRY(intf, navi)                    \
         else if (iid == ::nsfx::uuid_of<intf>())                       \
         {                                                              \
             result = static_cast<intf*>((navi)->QueryInterface(iid));  \
         }
 
+/**
+ * @ingroup Component
+ * @brief End the interface map.
+ */
 #define NSFX_INTERFACE_MAP_END()  \
         if (result)               \
         {                         \
@@ -163,26 +171,64 @@ NSFX_OPEN_NAMESPACE
  * aggregated object.<br/>
  * The navigator object may not have a reference count, since it is only held by
  * the controller, and the controller will never expose this object to others.<br/>
- * The navigator object can be a member variable hold an aggregated object, thus
- * share the same lifetime of the aggregated object.<br/>
- * If it ever has a reference count, the reference count can always be \c 1.<br/>
- * In practice, the navigator object can be implemented by an nested class of
- * the aggregated class.<br/>
+ *
+ * For a user-defined aggregable class, its instance should be a navigator, not
+ * an aggregated object.<br/>
+ * If it would be an aggregated object, then a user might mistakenly use the
+ * object directly without using a navigator.<br/>
+ * e.g., a controller would be able to create an aggregated object by pass a
+ * pointer to its own \c IObject.<br/>
+ * Then the controller would query an interface directly from the object,
+ * causing an infinite call loop.<br/>
+ * Nevertheless, an aggregable object should always be a navigator.<br/>
+ * A user must not be able to create an aggregated object directly.<br/>
+ * An aggregated object can only exposed by its navigator.<br/>
+ *
+ * This creates a coding problem.<br/>
+ * An object cannot be a navigator, and at the same time an aggregated object,
+ * since they have different implementations of \c IObject.<br/>
+ * Traditionally, a library provides a base class, and let users derive a child
+ * class from it, and implement interfaces on that child class.<br/>
+ * However, such child class cannot be both an implementor and a navigator.
+ * A navigator have to be a separate class, possibly provided by the library.<br/>
+ * To prevent users from mis-using an aggregated class, the aggregated class can
+ * be nested within the navigator class with a non-public access right.
+ * The library can provide a navigator class template that has user-defined
+ * aggregated class as a type parameter.
+ *
+ * The aggregated object is created alone with (by) the navigator, and exposed
+ * to the controller via the navigator's \c IObject::QueryInterface().<br/>
+ * The aggregated object can be a member variable hold a navigator object, thus
+ * they share the same lifetime.<br/>
+ * If a navigator object ever has a reference count, the reference count can
+ * always be \c 1.<br/>
+ * In practice, the class of an aggregated object can be written as a nested
+ * class within the navigator class.<br/>
  *
  * To provide a uniform approach to support both non-aggregated and aggregated
  * objects, the navigator object is abstracted out.<br/>
- * \c ObjectBase provides a virtual function \c NavigatorQueryInterface().<br/>
- * The user-defined object must implement \c NavigatorQueryInterface().<br/>
+ * \c ObjectBase provides a virtual function \c InnerQueryInterface().<br/>
+ * The user-defined class derives from \c ObjectBase and implements
+ * \c InnerQueryInterface().<br/>
  * This virtual funtion exposes the interfaces on the user-defined object.<br/>
  *
  * For a user-defined non-aggregated object, the navigator is itself.<br/>
- * Its \c IObject::QueryInterface() calls the \c NavigatorQueryInterface().<br/>
+ * Its \c IObject::QueryInterface() calls the \c InnerQueryInterface()
+ * implemented by itself.<br/>
  *
- * For a user-defined aggregated object, the navigator is an object of a nested
- * class.<br/>
+ * For a user-defined aggregated object, the navigator is another object.<br/>
  * The navigator object holds a pointer to the aggregated object, and its
- * \c IObject::QueryInterface() calls the \c NavigatorQueryInterface()
+ * \c IObject::QueryInterface() calls the \c InnerQueryInterface()
  * implemented by the aggregated object.<br/>
+ *
+ * To prevent the extra layer of virtual function call introduced by a virtual
+ * \c InnerQueryInterface(), the <b>curiously recurring template pattern</b>
+ * is used.<br/>
+ * The user-defined class implements a static \c InnerQueryInterface() function.
+ * The user-defined class derives from a specialized class template, and let
+ * the class template hold the type of user-defined class.<br/>
+ * This way, the class template can call the static \c InnerQueryInterface()
+ * function implemented by the user-defined class.<br/>
  *
  * 4. Poly object.<br/>
  * A poly object supports both non-aggregated and aggregated usage.<br/>
@@ -202,11 +248,23 @@ NSFX_OPEN_NAMESPACE
  * Otherwise, the lifetime manager provides implementation for the lifetime
  * management of the user-defined object.<br/>
  *
- * 5. Template-based virtual function implmentation.<br/>
+ * 5. Techniques.<br/>
+ * 5.1 Template-based virtual function implmentation.
  * A base class provides necessary data and non-virtual functions.<br/>
- * A virtual function calls the appropriate non-virtual functions.<br/>
+ * A dervied class implements its virtual functions by calling the appropriate
+ * non-virtual functions.<br/>
  *
- * 5.1 Data
+ * 5.2 Union-based data compression.
+ * When there are two pieces of data, and only one of them is used after
+ * creation, them can be compressed into a union.<br/>
+ * This is indeed the case here.
+ * When an object is not aggregated, it has a reference count; when it is
+ * aggregated, it has a pointer to the controller.
+ * Only one piece of data is used after creation, so they can be packed into
+ * a union.
+ *
+ * let one provide data, and the other virtual inherit from the former, and .
+ *
  * A non-aggregated object has a reference count.<br/>
  * An aggregated object has a pointer to the controller's \c IObject.<br/>
  * A poly object uses one of the data according to whether a valid pointer to
@@ -222,10 +280,11 @@ NSFX_OPEN_NAMESPACE
  *
  * @see \c NSFX_INTERFACE_MAP_BEGIN,
  *      \c NSFX_INTERFACE_ENTRY,
- *      \c NSFX_INTERFACE_ENTRY_AGGREGATE,
+ *      \c NSFX_INTERFACE_AGGREGATED_ENTRY,
  *      \c NSFX_INTERFACE_MAP_END.
  */
-class ObjectBase/*{{{*/
+class ObjectBase :/*{{{*/
+    virtual public IObject
 {
 public:
     ObjectBase(void) BOOST_NOEXCEPT :
@@ -256,7 +315,8 @@ public:
         return result;
     }
 
-    virtual void* InnerQueryInterface(const uuid& iid) BOOST_NOEXCEPT = 0;
+    // Defined via NSFX_INTERFACE_XXX() macros.
+    // static void* InnerQueryInterface(const uuid& iid) BOOST_NOEXCEPT;
 
     refcount_t OuterAddRef(void) BOOST_NOEXCEPT
     {
@@ -276,8 +336,8 @@ public:
 private:
     union
     {
-        refcount_t refCount_; /// The reference count.
-        IObject*   controller_;    /// The controller.
+        refcount_t refCount_;   /// The reference count.
+        IObject*   controller_; /// The controller.
     };
 }; // class ObjectBase /*}}}*/
 
@@ -297,8 +357,7 @@ private:
  */
 template<class Derived>
 class Object :/*{{{*/
-    virtual public ObjectBase,
-    virtual public IObject
+    virtual public ObjectBase
 {
 protected:
     Object(void) BOOST_NOEXCEPT
@@ -359,26 +418,25 @@ public:
  */
 template<class Derived>
 class AggObject :/*{{{*/
-    virtual public ObjectBase,
-    virtual public IObject
+    virtual public ObjectBase
 {
 private:
     /**
-     * @brief The interface navigator of the aggregated object.
+     * @brief The aggregated object.
      *
      * This \c IObject is held by the controller to query the interfaces exposed
      * by \c Derived.
      */
-    class Navigator :/*{{{*/
+    class Aggregated :/*{{{*/
         virtual public IObject
     {
     public:
-        Navigator(void) BOOST_NOEXCEPT :
+        Aggregated(void) BOOST_NOEXCEPT :
             obj_(nullptr)
         {
         }
 
-        virtual ~Navigator(void) BOOST_NOEXCEPT {}
+        virtual ~Aggregated(void) BOOST_NOEXCEPT {}
 
         // Set after construction.
         // This prevents the warning that 'this' pointer is accessed at
@@ -389,20 +447,14 @@ private:
         }
 
         // IObject./*{{{*/
-        /**
-         * @brief Dummy.
-         */
         virtual refcount_t AddRef(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
         {
-            return 1;
+            return obj_->OuterAddRef();
         }
 
-        /**
-         * @brief Dummy.
-         */
         virtual refcount_t Release(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
         {
-            return 1;
+            return obj_->OuterRelease();
         }
 
         /**
@@ -410,7 +462,7 @@ private:
          */
         virtual void* QueryInterface(const uuid& iid) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
         {
-            return obj_->OuterQueryInterface(iid);
+            return obj_->OuterQueryInterface(obj, iid);
         }
 
         /*}}}*/
@@ -443,9 +495,7 @@ protected:
     // IObject./*{{{*/
 public:
     /**
-     * @brief Shared implementation for other interfaces of \c Derived.
-     *
-     * The call is delegated to the controller.
+     * @brief Dummy.
      *
      * @remarks It is a \c final method that cannot be overridden.
      */
@@ -455,9 +505,7 @@ public:
     }
 
     /**
-     * @brief Shared implementation for other interfaces of \c Derived.
-     *
-     * The call is delegated to the controller.
+     * @brief Dummy.
      *
      * @remarks It is a \c final method that cannot be overridden.
      */
@@ -480,11 +528,14 @@ public:
 
     /*}}}*/
 
-    static IObject* CreateInstance(const uuid& iid)
+    static IObject* CreateInstance(IObject* controller, const uuid& iid)
     {
-        if (iid != uuid_of<IObject>())
+        if (controller != nullptr)
         {
-            BOOST_THROW_EXCEPTION(BadAggregation());
+            if (iid != uuid_of<IObject>())
+            {
+                BOOST_THROW_EXCEPTION(BadAggregation());
+            }
         }
         Derived* p = new Derived;
         if (!p)
@@ -646,10 +697,7 @@ public:
 
 private:
     Navigator navi_;  /// The navigator.
-
-    AddRefType  addRef_;
-    ReleaseType release_;
-    QueryInterfaceType queryInterface_;
+    bool aggregated_; /// Whether the object is aggregated or not.
 
 }; // class PolyObject /*}}}*/
 
