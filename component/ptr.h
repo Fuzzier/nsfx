@@ -42,6 +42,7 @@ private:
     friend class PtrBase;
 
     BOOST_CONCEPT_ASSERT((IObjectConcept<T>));
+    BOOST_CONCEPT_ASSERT((HasUuidConcept<T>));
 
     typedef PtrBase<T>  ThisType;
 
@@ -141,7 +142,7 @@ protected:
  * @ingroup Component
  * @brief A smart pointer that manages the lifetime of an object.
  *
- * @tparam T A type that conforms to \c IObjectConcept.
+ * @tparam T A type that conforms to \c IObjectConcept and \c HasUuidConcept.
  */
 template<class T>
 class Ptr : private PtrBase<T>/*{{{*/

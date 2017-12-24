@@ -31,6 +31,8 @@ NSFX_OPEN_NAMESPACE
 /**
  * @ingroup Component
  * @brief The base interface of all components.
+ *
+ * @remarks Every interface should <b>virtual</b> inherit from it.
  */
 class IObject /*{{{*/
 {
@@ -69,8 +71,8 @@ NSFX_DEFINE_CLASS_UUID4(IObject, 0, 0, 0, 0LL);
  * @ingroup Component
  * @brief IObject concept.
  *
- * @tparam T A class that is, extends or implements \c IObject, as well as
- *           it is associated with a uuid.
+ * @tparam T A class that is, extends or implements \c IObject.
+ * @tparam hasUuid If \c true, the class must have an associated uuid.
  */
 template<class T>
 class IObjectConcept
@@ -82,13 +84,44 @@ public:
 public:
     BOOST_CONCEPT_USAGE(IObjectConcept)
     {
+        IsIObject();
+    }
+
+    void IsIObject(void)
+    {
         T* o = nullptr;
-        uuid iid = uuid_of<T>(o);
         refcount_t r1 = o->AddRef();
         refcount_t r2 = o->Release();
-        T* p = static_cast<T*>(o->QueryInterface(iid));
+        T* p = static_cast<T*>(o->QueryInterface(uuid_of<IObject>()));
     }
-};
+
+}; // class IObjectConcept
+
+
+/**
+ * @ingroup Component
+ * @brief Has uuid concept.
+ *
+ * @tparam T A class that is associated with a uuid.
+ *
+ * @see \c NSFX_DEFINE_CLASS_UUID4.
+ */
+template<class T>
+class HasUuidConcept
+{
+public:
+    BOOST_CONCEPT_USAGE(HasUuidConcept)
+    {
+        HasUuid();
+    }
+
+    void HasUuid(void)
+    {
+        T* o = nullptr;
+        uuid iid = uuid_of<T>(o);
+    }
+
+}; // class HasUuidConcept
 
 
 NSFX_CLOSE_NAMESPACE
