@@ -66,7 +66,7 @@ NSFX_DEFINE_CLASS_UUID4(IObject, 0, 0, 0, 0LL);
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// IObject concept
+// IObject concept.
 /**
  * @ingroup Component
  * @brief IObject concept.
@@ -75,7 +75,7 @@ NSFX_DEFINE_CLASS_UUID4(IObject, 0, 0, 0, 0LL);
  * @tparam hasUuid If \c true, the class must have an associated uuid.
  */
 template<class T>
-class IObjectConcept
+class IObjectConcept/*{{{*/
 {
 public:
     static_assert(boost::is_base_of<IObject, T>::value,
@@ -95,9 +95,11 @@ public:
         T* p = static_cast<T*>(o->QueryInterface(uuid_of<IObject>()));
     }
 
-}; // class IObjectConcept
+}; // class IObjectConcept /*}}}*/
 
 
+////////////////////////////////////////////////////////////////////////////////
+// HasUuid concept.
 /**
  * @ingroup Component
  * @brief Has uuid concept.
@@ -107,7 +109,7 @@ public:
  * @see \c NSFX_DEFINE_CLASS_UUID4.
  */
 template<class T>
-class HasUuidConcept
+class HasUuidConcept/*{{{*/
 {
 public:
     BOOST_CONCEPT_USAGE(HasUuidConcept)
@@ -121,7 +123,7 @@ public:
         uuid iid = uuid_of<T>(o);
     }
 
-}; // class HasUuidConcept
+}; // class HasUuidConcept /*}}}*/
 
 
 NSFX_CLOSE_NAMESPACE

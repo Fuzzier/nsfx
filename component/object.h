@@ -20,7 +20,7 @@
 #include <nsfx/component/config.h>
 #include <nsfx/component/iobject.h>
 #include <nsfx/component/exception.h>
-#include <boost/type_traits.hpp>
+#include <boost/type_traits/is_base_of.hpp>
 
 
 NSFX_OPEN_NAMESPACE
