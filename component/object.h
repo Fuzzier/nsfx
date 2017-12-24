@@ -18,7 +18,7 @@
 
 
 #include <nsfx/component/config.h>
-#include <nsfx/component/iobject.h>
+#include <nsfx/component/i-object.h>
 #include <nsfx/component/exception.h>
 #include <boost/type_traits/is_base_of.hpp>
 
