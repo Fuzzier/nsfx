@@ -18,7 +18,7 @@
 
 
 #include <nsfx/component/config.h>
-#include <nsfx/component/iobject.h>
+#include <nsfx/component/i-object.h>
 #include <utility>
 
 

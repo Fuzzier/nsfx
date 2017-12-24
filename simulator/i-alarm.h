@@ -13,13 +13,13 @@
  *   All rights reserved.
  */
 
-#ifndef IALARM_H__0FC1DAC2_82D2_46A6_9C61_E23484B8608C
-#define IALARM_H__0FC1DAC2_82D2_46A6_9C61_E23484B8608C
+#ifndef I_ALARM_H__0FC1DAC2_82D2_46A6_9C61_E23484B8608C
+#define I_ALARM_H__0FC1DAC2_82D2_46A6_9C61_E23484B8608C
 
 
 #include <nsfx/simulator/config.h>
-#include <nsfx/component/iobject.h>
-#include <nsfx/component/ialarm-sink.h>
+#include <nsfx/component/i-object.h>
+#include <nsfx/component/i-alarm-sink.h>
 
 
 NSFX_OPEN_NAMESPACE
@@ -46,9 +46,8 @@ public:
      *
      * @throw InvalidPointer  The sink is \c nullptr.
      * @throw ConnectionLimit A sink has already been connected.
-     * @throw CannotConnect   The sink does not support \c IAlarmSink interface.
      */
-    virtual void Connect(IUnknown* sink) = 0;
+    virtual void Connect(IAlarmSink* sink) = 0;
 
     /**
      * @brief Disconnect from the sink.
@@ -99,5 +98,5 @@ NSFX_DEFINE_CLASS_UUID4(IAlarm, 0x0FC1DAC2, 0x82D2, 0x46A6, 0x9C61E23484B8608CLL
 NSFX_CLOSE_NAMESPACE
 
 
-#endif // IALARM_H__0FC1DAC2_82D2_46A6_9C61_E23484B8608C
+#endif // I_ALARM_H__0FC1DAC2_82D2_46A6_9C61_E23484B8608C
 

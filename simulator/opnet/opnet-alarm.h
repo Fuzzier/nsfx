@@ -35,31 +35,18 @@ NSFX_OPEN_NAMESPACE
  * @brief The alarm provided by OPNET.
  */
 class OpnetAlarm :
-    virtual public IAlarm,
-    virtual public AggObject
+    public IAlarm
 {
 public:
     typedef OpnetAlarm  ThisType;
 
 public:
-    OpnetAlarm(void) {}
+    OpnetAlarm(void) BOOST_NOEXCEPT {}
 
     virtual ~OpnetAlarm(void) BOOST_NOEXCEPT {}
 
-    // IObject./*{{{*/
-    virtual void* QueryInterface(const uuid& iid) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
-    {
-        void* result = nullptr;
-        if (iid == )
-        {
-            // code
-        }
-        return result;
-    }
-    /*}}}*/
-
     // IAlarm./*{{{*/
-    virtual void Connect(IUnknown* sink) NSFX_FINAL NSFX_OVERRIDE
+    virtual void Connect(IObject* sink) NSFX_FINAL NSFX_OVERRIDE
     {
         if (sink_)
         {
@@ -143,7 +130,6 @@ private:
     }
 
 private:
-    Ptr<IClock> clock_;
     Ptr<IAlarmSink> sink_;
     ::Evhandle evh_;
 };

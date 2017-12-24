@@ -13,12 +13,12 @@
  *   All rights reserved.
  */
 
-#ifndef CLOCK_H__49523D2A_BE6A_45FA_84EA_88307B44F4D2
-#define CLOCK_H__49523D2A_BE6A_45FA_84EA_88307B44F4D2
+#ifndef I_CLOCK_H__49523D2A_BE6A_45FA_84EA_88307B44F4D2
+#define I_CLOCK_H__49523D2A_BE6A_45FA_84EA_88307B44F4D2
 
 
 #include <nsfx/simulator/config.h>
-#include <nsfx/component/iobject.h>
+#include <nsfx/component/i-object.h>
 
 
 NSFX_OPEN_NAMESPACE
@@ -34,11 +34,9 @@ class IClock :
     virtual public IObject
 {
 public:
-    virtual ~IClock(void) {}
+    virtual ~IClock(void) BOOST_NOEXCEPT {}
 
     virtual TimePoint Now(void) = 0;
-    virtual void AdvanceTo(const TimePoint& t) = 0;
-    virtual void Advance(const Duration& dt) = 0;
 };
 
 
@@ -48,5 +46,5 @@ NSFX_DEFINE_CLASS_UUID4(IClock, 0x49523D2A, 0xBE6A, 0x45FA, 0x84EA88307B44F4D2LL
 NSFX_CLOSE_NAMESPACE
 
 
-#endif // CLOCK_H__49523D2A_BE6A_45FA_84EA_88307B44F4D2
+#endif // I_CLOCK_H__49523D2A_BE6A_45FA_84EA_88307B44F4D2
 
