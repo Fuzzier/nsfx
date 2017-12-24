@@ -117,6 +117,12 @@
  *    Objects are hidden behind interfaces.<br/>
  *    Who wants an interface, who should query it.<br/>
  *
+ *    When a pointer to an object is passed across two objects, the caller does
+ *    not increment reference count by one, and transfer that one reference
+ *    count to the callee.<br/>
+ *    It is the callee's responsibility to query interfaces and manage reference
+ *    counts it holds.<br/>
+ *
  */
 
 
