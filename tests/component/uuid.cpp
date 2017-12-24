@@ -20,26 +20,22 @@ NSFX_TEST_SUITE(uuid)
         NSFX_TEST_EXPECT_EQ(s1, "01234567-89ab-cdef-0123-456789abcdef");
     }
 
+    struct Object
+    {
+    }* o = nullptr;
+    NSFX_DEFINE_CLASS_UUID4(Object, 0x01234567, 0x89ab, 0xcdef, 0x0123456789abcdefLL);
+
+    struct Interface
+    {
+    }* i = nullptr;
+    NSFX_DEFINE_CLASS_UUID4(Interface, 0x11234567, 0x89ab, 0xcdef, 0x0123456789abcdefLL);
+
     NSFX_TEST_CASE(DEFINE_TYPE_UUID)
     {
-        struct Object
-        {
-            NSFX_DEFINE_CLASS_UUID4(0x01234567, 0x89ab, 0xcdef, 0x0123456789abcdefLL);
-        }* o = nullptr;
-
-        struct Interface
-        {
-            NSFX_DEFINE_CLASS_UUID4(0x11234567, 0x89ab, 0xcdef, 0x0123456789abcdefLL);
-        }* i = nullptr;
-
         NSFX_TEST_EXPECT_EQ(to_string(nsfx::uuid_of<Object>()),
-                            "01234567-89ab-cdef-0123-456789abcdef");
-        NSFX_TEST_EXPECT_EQ(to_string(nsfx::uuid_of(o)),
                             "01234567-89ab-cdef-0123-456789abcdef");
 
         NSFX_TEST_EXPECT_EQ(to_string(nsfx::uuid_of<Interface>()),
-                            "11234567-89ab-cdef-0123-456789abcdef");
-        NSFX_TEST_EXPECT_EQ(to_string(nsfx::uuid_of(i)),
                             "11234567-89ab-cdef-0123-456789abcdef");
     }
 
