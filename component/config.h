@@ -32,6 +32,12 @@
  * ### 1.1 Use concrete class directly.<br/>
  *     The primary form of interface implementation is to create a concrete
  *     class that inherits from pure abstract bases, and implements the methods.<br/>
+ *     Such classes can be large and heavy, since a class inherits from all
+ *     interfaces it implements, and presents to users a huge table of virtual
+ *     functions, as long as a set of non-virtual functions.<br>
+ *     It becomes unclear how interfaces are cohesive with each other, but they
+ *     are just coupled tightly together within a class.<br/>
+ *
  *     Interfaces are generally not aware of each other.<br/>
  *     The users generally have to know the concrete type of the object and use
  *     member functions or type cast to obtain the interfaces.<br/>
@@ -105,6 +111,48 @@
  *     Mixing lifetime management schemes could be beneficial, but could cause
  *     more headaches for users to use them properly.<br/>
  *
+ * ### 2.5. Transfer of reference counts across functions.<br/>
+ *     When a pointer to an object is passed into a function call, the caller
+ *     must guarantee that the object remains valid until the function returns.<br/>
+ *     Usually, the caller has to increment the reference count by one before
+ *     calling the function.<br/>
+ *
+ *     Should that one reference count be transferred to the callee?<br/>
+ *     Microsoft COM rules specify that there is no transferring, and the caller
+ *     is responsible to release this reference count.<br/>
+ *     Microsoft RCW (Runtime Caller Wrapper) rules specify that this reference
+ *     count is transferred, and the callee is responsible to release this
+ *     reference count.<br/>
+ *
+ *     When a pointer to an object is passed out of a function call, the callee
+ *     must guarantee that the caller obtains a valid object.<br/>
+ *     Usually, the callee has to increment the reference count by one, and
+ *     transfer that one reference count to the caller.<br/>
+ *
+ *     In NSFX, the intention whether to transfer a reference count is stated
+ *     explicitly.<br/>
+ *     1) If a <b>smart pointer</b> is used, a reference count is transferred
+ *        across the function call.<br/>
+ *     2) If a <b>non-void raw pointer</b> is used, a reference count is <b>not</b>
+ *        transferred across the function call.<br/>
+ *     3) If a <b>void raw pointer</b> is used, a reference count is transferred
+ *        out of the function call.<br/>
+ *
+ *     The 3rd case is only applied to interface acquisition and object
+ *     creation methods.<br/>
+ *     Since a virtual function cannot have multiple return types, and function
+ *     templates cannot be mixed with virtual funtions, the return type has to
+ *     be \c void*.<br/>
+ *     Examples are \c IObject::QueryInterface() and \c IFactory::CreateObject().<br/>
+ *     Such cases are handled by library-provided smart pointers and template
+ *     functions (e.g., \c CreateObject()), and should not bother the users.<br/>
+ *     User-defined methods should avoid using void raw pointers as return
+ *     values.<br/>
+ *
+ *     The 2nd case is commonly used to retrieve an interface pointer on a
+ *     singleton object, and the returned pointer can be a non-void raw pointer.<br/>
+ *     It is user's responsibility to ensure that the singleton remains valid.<br/>
+ *
  * ## 3. Conclusion.<br/>
  *    Performance and flexibility are conflicting aspects.<br/>
  *    To improve performance, more responsibilities are shifted to the users.<br/>
@@ -116,13 +164,6 @@
  *    Intrusive reference counting is welcome.<br/>
  *    Objects are hidden behind interfaces.<br/>
  *    Who wants an interface, who should query it.<br/>
- *
- *    When a pointer to an object is passed across two objects, the caller does
- *    not increment reference count by one, and transfer that one reference
- *    count to the callee.<br/>
- *    It is the callee's responsibility to query interfaces and manage reference
- *    counts it holds.<br/>
- *
  */
 
 
