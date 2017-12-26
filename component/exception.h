@@ -43,7 +43,6 @@ struct OutOfBounds : ComponentException {};
  * @brief The precondition of calling a method is not satisfied.
  */
 struct IllegalMethodCall : ComponentException {};
-struct AdviseNotSupported : ComponentException {};
 struct Uninitialized : ComponentException {};
 /**
  * @brief Practice aggregation in a wrong way.
@@ -54,6 +53,7 @@ struct BadAggregation : ComponentException {};
  */
 struct ClassNotAvaiable : ComponentException {};
 struct ClassNotRegistered : ComponentException {};
+struct ClassIsRegistered : ComponentException {};
 struct InterfaceNotRegistered : ComponentException {};
 struct BadThreadingModel : ComponentException {};
 /**
