@@ -8,7 +8,7 @@ NSFX_TEST_SUITE(Ptr)
     using nsfx::refcount_t;
 
     // WARN: for test only. The refcount should be 0 at construction,
-    //       and incremented at QueryInterface().
+    //       and incremented to 1 by the first QueryInterface().
     struct Object : virtual nsfx::IObject/*{{{*/
     {
         Object(void) BOOST_NOEXCEPT :
@@ -51,8 +51,6 @@ NSFX_TEST_SUITE(Ptr)
         refcount_t refCount_;
     };/*}}}*/
 
-    NSFX_DEFINE_CLASS_UUID4(Object, 0, 0, 1, 0LL);
-
     struct ITest : virtual nsfx::IObject/*{{{*/
     {
         virtual ~ITest(void) {}
@@ -61,7 +59,7 @@ NSFX_TEST_SUITE(Ptr)
     NSFX_DEFINE_CLASS_UUID4(ITest, 0, 0, 0, 1LL);
 
     // WARN: for test only. The refcount should be 0 at construction,
-    //       and incremented at QueryInterface().
+    //       and incremented to 1 by the first QueryInterface().
     struct Test : virtual ITest/*{{{*/
     {
         Test(void) BOOST_NOEXCEPT :
@@ -109,8 +107,6 @@ NSFX_TEST_SUITE(Ptr)
         refcount_t refCount_;
     };/*}}}*/
 
-    NSFX_DEFINE_CLASS_UUID4(Test, 0, 0, 1, 1LL);
-
     refcount_t RefCount(nsfx::IObject* p)/*{{{*/
     {
         refcount_t result = 0;
@@ -121,6 +117,16 @@ NSFX_TEST_SUITE(Ptr)
         }
         return result;
     }/*}}}*/
+
+    NSFX_TEST_CASE(HasNoUuid)
+    {
+        // Object has no uuid.
+        nsfx::Ptr<Object>  o(new Object, true);
+        nsfx::Ptr<nsfx::IObject> p(o);
+        nsfx::Ptr<Test>  t(new Test, true);
+        nsfx::Ptr<ITest> q(t);
+        p = t;
+    }
 
     NSFX_TEST_CASE(ctor0)
     {

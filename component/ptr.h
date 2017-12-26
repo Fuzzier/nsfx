@@ -42,7 +42,6 @@ private:
     friend class PtrBase;
 
     BOOST_CONCEPT_ASSERT((IObjectConcept<T>));
-    BOOST_CONCEPT_ASSERT((HasUuidConcept<T>));
 
     typedef PtrBase<T>  ThisType;
 
@@ -65,6 +64,7 @@ protected:
     PtrBase(U* p, bool takeRefCount, boost::false_type) BOOST_NOEXCEPT :
         p_(nullptr)
     {
+        BOOST_CONCEPT_ASSERT((HasUuidConcept<T>));
         BOOST_CONCEPT_ASSERT((IObjectConcept<U>));
         static_assert(!boost::is_same<T, U>::value, "");
         if (p)
@@ -104,6 +104,7 @@ protected:
     template<class U>
     void Reset(U* p, bool takeRefCount, boost::false_type) BOOST_NOEXCEPT
     {
+        BOOST_CONCEPT_ASSERT((HasUuidConcept<T>));
         BOOST_CONCEPT_ASSERT((IObjectConcept<U>));
         static_assert(!boost::is_same<T, U>::value, "");
         Reset();
@@ -125,6 +126,7 @@ protected:
     template<class U>
     bool IsSameObject(U* p, boost::false_type) const BOOST_NOEXCEPT
     {
+        BOOST_CONCEPT_ASSERT((HasUuidConcept<T>));
         BOOST_CONCEPT_ASSERT((IObjectConcept<U>));
         static_assert(!boost::is_same<T, U>::value, "");
         // Query the IObject interface.
@@ -142,7 +144,11 @@ protected:
  * @ingroup Component
  * @brief A smart pointer that manages the lifetime of an object.
  *
- * @tparam T A type that conforms to \c IObjectConcept and \c HasUuidConcept.
+ * @tparam T A type that conforms to \c IObjectConcept.<br/>
+ *
+ * @remarks If the pointer is constructed from or assigned to a pointer of a
+ *          different type, then the template parameter \c T must also conform
+ *          to \c HasUuidConcept.
  */
 template<class T>
 class Ptr : private PtrBase<T>/*{{{*/
