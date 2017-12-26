@@ -200,8 +200,8 @@ NSFX_OPEN_NAMESPACE
  * classes with a reference count or a controller pointer, and implementing
  * \c IObject as appropriate.<br/>
  * \c ObjectBase is intended to be used by the class templates.<br/>
- * It is not intended to be used by users directly, thus it is abstract and its
- * methods are not public.<br/>
+ * It is not intended to be constructed directly, thus its methods are not
+ * public.<br/>
  *
  * Users can use \c NSFX_INTERFACE_XXX() macros to ease the implementation of
  * \c NavigatorQueryInterface().<br/>

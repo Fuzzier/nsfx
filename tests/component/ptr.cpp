@@ -137,6 +137,8 @@ NSFX_TEST_SUITE(Ptr)
         NSFX_TEST_EXPECT(p.Get() == nullptr);
     }
 
+    // TODO: nullptr_t
+
     NSFX_TEST_CASE(ctor1)
     {
         // from raw pointer, don't take refcount

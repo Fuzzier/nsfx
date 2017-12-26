@@ -44,9 +44,9 @@ public:
      *                The class must conform to \c EnvelopableConcept.
      * @param[in] factory The class factory.
      *
-     * @throw OutOfMemory
      * @throw ClassIsRegistered The class is already registered.
      * @throw InvalidPointer The factory is \c nullptr.
+     * @throw std::bad_alloc
      */
     virtual void Register(const uuid& cid, Ptr<IClassFactory> factory) = 0;
 

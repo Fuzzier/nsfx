@@ -20,6 +20,7 @@
 #include <nsfx/component/config.h>
 #include <nsfx/component/i-class-factory.h>
 #include <nsfx/component/object.h>
+#include <nsfx/component/exception.h>
 
 
 NSFX_OPEN_NAMESPACE
