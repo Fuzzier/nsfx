@@ -172,16 +172,19 @@ public:
 
     /*}}}*/
 
-    // I/O./*{{{*/
-public:
+    // Methods./*{{{*/
     /**
-     * @brief Get the number of nanoseconds in the duration.
+     * @brief Convert to nanoseconds.
      */
-    BOOST_CONSTEXPR Rep GetNanoSeconds(void) const
+    BOOST_CONSTEXPR Rep ToNanoSeconds(void) const
     {
         return rep_;
     }
 
+    /*}}}*/
+
+    // I/O./*{{{*/
+public:
     /**
      * @brief Convert to formatted string "D HH:MM:SS.mmm.uuu.nnn".
      *

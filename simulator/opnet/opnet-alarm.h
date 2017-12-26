@@ -18,10 +18,9 @@
 
 
 #include <nsfx/simulator/config.h>
-#include <nsfx/component/iobject.h>
-#include <nsfx/component/ialarm-sink.h>
-#include <nsfx/component/ialarm.h>
-#include <nsfx/component/ptr.h>
+#include <nsfx/simulator/i-alarm.h>
+#include <nsfx/simulator/opnet/chrono.h>
+#include <nsfx/component/class-registry.h>
 #include <opnet.h>
 
 
@@ -87,7 +86,7 @@ public:
         }
         evh_ = ::op_intrpt_schedule_call(t0
                                          0,
-                                         &ThisType::OnTimeout,
+                                         &ThisType::Fire,
                                          sink_.Get());
     }
 
@@ -104,7 +103,7 @@ public:
         }
         evh_ = ::op_intrpt_schedule_call(op_sim_time() + dt0,
                                          0,
-                                         &ThisType::OnTimeout,
+                                         &ThisType::Fire,
                                          sink_.Get());
     }
 
@@ -120,22 +119,24 @@ public:
     /*}}}*/
 
 private:
-    static void OnTimeout(IAlarmSink* sink, int /* code */ )
+    static void Fire(IAlarmSink* sink, int /* code */ )
     {
-        if (!sink)
-        {
-            BOOST_THROW_EXCEPTION(InvalidPointer());
-        }
         sink->Fire();
     }
+
+    NSFX_INTERFACE_MAP_BEGIN(OpnetAlarm)
+        NSFX_INTERFACE_ENTRY(IAlarm)
+    NSFX_INTERFACE_MAP_END()
 
 private:
     Ptr<IAlarmSink> sink_;
     ::Evhandle evh_;
-};
+
+}; // class OpnetAlarm
 
 
 NSFX_DEFINE_CLASS_UUID4(OpnetAlarm, 0x0FC1DAC2, 0x82D2, 0x46A6, 0x9C61E23484B8608CLL);
+NSFX_REGISTER_CLASS(OpnetAlarm);
 
 
 NSFX_CLOSE_NAMESPACE

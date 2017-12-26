@@ -10,7 +10,7 @@ NSFX_TEST_SUITE(Duration)
     NSFX_TEST_CASE(Constructor)
     {
         Duration td;
-        NSFX_TEST_EXPECT_EQ(td.GetNanoSeconds(), 0);
+        NSFX_TEST_EXPECT_EQ(td.ToNanoSeconds(), 0);
     }
 
     NSFX_TEST_CASE(NanoSeconds)
@@ -18,7 +18,7 @@ NSFX_TEST_SUITE(Duration)
         auto value = Duration::NANO_SECOND;
         Duration td = nsfx::chrono::NanoSeconds(1);
         NSFX_TEST_EXPECT_EQ(value, 1);
-        NSFX_TEST_EXPECT_EQ(td.GetNanoSeconds(), value);
+        NSFX_TEST_EXPECT_EQ(td.ToNanoSeconds(), value);
     }
 
     NSFX_TEST_CASE(MicroSeconds)
@@ -26,7 +26,7 @@ NSFX_TEST_SUITE(Duration)
         auto value = Duration::MICRO_SECOND;
         Duration td = nsfx::chrono::MicroSeconds(1);
         NSFX_TEST_EXPECT_EQ(value, 1000);
-        NSFX_TEST_EXPECT_EQ(td.GetNanoSeconds(), value);
+        NSFX_TEST_EXPECT_EQ(td.ToNanoSeconds(), value);
     }
 
     NSFX_TEST_CASE(MilliSeconds)
@@ -34,7 +34,7 @@ NSFX_TEST_SUITE(Duration)
         auto value = Duration::MILLI_SECOND;
         Duration td = nsfx::chrono::MilliSeconds(1);
         NSFX_TEST_EXPECT_EQ(value, 1000000);
-        NSFX_TEST_EXPECT_EQ(td.GetNanoSeconds(), value);
+        NSFX_TEST_EXPECT_EQ(td.ToNanoSeconds(), value);
     }
 
     NSFX_TEST_CASE(Seconds)
@@ -42,7 +42,7 @@ NSFX_TEST_SUITE(Duration)
         auto value = Duration::SECOND;
         Duration td = nsfx::chrono::Seconds(1);
         NSFX_TEST_EXPECT_EQ(value, 1000000000);
-        NSFX_TEST_EXPECT_EQ(td.GetNanoSeconds(), value);
+        NSFX_TEST_EXPECT_EQ(td.ToNanoSeconds(), value);
     }
 
     NSFX_TEST_CASE(Minutes)
@@ -50,7 +50,7 @@ NSFX_TEST_SUITE(Duration)
         auto value = Duration::MINUTE;
         Duration td = nsfx::chrono::Minutes(1);
         NSFX_TEST_EXPECT_EQ(value, 60000000000LL);
-        NSFX_TEST_EXPECT_EQ(td.GetNanoSeconds(), value);
+        NSFX_TEST_EXPECT_EQ(td.ToNanoSeconds(), value);
     }
 
     NSFX_TEST_CASE(Hours)
@@ -58,7 +58,7 @@ NSFX_TEST_SUITE(Duration)
         auto value = Duration::HOUR;
         Duration td = nsfx::chrono::Hours(1);
         NSFX_TEST_EXPECT_EQ(value, 3600000000000LL);
-        NSFX_TEST_EXPECT_EQ(td.GetNanoSeconds(), value);
+        NSFX_TEST_EXPECT_EQ(td.ToNanoSeconds(), value);
         NSFX_TEST_EXPECT_EQ(td, nsfx::chrono::Hours(1));
     }
 

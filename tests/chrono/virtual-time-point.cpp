@@ -11,7 +11,7 @@ NSFX_TEST_SUITE(VirtualTimePoint)
     NSFX_TEST_CASE(Ctor0)
     {
         TimePoint t;
-        NSFX_TEST_EXPECT_EQ(t.GetDuration().GetNanoSeconds(), 0);
+        NSFX_TEST_EXPECT_EQ(t.GetDuration().ToNanoSeconds(), 0);
     }
 
     NSFX_TEST_CASE(Ctor1)

@@ -18,10 +18,9 @@
 
 
 #include <nsfx/simulator/config.h>
-#include <nsfx/component/iobject.h>
-#include <nsfx/component/ialarm-sink.h>
-#include <nsfx/component/ialarm.h>
-#include <nsfx/component/ptr.h>
+#include <nsfx/simulator/i-clock.h>
+#include <nsfx/simulator/opnet/chrono.h>
+#include <nsfx/component/class-registry.h>
 #include <opnet.h>
 
 
@@ -35,8 +34,7 @@ NSFX_OPEN_NAMESPACE
  * @brief The clock provided by OPNET.
  */
 class OpnetClock :
-    virtual public IClock,
-    virtual public AggObject
+    public IClock
 {
 public:
     typedef OpnetClock  ThisType;
@@ -49,12 +47,20 @@ public:
     // IAlarm./*{{{*/
     virtual TimePoint Now(void) NSFX_FINAL NSFX_OVERRIDE
     {
-        ::op_sim_time();
+        return from_opnet_time_point(::op_sim_time());
     }
+
+    /*}}}*/
+
+    NSFX_INTERFACE_MAP_BEGIN(OpnetClock)
+        NSFX_INTERFACE_ENTRY(IClock)
+    NSFX_INTERFACE_MAP_END()
+
 };
 
 
 NSFX_DEFINE_CLASS_UUID4(OpnetClock, 0xDD1517B3, 0x2912, 0x4930, 0x891AA36F79369B97LL);
+NSFX_REGISTER_CLASS(OpnetClock);
 
 
 NSFX_CLOSE_NAMESPACE
