@@ -37,7 +37,7 @@ NSFX_OPEN_NAMESPACE
 class IObject /*{{{*/
 {
 public:
-    virtual ~IObject(void) {}
+    virtual ~IObject(void) BOOST_NOEXCEPT {}
 
 public:
     virtual refcount_t AddRef(void) BOOST_NOEXCEPT = 0;
@@ -47,15 +47,16 @@ public:
      *
      * @param iid The uuid of the interface.
      *
-     * @return A pointer to the interface.<br/>
-     *         Use \c static_cast to convert it to a pointer of the actual
-     *         interface type.
+     * @return A pointer to the interface that holds one reference count.<br/>
+     *         Users is responsible to release the reference count.<br/>
+     *         Users must use \c static_cast to convert it to a pointer of the
+     *         actual interface type.<br/>
      *         Users must make sure the interface type is correct.<br/>
      *         As a design pattern, the \c iid of an interface type is equal to
      *         the return value of <code>uuid_of(type*)</code>.
      *         <p>
      *         If \c nullptr is returned, the object does not have the queried
-     *         interface.
+     *         interface.<br/>
      */
     virtual void* QueryInterface(const uuid& iid) BOOST_NOEXCEPT = 0;
 
