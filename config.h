@@ -222,7 +222,30 @@ using boost::unordered_map;
 NSFX_CLOSE_NAMESPACE
 
 
+////////////////////////////////////////////////////////////////////////////////
+// assert.
 #include <cassert>
+/**
+ * @brief The assert statement.
+ *
+ * ## About \c assert().<br/>
+ * ### Goodness.<br/>
+ *     \c assert() costs nothing in a release code that defines \c NDEBUG macro.<br/>
+ *
+ * ### Badness.<br/>
+ *     \c assert() gives little information, and terminates the program.<br/>
+ *
+ * ## When to use \c assert()?<br/>
+ * ### 1. Functions with \c noexcept.<br/>
+ *     If a function is specified as \c noexcept, then use \c assert() as the
+ *     last resort.<br/>
+ *
+ * ### 2. Singleton failure.<br/>
+ *     If a user retrieves a pointer to a singleton, use \c assert() to check
+ *     the returned pointer is not \c nullptr.<br/>
+ *     Usually, the program is beyond redemption in such condition.<br/>
+ *
+ */
 #define NSFX_ASSERT(p)  assert(p)
 
 
