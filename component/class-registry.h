@@ -19,7 +19,21 @@
 
 #include <nsfx/component/config.h>
 #include <nsfx/component/i-class-registry.h>
-#include <boost/type_traits/is_same.hpp>
+#include <nsfx/component/class-factory.h>
+#include <nsfx/component/exception.h>
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Macros./*{{{*/
+/**
+ * @brief Register a class with a default class factory.
+ *
+ * @param T The type must conform to \c EnvelopableConcept.
+ *
+ * @see \c RegisterClass().
+ */
+#define NSFX_REGISTER_CLASS(T)  RegisterClass<T>()
+/*}}}*/
 
 
 NSFX_OPEN_NAMESPACE
@@ -103,15 +117,35 @@ NSFX_DEFINE_CALSS_UUID4(ClassRegistry, 0xC229D24E, 0xC71F, 0x4C23, 0x8615EB2054B
 // Helper functions./*{{{*/
 /**
  * @ingroup Component
+ * @brief Register a class with the default class factory.
+ *
+ * @param T The class to register.<br/>
+ *          It must conform to \c HasUuidConcept and \c EnvelopableConcept.
+ *
+ * @see \c IClassRegistry::Register().
+ */
+template<class T>
+void RegisterClass(void)
+{
+    BOOST_CONCEPT_ASSERT((HasUuidConcept<T>));
+    typedef Object<ClassFactory<T> >  ClassFactoryType;
+    Ptr<IClassFactory> factory(new ClassFactoryType);
+    IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
+    NSFX_ASSERT(registry);
+    registry->Register(cid, factory);
+}
+
+/**
+ * @ingroup Component
  * @brief Register a class.
  *
  * @see \c IClassRegistry::Register().
  */
-void RegisterClass(const uuid& cid, Ptr<IFactory> factory)
+void RegisterClass(const uuid& cid, Ptr<IClassFactory> factory)
 {
-    IClassRegistry* reg = ClassRegistry::GetIClassRegistry();
-    NSFX_ASSERT(reg);
-    reg->Register(cid, factory);
+    IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
+    NSFX_ASSERT(registry);
+    registry->Register(cid, factory);
 }
 
 /**
@@ -136,7 +170,7 @@ Ptr<Intf> CreateObject(const uuid& cid, IObject* controller)
 {
     IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
     NSFX_ASSERT(registry);
-    Ptr<IFactory> factory = registry->GetClassFactory(cid);
+    Ptr<IClassFactory> factory = registry->GetClassFactory(cid);
     Intf* p = static_cast<Intf>(factory->CreateObject(controller));
     return Ptr<Intf>(p, true);
 }

@@ -18,7 +18,6 @@
 
 
 #include <nsfx/simulator/config.h>
-#include <nsfx/component/i-object.h>
 #include <nsfx/component/i-alarm-sink.h>
 
 
@@ -42,12 +41,12 @@ public:
      *
      * @pre No sink has been connected yet.
      *
-     * @param sink An alarm must query \c IAlarmSink interface from the sink.
+     * @param sink The alarm sink.
      *
      * @throw InvalidPointer  The sink is \c nullptr.
      * @throw ConnectionLimit A sink has already been connected.
      */
-    virtual void Connect(IAlarmSink* sink) = 0;
+    virtual void Connect(Ptr<IAlarmSink> sink) = 0;
 
     /**
      * @brief Disconnect from the sink.
@@ -64,7 +63,7 @@ public:
      * @brief Schedule an alarm.
      *
      * @throw NotConnected No sink has been connected.
-     * @throw InvalidArgument The time point is earlier than the current time.
+     * @throw InvalidArgument The time point is too early.
      */
     virtual void ScheduleAt(const TimePoint& t) = 0;
 
@@ -75,24 +74,24 @@ public:
      *      The alarm has not been scheduled yet.
      *
      * @throw NotConnected No sink has been connected.
-     * @throw InvalidArgument The duration is negative.
+     * @throw InvalidArgument The duration is too negative.
      */
-    virtual void ScheduleFor(const Duration& dt) = 0;
+    virtual void ScheduleIn(const Duration& dt) = 0;
 
     /**
      * @brief Whether the alarm is scheduled.
      */
-    virtual bool IsPending(void) BOOST_NOEXCEPT = 0;
+    virtual bool IsPending(void) = 0;
 
     /**
      * @brief Cancel the scheduled alarm (if any).
      */
-    virtual void Cancel(void) BOOST_NOEXCEPT = 0;
+    virtual void Cancel(void) = 0;
 
-};
+}; // class IAlarm
 
 
-NSFX_DEFINE_CLASS_UUID4(IAlarm, 0x0FC1DAC2, 0x82D2, 0x46A6, 0x9C61E23484B8608CLL);
+NSFX_DEFINE_CALSS_UUID4(IAlarm, 0xF9350F38, 0x9D11, 0x4BF3, 0xB28C143E76AC05C2LL);
 
 
 NSFX_CLOSE_NAMESPACE

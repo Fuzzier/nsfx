@@ -164,8 +164,11 @@ public:
     /**
      * @brief Construct a null smart pointer.
      */
-    Ptr(void) BOOST_NOEXCEPT :
-        BaseType()
+    Ptr(void) BOOST_NOEXCEPT
+    {
+    }
+
+    Ptr(nullptr_t) BOOST_NOEXCEPT
     {
     }
 
@@ -231,6 +234,12 @@ public:
     /*}}}*/
 
     // Operators./*{{{*/
+    Ptr& operator=(nullptr_t) BOOST_NOEXCEPT
+    {
+        BaseType::Reset();
+        return *this;
+    }
+
     template<class U>
     Ptr& operator=(U* rhs) BOOST_NOEXCEPT
     {

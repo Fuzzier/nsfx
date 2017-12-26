@@ -36,11 +36,15 @@ class IClock :
 public:
     virtual ~IClock(void) BOOST_NOEXCEPT {}
 
+    /**
+     * @brief Get the current time point.
+     */
     virtual TimePoint Now(void) = 0;
+
 };
 
 
-NSFX_DEFINE_CLASS_UUID4(IClock, 0x49523D2A, 0xBE6A, 0x45FA, 0x84EA88307B44F4D2LL);
+NSFX_DEFINE_CALSS_UUID4(IClock, 0xF5B4D834, 0xC959, 0x446C, 0xB16346F2232C9787LL);
 
 
 NSFX_CLOSE_NAMESPACE

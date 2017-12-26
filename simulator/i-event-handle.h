@@ -13,8 +13,8 @@
  *   All rights reserved.
  */
 
-#ifndef I_EVENT_HANDLE_H__2925FDD7_6BF4_4674_9FC8_B703DE318D56
-#define I_EVENT_HANDLE_H__2925FDD7_6BF4_4674_9FC8_B703DE318D56
+#ifndef I_EVENT_HANDLE_H__BE783B0F_52E9_4314_A6E8_4A229220AFB2
+#define I_EVENT_HANDLE_H__BE783B0F_52E9_4314_A6E8_4A229220AFB2
 
 
 #include <nsfx/simulator/config.h>
@@ -24,29 +24,51 @@
 NSFX_OPEN_NAMESPACE
 
 
-typedef uint64_t  event_id_t;
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // IEventHandle.
+/**
+ * @ingroup Simulator
+ * @brief The event handle interface.
+ */
 class IEventHandle :
     virtual public IObject
 {
 public:
     virtual ~IEventHandle(void) BOOST_NOEXCEPT {}
 
-    virtual bool IsValid(void) = 0;
+    /**
+     * @brief The alarm is waiting to be fired.
+     */
     virtual bool IsPending(void) = 0;
+
+    /**
+     * @brief The alarm is being fired.
+     */
+    virtual bool IsRunning(void) = 0;
+
+    /**
+     * @brief The alarm is waiting or being fired.
+     */
+    virtual bool IsValid(void) = 0;
+
+    /**
+     * @brief Cancel the alarm.
+     */
     virtual void Cancel(void) = 0;
-    virtual event_id_t GetId(void) = 0;
+
+    /**
+     * @brief Get the time point when the alarm is about to be fired.
+     */
     virtual TimePoint GetTimePoint(void) = 0;
-};
+
+}; // class IEventHandle
 
 
-NSFX_DEFINE_CALSS_UUID4(IEventHandle, 0x2925FDD7, 0x6BF4, 0x4674, 0x9FC8B703DE318D56LL)
+NSFX_DEFINE_CALSS_UUID4(IEventHandle, 0x9563654A, 0x8984, 0x448A, 0xBBFD8C654C7AEC61LL);
 
 
 NSFX_CLOSE_NAMESPACE
 
 
-#endif // I_EVENT_HANDLE_H__2925FDD7_6BF4_4674_9FC8_B703DE318D56
+#endif // I_EVENT_HANDLE_H__BE783B0F_52E9_4314_A6E8_4A229220AFB2
+
