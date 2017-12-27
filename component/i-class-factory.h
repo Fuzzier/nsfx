@@ -53,15 +53,10 @@ public:
      */
     virtual void* CreateObject(const uuid& iid, IObject* controller) = 0;
 
-    /**
-     * @brief The uuid of the object class.
-     */
-    virtual const uuid& GetCid(void) = 0;
-
 }; // class IClassFactory /*}}}*/
 
 
-NSFX_DEFINE_CALSS_UUID4(IClassFactory, 0x3F197227, 0x3015, 0x43CD, 0x977E8C0DEEF84F7ALL);
+NSFX_DEFINE_CLASS_UUID4(IClassFactory, 0x3F197227, 0x3015, 0x43CD, 0x977E8C0DEEF84F7ALL);
 
 
 NSFX_CLOSE_NAMESPACE
