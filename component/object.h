@@ -440,6 +440,13 @@ private:
 
         /*}}}*/
 
+        // Make the protected Envelopable::InternalQueryInterface() public
+        // member of Aggregated class.
+        void* InternalQueryInterface(const uuid& iid) BOOST_NOEXCEPT
+        {
+            return Envelopable::InternalQueryInterface(iid);
+        }
+
     }; // class Aggregated /*}}}*/
 
 public:
@@ -533,7 +540,6 @@ NSFX_CLOSE_NAMESPACE
 #define NSFX_INTERFACE_MAP_BEGIN(ThisClass)                               \
   private:                                                                \
     typedef ThisClass  ThisClass_;                                        \
-    template<class T, bool autoDelete> friend class ::nsfx::AggObject;    \
   protected:                                                              \
     void* InternalQueryInterface(const ::nsfx::uuid& iid) BOOST_NOEXCEPT  \
     {                                                                     \
