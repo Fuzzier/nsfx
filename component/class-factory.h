@@ -30,16 +30,19 @@ NSFX_OPEN_NAMESPACE
 // ClassFactory
 /**
  * @ingroup Component
- * @brief An object factory.
+ * @brief A class factory.
  *
  * @tparam Envelopable A class that conforms to \c EnvelopableConcept.
  *
  * Objects created by a factory are enveloped in \c Object or \c AggObject
  * according to whether a controller is specified.<br/>
+ *
+ * The specialized class template conforms to \c EnvelopableConcept.<br/>
+ * Thus, it shall be used in conjunction with \c Object or \c AggObject.<br/>
  */
 template<class Envelopable>
-class ClassFactory NSFX_FINAL:/*{{{*/
-    public IFactory
+class ClassFactory :/*{{{*/
+    public IClassFactory
 {
 private:
     BOOST_CONCEPT_ASSERT((EnvelopableConcept<Envelopable>));
@@ -48,7 +51,7 @@ public:
     virtual ~ClassFactory(void) BOOST_NOEXCEPT {}
 
 public:
-    // IFactory /*{{{*/
+    // IClassFactory /*{{{*/
     virtual void* CreateObject(const uuid& iid, IObject* controller) NSFX_FINAL NSFX_OVERRIDE
     {
         if (controller && iid != uuid_of<IObject>())
@@ -57,11 +60,6 @@ public:
         }
         return controller ? CreateAggregable(controller)
                           : CreateNonAggregable(iid);
-    }
-
-    virtual const uuid& GetCid(void) NSFX_FINAL NSFX_OVERRIDE
-    {
-        return uuid_of<Envelopable>();
     }
 
     void* CreateNonAggregable(const uuid& iid)
