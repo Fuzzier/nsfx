@@ -48,8 +48,8 @@ public:
      * @throw BadAggregation The exception is thrown if \c controller is not
      *                       \c nullptr, and \c iid is not the uuid of
      *                       \c IObject.
+     * @throw OutOfMemory
      * @throw NoInterface
-     * @throw std::bad_alloc
      */
     virtual void* CreateObject(const uuid& iid, IObject* controller) = 0;
 

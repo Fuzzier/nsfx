@@ -65,7 +65,7 @@ public:
     void* CreateNonAggregable(const uuid& iid)
     {
         typedef Object<Envelopable>  ObjectType;
-        ObjectType* o = new ObjectType;
+        ObjectType* o = new (std::nothrow) ObjectType;
         if (!o)
         {
             BOOST_THROW_EXCEPTION(OutOfMemory());
@@ -82,7 +82,7 @@ public:
     void* CreateAggregable(IObject* controller)
     {
         typedef AggObject<Envelopable>  ObjectType;
-        ObjectType* o = new ObjectType(controller);
+        ObjectType* o = new (std::nothrow) ObjectType(controller);
         if (!o)
         {
             BOOST_THROW_EXCEPTION(OutOfMemory());
