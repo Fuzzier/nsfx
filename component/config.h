@@ -26,6 +26,25 @@
  *
  * A component is an object that exposes various interfaces.<br/>
  *
+ * # Component, object and interface.<br/>
+ *   An interface always represents the object that implements it.<br/>
+ *   A component can be an aggregation of objects.<br/>
+ *   The relationship between a component and an interface can be either
+ *   <b>`is-a'</b> or <b>`has-a'</b>.<br/>
+ *   `is-a' means the component is the object that implements the interface.<br/>
+ *   `has-a' means the component aggregates an object that implements the
+ *   interface.<br/>
+ *
+ *   For convenience, a user can <b>always</b> assume that a component
+ *   `is' \c IObject, and `has' other interfaces.<br/>
+ *   i.e., a component implements \c IObject itself, and all other interfaces
+ *   are implemented by internally aggregated objects.<br/>
+ *
+ *   When a unique object implements an interface, the component can expose the
+ *   interface directly.<br/>
+ *   When multiple objects implements the same interface, the component can
+ *   expose an enumerator interface for users to obtain the required objects.<br/>
+ *
  * # What component model should be used?<br/>
  * ## 1. How to obtain different interfaces on a object?<br/>
  *
@@ -138,8 +157,8 @@
  *     3) If a <b>void raw pointer</b> is used, a reference count is transferred
  *        out of the function call.<br/>
  *
- *     The 3rd case is only applied to interface acquisition and object
- *     creation methods.<br/>
+ *     The 3rd case is only applied to methods that perform interface
+ *     acquisition and object creation.<br/>
  *     Since a virtual function cannot have multiple return types, and function
  *     templates cannot be mixed with virtual funtions, the return type has to
  *     be \c void*.<br/>
@@ -149,7 +168,7 @@
  *     User-defined methods should avoid using void raw pointers as return
  *     values.<br/>
  *
- *     The 2nd case is commonly used to retrieve an interface pointer on a
+ *     The 2nd case is commonly used to obtain an interface pointer on a
  *     singleton object, and the returned pointer can be a non-void raw pointer.<br/>
  *     It is user's responsibility to ensure that the singleton remains valid.<br/>
  *
@@ -164,6 +183,7 @@
  *    Intrusive reference counting is welcome.<br/>
  *    Objects are hidden behind interfaces.<br/>
  *    Who wants an interface, who should query it.<br/>
+ *
  */
 
 
