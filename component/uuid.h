@@ -86,7 +86,7 @@ using boost::uuids::uuid;
 
 ////////////////////////////////////////////////////////////////////////////////
 template<class T>
-struct uuid_guard {};
+struct type_guard {};
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
@@ -104,11 +104,6 @@ struct uuid_guard {};
  * id = uuid_of(p);
  * @endcode
  *
- * To enable macro-based query, define a macro like this:
- * @code
- * #define IID_Class  uuid_of<Class>()
- * @endcode
- *
  * @remarks This macro should <b>not</b> be used within class scope.
  *          <p>
  *          An intrusive way is always troublesome, as it involves defining
@@ -117,26 +112,25 @@ struct uuid_guard {};
  *          the derived class derives the public member from its parent, and
  *          exposes wrong information.
  *          <p>
- *          This macro defines a free function
- *          <code>const uuid& uuid_value() BOOST_NOEXCEPT</code> in the
- *          current namespace.<br/>
+ *          This macro defines a free function \c uuid_value() in the current
+ *          namespace.<br/>
  *          The free function \c uuid_of() calls \c uuid_value().<br/>
  *          Even if \c uuid_of() is defined in the namespace of \c nsfx,
  *          it depends upon <i>argument-dependent lookup</i> to call the
  *          correct overload of \c uuid_value().
  *          <p>
- *          \c uuid_guard is placed here as a guard to prevent the compiler from
+ *          \c type_guard is placed here as a guard to prevent the compiler from
  *          automatically converting a pointer from a child type to its parent
  *          type.
  *
  * @see \c NSFX_DEFINE_UUID4, \c uuid_of().
  */
-#define NSFX_DEFINE_CLASS_UUID4(type, l, w1, w2, ll)       \
-    inline const ::nsfx::uuid& uuid_value(                 \
-        type* p, ::nsfx::uuid_guard<type>) BOOST_NOEXCEPT  \
-    {                                                      \
-        static NSFX_DEFINE_UUID4(id, l, w1, w2, ll);       \
-        return id;                                         \
+#define NSFX_DEFINE_CLASS_UUID4(type, l, w1, w2, ll)      \
+    inline const ::nsfx::uuid& uuid_value(                \
+        ::nsfx::type_guard<type>) BOOST_NOEXCEPT          \
+    {                                                     \
+        static NSFX_DEFINE_UUID4(id, l, w1, w2, ll);      \
+        return id;                                        \
     }
 
 
@@ -156,13 +150,13 @@ struct uuid_guard {};
  * @see \c NSFX_DEFINE_CLASS_UUID4.
  */
 template<class T>
-const uuid& uuid_of(typename boost::mpl::identity<T>::type* p = nullptr) BOOST_NOEXCEPT
+const uuid& uuid_of(typename boost::mpl::identity<T>::type* = nullptr) BOOST_NOEXCEPT
 {
     // The uuid_value() is unqualified, it depends upon argument-dependent
     // lookup to call the correct overload.
     // A dummy<T> is placed here to prevent p from being converted to its
     // parent type.
-    return uuid_value(p, uuid_guard<T>());
+    return uuid_value(type_guard<T>());
 }
 
 

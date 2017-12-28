@@ -19,6 +19,7 @@
 
 #include <nsfx/component/config.h>
 #include <nsfx/component/i-class-factory.h>
+#include <nsfx/component/ptr.h>
 
 
 NSFX_OPEN_NAMESPACE
@@ -44,11 +45,23 @@ public:
      *                The class must conform to \c EnvelopableConcept.
      * @param[in] factory The class factory.
      *
+     * @throw OutOfMemory
      * @throw ClassIsRegistered The class is already registered.
      * @throw InvalidPointer The factory is \c nullptr.
-     * @throw std::bad_alloc
      */
     virtual void Register(const uuid& cid, Ptr<IClassFactory> factory) = 0;
+
+    /**
+     * @brief Unregister a class factory.
+     *
+     * @param[in] cid The uuid of an object class.<br/>
+     */
+    virtual void Unregister(const uuid& cid) BOOST_NOEXCEPT = 0;
+
+    /**
+     * @brief Unregister all class factories.
+     */
+    virtual void UnregisterAll(void) BOOST_NOEXCEPT = 0;
 
     /**
      * @brief Get an class factory.
@@ -63,7 +76,7 @@ public:
 }; // class IClassRegistry /*}}}*/
 
 
-NSFX_DEFINE_CALSS_UUID4(IClassRegistry, 0x46F5D329, 0xE6EC, 0x4816, 0x959939B6B707FC1CLL);
+NSFX_DEFINE_CLASS_UUID4(IClassRegistry, 0x46F5D329, 0xE6EC, 0x4816, 0x959939B6B707FC1CLL);
 
 
 NSFX_CLOSE_NAMESPACE

@@ -21,6 +21,7 @@
 #include <nsfx/component/i-class-registry.h>
 #include <nsfx/component/class-factory.h>
 #include <nsfx/component/exception.h>
+#include <boost/mpl/identity.hpp>
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -28,11 +29,11 @@
 /**
  * @brief Register a class with a default class factory.
  *
- * @param T The type must conform to \c EnvelopableConcept.
+ * @param C Must conform to \c HasUuidConcept and \c EnvelopableConcept.
  *
  * @see \c RegisterClass().
  */
-#define NSFX_REGISTER_CLASS(T)  RegisterClass<T>()
+#define NSFX_REGISTER_CLASS(C)  ::nsfx::RegisterClass<C>()
 /*}}}*/
 
 
@@ -47,7 +48,7 @@ NSFX_OPEN_NAMESPACE
  *
  * It is a singleton.
  */
-class ClassRegistry NSFX_FINAL:/*{{{*/
+class ClassRegistry :/*{{{*/
     public IClassRegistry
 {
     // Static methods. /*{{{*/
@@ -59,14 +60,12 @@ public:
     {
         typedef Object<ClassRegistry, false>  ClassRegistryType;
         static ClassRegistryType registry;
+        // Omit AddRef() as there is no need to do so.
         // Omit QueryInterface() as the implementation is known.
         return &registry;
     }
 
     /*}}}*/
-
-private:
-    ClassRegistry(void) BOOST_NOEXCEPT {}
 
 public:
     virtual ~ClassRegistry(void) BOOST_NOEXCEPT {}
@@ -84,6 +83,16 @@ public:
         {
             BOOST_THROW_EXCEPTION(ClassIsRegistered());
         }
+    }
+
+    virtual void Unregister(const uuid& cid) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+    {
+        map_.erase(cid);
+    }
+
+    virtual void UnregisterAll(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+    {
+        map_.clear();
     }
 
     virtual Ptr<IClassFactory> GetClassFactory(const uuid& cid) NSFX_FINAL NSFX_OVERRIDE
@@ -110,7 +119,7 @@ private:
 }; // class ClassRegistry /*}}}*/
 
 
-NSFX_DEFINE_CALSS_UUID4(ClassRegistry, 0xC229D24E, 0xC71F, 0x4C23, 0x8615EB2054B4FBB2LL);
+NSFX_DEFINE_CLASS_UUID4(ClassRegistry, 0xC229D24E, 0xC71F, 0x4C23, 0x8615EB2054B4FBB2LL);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -119,20 +128,21 @@ NSFX_DEFINE_CALSS_UUID4(ClassRegistry, 0xC229D24E, 0xC71F, 0x4C23, 0x8615EB2054B
  * @ingroup Component
  * @brief Register a class with the default class factory.
  *
- * @param T The class to register.<br/>
+ * @param C The class to register.<br/>
  *          It must conform to \c HasUuidConcept and \c EnvelopableConcept.
  *
  * @see \c IClassRegistry::Register().
  */
-template<class T>
-void RegisterClass(void)
+template<class C>
+void RegisterClass(typename ::boost::mpl::identity<C>::type* = nullptr)
 {
-    BOOST_CONCEPT_ASSERT((HasUuidConcept<T>));
-    typedef Object<ClassFactory<T> >  ClassFactoryType;
+    BOOST_CONCEPT_ASSERT((HasUuidConcept<C>));
+    BOOST_CONCEPT_ASSERT((EnvelopableConcept<C>));
+    typedef Object<ClassFactory<C> >  ClassFactoryType;
     Ptr<IClassFactory> factory(new ClassFactoryType);
     IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
     NSFX_ASSERT(registry);
-    registry->Register(cid, factory);
+    registry->Register(uuid_of<C>(), std::move(factory));
 }
 
 /**
@@ -145,34 +155,77 @@ void RegisterClass(const uuid& cid, Ptr<IClassFactory> factory)
 {
     IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
     NSFX_ASSERT(registry);
-    registry->Register(cid, factory);
+    registry->Register(cid, std::move(factory));
+}
+
+/**
+ * @ingroup Component
+ * @brief Unregister a class.
+ *
+ * @param C The class to unregister.<br/>
+ *          It must conform to \c HasUuidConcept.
+ *
+ * @see \c IClassRegistry::Unregister().
+ */
+template<class C>
+void UnregisterClass(typename ::boost::mpl::identity<C>::type* = nullptr) BOOST_NOEXCEPT
+{
+    BOOST_CONCEPT_ASSERT((HasUuidConcept<C>));
+    IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
+    NSFX_ASSERT(registry);
+    registry->Unregister(uuid_of<C>());
+}
+
+/**
+ * @ingroup Component
+ * @brief Unregister a class.
+ *
+ * @see \c IClassRegistry::Unregister().
+ */
+void UnregisterClass(const uuid& cid) BOOST_NOEXCEPT
+{
+    IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
+    NSFX_ASSERT(registry);
+    registry->Unregister(cid);
+}
+
+/**
+ * @ingroup Component
+ * @brief Unregister all classes.
+ *
+ * @see \c IClassRegistry::UnregisterAll().
+ */
+void UnregisterAllClasses(void) BOOST_NOEXCEPT
+{
+    IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
+    NSFX_ASSERT(registry);
+    registry->UnregisterAll();
 }
 
 /**
  * @ingroup Component
  * @brief Create an uninitialized object.
  *
- * @tparam Intf  The type of interface to query.<br/>
- *               It must conform to \c IObjectConcept and \c HasUuidConcept.
+ * @tparam I  The type of interface to query.<br/>
+ *            It must conform to \c IObjectConcept and \c HasUuidConcept.
  *
  * @param[in] cid        The uuid of the class.
  * @param[in] controller The controller.
  *
  * @throw ClassNotRegistered
- * @throw BadAggregation
- * @throw OutOfMemory
- * @throw NoInterface
  *
  * @see \c IClassFactory::CreateObject().
  */
-template<class Intf>
-Ptr<Intf> CreateObject(const uuid& cid, IObject* controller)
+template<class I>
+Ptr<I> CreateObject(const uuid& cid, IObject* controller)
 {
+    BOOST_CONCEPT_ASSERT((IObjectConcept<I>));
+    BOOST_CONCEPT_ASSERT((HasUuidConcept<I>));
     IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
     NSFX_ASSERT(registry);
     Ptr<IClassFactory> factory = registry->GetClassFactory(cid);
-    Intf* p = static_cast<Intf>(factory->CreateObject(controller));
-    return Ptr<Intf>(p, true);
+    I* p = static_cast<I*>(factory->CreateObject(uuid_of<I>(), controller));
+    return Ptr<I>(p, true);
 }
 
 /*}}}*/
