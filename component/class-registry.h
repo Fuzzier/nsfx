@@ -136,13 +136,20 @@ NSFX_DEFINE_CLASS_UUID4(ClassRegistry, 0xC229D24E, 0xC71F, 0x4C23, 0x8615EB2054B
 template<class C>
 void RegisterClass(typename ::boost::mpl::identity<C>::type* = nullptr)
 {
-    BOOST_CONCEPT_ASSERT((HasUuidConcept<C>));
-    BOOST_CONCEPT_ASSERT((EnvelopableConcept<C>));
-    typedef Object<ClassFactory<C> >  ClassFactoryType;
-    Ptr<IClassFactory> factory(new ClassFactoryType);
-    IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
-    NSFX_ASSERT(registry);
-    registry->Register(uuid_of<C>(), std::move(factory));
+    try
+    {
+        BOOST_CONCEPT_ASSERT((HasUuidConcept<C>));
+        BOOST_CONCEPT_ASSERT((EnvelopableConcept<C>));
+        typedef Object<ClassFactory<C> >  ClassFactoryType;
+        Ptr<IClassFactory> factory(new ClassFactoryType);
+        IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
+        NSFX_ASSERT(registry);
+        registry->Register(uuid_of<C>(), std::move(factory));
+    }
+    catch (std::bad_alloc& )
+    {
+        BOOST_THROW_EXCEPTION(OutOfMemory());
+    }
 }
 
 /**
