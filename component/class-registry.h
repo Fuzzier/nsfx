@@ -134,7 +134,7 @@ NSFX_DEFINE_CLASS_UUID4(ClassRegistry, 0xC229D24E, 0xC71F, 0x4C23, 0x8615EB2054B
  * @see \c IClassRegistry::Register().
  */
 template<class C>
-void RegisterClass(typename ::boost::mpl::identity<C>::type* = nullptr)
+inline void RegisterClass(typename ::boost::mpl::identity<C>::type* = nullptr)
 {
     try
     {
@@ -158,7 +158,7 @@ void RegisterClass(typename ::boost::mpl::identity<C>::type* = nullptr)
  *
  * @see \c IClassRegistry::Register().
  */
-void RegisterClass(const uuid& cid, Ptr<IClassFactory> factory)
+inline void RegisterClass(const uuid& cid, Ptr<IClassFactory> factory)
 {
     IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
     NSFX_ASSERT(registry);
@@ -175,7 +175,7 @@ void RegisterClass(const uuid& cid, Ptr<IClassFactory> factory)
  * @see \c IClassRegistry::Unregister().
  */
 template<class C>
-void UnregisterClass(typename ::boost::mpl::identity<C>::type* = nullptr) BOOST_NOEXCEPT
+inline void UnregisterClass(typename ::boost::mpl::identity<C>::type* = nullptr) BOOST_NOEXCEPT
 {
     BOOST_CONCEPT_ASSERT((HasUuidConcept<C>));
     IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
@@ -189,7 +189,7 @@ void UnregisterClass(typename ::boost::mpl::identity<C>::type* = nullptr) BOOST_
  *
  * @see \c IClassRegistry::Unregister().
  */
-void UnregisterClass(const uuid& cid) BOOST_NOEXCEPT
+inline void UnregisterClass(const uuid& cid) BOOST_NOEXCEPT
 {
     IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
     NSFX_ASSERT(registry);
@@ -202,7 +202,7 @@ void UnregisterClass(const uuid& cid) BOOST_NOEXCEPT
  *
  * @see \c IClassRegistry::UnregisterAll().
  */
-void UnregisterAllClasses(void) BOOST_NOEXCEPT
+inline void UnregisterAllClasses(void) BOOST_NOEXCEPT
 {
     IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
     NSFX_ASSERT(registry);
@@ -220,11 +220,14 @@ void UnregisterAllClasses(void) BOOST_NOEXCEPT
  * @param[in] controller The controller.
  *
  * @throw ClassNotRegistered
+ * @throw OutOfMemory
+ * @throw BadAggregation
+ * @throw NoInterface
  *
  * @see \c IClassFactory::CreateObject().
  */
 template<class I>
-Ptr<I> CreateObject(const uuid& cid, IObject* controller)
+inline Ptr<I> CreateObject(const uuid& cid, IObject* controller = nullptr)
 {
     BOOST_CONCEPT_ASSERT((IObjectConcept<I>));
     BOOST_CONCEPT_ASSERT((HasUuidConcept<I>));
