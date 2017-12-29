@@ -150,7 +150,7 @@ protected:
  *          different type, then the template parameter \c T must also conform
  *          to \c HasUuidConcept.
  */
-template<class T>
+template<class T = IObject>
 class Ptr : private PtrBase<T>/*{{{*/
 {
 private:
