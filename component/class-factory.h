@@ -54,7 +54,7 @@ public:
     // IClassFactory /*{{{*/
     virtual void* CreateObject(const uuid& iid, IObject* controller) NSFX_FINAL NSFX_OVERRIDE
     {
-        if (controller && iid != uuid_of<IObject>())
+        if (controller && iid != NSFX_IID_IObject)
         {
             BOOST_THROW_EXCEPTION(BadAggregation());
         }
@@ -88,7 +88,7 @@ public:
         {
             typedef AggObject<Envelopable>  ObjectType;
             ObjectType* o = new ObjectType(controller);
-            return o->QueryInterface(uuid_of<IObject>());
+            return o->QueryInterface(NSFX_IID_IObject);
         }
         catch (std::bad_alloc& )
         {
