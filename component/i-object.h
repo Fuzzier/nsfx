@@ -130,7 +130,7 @@ public:
 NSFX_CLOSE_NAMESPACE
 
 
-#define NSFX_IID_IObject  NSFX_UUID_OF(IObject)
+#define NSFX_IID_IObject  NSFX_UUID_OF(::nsfx::IObject)
 
 
 #endif // I_OBJECT_H__6ADF3ED4_FCD6_4E8F_B847_B9596FBA75E8
