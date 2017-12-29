@@ -163,5 +163,8 @@ const uuid& uuid_of(typename boost::mpl::identity<T>::type* = nullptr) BOOST_NOE
 NSFX_CLOSE_NAMESPACE
 
 
+#define NSFX_UUID_OF(T)  ::nsfx::uuid_of<T>()
+
+
 #endif // UUID_H__E8DDE5BC_4E16_48D3_BD4E_352C7CAC8BA0
 
