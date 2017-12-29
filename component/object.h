@@ -21,6 +21,7 @@
 #include <nsfx/component/i-object.h>
 #include <nsfx/component/exception.h>
 #include <boost/type_traits/is_base_of.hpp>
+#include <functional>
 
 
 NSFX_OPEN_NAMESPACE
@@ -277,7 +278,7 @@ private:
  * A class is envelopable if it satisfies the following conditions.<br/>
  * 1. It conforms to \c IObjectConcept.<br/>
  * 2. It has a public \c InternalQueryInterface() function.<br/>
- * 3. It is default constructible.<br/>
+ * 3. It has a default constructible.<br/>
  * 4. It is not derived from \c ObjectBase.<br/>
  */
 template<class T>
@@ -341,7 +342,45 @@ private:
     BOOST_CONCEPT_ASSERT((EnvelopableConcept<Envelopable>));
 
 public:
-    BOOST_DEFAULTED_FUNCTION(Object(void) BOOST_NOEXCEPT, {});
+    BOOST_DEFAULTED_FUNCTION(Object(void), {});
+
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+    template<class...Args>
+    Object(Args&&... args) :
+        Envelopable(std::forward<Args>(args)...) {}
+
+#else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+    template<class A1>
+    Object(A1&& a1) :
+        Envelopable(std::forward<A1>(a1)) {}
+
+    template<class A1, class A2>
+    Object(A1&& a1, A2&& a2) :
+        Envelopable(std::forward<A1>(a1), std::forward<A2>(a2)) {}
+
+    template<class A1, class A2, class A3>
+    Object(A1&& a1, A2&& a2, A3&& a3) :
+        Envelopable(std::forward<A1>(a1), std::forward<A2>(a2),
+                    std::forward<A3>(a3)) {}
+
+    template<class A1, class A2, class A3, class A4>
+    Object(A1&& a1, A2&& a2, A3&& a3, A4&& a4) :
+        Envelopable(std::forward<A1>(a1), std::forward<A2>(a2),
+                    std::forward<A3>(a3), std::forward<A4>(a4)) {}
+
+    template<class A1, class A2, class A3, class A4, class A5>
+    Object(A1&& a1, A2&& a2, A3&& a3, A4&& a4, A5&& a5) :
+        Envelopable(std::forward<A1>(a1), std::forward<A2>(a2),
+                    std::forward<A3>(a3), std::forward<A4>(a4),
+                    std::forward<A5>(a5)) {}
+
+    template<class A1, class A2, class A3, class A4, class A5, class A6>
+    Object(A1&& a1, A2&& a2, A3&& a3, A4&& a4, A5&& a5, A6&& a6) :
+        Envelopable(std::forward<A1>(a1), std::forward<A2>(a2),
+                    std::forward<A3>(a3), std::forward<A4>(a4),
+                    std::forward<A5>(a5), std::forward<A6>(a6)) {}
+
+#endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
     virtual ~Object(void) BOOST_NOEXCEPT {}
 
@@ -417,6 +456,93 @@ private:
             }
         }
 
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+        template<class...Args>
+        Aggregated(IObject* controller, Args&&... args) :
+            ObjectBase(controller),
+            Envelopable(std::forward<Args>(args)...)
+        {
+            if (!controller)
+            {
+                BOOST_THROW_EXCEPTION(BadAggregation());
+            }
+        }
+
+#else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+        template<class A1>
+        Aggregated(IObject* controller, A1&& a1) :
+            ObjectBase(controller),
+            Envelopable(std::forward<A1>(a1))
+        {
+            if (!controller)
+            {
+                BOOST_THROW_EXCEPTION(BadAggregation());
+            }
+        }
+
+        template<class A1, class A2>
+        Aggregated(IObject* controller, A1&& a1, A2&& a2) :
+            ObjectBase(controller),
+            Envelopable(std::forward<A1>(a1), std::forward<A2>(a2))
+        {
+            if (!controller)
+            {
+                BOOST_THROW_EXCEPTION(BadAggregation());
+            }
+        }
+
+        template<class A1, class A2, class A3>
+        Aggregated(IObject* controller, A1&& a1, A2&& a2, A3&& a3) :
+            ObjectBase(controller),
+            Envelopable(std::forward<A1>(a1), std::forward<A2>(a2),
+        {
+            if (!controller)
+            {
+                BOOST_THROW_EXCEPTION(BadAggregation());
+            }
+        }
+                    std::forward<A3>(a3))
+
+        template<class A1, class A2, class A3, class A4>
+        Aggregated(IObject* controller, A1&& a1, A2&& a2, A3&& a3, A4&& a4) :
+            ObjectBase(controller),
+            Envelopable(std::forward<A1>(a1), std::forward<A2>(a2),
+                    std::forward<A3>(a3), std::forward<A4>(a4))
+        {
+            if (!controller)
+            {
+                BOOST_THROW_EXCEPTION(BadAggregation());
+            }
+        }
+
+        template<class A1, class A2, class A3, class A4, class A5>
+        Aggregated(IObject* controller, A1&& a1, A2&& a2, A3&& a3, A4&& a4, A5&& a5) :
+            ObjectBase(controller),
+            Envelopable(std::forward<A1>(a1), std::forward<A2>(a2),
+                    std::forward<A3>(a3), std::forward<A4>(a4),
+                    std::forward<A5>(a5))
+        {
+            if (!controller)
+            {
+                BOOST_THROW_EXCEPTION(BadAggregation());
+            }
+        }
+
+        template<class A1, class A2, class A3, class A4, class A5, class A6>
+        Aggregated(IObject* controller, A1&& a1, A2&& a2, A3&& a3, A4&& a4, A5&& a5, A6&& a6) :
+            ObjectBase(controller),
+            Envelopable(std::forward<A1>(a1), std::forward<A2>(a2),
+                    std::forward<A3>(a3), std::forward<A4>(a4),
+                    std::forward<A5>(a5), std::forward<A6>(a6))
+        {
+            if (!controller)
+            {
+                BOOST_THROW_EXCEPTION(BadAggregation());
+            }
+        }
+
+#endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+
         virtual ~Aggregated(void) BOOST_NOEXCEPT {}
 
         // IObject./*{{{*/
@@ -454,6 +580,44 @@ public:
         agg_(controller)
     {
     }
+
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+    template<class...Args>
+    AggObject(IObject* controller, Args&&... args) :
+        agg_(constroller, std::forward<Args>(args)...) {}
+
+#else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+    template<class A1>
+    AggObject(IObject* controller, A1&& a1) :
+        agg_(controller, std::forward<A1>(a1)) {}
+
+    template<class A1, class A2>
+    AggObject(IObject* controller, A1&& a1, A2&& a2) :
+        agg_(constroller, std::forward<A1>(a1), std::forward<A2>(a2)) {}
+
+    template<class A1, class A2, class A3>
+    AggObject(IObject* controller, A1&& a1, A2&& a2, A3&& a3) :
+        agg_(constroller, std::forward<A1>(a1), std::forward<A2>(a2),
+                    std::forward<A3>(a3)) {}
+
+    template<class A1, class A2, class A3, class A4>
+    AggObject(IObject* controller, A1&& a1, A2&& a2, A3&& a3, A4&& a4) :
+        agg_(constroller, std::forward<A1>(a1), std::forward<A2>(a2),
+                    std::forward<A3>(a3), std::forward<A4>(a4)) {}
+
+    template<class A1, class A2, class A3, class A4, class A5>
+    AggObject(IObject* controller, A1&& a1, A2&& a2, A3&& a3, A4&& a4, A5&& a5) :
+        agg_(constroller, std::forward<A1>(a1), std::forward<A2>(a2),
+                    std::forward<A3>(a3), std::forward<A4>(a4),
+                    std::forward<A5>(a5)) {}
+
+    template<class A1, class A2, class A3, class A4, class A5, class A6>
+    AggObject(IObject* controller, A1&& a1, A2&& a2, A3&& a3, A4&& a4, A5&& a5, A6&& a6) :
+        agg_(constroller, std::forward<A1>(a1), std::forward<A2>(a2),
+                    std::forward<A3>(a3), std::forward<A4>(a4),
+                    std::forward<A5>(a5), std::forward<A6>(a6)) {}
+
+#endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
     virtual ~AggObject(void) BOOST_NOEXCEPT {}
 
