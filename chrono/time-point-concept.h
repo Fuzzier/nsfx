@@ -64,6 +64,7 @@ public:
         GetDuration();
         Hashable();
         IO();
+        Limits();
     }
 
 private:
@@ -103,6 +104,12 @@ private:
         TimePoint t0;
         std::string s = t0.ToString();
         std::cout << t0;
+    }
+
+    void Limits(void)
+    {
+        TimePoint tmin = TimePoint::Min();
+        TimePoint tmax = TimePoint::Max();
     }
 
 };

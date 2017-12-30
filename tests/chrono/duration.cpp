@@ -139,6 +139,21 @@ NSFX_TEST_SUITE(Duration)
         size_t h1 = boost::hash<Duration>()(d);
         NSFX_TEST_EXPECT_EQ(h0, h1);
     }
+
+    NSFX_TEST_CASE(Limits)
+    {
+        Duration d0 = Duration::Zero();
+        NSFX_TEST_EXPECT_EQ(d0.ToNanoSeconds(), 0);
+
+        Duration dmin = Duration::Min();
+        NSFX_TEST_EXPECT_EQ(dmin.ToNanoSeconds(),
+                            std::numeric_limits<Duration::Rep>::min());
+
+        Duration dmax = Duration::Max();
+        NSFX_TEST_EXPECT_EQ(dmax.ToNanoSeconds(),
+                            std::numeric_limits<Duration::Rep>::max());
+    }
+
 }
 
 

@@ -74,6 +74,15 @@ NSFX_TEST_SUITE(VirtualTimePoint)
         NSFX_TEST_EXPECT_EQ(h0, h1);
     }
 
+    NSFX_TEST_CASE(Limits)
+    {
+        TimePoint tmin = TimePoint::Min();
+        NSFX_TEST_EXPECT_EQ(tmin.GetDuration(), Duration::Min());
+
+        TimePoint tmax = TimePoint::Max();
+        NSFX_TEST_EXPECT_EQ(tmax.GetDuration(), Duration::Max());
+    }
+
 }
 
 

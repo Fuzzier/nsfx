@@ -127,6 +127,24 @@ public:
 
     /*}}}*/
 
+    // Limits./*{{{*/
+    static TimePoint Epoch(void) BOOST_NOEXCEPT
+    {
+        return TimePoint();
+    }
+
+    static TimePoint Min(void) BOOST_NOEXCEPT
+    {
+        return TimePoint(Duration::Min());
+    }
+
+    static TimePoint Max(void) BOOST_NOEXCEPT
+    {
+        return TimePoint(Duration::Max());
+    }
+
+    /*}}}*/
+
 private:
     /**
      * @brief The duration relative to the epoch.
