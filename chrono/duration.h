@@ -20,6 +20,7 @@
 #include <nsfx/chrono/config.h>
 #include <boost/functional/hash.hpp>
 #include <sstream>
+#include <limits>
 
 
 NSFX_CHRONO_OPEN_NAMESPACE
@@ -199,6 +200,24 @@ public:
 
     /*}}}*/
 
+    // Limits./*{{{*/
+    static Duration Zero(void) BOOST_NOEXCEPT
+    {
+        return Duration();
+    }
+
+    static Duration Min(void) BOOST_NOEXCEPT
+    {
+        return Duration(std::numeric_limits<Rep>::min());
+    }
+
+    static Duration Max(void) BOOST_NOEXCEPT
+    {
+        return Duration(std::numeric_limits<Rep>::max());
+    }
+
+    /*}}}*/
+
 private:
     Rep rep_;
 };
@@ -328,9 +347,9 @@ Duration::ToString(void) const
 {
     std::stringstream oss;
     Rep rep = rep_;
-    if (rep < 0)
+    bool neg = rep < 0;
+    if (neg)
     {
-        rep = -rep_;
         oss << '-';
     }
 
@@ -341,16 +360,17 @@ Duration::ToString(void) const
     Rep ms = (rep % SECOND) / MILLI_SECOND;
     Rep us = (rep % MILLI_SECOND) / MICRO_SECOND;
     Rep ns = (rep % MICRO_SECOND) / NANO_SECOND;
+
     if (dy)
     {
-        oss << std::setw(0) << dy << " ";
+        oss << std::setw(0) << (neg ? -dy : dy) << " ";
     }
-    oss << std::setw(2) << std::setfill('0') << hr << ":"
-        << std::setw(2) << std::setfill('0') << mn << ":"
-        << std::setw(2) << std::setfill('0') << sc << "."
-        << std::setw(3) << std::setfill('0') << ms << ","
-        << std::setw(3) << std::setfill('0') << us << ","
-        << std::setw(3) << std::setfill('0') << ns;
+    oss << std::setw(2) << std::setfill('0') << (neg ? -hr : hr) << ":"
+        << std::setw(2) << std::setfill('0') << (neg ? -mn : mn) << ":"
+        << std::setw(2) << std::setfill('0') << (neg ? -sc : sc) << "."
+        << std::setw(3) << std::setfill('0') << (neg ? -ms : ms) << ","
+        << std::setw(3) << std::setfill('0') << (neg ? -us : us) << ","
+        << std::setw(3) << std::setfill('0') << (neg ? -ns : ns);
     return oss.str();
 }
 
