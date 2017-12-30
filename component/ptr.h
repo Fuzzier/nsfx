@@ -32,7 +32,12 @@ NSFX_OPEN_NAMESPACE
  * @brief Base class of \c Ptr.
  *
  * This class is intended to provide common methods to be used by \c Ptr,
- * thus its does not declare the member variable \c PtrBase::p_ to be private.
+ * thus its does not declare the member variable \c PtrBase::p_ to be private.<br/>
+ *
+ * \c boost::true_type is used in methods when the operand pointer is of the
+ * same type as \c T.<br/>
+ * While \c boost::false_type is used in methods when the operand pointer is of
+ * a different type than \c T.<br/>
  */
 template<class T>
 class PtrBase/*{{{*/
