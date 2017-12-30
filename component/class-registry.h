@@ -22,6 +22,7 @@
 #include <nsfx/component/class-factory.h>
 #include <nsfx/component/exception.h>
 #include <boost/mpl/identity.hpp>
+#include <iostream>
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -29,11 +30,28 @@
 /**
  * @brief Register a class with a default class factory.
  *
- * @param C Must conform to \c HasUuidConcept and \c EnvelopableConcept.
+ * @param C Must conform to \c HasUuidConcept and \c EnvelopableConcept.<br/>
+ *          Must not use qualified name.
  *
  * @see \c RegisterClass().
  */
-#define NSFX_REGISTER_CLASS(C)  ::nsfx::RegisterClass<C>()
+#define NSFX_REGISTER_CLASS(C)                           \
+    static struct C ## ClassRegister                     \
+    {                                                    \
+        C ## ClassRegister(void)                         \
+        {                                                \
+            try                                          \
+            {                                            \
+                ::nsfx::RegisterClass<C>();              \
+            }                                            \
+            catch (boost::exception& e)                  \
+            {                                            \
+                std::cerr << diagnostic_information(e);  \
+                throw;                                   \
+            }                                            \
+        }                                                \
+    } g_ ## C ## ClassRegister
+
 /*}}}*/
 
 
