@@ -18,10 +18,30 @@
 
 
 #include <nsfx/simulator/config.h>
-#include <nsfx/component/i-alarm-sink.h>
+#include <nsfx/component/i-object.h>
+#include <nsfx/component/ptr.h>
 
 
 NSFX_OPEN_NAMESPACE
+
+
+////////////////////////////////////////////////////////////////////////////////
+// IAlarmSink.
+/**
+ * @ingroup Simulator
+ * @brief The alarm sink interface.
+ */
+class IAlarmSink :
+    virtual public IObject
+{
+public:
+    virtual ~IAlarmSink(void) BOOST_NOEXCEPT {}
+
+    virtual void OnAlarm(void) = 0;
+};
+
+
+NSFX_DEFINE_CLASS_UUID4(IAlarmSink, 0x88630CC3, 0xFCE6, 0x452B, 0x825ABCA384FC8C89LL);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -54,10 +74,8 @@ public:
      * @pre A sink has already been connected.
      *
      * The scheduled alarm (if any) is also cancelled.
-     *
-     * @throw NotConnected No sink has been connected.
      */
-    virtual void Disconnect(void) = 0;
+    virtual void Disconnect(void) BOOST_NOEXCEPT = 0;
 
     /**
      * @brief Schedule an alarm.
@@ -81,20 +99,24 @@ public:
     /**
      * @brief Whether the alarm is scheduled.
      */
-    virtual bool IsPending(void) = 0;
+    virtual bool IsPending(void) BOOST_NOEXCEPT = 0;
 
     /**
      * @brief Cancel the scheduled alarm (if any).
      */
-    virtual void Cancel(void) = 0;
+    virtual void Cancel(void) BOOST_NOEXCEPT = 0;
 
 }; // class IAlarm
 
 
-NSFX_DEFINE_CALSS_UUID4(IAlarm, 0xF9350F38, 0x9D11, 0x4BF3, 0xB28C143E76AC05C2LL);
+NSFX_DEFINE_CLASS_UUID4(IAlarm, 0xF9350F38, 0x9D11, 0x4BF3, 0xB28C143E76AC05C2LL);
 
 
 NSFX_CLOSE_NAMESPACE
+
+
+#define NSFX_IID_IAlarmSink  NSFX_UUID_OF(::nsfx::IAlarmSink)
+#define NSFX_IID_IAlarm      NSFX_UUID_OF(::nsfx::IAlarm)
 
 
 #endif // I_ALARM_H__0FC1DAC2_82D2_46A6_9C61_E23484B8608C
