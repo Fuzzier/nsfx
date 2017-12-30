@@ -130,9 +130,9 @@ private:
         bool running_;
     }; // class EventHandle
 
-    typedef Object<EventHandle>  EventHandleClass;
-
     /*}}}*/
+
+    typedef Object<EventHandle>  EventHandleType;
 
     class Alarm :/*{{{*/
         public IAlarm,
@@ -235,9 +235,9 @@ private:
         Ptr<IEventHandle> handle_;
     }; // class Alarm
 
-    typedef AggObject<Alarm>  AggAlarmClass;
-
     /*}}}*/
+
+    typedef AggObject<Alarm>  AggAlarmType;
 
 public:
     EventScheduler(void) BOOST_NOEXCEPT :
@@ -296,7 +296,14 @@ public:
             BOOST_THROW_EXCEPTION(InvalidPointer());
         }
 
-        Ptr<EventHandleClass> handle(new EventHandleClass);
+        try
+        {
+            Ptr<EventHandleType> handle(new EventHandleType);
+        }
+        catch (std::bad_alloc& )
+        {
+            BOOST_THROW_EXCEPTION(OutOfMemory());
+        }
         handle->Initialize(t, std::move(sink));
         if (!list_.size())
         {
@@ -328,6 +335,24 @@ public:
             }
         }
         return Ptr<IEventHandle>(handle, true);
+    }
+
+    virtual size_t GetNumEvents(void) BOOST_NOEXCEPT NSFX_OVERRIDE
+    {
+        return list_.size();
+    }
+
+    virtual IEventHandle* GetNextEvent(void) BOOST_NOEXCEPT NSFX_OVERRIDE
+    {
+        IEventHandle* result = nullptr;
+        if (list_.size())
+        {
+            auto it = list_.begin();
+            // static cast EventHandleType* to IEventHandle* since it is
+            // already known.
+            result = static_cast<IEventHandle*>(it->Get());
+        }
+        return result;
     }
 
     void ConnectEvent(EventHandle* handle)
@@ -363,13 +388,13 @@ private:
     bool initialized_;
     Ptr<IAlarm> alarm_;
     Ptr<IClock> clock_;
-    AggAlarmClass alarm1_;
-    list<Ptr<EventHandleClass> >  list_;
+    AggAlarmType alarm1_;
+    list<Ptr<EventHandleType> >  list_;
 
 }; // class EventScheduler
 
 
-NSFX_DEFINE_CALSS_UUID4(EventScheduler, 0xD365832F, 0x64C0, 0x4618, 0x8B4D34948267A900LL);
+NSFX_DEFINE_CLASS_UUID4(EventScheduler, 0xD365832F, 0x64C0, 0x4618, 0x8B4D34948267A900LL);
 NSFX_REGISTER_CLASS(EventScheduler);
 
 

@@ -88,6 +88,7 @@ public:
      * @param[in]  sink   The event sink.
      * @param[out] handle Optional. A handle of the event.
      *
+     * @throw OutOfMemory
      * @throw Uninitialized  The scheduler is not initialized.
      * @throw InvalidPointer The sink is \c nullptr.
      */
@@ -100,6 +101,7 @@ public:
      * @param[in]  sink   The event sink.
      * @param[out] handle Optional. A handle of the event.
      *
+     * @throw OutOfMemory
      * @throw Uninitialized   The scheduler is not initialized.
      * @throw InvalidPointer  The sink is \c nullptr.
      * @throw InvalidArgument Thrown by \c IAlarm.
@@ -114,6 +116,7 @@ public:
      * @param[in]  sink   The event sink.
      * @param[out] handle Optional. A handle of the event.
      *
+     * @throw OutOfMemory
      * @throw Uninitialized   The scheduler is not initialized.
      * @throw InvalidPointer  The sink is \c nullptr.
      * @throw InvalidArgument Thrown by \c IAlarm.
@@ -122,6 +125,16 @@ public:
                             Ptr<IEventSink> sink,
                             Ptr<IEventHandle>* handle) = 0;
 
+    /**
+     * @brief Get the number of scheduled events.
+     */
+    virtual size_t GetNumEvents(void) BOOST_NOEXCEPT = 0;
+
+    /**
+     * @brief Get the next scheduled event.
+     */
+    virtual IEventHandle* GetNextEvent(void) BOOST_NOEXCEPT = 0;
+
 }; // class IEventScheduler
 
 
@@ -129,6 +142,9 @@ NSFX_DEFINE_CALSS_UUID4(IEventScheduler, 0x4A9E5C84, 0x1D35, 0x4CAA, 0x9FA3F155A
 
 
 NSFX_CLOSE_NAMESPACE
+
+
+#define NSFX_IID_IEventScheduler  NSFX_UUID_OF(::nsfx::IEventScheduler)
 
 
 #endif // I_EVENT_SCHEDULER_H__B3B744CD_6782_43F2_A063_8B25FD33374E
