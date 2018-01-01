@@ -214,7 +214,7 @@ public:
     {
     }
 
-    explicit Ptr(nullptr_t) BOOST_NOEXCEPT
+    Ptr(nullptr_t) BOOST_NOEXCEPT
     {
     }
 
@@ -224,7 +224,7 @@ public:
      * @param p  A pointer to the object that is to be managed by the smart
      *           pointer.
      */
-    explicit Ptr(T* p) BOOST_NOEXCEPT :
+    Ptr(T* p) BOOST_NOEXCEPT :
         BaseType(p, false, boost::is_same<T, T>::type())
     {
     }
