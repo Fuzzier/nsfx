@@ -20,6 +20,7 @@
 #include <nsfx/component/config.h>
 #include <boost/exception/all.hpp>
 #include <exception>
+#include <string>
 
 
 NSFX_OPEN_NAMESPACE
@@ -30,52 +31,98 @@ struct ComponentException : boost::exception, std::exception {};
 ////////////////////////////////////////////////////////////////////////////////
 // General.
 /**
+ * @ingroup Component
  * @brief Fatal error.
  */
 struct Unexpected : ComponentException {};
-struct NotImplemented : ComponentException {};
+/**
+ * @ingroup Component
+ * @brief Out of memory.
+ */
 struct OutOfMemory: ComponentException {};
+/**
+ * @ingroup Component
+ * @brief Fatal error.
+ */
 struct InvalidArgument : ComponentException {};
 /**
+ * @ingroup Component
+ * @brief A method is not implemented.
+ */
+struct NotImplemented : ComponentException {};
+/**
+ * @ingroup Component
  * @brief The queried interface is not supported.
  */
 struct NoInterface : ComponentException {};
+/**
+ * @ingroup Component
+ * @brief The type name of the queried interface.
+ */
+typedef boost::error_info<struct tag_QuerySourceType, std::string> QuerySourceTypeErrorInfo;
+typedef boost::error_info<struct tag_QueryTargetType, std::string> QueryTargetTypeErrorInfo;
+
+/**
+ * @ingroup Component
+ * @brief A \c nullptr is supplied.
+ */
 struct InvalidPointer : ComponentException {};
+/**
+ * @ingroup Component
+ * @brief The index is out of bound.
+ */
 struct OutOfBounds : ComponentException {};
 /**
+ * @ingroup Component
  * @brief The precondition of calling a method is not satisfied.
  */
 struct IllegalMethodCall : ComponentException {};
-struct BadThreadingModel : ComponentException {};
 /**
+ * @ingroup Component
  * @brief Practice aggregation in a wrong way.
  */
 struct BadAggregation : ComponentException {};
 
 ////////////////////////////////////////////////////////////////////////////////
 // Object initialization.
+/**
+ * @ingroup Component
+ * @brief An object is not initialized.
+ */
 struct Uninitialized : ComponentException {};
+/**
+ * @ingroup Component
+ * @brief An initialized object cannot be initialized again.
+ */
 struct CannotReinitialize : ComponentException {};
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class registration.
 /**
- * @brief The object factory does not produce the requested class.
+ * @ingroup Component
+ * @brief Cannot create an object since its class factory is not registered.
  */
 struct ClassNotRegistered : ComponentException {};
+/**
+ * @ingroup Component
+ * @brief Cannot register a class factory that is already registered.
+ */
 struct ClassIsRegistered : ComponentException {};
 
 ////////////////////////////////////////////////////////////////////////////////
 // Sink connection.
 /**
+ * @ingroup Component
  * @brief The event provider cannot accept additional connections any more.
  */
 struct ConnectionLimit : ComponentException {};
 /**
+ * @ingroup Component
  * @brief The sink does not support the required interface.
  */
 struct CannotConnect : ComponentException {};
 /**
+ * @ingroup Component
  * @brief No sink has been connected.
  */
 struct NotConnected : ComponentException {};

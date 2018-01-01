@@ -209,6 +209,15 @@ NSFX_TEST_SUITE(Ptr)
         nsfx::Ptr<ITest> q(o);
         NSFX_TEST_EXPECT(!q);
         NSFX_TEST_EXPECT(q != o);
+        try
+        {
+            nsfx::Ptr<ITest, false> q(o);
+            NSFX_TEST_EXPECT(false);
+        }
+        catch (boost::exception& e)
+        {
+            // Should come here.
+        }
         o->Release();
     }
 
@@ -219,6 +228,15 @@ NSFX_TEST_SUITE(Ptr)
         nsfx::Ptr<ITest> q(o, false);
         NSFX_TEST_EXPECT(!q);
         NSFX_TEST_EXPECT(q != o);
+        try
+        {
+            nsfx::Ptr<ITest, false> q(o, false);
+            NSFX_TEST_EXPECT(false);
+        }
+        catch (boost::exception& e)
+        {
+            // Should come here.
+        }
         o->Release();
     }
 
@@ -231,6 +249,16 @@ NSFX_TEST_SUITE(Ptr)
         NSFX_TEST_EXPECT(!q);
         NSFX_TEST_EXPECT(q != o);
         NSFX_TEST_EXPECT_EQ(RefCount(o), 1);
+        try
+        {
+            o->AddRef();
+            nsfx::Ptr<ITest, false> q(o, true);
+            NSFX_TEST_EXPECT(false);
+        }
+        catch (boost::exception& e)
+        {
+            // Should come here.
+        }
         o->Release();
     }
 
@@ -265,6 +293,15 @@ NSFX_TEST_SUITE(Ptr)
         NSFX_TEST_EXPECT(!q);
         NSFX_TEST_EXPECT(p != q);
         NSFX_TEST_EXPECT_EQ(RefCount(p.Get()), 1);
+        try
+        {
+            nsfx::Ptr<ITest, false>  q(p);
+            NSFX_TEST_EXPECT(false);
+        }
+        catch (boost::exception& e)
+        {
+            // Should come here.
+        }
     }
 
     NSFX_TEST_CASE(copy_assign)
@@ -316,6 +353,16 @@ NSFX_TEST_SUITE(Ptr)
         NSFX_TEST_EXPECT(!q);
         NSFX_TEST_EXPECT(p != q);
         NSFX_TEST_EXPECT_EQ(RefCount(p.Get()), 1);
+        try
+        {
+            nsfx::Ptr<ITest, false> q;
+            q = p;
+            NSFX_TEST_EXPECT(false);
+        }
+        catch (boost::exception& e)
+        {
+            // Should come here
+        }
     }
 
     NSFX_TEST_CASE(move_ctor)
@@ -390,6 +437,17 @@ NSFX_TEST_SUITE(Ptr)
         NSFX_TEST_EXPECT(!p);
         NSFX_TEST_EXPECT(!q);
         NSFX_TEST_EXPECT_EQ(RefCount(o), 1);
+        try
+        {
+            p = o;
+            nsfx::Ptr<ITest, false> q;
+            q = std::move(p);
+            NSFX_TEST_EXPECT(false);
+        }
+        catch (boost::exception& e)
+        {
+            // Should come here.
+        }
         o->Release();
     }
 

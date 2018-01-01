@@ -19,6 +19,8 @@
 
 #include <nsfx/component/config.h>
 #include <nsfx/component/i-object.h>
+#include <boost/type_traits/is_same.hpp>
+#include <boost/type_index.hpp>
 #include <utility>
 
 
@@ -34,16 +36,36 @@ NSFX_OPEN_NAMESPACE
  * This class is intended to provide common methods to be used by \c Ptr,
  * thus its does not declare the member variable \c PtrBase::p_ to be private.<br/>
  *
+ * @tparam T A type that conforms to \c IObjectConcept.
+ * @tparam nothrow_ Do not throw \c NoInterface when failed to query an interface
+ *                  that is different from \c T.
+ *
  * \c boost::true_type is used in methods when the operand pointer is of the
  * same type as \c T.<br/>
  * While \c boost::false_type is used in methods when the operand pointer is of
  * a different type than \c T.<br/>
+ *
+ * @throw \c NoInterface If \c nothrow_ is \c true, the exception is thrown when
+ *                       an interface cannot be queried from the source pointer.<br/>
+ *                       If \c takeRefCount argument of a method is \c true,
+ *                       then the exception is thrown <b>before</b> the
+ *                       reference count is taken.<br/>
+ *                       After the exception is thrown, this smart pointer is
+ *                       reset to \c nullptr, and the source pointer is intact.<br/>
+ *                       <p>
+ *                       Since the exception may be thrown at the constructor
+ *                       of this base class, the child class \c Ptr may not
+ *                       properly set the source smart pointer to \c nullptr.<br/>
+ *                       So the exception has to be thrown before the reference
+ *                       count is taken.<br/>
+ *                       Otherwise, the reference count may be taken without
+ *                       setting the source smart pointer to \c nullptr.
  */
-template<class T>
+template<class T, bool nothrow_ = true>
 class PtrBase/*{{{*/
 {
 private:
-    template<class U>
+    template<class U, bool>
     friend class PtrBase;
 
     BOOST_CONCEPT_ASSERT((IObjectConcept<T>));
@@ -66,7 +88,7 @@ protected:
     }
 
     template<class U>
-    PtrBase(U* p, bool takeRefCount, boost::false_type) BOOST_NOEXCEPT :
+    PtrBase(U* p, bool takeRefCount, boost::false_type) BOOST_NOEXCEPT_IF(nothrow_) :
         p_(nullptr)
     {
         BOOST_CONCEPT_ASSERT((HasUuidConcept<T>));
@@ -75,6 +97,7 @@ protected:
         if (p)
         {
             p_ = static_cast<T*>(p->QueryInterface(uuid_of<T>()));
+            ThrowNoInterface<T, U>(boost::integral_constant<bool, nothrow_>::type());
             if (takeRefCount)
             {
                 p->Release();
@@ -107,7 +130,7 @@ protected:
     }
 
     template<class U>
-    void Reset(U* p, bool takeRefCount, boost::false_type) BOOST_NOEXCEPT
+    void Reset(U* p, bool takeRefCount, boost::false_type) BOOST_NOEXCEPT_IF(nothrow_)
     {
         BOOST_CONCEPT_ASSERT((HasUuidConcept<T>));
         BOOST_CONCEPT_ASSERT((IObjectConcept<U>));
@@ -116,6 +139,7 @@ protected:
         if (p)
         {
             p_ = static_cast<T*>(p->QueryInterface(uuid_of<T>()));
+            ThrowNoInterface<T, U>(boost::integral_constant<bool, nothrow_>::type());
             if (takeRefCount)
             {
                 p->Release();
@@ -141,6 +165,21 @@ protected:
         return (lhs.p_ == rhs.p_);
     }
 
+    template<class T, class U>
+    void ThrowNoInterface(/* nothrow */boost::true_type) BOOST_NOEXCEPT {}
+
+    template<class T, class U>
+    void ThrowNoInterface(/* throw */boost::false_type)
+    {
+        if (!p_)
+        {
+            BOOST_THROW_EXCEPTION(NoInterface()
+                << QuerySourceTypeErrorInfo(boost::typeindex::type_id<U>().pretty_name())
+                << QueryTargetTypeErrorInfo(boost::typeindex::type_id<T>().pretty_name())
+            );
+        }
+    }
+
 protected:
     T* p_;
 }; // class PtrBase /*}}}*/
@@ -149,20 +188,22 @@ protected:
  * @ingroup Component
  * @brief A smart pointer that manages the lifetime of an object.
  *
- * @tparam T A type that conforms to \c IObjectConcept.<br/>
+ * @tparam T A type that conforms to \c IObjectConcept.
+ * @tparam nothrow_ Do not throw \c NoInterface when failed to query an interface
+ *                  that is different from \c T.
  *
  * @remarks If the pointer is constructed from or assigned to a pointer of a
  *          different type, then the template parameter \c T must also conform
  *          to \c HasUuidConcept.
  */
-template<class T = IObject>
-class Ptr : private PtrBase<T>/*{{{*/
+template<class T = IObject, bool nothrow_ = true>
+class Ptr : private PtrBase<T, nothrow_>/*{{{*/
 {
 private:
-    template<class U>
+    template<class U, bool>
     friend class Ptr;
 
-    typedef PtrBase<T>  BaseType;
+    typedef PtrBase<T, nothrow_>  BaseType;
 
     // Constructors./*{{{*/
 public:
@@ -173,7 +214,18 @@ public:
     {
     }
 
-    Ptr(nullptr_t) BOOST_NOEXCEPT
+    explicit Ptr(nullptr_t) BOOST_NOEXCEPT
+    {
+    }
+
+    /**
+     * @brief Construct a smart pointer from a pointer without taking its reference count.
+     *
+     * @param p  A pointer to the object that is to be managed by the smart
+     *           pointer.
+     */
+    explicit Ptr(T* p) BOOST_NOEXCEPT :
+        BaseType(p, false, boost::is_same<T, T>::type())
     {
     }
 
@@ -185,7 +237,7 @@ public:
      *           pointer.
      */
     template<class U>
-    Ptr(U* p) BOOST_NOEXCEPT :
+    explicit Ptr(U* p) BOOST_NOEXCEPT_IF(nothrow_ || (boost::is_same<T, U>::value)) :
         BaseType(p, false, boost::is_same<T, U>::type())
     {
     }
@@ -207,18 +259,18 @@ public:
      *          The user may lose the object completely.
      */
     template<class U>
-    Ptr(U* p, bool takeRefCount) BOOST_NOEXCEPT :
+    Ptr(U* p, bool takeRefCount) BOOST_NOEXCEPT_IF(nothrow_ || (boost::is_same<T, U>::value)) :
         BaseType(p, takeRefCount, boost::is_same<T, U>::type())
     {
     }
 
-    Ptr(const Ptr<T>& rhs) BOOST_NOEXCEPT :
+    Ptr(const Ptr& rhs) BOOST_NOEXCEPT :
         BaseType(rhs.p_, false, boost::is_same<T, T>::type())
     {
     }
 
-    template<class U>
-    Ptr(const Ptr<U>& rhs) BOOST_NOEXCEPT :
+    template<class U, bool nothrow2>
+    Ptr(const Ptr<U, nothrow2>& rhs) BOOST_NOEXCEPT_IF(nothrow_ || (boost::is_same<T, U>::value)) :
         BaseType(rhs.p_, false, boost::is_same<T, U>::type())
     {
     }
@@ -229,8 +281,8 @@ public:
         rhs.p_ = nullptr;
     }
 
-    template<class U>
-    Ptr(Ptr<U>&& rhs) BOOST_NOEXCEPT :
+    template<class U, bool nothrow2>
+    Ptr(Ptr<U, nothrow2>&& rhs) BOOST_NOEXCEPT_IF(nothrow_ || (boost::is_same<T, U>::value)) :
         BaseType(rhs.p_, true, boost::is_same<T, U>::type())
     {
         rhs.p_ = nullptr;
@@ -246,7 +298,7 @@ public:
     }
 
     template<class U>
-    Ptr& operator=(U* rhs) BOOST_NOEXCEPT
+    Ptr& operator=(U* rhs) BOOST_NOEXCEPT_IF(nothrow_ || (boost::is_same<T, U>::value))
     {
         BaseType::Reset(rhs, false, boost::is_same<T, U>::type());
         return *this;
@@ -258,8 +310,8 @@ public:
         return *this;
     }
 
-    template<class U>
-    Ptr& operator=(const Ptr<U>& rhs) BOOST_NOEXCEPT
+    template<class U, bool nothrow2>
+    Ptr& operator=(const Ptr<U, nothrow2>& rhs) BOOST_NOEXCEPT_IF(nothrow_ || (boost::is_same<T, U>::value))
     {
         BaseType::Reset(rhs.p_, false, boost::is_same<T, U>::type());
         return *this;
@@ -272,8 +324,8 @@ public:
         return *this;
     }
 
-    template<class U>
-    Ptr& operator=(Ptr<U>&& rhs) BOOST_NOEXCEPT
+    template<class U, bool nothrow2>
+    Ptr& operator=(Ptr<U, nothrow2>&& rhs) BOOST_NOEXCEPT_IF(nothrow_ || (boost::is_same<T, U>::value))
     {
         BaseType::Reset(rhs.p_, true, boost::is_same<T, U>::type());
         rhs.p_ = nullptr;
@@ -331,6 +383,12 @@ public:
         return BaseType::IsSameObject(rhs, boost::is_same<T, U>::type());
     }
 
+    template<class U, bool nothrow2>
+    bool operator==(const Ptr<U, nothrow2>& rhs) BOOST_NOEXCEPT
+    {
+        return BaseType::IsSameObject(rhs.p_, boost::is_same<T, U>::type());
+    }
+
     /**
      * @brief Test whether the pointer refers to a <b>different</b> object.
      */
@@ -348,17 +406,11 @@ public:
         return !BaseType::IsSameObject(rhs, boost::is_same<T, U>::type());
     }
 
-    template<class T, class U>
-    friend bool operator==(T* lhs, const Ptr<U>& rhs) BOOST_NOEXCEPT;
-
-    template<class T, class U>
-    friend bool operator==(const Ptr<T>& lhs, const Ptr<U>& rhs) BOOST_NOEXCEPT;
-
-    template<class T, class U>
-    friend bool operator!=(T* lhs, const Ptr<U>& rhs) BOOST_NOEXCEPT;
-
-    template<class T, class U>
-    friend bool operator!=(const Ptr<T>& lhs, const Ptr<U>& rhs) BOOST_NOEXCEPT;
+    template<class U, bool nothrow2>
+    bool operator!=(const Ptr<U, nothrow2>& rhs) BOOST_NOEXCEPT
+    {
+        return !BaseType::IsSameObject(rhs.p_, boost::is_same<T, U>::type());
+    }
 
     /*}}}*/
 
@@ -386,7 +438,7 @@ public:
      * @brief Reset to the pointer \c p without taking its reference count.
      */
     template<class U>
-    void Reset(U* p) BOOST_NOEXCEPT
+    void Reset(U* p) BOOST_NOEXCEPT_IF(nothrow_ || (boost::is_same<T, U>::value))
     {
         BaseType::Reset(p, false, boost::is_same<T, U>::type());
     }
@@ -395,7 +447,7 @@ public:
      * @brief Resets to the pointer \c p.
      */
     template<class U>
-    void Reset(U* p, bool takeRefCount) BOOST_NOEXCEPT
+    void Reset(U* p, bool takeRefCount) BOOST_NOEXCEPT_IF(nothrow_ || (boost::is_same<T, U>::value))
     {
         BaseType::Reset(p, takeRefCount, boost::is_same<T, U>::type());
     }
@@ -422,59 +474,39 @@ public:
         std::swap(p_, rhs.p_);
     }
 
-    template<class U>
-    friend void swap(Ptr<U>& lhs, Ptr<U>& rhs) BOOST_NOEXCEPT;
-    template<class U>
-    friend void swap(T*& lhs, Ptr<U>& rhs) BOOST_NOEXCEPT;
-    template<class U>
-    friend void swap(Ptr<U>& lhs, T*& rhs) BOOST_NOEXCEPT;
     /*}}}*/
 
 }; // class Ptr /*}}}*/
 
 
-template<class T, class U>
+template<class T, class U, bool nothrowU>
 inline bool
-operator==(T* lhs, const Ptr<U>& rhs) BOOST_NOEXCEPT
+operator==(T* lhs, const Ptr<U, nothrowU>& rhs) BOOST_NOEXCEPT
 {
     return rhs.operator==(lhs);
 }
 
-template<class T, class U>
+template<class T, class U, bool nothrowU>
 inline bool
-operator==(const Ptr<T>& lhs, const Ptr<U>& rhs) BOOST_NOEXCEPT
-{
-    return lhs.operator==(rhs.p_);
-}
-
-template<class T, class U>
-inline bool
-operator!=(T* lhs, const Ptr<U>& rhs) BOOST_NOEXCEPT
+operator!=(T* lhs, const Ptr<U, nothrowU>& rhs) BOOST_NOEXCEPT
 {
     return rhs.operator!=(lhs);
 }
 
-template<class T, class U>
-inline bool
-operator!=(const Ptr<T>& lhs, const Ptr<U>& rhs) BOOST_NOEXCEPT
-{
-    return lhs.operator!=(rhs.p_);
-}
-
-template<class T>
-inline void swap(Ptr<T>& lhs, Ptr<T>& rhs) BOOST_NOEXCEPT
+template<class T, bool nothrowT>
+inline void swap(Ptr<T, nothrowT>& lhs, Ptr<T, nothrowT>& rhs) BOOST_NOEXCEPT
 {
     lhs.swap(rhs);
 }
 
-template<class T>
-inline void swap(T*& lhs, Ptr<T>& rhs) BOOST_NOEXCEPT
+template<class T, bool nothrowT>
+inline void swap(T*& lhs, Ptr<T, nothrowT>& rhs) BOOST_NOEXCEPT
 {
     rhs.swap(lhs);
 }
 
-template<class T>
-inline void swap(Ptr<T>& lhs, T*& rhs) BOOST_NOEXCEPT
+template<class T, bool nothrowT>
+inline void swap(Ptr<T, nothrowT>& lhs, T*& rhs) BOOST_NOEXCEPT
 {
     lhs.swap(rhs);
 }
