@@ -66,7 +66,7 @@ NSFX_DEFINE_CLASS_UUID4(ISimulatorSink, 0x0E1B1E22, 0x33BF, 0x42D8, 0x8F5BF4FFE3
  * @ingroup Simulator
  * @brief The simulator interface.
  */
-class ISimulator :
+class ISimulator :/*{{{*/
     virtual public IObject
 {
 public:
@@ -75,8 +75,8 @@ public:
     /**
      * @brief Connect to a sink.
      *
-     * @param sink The simulation sink.
-     * @param mask The event types listened by the sink.
+     * @param[in] sink The simulation sink.
+     * @param[in] mask The event types listened by the sink.
      *
      * @return  Return a cookie that can be used to disconnect the sink.
      *
@@ -91,7 +91,7 @@ public:
     /**
      * @brief Disconnect a sink.
      *
-     * @param cookie  The cookie obtain at connection.
+     * @param[in] cookie  The cookie obtain at connection.
      *
      * All sinks are automatically disconnected when the simulation ends.
      *
@@ -99,16 +99,45 @@ public:
      */
     virtual void Disconnect(cookie_t cookie) BOOST_NOEXCEPT = 0;
 
+    /**
+     * @brief Run until there is no scheduled alarm.
+     */
     virtual void Run(void) = 0;
 
+    /**
+     * @brief Run until a specific time point.
+     */
     virtual void RunUntil(const TimePoint& t) = 0;
 
+    /**
+     * @brief Run for a specific duration.
+     */
     virtual void RunFor(const Duration& dt) = 0;
 
-}; // class ISimulator
+}; // class ISimulator /*}}}*/
 
 
 NSFX_DEFINE_CLASS_UUID4(ISimulator, 0xC079AC9A, 0x0F83, 0x48F4, 0x82F354924DBBA46CLL);
+
+
+////////////////////////////////////////////////////////////////////////////////
+// ISimulatorUser.
+/**
+ * @ingroup Simulator
+ * @brief The simulator user interface.
+ */
+class ISimulatorUser :/*{{{*/
+    virtual public IObject
+{
+public:
+    virtual ~ISimulatorUser(void) BOOST_NOEXCEPT {}
+
+    virtual void UseSimulator(Ptr<ISimulator> simulator) = 0;
+
+}; // class ISimulatorUser /*}}}*/
+
+
+NSFX_DEFINE_CLASS_UUID4(ISimulatorUser, 0xF4055358, 0x7910, 0x4982, 0x89BA0839D539482FLL);
 
 
 NSFX_CLOSE_NAMESPACE
@@ -116,6 +145,7 @@ NSFX_CLOSE_NAMESPACE
 
 #define NSFX_IID_ISimulatorSink  NSFX_UUID_OF(::nsfx::ISimulatorSink)
 #define NSFX_IID_ISimulator      NSFX_UUID_OF(::nsfx::ISimulator)
+#define NSFX_IID_ISimulatorUser  NSFX_UUID_OF(::nsfx::ISimulatorUser)
 
 
 #endif // I_SIMULATOR_H__A3B18FB8_B2C5_45A6_A822_9C4A6AC94D52

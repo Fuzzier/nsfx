@@ -1,48 +1,48 @@
 #include <nsfx/test.h>
 #include <nsfx/simulator/simulator.h>
+#include <nsfx/simulator/list-event-scheduler.h>
 #include <iostream>
 
+#define PTR(x)  nsfx::Ptr<x, false>
 
 NSFX_TEST_SUITE(Simulator)
 {
-    using nsfx::Ptr;
-
-    struct ISinkInit : virtual nsfx::IObject
-    {
-        virtual ~ISinkInit() {}
-        virtual void Wire(Ptr<> simulator) = 0;
-    };
-
-    NSFX_DEFINE_CLASS_UUID4(ISinkInit, 0x017EE551, 0x255B, 0x4798, 0x83FCFD903B0FD0C5LL);
-
     static int counter = 0;
     struct Sink :/*{{{*/
-        ISinkInit,
-        nsfx::IAlarmSink,
-        nsfx::ISimulatorSink
+        nsfx::IEventSink,
+        nsfx::ISimulatorSink,
+        nsfx::IClockUser,
+        nsfx::ISimulatorUser,
+        nsfx::IEventSchedulerUser
     {
         virtual ~Sink(void) {}
 
-        virtual void Wire(Ptr<> simulator)
+        virtual void UseClock(nsfx::Ptr<nsfx::IClock> clock) NSFX_OVERRIDE
         {
-            simulator_ = simulator;
-            NSFX_TEST_ASSERT(simulator_);
-            clock_ = simulator;
-            NSFX_TEST_ASSERT(clock_);
-            alarm_ = simulator;
-            NSFX_TEST_ASSERT(alarm_);
+            clock_ = clock;
         }
 
-        virtual void OnAlarm(void) NSFX_OVERRIDE
+        virtual void UseSimulator(nsfx::Ptr<nsfx::ISimulator> simulator) NSFX_OVERRIDE
+        {
+            simulator_ = simulator;
+        }
+
+        virtual void UseEventScheduler(nsfx::Ptr<nsfx::IEventScheduler> scheduler) NSFX_OVERRIDE
+        {
+            scheduler_ = scheduler;
+        }
+
+        virtual void OnEvent(void) NSFX_OVERRIDE
         {
             std::cout << clock_->Now() << ": " << ++counter << std::endl;
             if (counter < 10)
             {
-                alarm_->ScheduleAt(clock_->Now() + nsfx::chrono::Seconds(1));
+                scheduler_->ScheduleAt(
+                    clock_->Now() + nsfx::chrono::Seconds(1), this);
             }
             else if (counter < 20)
             {
-                alarm_->ScheduleIn(nsfx::chrono::Seconds(1));
+                scheduler_->ScheduleIn(nsfx::chrono::Seconds(1), this);
             }
         }
 
@@ -51,19 +51,19 @@ NSFX_TEST_SUITE(Simulator)
             switch (type)
             {
             case nsfx::NSFX_SIMULATOR_EVENT_BEGIN:
-                std::cout << "begin" << std::endl;
+                std::cout << "BEGIN" << std::endl;
                 break;
             case nsfx::NSFX_SIMULATOR_EVENT_RUN:
-                std::cout << "run" << std::endl;
+                std::cout << "RUN" << std::endl;
                 break;
             case nsfx::NSFX_SIMULATOR_EVENT_PAUSE:
-                std::cout << "pause" << std::endl;
+                std::cout << "PAUSE" << std::endl;
                 break;
             case nsfx::NSFX_SIMULATOR_EVENT_END:
-                std::cout << "end" << std::endl;
+                std::cout << "END" << std::endl;
                 simulator_ = nullptr;
+                scheduler_ = nullptr;
                 clock_ = nullptr;
-                alarm_ = nullptr;
                 break;
             default:
                 break;
@@ -71,19 +71,18 @@ NSFX_TEST_SUITE(Simulator)
         }
 
         NSFX_INTERFACE_MAP_BEGIN(Sink)
-            NSFX_INTERFACE_ENTRY(ISinkInit)
-            NSFX_INTERFACE_ENTRY(IAlarmSink)
+            NSFX_INTERFACE_ENTRY(IEventSink)
             NSFX_INTERFACE_ENTRY(ISimulatorSink)
+            NSFX_INTERFACE_ENTRY(IClockUser)
+            NSFX_INTERFACE_ENTRY(ISimulatorUser)
+            NSFX_INTERFACE_ENTRY(IEventSchedulerUser)
         NSFX_INTERFACE_MAP_END()
 
     private:
-        Ptr<nsfx::ISimulator> simulator_;
-        Ptr<nsfx::IClock> clock_;
-        Ptr<nsfx::IAlarm> alarm_;
+        nsfx::Ptr<nsfx::ISimulator> simulator_;
+        nsfx::Ptr<nsfx::IClock> clock_;
+        nsfx::Ptr<nsfx::IEventScheduler> scheduler_;
     };/*}}}*/
-
-    NSFX_DEFINE_CLASS_UUID4(Sink, 0xEDFE3391, 0x734E, 0x476C, 0x9FB27EDAE1370AEFLL);
-    NSFX_REGISTER_CLASS(Sink);
 
     NSFX_TEST_CASE(Simulator)
     {
@@ -91,40 +90,46 @@ NSFX_TEST_SUITE(Simulator)
         try
         {
             counter = 0;
-            Ptr<>  o = nsfx::CreateObject<nsfx::IObject>(NSFX_CID_Simulator);
-            NSFX_TEST_ASSERT(o);
-            Ptr<nsfx::IAlarm>  alarm(o);
-            NSFX_TEST_ASSERT(alarm);
 
-            Ptr<>  sink(new SinkType);
-            NSFX_TEST_ASSERT(sink);
-            Ptr<ISinkInit>  sinkInit(sink);
-            NSFX_TEST_ASSERT(sinkInit);
-            sinkInit->Wire(o);
+            // Create objects.
+            PTR(nsfx::IEventScheduler) scheduler =
+                nsfx::CreateObject<nsfx::IEventScheduler>(
+                    NSFX_CID_ListEventScheduler);
 
-            Ptr<nsfx::IAlarmSink>  alarmSink(sink);
-            NSFX_TEST_ASSERT(alarmSink);
-            alarm->Connect(alarmSink);
-            NSFX_TEST_EXPECT(!alarm->IsPending());
+            PTR(nsfx::ISimulator)  simulator =
+                nsfx::CreateObject<nsfx::ISimulator>(
+                    NSFX_CID_Simulator);
+            PTR(nsfx::IClock)  clock(simulator);
 
-            Ptr<nsfx::ISimulatorSink>  simSink(sink);
-            NSFX_TEST_ASSERT(simSink);
+            PTR(SinkType)  sink(new SinkType);
+            PTR(nsfx::IEventSink)  eventSink(sink);
+            PTR(nsfx::ISimulatorSink)  simulatorSink(sink);
 
-            Ptr<nsfx::ISimulator>  simulator(o);
-            NSFX_TEST_ASSERT(simulator);
+            // Wire simulator.
+            {
+                PTR(nsfx::IEventSchedulerUser) u(simulator);
+                u->UseEventScheduler(scheduler);
+            }
+            // Wire scheduler.
+            {
+                PTR(nsfx::IClockUser) u(scheduler);
+                u->UseClock(clock);
+            }
+            // Wire sink.
+            {
+                sink->UseClock(clock);
+                sink->UseSimulator(simulator);
+                sink->UseEventScheduler(scheduler);
+            }
 
             nsfx::cookie_t cookie = simulator->Connect(
-                simSink, nsfx::NSFX_SIMULATOR_EVENT_ALL);
+                simulatorSink, nsfx::NSFX_SIMULATOR_EVENT_ALL);
             simulator->Disconnect(cookie);
             cookie = simulator->Connect(
-                simSink, nsfx::NSFX_SIMULATOR_EVENT_ALL);
-
-            Ptr<nsfx::IClock>  clock(o);
-            NSFX_TEST_ASSERT(clock);
+                simulatorSink, nsfx::NSFX_SIMULATOR_EVENT_ALL);
 
             // start at 1s.
-            alarm->ScheduleAt(clock->Now() + nsfx::chrono::Seconds(1));
-            NSFX_TEST_EXPECT(alarm->IsPending());
+            scheduler->ScheduleAt(clock->Now() + nsfx::chrono::Seconds(1), eventSink);
 
             // run to 1s.
             simulator->RunUntil(clock->Now() + nsfx::chrono::Seconds(1));
@@ -137,9 +142,6 @@ NSFX_TEST_SUITE(Simulator)
             // run to the end (20s).
             simulator->Run();
             NSFX_TEST_EXPECT_EQ(counter, 20);
-
-            alarm->Disconnect();
-            NSFX_TEST_EXPECT(!alarm->IsPending());
         }
         catch (boost::exception& e)
         {

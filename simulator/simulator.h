@@ -20,7 +20,8 @@
 #include <nsfx/simulator/config.h>
 #include <nsfx/simulator/i-simulator.h>
 #include <nsfx/simulator/i-clock.h>
-#include <nsfx/simulator/i-alarm.h>
+#include <nsfx/simulator/i-event-scheduler.h>
+#include <nsfx/simulator/exception.h>
 #include <nsfx/component/class-registry.h>
 
 
@@ -31,110 +32,20 @@ NSFX_OPEN_NAMESPACE
 // Simulator.
 /**
  * @ingroup Simulator
- * @brief The simulator interface.
+ * @brief The simulator.
  *
- * ### Provides:
- * \c IClock, \c IAlarm, \c ISimulator.
+ * ### Interfaces:
+ * * \c IEventSchedulerUser
+ * * \c Clock
+ * * \c ISimulator
+ * * \c IEventScheduler
  */
 class Simulator :
     public ISimulator,
     public IClock,
-    public IAlarm
+    public IEventSchedulerUser
 {
 private:
-    class Alarm/*{{{*/
-    {
-    public:
-        Alarm(void) BOOST_NOEXCEPT :
-            simulator_(nullptr),
-            pending_(false)
-        {}
-
-        void Wire(Simulator* simulator) BOOST_NOEXCEPT
-        {
-            simulator_ = simulator;
-        }
-
-        // For IAlarm /*{{{*/
-        void Connect(Ptr<IAlarmSink> sink)
-        {
-            if (!sink)
-            {
-                BOOST_THROW_EXCEPTION(InvalidPointer());
-            }
-            if (sink_)
-            {
-                BOOST_THROW_EXCEPTION(ConnectionLimit());
-            }
-            sink_ = std::move(sink);
-        }
-
-        void Disconnect(void) BOOST_NOEXCEPT
-        {
-            Cancel();
-            sink_.Reset();
-        }
-
-        void ScheduleAt(const TimePoint& t)
-        {
-            if (!sink_)
-            {
-                BOOST_THROW_EXCEPTION(NotConnected());
-            }
-            if (t < simulator_->Simulator::Now())
-            {
-                BOOST_THROW_EXCEPTION(InvalidArgument());
-            }
-            t_ = t;
-            pending_ = true;
-        }
-
-        void ScheduleIn(const Duration& dt)
-        {
-            if (!sink_)
-            {
-                BOOST_THROW_EXCEPTION(NotConnected());
-            }
-            if (dt < Duration(0))
-            {
-                BOOST_THROW_EXCEPTION(InvalidArgument());
-            }
-            t_ = simulator_->Simulator::Now() + dt;
-            pending_ = true;
-        }
-
-        bool IsPending(void) BOOST_NOEXCEPT
-        {
-            return pending_;
-        }
-
-        void Cancel(void) BOOST_NOEXCEPT
-        {
-            pending_ = false;
-        }
-
-        /*}}}*/
-
-        TimePoint GetTimePoint(void) BOOST_NOEXCEPT
-        {
-            return t_;
-        }
-
-        void Fire(void)
-        {
-            pending_ = false;
-            sink_->OnAlarm();
-        }
-
-    private:
-        Simulator* simulator_;
-        Ptr<IAlarmSink> sink_;
-        TimePoint t_;
-        bool pending_;
-    }; // class Alarm
-
-    /*}}}*/
-
     class SimulatorSinks/*{{{*/
     {
         class SimulatorSink
@@ -200,14 +111,39 @@ private:
     };/*}}}*/
 
 public:
-    Simulator(void) :
+    Simulator(void) BOOST_NOEXCEPT :
+        initialized_(false),
         started_(false),
         finished_(false)
     {
-        alarm_.Wire(this);
     }
 
     virtual ~Simulator(void) BOOST_NOEXCEPT {}
+
+    // IEventSchedulerUser /*{{{*/
+    virtual void UseEventScheduler(Ptr<IEventScheduler> scheduler) NSFX_OVERRIDE
+    {
+        if (initialized_)
+        {
+            BOOST_THROW_EXCEPTION(CannotReinitialize());
+        }
+        if (!scheduler)
+        {
+            BOOST_THROW_EXCEPTION(InvalidPointer());
+        }
+        scheduler_ = scheduler;
+        initialized_ = true;
+    }
+
+    /*}}}*/
+
+    // IClock /*{{{*/
+    virtual TimePoint Now(void) BOOST_NOEXCEPT NSFX_OVERRIDE
+    {
+        return t_;
+    }
+
+    /*}}}*/
 
     // ISimulator /*{{{*/
     virtual cookie_t Connect(Ptr<ISimulatorSink> sink,
@@ -228,12 +164,31 @@ public:
 
     virtual void RunUntil(const TimePoint& t) NSFX_OVERRIDE
     {
+        if (!initialized_)
+        {
+            BOOST_THROW_EXCEPTION(Uninitialized());
+        }
+        if (finished_)
+        {
+            BOOST_THROW_EXCEPTION(SimulatorFinished());
+        }
         CheckBeginOfSimulation();
         sinks_.Fire(NSFX_SIMULATOR_EVENT_RUN);
-        // An external object can schedule alarms in its alarm sink.
-        while (alarm_.IsPending() && alarm_.GetTimePoint() <= t)
+        // An external object can schedule events in its event sink.
+        while (true)
         {
-            FireAlarm();
+            Ptr<IEventHandle> handle = scheduler_->GetNextEvent();
+            if (!handle)
+            {
+                break;
+            }
+            TimePoint t0 = handle->GetTimePoint();
+            if (t0 > t)
+            {
+                break;
+            }
+            t_ = t0;
+            handle->Fire();
         }
         sinks_.Fire(NSFX_SIMULATOR_EVENT_PAUSE);
         CheckEndOfSimulation();
@@ -242,16 +197,6 @@ public:
     virtual void RunFor(const Duration& dt) NSFX_OVERRIDE
     {
         RunUntil(t_ + dt);
-    }
-
-    /**
-     * @pre <code>alarm_->IsPending() == true</code>
-     * @post \c t_ is updated to the time point of the scheduled alarm.
-     */
-    void FireAlarm(void)
-    {
-        t_ = alarm_.GetTimePoint();
-        alarm_.Fire();
     }
 
     void CheckBeginOfSimulation(void)
@@ -265,7 +210,7 @@ public:
 
     void CheckEndOfSimulation(void)
     {
-        if (!alarm_.IsPending() && !finished_)
+        if (!scheduler_->GetNextEvent() && !finished_)
         {
             sinks_.Fire(NSFX_SIMULATOR_EVENT_END);
             sinks_.Clear();
@@ -275,58 +220,18 @@ public:
 
     /*}}}*/
 
-    // IClock/*{{{*/
-    virtual TimePoint Now(void) BOOST_NOEXCEPT NSFX_OVERRIDE
-    {
-        return t_;
-    }
-
-    /*}}}*/
-
-    // IAlarm /*{{{*/
-    virtual void Connect(Ptr<IAlarmSink> sink) NSFX_OVERRIDE
-    {
-        alarm_.Connect(std::move(sink));
-    }
-
-    virtual void Disconnect(void) BOOST_NOEXCEPT NSFX_OVERRIDE
-    {
-        alarm_.Disconnect();
-    }
-
-    virtual void ScheduleAt(const TimePoint& t) NSFX_OVERRIDE
-    {
-        alarm_.ScheduleAt(t);
-    }
-
-    virtual void ScheduleIn(const Duration& dt) NSFX_OVERRIDE
-    {
-        alarm_.ScheduleIn(dt);
-    }
-
-    virtual bool IsPending(void) BOOST_NOEXCEPT NSFX_OVERRIDE
-    {
-        return alarm_.IsPending();
-    }
-
-    virtual void Cancel(void) BOOST_NOEXCEPT NSFX_OVERRIDE
-    {
-        alarm_.Cancel();
-    }
-
-    /*}}}*/
-
     NSFX_INTERFACE_MAP_BEGIN(Simulator)
         NSFX_INTERFACE_ENTRY(ISimulator)
         NSFX_INTERFACE_ENTRY(IClock)
-        NSFX_INTERFACE_ENTRY(IAlarm)
+        NSFX_INTERFACE_ENTRY(IEventSchedulerUser)
     NSFX_INTERFACE_MAP_END()
 
 private:
-    TimePoint t_;
-    Alarm     alarm_;
-    bool      started_;
-    bool      finished_;
+    TimePoint  t_;
+    Ptr<IEventScheduler>  scheduler_;
+    bool  initialized_;
+    bool  started_;
+    bool  finished_;
     SimulatorSinks sinks_;
 }; // class Simulator
 
