@@ -54,7 +54,7 @@ struct BadAggregation : ComponentException {};
 
 ////////////////////////////////////////////////////////////////////////////////
 // Object initialization.
-struct NotInitialized : ComponentException {};
+struct Uninitialized : ComponentException {};
 struct CannotReinitialize : ComponentException {};
 
 ////////////////////////////////////////////////////////////////////////////////
