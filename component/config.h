@@ -168,9 +168,11 @@
  *     User-defined methods should avoid using void raw pointers as return
  *     values.<br/>
  *
- *     The 2nd case is commonly used to obtain an interface pointer on a
- *     singleton object, and the returned pointer can be a non-void raw pointer.<br/>
- *     It is user's responsibility to ensure that the singleton remains valid.<br/>
+ *     The 2nd case can be applied when a container object holds a reference
+ *     count of an internal object that <b>shares the same lifetime</b> as the
+ *     container, a <b>free pointer</b> to the internal object can be returned
+ *     as a non-void raw pointer.<br/>
+ *     It is user's responsibility to ensure that the container remains valid.<br/>
  *
  * ## 3. Conclusion.<br/>
  *    Performance and flexibility are conflicting aspects.<br/>
