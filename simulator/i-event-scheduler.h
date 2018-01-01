@@ -85,6 +85,10 @@ public:
 
     /**
      * @brief Get the next scheduled event.
+     *
+     * This function <b>cannot</b> return a free pointer to \c IEventHandle,
+     * since the \c IEventHandle does not share the same lifetime as the
+     * \c IEventScheduler.
      */
     virtual Ptr<IEventHandle> GetNextEvent(void) BOOST_NOEXCEPT = 0;
 

@@ -35,8 +35,8 @@ NSFX_OPEN_NAMESPACE
  * @brief The list event scheduler.
  *
  * ### Interfaces:
- * * \c IEventScheduler
  * * \c IClockUser
+ * * \c IEventScheduler
  */
 class ListEventScheduler :
     public IClockUser,
