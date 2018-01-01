@@ -26,6 +26,9 @@ NSFX_OPEN_NAMESPACE
 
 
 struct ComponentException : boost::exception, std::exception {};
+
+////////////////////////////////////////////////////////////////////////////////
+// General.
 /**
  * @brief Fatal error.
  */
@@ -43,19 +46,27 @@ struct OutOfBounds : ComponentException {};
  * @brief The precondition of calling a method is not satisfied.
  */
 struct IllegalMethodCall : ComponentException {};
-struct Uninitialized : ComponentException {};
+struct BadThreadingModel : ComponentException {};
 /**
  * @brief Practice aggregation in a wrong way.
  */
 struct BadAggregation : ComponentException {};
+
+////////////////////////////////////////////////////////////////////////////////
+// Object initialization.
+struct NotInitialized : ComponentException {};
+struct CannotReinitialize : ComponentException {};
+
+////////////////////////////////////////////////////////////////////////////////
+// Class registration.
 /**
  * @brief The object factory does not produce the requested class.
  */
-struct ClassNotAvaiable : ComponentException {};
 struct ClassNotRegistered : ComponentException {};
 struct ClassIsRegistered : ComponentException {};
-struct InterfaceNotRegistered : ComponentException {};
-struct BadThreadingModel : ComponentException {};
+
+////////////////////////////////////////////////////////////////////////////////
+// Sink connection.
 /**
  * @brief The event provider cannot accept additional connections any more.
  */

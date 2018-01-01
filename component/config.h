@@ -150,11 +150,11 @@
  *
  *     In NSFX, the intention whether to transfer a reference count is stated
  *     explicitly.<br/>
- *     1) If a <b>smart pointer</b> is used, a reference count is transferred
+ *     -# If a <b>smart pointer</b> is used, a reference count is transferred
  *        across the function call.<br/>
- *     2) If a <b>non-void raw pointer</b> is used, a reference count is <b>not</b>
+ *     -# If a <b>non-void raw pointer</b> is used, a reference count is <b>not</b>
  *        transferred across the function call.<br/>
- *     3) If a <b>void raw pointer</b> is used, a reference count is transferred
+ *     -# If a <b>void raw pointer</b> is used, a reference count is transferred
  *        out of the function call.<br/>
  *
  *     The 3rd case is only applied to methods that perform interface
@@ -182,7 +182,41 @@
  *    Try not to shift burdens to the users.<br/>
  *    Intrusive reference counting is welcome.<br/>
  *    Objects are hidden behind interfaces.<br/>
- *    Who wants an interface, who should query it.<br/>
+ *
+ * # How to wire components together?<br/>
+ *   A component usually depends upon other components to work.<br/>
+ *   The former component is called a <b>user</b>, and the latters are called
+ *   <b>providers</b>.<br/>
+ *   A user <b>uses</b> interfaces on the providers.<br/>
+ *   A provider <b>provides</b> interfaces to the users.<br/>
+ *   The action to associate a user with its provides is called <b>wiring</b>.<br/>
+ *
+ *   An object class can be registered via \c NSFX_REGISTER_CLASS().<br/>
+ *   An uninitialized object of the class can be created via \c CreateObject().<br/>
+ *   To initialize the object, the class must provide means for wiring.<br/>
+ *
+ *   However, an object can only be manipulated via its interfaces.<br/>
+ *   i.e., it must provide interfaces that allow programmers to pass in the
+ *   required interfaces on the provides.<br/>
+ *
+ * ## Component-to-interface scheme.
+ *   Each interface should define an associated <i>`User'</i> interface.<br/>
+ *   e.g., for an interface \c IClock, an associated interface \c IClockUser
+ *   should be defined, and it has a single method \c WireClock(IClock*) that
+ *   allows programmers to pass in a clock.<br/>
+ *   If a component uses a clock, it should expose the interface to acquire
+ *   a clock.<br/>
+ *   A component is not responsible to query the used interfaces.
+ *
+ * ## Component-to-component scheme.
+ *   A component obtains an \c IObject of a component, and quries the interfaces
+ *   on that component.<br/>
+ *   However, in practice, each component may use a different set of components.<br/>
+ *   Each component may have to provide a separate <i>initialization</i>
+ *   interface that suits its own need.<br/>
+ *   This may result in interface storming.<br/>
+ *   The initialization interface may only suit a specific usage scenario.<br/>
+ *   Reusing <i>`User'</i> interfaces is prefered.<br/>
  *
  */
 
