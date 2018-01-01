@@ -18,7 +18,7 @@
 
 
 #include <nsfx/simulator/config.h>
-#include <nsfx/component/i-object.h>
+#include <nsfx/simulator/i-event-sink.h>
 
 
 NSFX_OPEN_NAMESPACE
@@ -30,7 +30,7 @@ NSFX_OPEN_NAMESPACE
  * @ingroup Simulator
  * @brief The event handle interface.
  */
-class IEventHandle :
+class IEventHandle :/*{{{*/
     virtual public IObject
 {
 public:
@@ -39,32 +39,43 @@ public:
     /**
      * @brief The alarm is waiting to be fired.
      */
-    virtual bool IsPending(void) = 0;
+    virtual bool IsPending(void) BOOST_NOEXCEPT = 0;
 
     /**
      * @brief The alarm is being fired.
      */
-    virtual bool IsRunning(void) = 0;
+    virtual bool IsRunning(void) BOOST_NOEXCEPT = 0;
 
     /**
      * @brief The alarm is waiting or being fired.
      */
-    virtual bool IsValid(void) = 0;
+    virtual bool IsValid(void) BOOST_NOEXCEPT = 0;
 
     /**
      * @brief Cancel the alarm.
      */
-    virtual void Cancel(void) = 0;
+    virtual void Cancel(void) BOOST_NOEXCEPT = 0;
 
     /**
      * @brief Get the time point when the alarm is about to be fired.
      */
-    virtual TimePoint GetTimePoint(void) = 0;
+    virtual TimePoint GetTimePoint(void) BOOST_NOEXCEPT = 0;
 
-}; // class IEventHandle
+    /**
+     * @brief Fire the event.
+     *
+     * @pre <code>this == IEventScheduler::GetNextEvent()</code>
+     *
+     * @post <code>!IsPending() && !IsRunning() && !IsValid()</code>
+     *
+     * @throw IllegalMethodCall The event is not the next event to fire.
+     */
+    virtual void Fire(void) = 0;
+
+}; // class IEventHandle /*}}}*/
 
 
-NSFX_DEFINE_CALSS_UUID4(IEventHandle, 0x9563654A, 0x8984, 0x448A, 0xBBFD8C654C7AEC61LL);
+NSFX_DEFINE_CLASS_UUID4(IEventHandle, 0x9563654A, 0x8984, 0x448A, 0xBBFD8C654C7AEC61LL);
 
 
 NSFX_CLOSE_NAMESPACE
