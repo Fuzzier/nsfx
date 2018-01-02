@@ -29,6 +29,14 @@ NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// Types.
+class ListEventScheduler;
+
+
+#define NSFX_CID_ListEventScheduler  NSFX_UUID_OF(::nsfx::ListEventScheduler)
+
+
+////////////////////////////////////////////////////////////////////////////////
 // ListEventScheduler.
 /**
  * @ingroup Simulator
@@ -252,9 +260,6 @@ NSFX_REGISTER_CLASS(ListEventScheduler);
 
 
 NSFX_CLOSE_NAMESPACE
-
-
-#define NSFX_CID_ListEventScheduler  NSFX_UUID_OF(::nsfx::ListEventScheduler)
 
 
 #endif // LIST_EVENT_SCHEDULER_H__38B15EBB_9CE4_4670_A446_55235A1EEF60

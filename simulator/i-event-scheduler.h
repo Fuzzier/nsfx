@@ -27,6 +27,16 @@ NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// Types.
+class IEventScheduler;
+class IEventSchedulerUser;
+
+
+#define NSFX_IID_IEventScheduler      NSFX_UUID_OF(::nsfx::IEventScheduler)
+#define NSFX_IID_IEventSchedulerUser  NSFX_UUID_OF(::nsfx::IEventSchedulerUser)
+
+
+////////////////////////////////////////////////////////////////////////////////
 // IEventScheduler.
 /**
  * @ingroup Simulator
@@ -119,10 +129,6 @@ NSFX_DEFINE_CLASS_UUID4(IEventSchedulerUser, 0xA72965EB, 0x80C9, 0x42ED, 0x934FC
 
 
 NSFX_CLOSE_NAMESPACE
-
-
-#define NSFX_IID_IEventScheduler      NSFX_UUID_OF(::nsfx::IEventScheduler)
-#define NSFX_IID_IEventSchedulerUser  NSFX_UUID_OF(::nsfx::IEventSchedulerUser)
 
 
 #endif // I_EVENT_SCHEDULER_H__B3B744CD_6782_43F2_A063_8B25FD33374E

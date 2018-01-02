@@ -26,6 +26,19 @@ NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// Types.
+class ISimulator;
+class ISimulatorSink;
+class ISimulatorUser;
+enum  SimulatorEventType;
+
+
+#define NSFX_IID_ISimulatorSink  NSFX_UUID_OF(::nsfx::ISimulatorSink)
+#define NSFX_IID_ISimulator      NSFX_UUID_OF(::nsfx::ISimulator)
+#define NSFX_IID_ISimulatorUser  NSFX_UUID_OF(::nsfx::ISimulatorUser)
+
+
+////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Simulator
  * @brief Simulator event type.
@@ -38,26 +51,6 @@ enum SimulatorEventType
     NSFX_SIMULATOR_EVENT_END   = 8,
     NSFX_SIMULATOR_EVENT_ALL   = 0x0F
 };
-
-
-////////////////////////////////////////////////////////////////////////////////
-// ISimulatorSink.
-/**
- * @ingroup Simulator
- * @brief The simulator sink interface.
- */
-class ISimulatorSink :
-    virtual public IObject
-{
-public:
-    virtual ~ISimulatorSink(void) BOOST_NOEXCEPT {}
-
-    virtual void OnSimulatorEvent(SimulatorEventType type) = 0;
-
-}; // class ISimulatorSink
-
-
-NSFX_DEFINE_CLASS_UUID4(ISimulatorSink, 0x0E1B1E22, 0x33BF, 0x42D8, 0x8F5BF4FFE3536CE9LL);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -121,6 +114,26 @@ NSFX_DEFINE_CLASS_UUID4(ISimulator, 0xC079AC9A, 0x0F83, 0x48F4, 0x82F354924DBBA4
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// ISimulatorSink.
+/**
+ * @ingroup Simulator
+ * @brief The simulator sink interface.
+ */
+class ISimulatorSink :
+    virtual public IObject
+{
+public:
+    virtual ~ISimulatorSink(void) BOOST_NOEXCEPT {}
+
+    virtual void OnSimulatorEvent(SimulatorEventType type) = 0;
+
+}; // class ISimulatorSink
+
+
+NSFX_DEFINE_CLASS_UUID4(ISimulatorSink, 0x0E1B1E22, 0x33BF, 0x42D8, 0x8F5BF4FFE3536CE9LL);
+
+
+////////////////////////////////////////////////////////////////////////////////
 // ISimulatorUser.
 /**
  * @ingroup Simulator
@@ -141,11 +154,6 @@ NSFX_DEFINE_CLASS_UUID4(ISimulatorUser, 0xF4055358, 0x7910, 0x4982, 0x89BA0839D5
 
 
 NSFX_CLOSE_NAMESPACE
-
-
-#define NSFX_IID_ISimulatorSink  NSFX_UUID_OF(::nsfx::ISimulatorSink)
-#define NSFX_IID_ISimulator      NSFX_UUID_OF(::nsfx::ISimulator)
-#define NSFX_IID_ISimulatorUser  NSFX_UUID_OF(::nsfx::ISimulatorUser)
 
 
 #endif // I_SIMULATOR_H__A3B18FB8_B2C5_45A6_A822_9C4A6AC94D52

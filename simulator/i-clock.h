@@ -25,6 +25,16 @@ NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// Types.
+class IClock;
+class IClockUser;
+
+
+#define NSFX_IID_IClock      NSFX_UUID_OF(::nsfx::IClock)
+#define NSFX_IID_IClockUser  NSFX_UUID_OF(::nsfx::IClockUser)
+
+
+////////////////////////////////////////////////////////////////////////////////
 // IClock.
 /**
  * @ingroup Simulator
@@ -74,10 +84,6 @@ NSFX_DEFINE_CLASS_UUID4(IClockUser, 0x493628F2, 0x34A8, 0x4162, 0xA299C3C49BF92E
 
 
 NSFX_CLOSE_NAMESPACE
-
-
-#define NSFX_IID_IClock      NSFX_UUID_OF(::nsfx::IClock)
-#define NSFX_IID_IClockUser  NSFX_UUID_OF(::nsfx::IClockUser)
 
 
 #endif // I_CLOCK_H__49523D2A_BE6A_45FA_84EA_88307B44F4D2

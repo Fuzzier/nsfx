@@ -25,6 +25,14 @@ NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// Types.
+class IEventSink;
+
+
+#define NSFX_IID_IEventSink  NSFX_UUID_OF(::nsfx::IEventSink)
+
+
+////////////////////////////////////////////////////////////////////////////////
 // IEventSink.
 /**
  * @ingroup Simulator
@@ -45,9 +53,6 @@ NSFX_DEFINE_CLASS_UUID4(IEventSink, 0x88630CC3, 0xFCE6, 0x452B, 0x825ABCA384FC8C
 
 
 NSFX_CLOSE_NAMESPACE
-
-
-#define NSFX_IID_IEventSink  NSFX_UUID_OF(IEventSink)
 
 
 #endif // I_EVENT_SINK_H__39A3740A_3B90_4851_9BC0_E910E3F2AD46

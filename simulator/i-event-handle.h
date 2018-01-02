@@ -25,6 +25,14 @@ NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// Types.
+class IEventHandle;
+
+
+#define NSFX_IID_IEventHandle  NSFX_UUID_OF(::nsfx::IEventHandle)
+
+
+////////////////////////////////////////////////////////////////////////////////
 // IEventHandle.
 /**
  * @ingroup Simulator
@@ -79,9 +87,6 @@ NSFX_DEFINE_CLASS_UUID4(IEventHandle, 0x9563654A, 0x8984, 0x448A, 0xBBFD8C654C7A
 
 
 NSFX_CLOSE_NAMESPACE
-
-
-#define NSFX_IID_IEventHandle  NSFX_UUID_OF(::nsfx::IEventHandle)
 
 
 #endif // I_EVENT_HANDLE_H__BE783B0F_52E9_4314_A6E8_4A229220AFB2

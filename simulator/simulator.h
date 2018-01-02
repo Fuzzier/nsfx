@@ -29,6 +29,14 @@ NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// Types.
+class Simulator;
+
+
+#define NSFX_CID_Simulator  NSFX_UUID_OF(::nsfx::Simulator)
+
+
+////////////////////////////////////////////////////////////////////////////////
 // Simulator.
 /**
  * @ingroup Simulator
@@ -241,9 +249,6 @@ NSFX_REGISTER_CLASS(Simulator);
 
 
 NSFX_CLOSE_NAMESPACE
-
-
-#define NSFX_CID_Simulator  NSFX_UUID_OF(::nsfx::Simulator)
 
 
 #endif // SIMULATOR_H__DE24AB2E_CEA6_41E0_A0C7_B1949A5BB548
