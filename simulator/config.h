@@ -45,11 +45,6 @@ using chrono::Hours;
 using chrono::Days;
 
 
-////////////////////////////////////////////////////////////////////////////////
-// Cookie type.
-typedef size_t  cookie_t;
-
-
 NSFX_CLOSE_NAMESPACE
 
 
