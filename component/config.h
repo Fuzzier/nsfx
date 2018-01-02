@@ -198,17 +198,18 @@
  *   To initialize the object, the class must provide means for wiring.<br/>
  *
  *   However, an object can only be manipulated via its interfaces.<br/>
- *   i.e., it must provide interfaces that allow programmers to pass in the
- *   required interfaces on the provides.<br/>
+ *   i.e., it must provide interfaces that allow a wiring component to pass in
+ *   the required interfaces on the providers.<br/>
  *
  * ## Component-to-interface scheme.
  *   Each interface should define an associated <i>`User'</i> interface.<br/>
  *   e.g., for an interface \c IClock, an associated interface \c IClockUser
  *   should be defined, and it has a single method \c UseClock(IClock*) that
- *   allows programmers to provide a clock the component.<br/>
+ *   allows a wiring component to provide a clock to the component.<br/>
  *   If a component uses a clock, it should expose the interface to acquire
  *   a clock.<br/>
- *   A component is not responsible to query the used interfaces.
+ *   A wiring component is responsible to query the interfaces that are used by
+ *   the components being wired.<br/>
  *
  * ## Component-to-component scheme.
  *   A component obtains an \c IObject of a component, and quries the interfaces
@@ -218,7 +219,14 @@
  *   interface that suits its own need.<br/>
  *   This may result in interface storming.<br/>
  *   The initialization interface may only suit a specific usage scenario.<br/>
- *   Reusing <i>`User'</i> interfaces is prefered.<br/>
+ *   Instead, a component shall expose a combination of <i>`User'</i> interfaces.<br/>
+ *
+ * ## Expose <i>`User'</i>, instead of <i>`Sink'</i>.
+ *    A component shall not expose a <i>`Sink'</i> interface directly.<br/>
+ *    Instead, it shall expose a <i>`User'</i> interface.<br/>
+ *    When an interface is obtained from the <i>`User'</i> interface, it can
+ *    generate a sink internally, and connect the sink to the interface.<br/>
+ *    A wiring component does not take care of the connections of sinks.<br/>
  *
  */
 
