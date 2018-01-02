@@ -204,7 +204,7 @@
  * ## Component-to-interface scheme.
  *   Each interface should define an associated <i>`User'</i> interface.<br/>
  *   e.g., for an interface \c IClock, an associated interface \c IClockUser
- *   should be defined, and it has a single method \c UseClock(IClock*) that
+ *   should be defined, and it has a method \c UseClock(IClock*) that
  *   allows a wiring component to provide a clock to the component.<br/>
  *   If a component uses a clock, it should expose the interface to acquire
  *   a clock.<br/>
