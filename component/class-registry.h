@@ -40,9 +40,14 @@
     {                                                    \
         C ## ClassRegister(void)                         \
         {                                                \
+            static bool registered = false;              \
             try                                          \
             {                                            \
-                ::nsfx::RegisterClass<C>();              \
+                if (!registered)                         \
+                {                                        \
+                    ::nsfx::RegisterClass<C>();          \
+                    registered = true;                   \
+                }                                        \
             }                                            \
             catch (boost::exception& e)                  \
             {                                            \
@@ -50,7 +55,7 @@
                 throw;                                   \
             }                                            \
         }                                                \
-    } g_ ## C ## ClassRegister
+    } s_ ## C ## ClassRegister
 
 /*}}}*/
 
