@@ -28,7 +28,6 @@ NSFX_OPEN_NAMESPACE
 // Types.
 class IEventHandle;
 
-
 #define NSFX_IID_IEventHandle  NSFX_UUID_OF(::nsfx::IEventHandle)
 
 

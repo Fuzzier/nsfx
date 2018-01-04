@@ -32,9 +32,8 @@ class ISimulatorSink;
 class ISimulatorUser;
 enum  SimulatorEventType;
 
-
-#define NSFX_IID_ISimulatorSink  NSFX_UUID_OF(::nsfx::ISimulatorSink)
 #define NSFX_IID_ISimulator      NSFX_UUID_OF(::nsfx::ISimulator)
+#define NSFX_IID_ISimulatorSink  NSFX_UUID_OF(::nsfx::ISimulatorSink)
 #define NSFX_IID_ISimulatorUser  NSFX_UUID_OF(::nsfx::ISimulatorUser)
 
 

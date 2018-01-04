@@ -32,7 +32,6 @@ NSFX_OPEN_NAMESPACE
 // Types.
 class Simulator;
 
-
 #define NSFX_CID_Simulator  NSFX_UUID_OF(::nsfx::Simulator)
 
 

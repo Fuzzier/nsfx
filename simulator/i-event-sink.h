@@ -28,7 +28,6 @@ NSFX_OPEN_NAMESPACE
 // Types.
 class IEventSink;
 
-
 #define NSFX_IID_IEventSink  NSFX_UUID_OF(::nsfx::IEventSink)
 
 
