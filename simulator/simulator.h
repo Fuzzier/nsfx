@@ -41,11 +41,12 @@ class Simulator;
  * @ingroup Simulator
  * @brief The simulator.
  *
+ * This simulator provides a clock, and executes events in the scheduler.
+ *
  * ### Interfaces:
  * * \c IEventSchedulerUser
  * * \c Clock
  * * \c ISimulator
- * * \c IEventScheduler
  */
 class Simulator :
     public ISimulator,
