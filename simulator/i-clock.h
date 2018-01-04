@@ -29,7 +29,6 @@ NSFX_OPEN_NAMESPACE
 class IClock;
 class IClockUser;
 
-
 #define NSFX_IID_IClock      NSFX_UUID_OF(::nsfx::IClock)
 #define NSFX_IID_IClockUser  NSFX_UUID_OF(::nsfx::IClockUser)
 

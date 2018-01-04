@@ -31,7 +31,6 @@ NSFX_OPEN_NAMESPACE
 class IEventScheduler;
 class IEventSchedulerUser;
 
-
 #define NSFX_IID_IEventScheduler      NSFX_UUID_OF(::nsfx::IEventScheduler)
 #define NSFX_IID_IEventSchedulerUser  NSFX_UUID_OF(::nsfx::IEventSchedulerUser)
 

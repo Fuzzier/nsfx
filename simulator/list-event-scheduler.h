@@ -32,7 +32,6 @@ NSFX_OPEN_NAMESPACE
 // Types.
 class ListEventScheduler;
 
-
 #define NSFX_CID_ListEventScheduler  NSFX_UUID_OF(::nsfx::ListEventScheduler)
 
 
