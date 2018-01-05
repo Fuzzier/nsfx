@@ -249,5 +249,14 @@ NSFX_CLOSE_NAMESPACE
 #define NSFX_ASSERT(p)  assert(p)
 
 
+////////////////////////////////////////////////////////////////////////////////
+// Endian-ness.
+#include <boost/predef/detail/endian_compat.h>
+
+#if !defined(BOOST_LITTLE_ENDIAN) && !defined(BOOST_BIG_ENDIAN)
+# error  Unsupported endianness.
+#endif
+
+
 #endif // CONFIG_H__544DA909_13DC_4D4F_AD4F_BE62ECF454E2
 
