@@ -63,6 +63,7 @@ public:
         Arithmetics();
         GetDuration();
         Hashable();
+        Swappable();
         IO();
         Limits();
     }
@@ -97,6 +98,13 @@ private:
         TimePoint t;
         size_t h = hash_value(t);
         h = boost::hash<TimePoint>()(t);
+    }
+
+    void Swappable(void)
+    {
+        TimePoint t1;
+        TimePoint t2;
+        swap(t1, t2);
     }
 
     void IO(void)

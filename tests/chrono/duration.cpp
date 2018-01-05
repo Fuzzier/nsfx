@@ -140,6 +140,15 @@ NSFX_TEST_SUITE(Duration)
         NSFX_TEST_EXPECT_EQ(h0, h1);
     }
 
+    NSFX_TEST_CASE(Swap)
+    {
+        Duration d1(1234);
+        Duration d2(5678);
+        swap(d1, d2);
+        NSFX_TEST_EXPECT_EQ(d1, Duration(5678));
+        NSFX_TEST_EXPECT_EQ(d2, Duration(1234));
+    }
+
     NSFX_TEST_CASE(Limits)
     {
         Duration d0 = Duration::Zero();

@@ -19,6 +19,7 @@
 
 #include <nsfx/chrono/config.h>
 #include <boost/functional/hash.hpp>
+#include <boost/core/swap.hpp>
 #include <sstream>
 #include <limits>
 
@@ -121,8 +122,6 @@ public:
      */
     BOOST_CONSTEXPR Rep ModuloDay(void) BOOST_NOEXCEPT;
 
-    friend size_t hash_value(const Duration& d) BOOST_NOEXCEPT;
-
     friend BOOST_CONSTEXPR Duration operator+ (const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT;
     friend BOOST_CONSTEXPR Duration operator- (const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT;
     friend BOOST_CONSTEXPR Duration operator* (const Duration& lhs, const Rep& n       ) BOOST_NOEXCEPT;
@@ -180,6 +179,13 @@ public:
     BOOST_CONSTEXPR Rep ToNanoSeconds(void) const
     {
         return rep_;
+    }
+
+    friend BOOST_CONSTEXPR size_t hash_value(const Duration& d) BOOST_NOEXCEPT;
+
+    void swap(Duration& rhs) BOOST_NOEXCEPT
+    {
+        boost::swap(rep_, rhs.rep_);
     }
 
     /*}}}*/
@@ -287,15 +293,6 @@ Duration::ModuloDay(void) BOOST_NOEXCEPT
     return days;
 }
 
-/**
- * @brief Supports <code>boost::hash<Duration></code>.
- */
-inline size_t
-hash_value(const Duration& d) BOOST_NOEXCEPT
-{
-    return boost::hash<Duration::Rep>()(d.rep_);
-}
-
 inline BOOST_CONSTEXPR Duration
 operator+ (const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT
 {
@@ -337,6 +334,26 @@ operator% (const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT
 {
     return Duration(lhs.rep_ % rhs.rep_);
 }
+/*}}}*/
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Methods./*{{{*/
+/**
+ * @brief Supports <code>boost::hash<Duration></code>.
+ */
+inline BOOST_CONSTEXPR size_t
+hash_value(const Duration& d) BOOST_NOEXCEPT
+{
+    return boost::hash<Duration::Rep>()(d.rep_);
+}
+
+inline void
+swap(Duration& lhs, Duration& rhs) BOOST_NOEXCEPT
+{
+    lhs.swap(rhs);
+}
+
 /*}}}*/
 
 

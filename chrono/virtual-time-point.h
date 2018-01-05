@@ -20,6 +20,8 @@
 #include <nsfx/chrono/config.h>
 #include <nsfx/chrono/duration.h>
 #include <nsfx/chrono/time-point-concept.h>
+#include <boost/functional/hash.hpp>
+#include <boost/core/swap.hpp>
 
 
 NSFX_CHRONO_OPEN_NAMESPACE
@@ -86,16 +88,6 @@ public:
 
     // Algorithms./*{{{*/
 public:
-    /**
-     * @brief Get the duration relative to the epoch.
-     */
-    BOOST_CONSTEXPR DurationType GetDuration(void) const BOOST_NOEXCEPT
-    {
-        return dt_;
-    }
-
-    friend size_t hash_value(const TimePoint& t) BOOST_NOEXCEPT;
-
     friend BOOST_CONSTEXPR TimePoint operator+ (const TimePoint& lhs, const DurationType& rhs) BOOST_NOEXCEPT;
 
     friend BOOST_CONSTEXPR TimePoint operator+ (const DurationType& lhs, const TimePoint& rhs) BOOST_NOEXCEPT;
@@ -114,6 +106,24 @@ public:
     {
         dt_ -= rhs;
         return *this;
+    }
+
+    /*}}}*/
+
+    // Methods./*{{{*/
+    /**
+     * @brief Get the duration relative to the epoch.
+     */
+    BOOST_CONSTEXPR DurationType GetDuration(void) const BOOST_NOEXCEPT
+    {
+        return dt_;
+    }
+
+    friend BOOST_CONSTEXPR size_t hash_value(const TimePoint& t) BOOST_NOEXCEPT;
+
+    void swap(TimePoint& rhs) BOOST_NOEXCEPT
+    {
+        boost::swap(dt_, rhs.dt_);
     }
 
     /*}}}*/
@@ -200,15 +210,6 @@ operator>=(const VirtualTimePoint& lhs, const VirtualTimePoint& rhs) BOOST_NOEXC
 
 ////////////////////////////////////////////////////////////////////////////////
 // Algorithms./*{{{*/
-/**
- * @brief Supports <code>boost::hash<VirtualTimePoint></code>.
- */
-inline size_t
-hash_value(const VirtualTimePoint& t) BOOST_NOEXCEPT
-{
-    return hash_value(t.dt_);
-}
-
 inline BOOST_CONSTEXPR VirtualTimePoint
 operator+ (const VirtualTimePoint& lhs, const VirtualTimePoint::DurationType& rhs) BOOST_NOEXCEPT
 {
@@ -234,6 +235,25 @@ operator-(const VirtualTimePoint& lhs, const VirtualTimePoint& rhs) BOOST_NOEXCE
 }
 /*}}}*/
 
+
+////////////////////////////////////////////////////////////////////////////////
+// Methods./*{{{*/
+/**
+ * @brief Supports <code>boost::hash<VirtualTimePoint></code>.
+ */
+inline BOOST_CONSTEXPR size_t
+hash_value(const VirtualTimePoint& t) BOOST_NOEXCEPT
+{
+    return hash_value(t.dt_);
+}
+
+inline void
+swap(VirtualTimePoint& lhs, VirtualTimePoint& rhs) BOOST_NOEXCEPT
+{
+    lhs.swap(rhs);
+}
+
+/*}}}*/
 
 ////////////////////////////////////////////////////////////////////////////////
 // I/O./*{{{*/
