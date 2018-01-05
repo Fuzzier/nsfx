@@ -74,6 +74,15 @@ NSFX_TEST_SUITE(VirtualTimePoint)
         NSFX_TEST_EXPECT_EQ(h0, h1);
     }
 
+    NSFX_TEST_CASE(Swap)
+    {
+        TimePoint t1(Duration(1234));
+        TimePoint t2(Duration(5678));
+        swap(t1, t2);
+        NSFX_TEST_EXPECT_EQ(t1, TimePoint(Duration(5678)));
+        NSFX_TEST_EXPECT_EQ(t2, TimePoint(Duration(1234)));
+    }
+
     NSFX_TEST_CASE(Limits)
     {
         TimePoint tmin = TimePoint::Min();
