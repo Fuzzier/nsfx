@@ -72,11 +72,13 @@ class CircularSequenceNumberTraits/*{{{*/
 public:
     typedef typename LeastInt<bits>::Type ValueType;
 
-    NSFX_TEMPLATE_CONST_FIRST(ValueType) MAX_GAP =
-        static_cast<ValueType>(~(static_cast<ValueType>(-1) << (bits - 1)));
-    NSFX_TEMPLATE_CONST_NEXT(ValueType)  MAX_VALUE =
-        static_cast<ValueType>(-1) >> (sizeof (ValueType) * 8 - bits);
-    NSFX_TEMPLATE_CONST_END()
+    BOOST_STATIC_CONSTANT(ValueType, MAX_GAP =
+        static_cast<ValueType>(~(static_cast<ValueType>(-1) << (bits - 1)))
+    );
+
+    BOOST_STATIC_CONSTANT(ValueType, MAX_VALUE =
+        static_cast<ValueType>(-1) >> (sizeof (ValueType) * 8 - bits)
+    );
 
 };/*}}}*/
 
