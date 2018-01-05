@@ -20,7 +20,7 @@
 #include <nsfx/component/config.h>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <boost/mpl/identity.hpp>
+#include <boost/type_traits/type_identity.hpp>
 
 
 NSFX_OPEN_NAMESPACE
@@ -150,7 +150,7 @@ struct type_guard {};
  * @see \c NSFX_DEFINE_CLASS_UUID4.
  */
 template<class T>
-const uuid& uuid_of(typename boost::mpl::identity<T>::type* = nullptr) BOOST_NOEXCEPT
+const uuid& uuid_of(typename boost::type_identity<T>::type* = nullptr) BOOST_NOEXCEPT
 {
     // The uuid_value() is unqualified, it depends upon argument-dependent
     // lookup to call the correct overload.
