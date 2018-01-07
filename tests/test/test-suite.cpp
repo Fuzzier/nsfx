@@ -54,6 +54,7 @@ NSFX_TEST_SUITE(suite1)
         }
 
     }
+
 }
 
 void case4(void)
@@ -65,6 +66,26 @@ void case4(void)
         NSFX_TEST_EXPECT_AC(i, j, k) << SHOULD_SEE;
         NSFX_TEST_EXPECT_RC(i, j, k) << SHOULD_SEE;
     } ();
+}
+
+NSFX_TEST_SUITE(Regression)
+{
+    NSFX_TEST_CASE(Char)
+    {
+        // Output readable format.
+        char i = -1;
+        char j = -2;
+        NSFX_TEST_EXPECT_EQ(i, j) << SHOULD_SEE;
+    }
+
+    NSFX_TEST_CASE(Short)
+    {
+        // Output readable format.
+        short i = -1;
+        short j = -2;
+        NSFX_TEST_EXPECT_EQ(i, j) << SHOULD_SEE;
+    }
+
 }
 
 

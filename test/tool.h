@@ -26,6 +26,7 @@
 #include <nsfx/test/runner.h>
 #include <boost/type_traits/is_integral.hpp>
 #include <boost/type_traits/common_type.hpp>
+#include <boost/type_traits/is_same.hpp>
 #include <sstream>
 #include <iomanip>
 
@@ -637,15 +638,13 @@ public:
     std::string GetActual(void) const
     {
         std::ostringstream oss;
-        oss << std::boolalpha << std::setprecision(9);
-        if (boost::is_integral<Actual>::value)
+        oss << std::boolalpha << std::setprecision(9) << actual_;
+        if (boost::is_integral<Actual>::value &&
+            !boost::is_same<Actual, bool>::value)
         {
-            oss << "0x" << std::hex << actual_
-                << " (" << std::dec << actual_ << ')';
-        }
-        else
-        {
-            oss << actual_;
+            oss << " (0x" << std::hex
+                << (sizeof (Actual) > 1 ? actual_ : static_cast<int>(actual_) & 0xff)
+                << ")";
         }
         return oss.str();
     }
@@ -700,15 +699,15 @@ public:
     std::string GetActual(void) const
     {
         std::ostringstream oss;
-        oss << std::boolalpha << std::setprecision(9);
-        if (boost::is_integral<Actual>::value)
+        oss << std::boolalpha << std::setprecision(9) << actual_;
+        if (boost::is_integral<Actual>::value &&
+            !boost::is_same<Actual, bool>::value)
         {
-            oss << "0x" << std::hex << actual_
-                << " (" << std::dec << actual_ << ')';
-        }
-        else
-        {
-            oss << actual_;
+            oss << " (0x" << std::hex
+                << (sizeof (Actual) == 1 ? static_cast<int>(actual_) & 0xff :
+                    sizeof (Actual) == 2 ? static_cast<int>(actual_) & 0xffff :
+                    actual_)
+                << ")";
         }
         return oss.str();
     }
@@ -716,15 +715,15 @@ public:
     std::string GetLimit(void) const
     {
         std::ostringstream oss;
-        oss << std::boolalpha << std::setprecision(9);
-        if (boost::is_integral<Limit>::value)
+        oss << std::boolalpha << std::setprecision(9) << limit_;
+        if (boost::is_integral<Limit>::value &&
+            !boost::is_same<Limit, bool>::value)
         {
-            oss << "0x" << std::hex << limit_
-                << " (" << std::dec << limit_ << ')';
-        }
-        else
-        {
-            oss << limit_;
+            oss << " (0x" << std::hex
+                << (sizeof (Limit) == 1 ? static_cast<int>(limit_) & 0xff :
+                    sizeof (Limit) == 2 ? static_cast<int>(limit_) & 0xffff :
+                    limit_)
+                << ")";
         }
         return oss.str();
     }
@@ -781,15 +780,15 @@ public:
     std::string GetActual(void) const
     {
         std::ostringstream oss;
-        oss << std::boolalpha << std::setprecision(9);
-        if (boost::is_integral<Actual>::value)
+        oss << std::boolalpha << std::setprecision(9) << actual_;
+        if (boost::is_integral<Actual>::value &&
+            !boost::is_same<Actual, bool>::value)
         {
-            oss << "0x" << std::hex << actual_
-                << " (" << std::dec << actual_ << ')';
-        }
-        else
-        {
-            oss << actual_;
+            oss << " (0x" << std::hex
+                << (sizeof (Actual) == 1 ? static_cast<int>(actual_) & 0xff :
+                    sizeof (Actual) == 2 ? static_cast<int>(actual_) & 0xffff :
+                    actual_)
+                << ")";
         }
         return oss.str();
     }
@@ -797,15 +796,15 @@ public:
     std::string GetLimit(void) const
     {
         std::ostringstream oss;
-        oss << std::boolalpha << std::setprecision(9);
-        if (boost::is_integral<Limit>::value)
+        oss << std::boolalpha << std::setprecision(9) << limit_;
+        if (boost::is_integral<Limit>::value &&
+            !boost::is_same<Limit, bool>::value)
         {
-            oss << "0x" << std::hex << limit_
-                << " (" << std::dec << limit_ << ')';
-        }
-        else
-        {
-            oss << limit_;
+            oss << " (0x" << std::hex
+                << (sizeof (Limit) == 1 ? static_cast<int>(limit_) & 0xff :
+                    sizeof (Limit) == 2 ? static_cast<int>(limit_) & 0xffff :
+                    limit_)
+                << ")";
         }
         return oss.str();
     }
@@ -815,16 +814,18 @@ public:
      */
     std::string GetTolerance(void) const
     {
+        typedef typename boost::common_type<Limit, Tol>::type  CommonType;
+        CommonType t = limit_ * tol_;
         std::ostringstream oss;
-        oss << std::boolalpha << std::setprecision(9);
-        if (boost::is_integral<typename boost::common_type<Limit, Tol>::type>::value)
+        oss << std::boolalpha << std::setprecision(9) << t;
+        if (boost::is_integral<CommonType>::value &&
+            !boost::is_same<CommonType, bool>::value)
         {
-            oss << "0x" << std::hex << limit_ * tol_
-                << " (" << std::dec << limit_ * tol_ << ')';
-        }
-        else
-        {
-            oss << limit_ * tol_;
+            oss << " (0x" << std::hex
+                << (sizeof (CommonType) > 1 ?  static_cast<int>(t) & 0xff :
+                    sizeof (CommonType) > 2 ?  static_cast<int>(t) & 0xffff :
+                    t)
+                << ")";
         }
         return oss.str();
     }
