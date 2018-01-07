@@ -24,6 +24,8 @@
 #include <nsfx/test/case.h>
 #include <nsfx/test/suite.h>
 #include <nsfx/test/runner.h>
+#include <boost/type_traits/is_integral.hpp>
+#include <boost/type_traits/common_type.hpp>
 #include <sstream>
 #include <iomanip>
 
@@ -635,7 +637,16 @@ public:
     std::string GetActual(void) const
     {
         std::ostringstream oss;
-        oss << std::boolalpha << std::setprecision(9) << actual_;
+        oss << std::boolalpha << std::setprecision(9);
+        if (boost::is_integral<Actual>::value)
+        {
+            oss << "0x" << std::hex << actual_
+                << " (" << std::dec << actual_ << ')';
+        }
+        else
+        {
+            oss << actual_;
+        }
         return oss.str();
     }
 
@@ -689,14 +700,32 @@ public:
     std::string GetActual(void) const
     {
         std::ostringstream oss;
-        oss << std::boolalpha << std::setprecision(9) << actual_;
+        oss << std::boolalpha << std::setprecision(9);
+        if (boost::is_integral<Actual>::value)
+        {
+            oss << "0x" << std::hex << actual_
+                << " (" << std::dec << actual_ << ')';
+        }
+        else
+        {
+            oss << actual_;
+        }
         return oss.str();
     }
 
     std::string GetLimit(void) const
     {
         std::ostringstream oss;
-        oss << std::boolalpha << std::setprecision(9) << limit_;
+        oss << std::boolalpha << std::setprecision(9);
+        if (boost::is_integral<Limit>::value)
+        {
+            oss << "0x" << std::hex << limit_
+                << " (" << std::dec << limit_ << ')';
+        }
+        else
+        {
+            oss << limit_;
+        }
         return oss.str();
     }
 
@@ -752,14 +781,32 @@ public:
     std::string GetActual(void) const
     {
         std::ostringstream oss;
-        oss << std::boolalpha << std::setprecision(9) << actual_;
+        oss << std::boolalpha << std::setprecision(9);
+        if (boost::is_integral<Actual>::value)
+        {
+            oss << "0x" << std::hex << actual_
+                << " (" << std::dec << actual_ << ')';
+        }
+        else
+        {
+            oss << actual_;
+        }
         return oss.str();
     }
 
     std::string GetLimit(void) const
     {
         std::ostringstream oss;
-        oss << std::boolalpha << std::setprecision(9) << limit_;
+        oss << std::boolalpha << std::setprecision(9);
+        if (boost::is_integral<Limit>::value)
+        {
+            oss << "0x" << std::hex << limit_
+                << " (" << std::dec << limit_ << ')';
+        }
+        else
+        {
+            oss << limit_;
+        }
         return oss.str();
     }
 
@@ -769,7 +816,16 @@ public:
     std::string GetTolerance(void) const
     {
         std::ostringstream oss;
-        oss << std::boolalpha << std::setprecision(9) << limit_ * tol_;
+        oss << std::boolalpha << std::setprecision(9);
+        if (boost::is_integral<typename boost::common_type<Limit, Tol>::type>::value)
+        {
+            oss << "0x" << std::hex << limit_ * tol_
+                << " (" << std::dec << limit_ * tol_ << ')';
+        }
+        else
+        {
+            oss << limit_ * tol_;
+        }
         return oss.str();
     }
 

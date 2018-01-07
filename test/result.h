@@ -218,7 +218,7 @@ private:
     std::string    tolerance_;
     std::string    message_;
     std::string    function_;
-    std::string         filename_;
+    std::string    filename_;
     size_t         lineno_;
 
 }; // class Result
