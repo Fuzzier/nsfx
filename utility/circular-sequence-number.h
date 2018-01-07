@@ -1,7 +1,7 @@
 ﻿/**
  * @file
  *
- * @brief Sequence number for Network Simulation Frameworks.
+ * @brief Utility for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -17,7 +17,7 @@
 #define CIRCULAR_SEQUENCE_NUMBER_H__4D0E7B48_E09B_44E6_A896_D56EA9C74306
 
 
-#include <nsfx/config.h>
+#include <nsfx/utility/config.h>
 #include <nsfx/exception/exception.h>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/conditional.hpp>
