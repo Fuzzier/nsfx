@@ -19,6 +19,7 @@
 
 #include <boost/exception/all.hpp>
 #include <exception>
+#include <string>
 
 
 NSFX_OPEN_NAMESPACE
@@ -39,6 +40,8 @@ NSFX_OPEN_NAMESPACE
  * Multiple inheritance should be avoided for derived exceptions.
  */
 struct Exception : boost::exception, std::exception {};
+
+typedef boost::error_info<struct tag_Message, std::string>  ErrorMessage;
 
 
 ////////////////////////////////////////////////////////////////////////////////
