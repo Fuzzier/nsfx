@@ -25,8 +25,8 @@
 #include <nsfx/test/suite.h>
 #include <nsfx/test/runner.h>
 #include <boost/type_traits/is_integral.hpp>
-#include <boost/type_traits/common_type.hpp>
 #include <boost/type_traits/is_same.hpp>
+#include <boost/type_traits/common_type.hpp>
 #include <sstream>
 #include <iomanip>
 
@@ -59,6 +59,100 @@
  * NSFX_TEST_ASSERT_RC(actual, limit, tolerance)
  * @endcode
  */
+
+template<class T, bool integral = boost::is_integral<T>::value>
+struct ValueFormatter
+{
+    std::string operator()(T value) const
+    {
+        std::ostringstream oss;
+        oss << std::setprecision(9) << value;
+        return oss.str();
+    }
+};
+
+template<>
+struct ValueFormatter<bool, true>
+{
+    std::string operator()(bool value) const
+    {
+        std::ostringstream oss;
+        oss << std::boolalpha << value;
+        return oss.str();
+    }
+};
+
+template<class T>
+struct ValueFormatter<T, true>
+{
+    std::string operator()(T value) const
+    {
+        return operator()(
+            value,
+            typename boost::integral_constant<size_t, sizeof (T)>::type());
+    }
+
+    std::string operator()(
+        T value, typename boost::integral_constant<size_t, 1>::type) const
+    {
+        std::ostringstream oss;
+        oss << value << " (0x"
+            << std::setw(sizeof (T) * 2) << std::setfill('0') << std::hex
+            << std::nouppercase << (static_cast<ptrdiff_t>(value) & 0xff)
+            << ")";
+        return oss.str();
+    }
+
+    std::string operator()(
+        T value, typename boost::integral_constant<size_t, 2>::type) const
+    {
+        std::ostringstream oss;
+        oss << value << " (0x"
+            << std::setw(sizeof (T) * 2) << std::setfill('0') << std::hex
+            << std::nouppercase << (static_cast<ptrdiff_t>(value) & 0xffff)
+            << ")";
+        return oss.str();
+    }
+
+    std::string operator()(
+        T value, typename boost::integral_constant<size_t, 4>::type) const
+    {
+        std::ostringstream oss;
+        oss << value << " (0x"
+            << std::setw(sizeof (T) * 2) << std::setfill('0') << std::hex
+            << std::nouppercase << value << ")";
+        return oss.str();
+    }
+
+    std::string operator()(
+        T value, typename boost::integral_constant<size_t, 8>::type) const
+    {
+        std::ostringstream oss;
+        oss << value << " (0x"
+            << std::setw(sizeof (T) * 2) << std::setfill('0') << std::hex
+            << std::nouppercase << value << ")";
+        return oss.str();
+    }
+
+};
+
+template<class T>
+struct ValueFormatter<T*, false>
+{
+    std::string operator()(T* value) const
+    {
+        std::ostringstream oss;
+        oss << "0x" << std::setw(sizeof (T*) * 2) << std::setfill('0')
+            << std::hex << std::nouppercase << value;
+        return oss.str();
+    }
+};
+
+template<class T>
+inline std::string TestFormatValue(T value)
+{
+    return ValueFormatter<T>()(value);
+}
 
 // Define class templates.
 #define NSFX_TEST_TOOL_FILENAME <nsfx/test/tool.h>
@@ -637,16 +731,7 @@ public:
 public:
     std::string GetActual(void) const
     {
-        std::ostringstream oss;
-        oss << std::boolalpha << std::setprecision(9) << actual_;
-        if (boost::is_integral<Actual>::value &&
-            !boost::is_same<Actual, bool>::value)
-        {
-            oss << " (0x" << std::hex
-                << (sizeof (Actual) > 1 ? actual_ : static_cast<int>(actual_) & 0xff)
-                << ")";
-        }
-        return oss.str();
+        return TestFormatValue((actual_));
     }
 
     std::string GetLimit(void) const
@@ -698,34 +783,12 @@ public:
 public:
     std::string GetActual(void) const
     {
-        std::ostringstream oss;
-        oss << std::boolalpha << std::setprecision(9) << actual_;
-        if (boost::is_integral<Actual>::value &&
-            !boost::is_same<Actual, bool>::value)
-        {
-            oss << " (0x" << std::hex
-                << (sizeof (Actual) == 1 ? static_cast<int>(actual_) & 0xff :
-                    sizeof (Actual) == 2 ? static_cast<int>(actual_) & 0xffff :
-                    actual_)
-                << ")";
-        }
-        return oss.str();
+        return TestFormatValue((actual_));
     }
 
     std::string GetLimit(void) const
     {
-        std::ostringstream oss;
-        oss << std::boolalpha << std::setprecision(9) << limit_;
-        if (boost::is_integral<Limit>::value &&
-            !boost::is_same<Limit, bool>::value)
-        {
-            oss << " (0x" << std::hex
-                << (sizeof (Limit) == 1 ? static_cast<int>(limit_) & 0xff :
-                    sizeof (Limit) == 2 ? static_cast<int>(limit_) & 0xffff :
-                    limit_)
-                << ")";
-        }
-        return oss.str();
+        return TestFormatValue((limit_));
     }
 
     bool GetResult(void) const
@@ -779,34 +842,12 @@ public:
 public:
     std::string GetActual(void) const
     {
-        std::ostringstream oss;
-        oss << std::boolalpha << std::setprecision(9) << actual_;
-        if (boost::is_integral<Actual>::value &&
-            !boost::is_same<Actual, bool>::value)
-        {
-            oss << " (0x" << std::hex
-                << (sizeof (Actual) == 1 ? static_cast<int>(actual_) & 0xff :
-                    sizeof (Actual) == 2 ? static_cast<int>(actual_) & 0xffff :
-                    actual_)
-                << ")";
-        }
-        return oss.str();
+        return TestFormatValue((actual_));
     }
 
     std::string GetLimit(void) const
     {
-        std::ostringstream oss;
-        oss << std::boolalpha << std::setprecision(9) << limit_;
-        if (boost::is_integral<Limit>::value &&
-            !boost::is_same<Limit, bool>::value)
-        {
-            oss << " (0x" << std::hex
-                << (sizeof (Limit) == 1 ? static_cast<int>(limit_) & 0xff :
-                    sizeof (Limit) == 2 ? static_cast<int>(limit_) & 0xffff :
-                    limit_)
-                << ")";
-        }
-        return oss.str();
+        return TestFormatValue((limit_));
     }
 
     /**
@@ -815,19 +856,7 @@ public:
     std::string GetTolerance(void) const
     {
         typedef typename boost::common_type<Limit, Tol>::type  CommonType;
-        CommonType t = limit_ * tol_;
-        std::ostringstream oss;
-        oss << std::boolalpha << std::setprecision(9) << t;
-        if (boost::is_integral<CommonType>::value &&
-            !boost::is_same<CommonType, bool>::value)
-        {
-            oss << " (0x" << std::hex
-                << (sizeof (CommonType) > 1 ?  static_cast<int>(t) & 0xff :
-                    sizeof (CommonType) > 2 ?  static_cast<int>(t) & 0xffff :
-                    t)
-                << ")";
-        }
-        return oss.str();
+        return TestFormatValue((limit_ * tol_));
     }
 
     bool GetResult(void) const

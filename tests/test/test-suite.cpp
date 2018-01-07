@@ -68,22 +68,71 @@ void case4(void)
     } ();
 }
 
-NSFX_TEST_SUITE(Regression)
+NSFX_TEST_SUITE(ValueFormat)
 {
+    NSFX_TEST_CASE(Bool)
+    {
+        bool i = true;
+        bool j = false;
+        NSFX_TEST_EXPECT_EQ(i, j) << SHOULD_SEE;
+    }
+
+    NSFX_TEST_CASE(Pointer)
+    {
+        int* i = (int*)(0x01234567);
+        int* j = (int*)(0x89abcdef);
+        NSFX_TEST_EXPECT_EQ(i, j) << SHOULD_SEE;
+    }
+
     NSFX_TEST_CASE(Char)
     {
-        // Output readable format.
         char i = -1;
         char j = -2;
         NSFX_TEST_EXPECT_EQ(i, j) << SHOULD_SEE;
     }
 
+    NSFX_TEST_CASE(Wchar)
+    {
+        wchar_t i = -1;
+        wchar_t j = -2;
+        NSFX_TEST_EXPECT_EQ(i, j) << SHOULD_SEE;
+    }
+
     NSFX_TEST_CASE(Short)
     {
-        // Output readable format.
         short i = -1;
         short j = -2;
         NSFX_TEST_EXPECT_EQ(i, j) << SHOULD_SEE;
+    }
+
+    NSFX_TEST_CASE(Long)
+    {
+        long i = -1;
+        long j = -2;
+        NSFX_TEST_EXPECT_EQ(i, j) << SHOULD_SEE;
+    }
+
+    NSFX_TEST_CASE(Longlong)
+    {
+        long long i = -1;
+        long long j = -2;
+        NSFX_TEST_EXPECT_EQ(i, j) << SHOULD_SEE;
+    }
+
+    NSFX_TEST_CASE(Float)
+    {
+        float i = -1;
+        float j = -2;
+        float k = 0.1;
+        NSFX_TEST_EXPECT_RC(i, j, k) << SHOULD_SEE;
+    }
+
+    NSFX_TEST_CASE(Double)
+    {
+        double i = -1;
+        double j = -2;
+        double k = 0.1;
+        NSFX_TEST_EXPECT_RC(i, j, k) << SHOULD_SEE;
     }
 
 }
