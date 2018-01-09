@@ -24,6 +24,7 @@ NSFX_TEST_SUITE(Buffer)
     NSFX_TEST_CASE(Ctor0)/*{{{*/
     {
         nsfx::Buffer b0;
+        NSFX_TEST_EXPECT_EQ(b0.GetCapacity(), 0);
         NSFX_TEST_EXPECT_EQ(b0.GetSize(), 0);
         NSFX_TEST_EXPECT_EQ(b0.GetDataStart(), 0);
         NSFX_TEST_EXPECT_EQ(b0.GetDataEnd(), 0);
@@ -36,6 +37,7 @@ NSFX_TEST_SUITE(Buffer)
         {
             {
                 nsfx::Buffer b0(1024);
+                NSFX_TEST_EXPECT_EQ(b0.GetCapacity(), 1024);
                 NSFX_TEST_EXPECT_EQ(b0.GetSize(), 0);
                 NSFX_TEST_EXPECT_EQ(b0.GetDataStart(), 1024);
                 NSFX_TEST_EXPECT_EQ(b0.GetDataEnd(), 1024);
@@ -70,6 +72,7 @@ NSFX_TEST_SUITE(Buffer)
             nsfx::Buffer b0(1024, 512);
             // data not moved.
             b0.AddAtStart(512);
+            NSFX_TEST_EXPECT_EQ(b0.GetCapacity(), 1024);
             NSFX_TEST_EXPECT_EQ(b0.GetSize(), 512);
             NSFX_TEST_EXPECT_EQ(b0.GetDataStart(), 0);
             NSFX_TEST_EXPECT_EQ(b0.GetDataEnd(), 512);
@@ -90,6 +93,7 @@ NSFX_TEST_SUITE(Buffer)
 
             // buffer reallocated.
             b0.AddAtStart(1);
+            NSFX_TEST_EXPECT_EQ(b0.GetCapacity(), 1025);
             NSFX_TEST_EXPECT_EQ(b0.GetSize(), 1025);
             NSFX_TEST_EXPECT_EQ(b0.GetDataStart(), 0);
             NSFX_TEST_EXPECT_EQ(b0.GetDataEnd(), 1025);
