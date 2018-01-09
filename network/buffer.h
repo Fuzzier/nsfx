@@ -40,7 +40,7 @@ struct BufferStorage
     /**
      * @brief The size of \c bytes_ in bytes.
      */
-    uint32_t size_;
+    size_t size_;
 
     /**
      * @brief The reference count.
@@ -53,7 +53,7 @@ struct BufferStorage
      * with a different data position, and shares the same storage with the
      * original buffer to avoid a deep copy.<br/>
      */
-    int32_t refCount_;
+    ptrdiff_t refCount_;
 
     /**
      * @brief The number of locks on the data area.
@@ -76,7 +76,7 @@ struct BufferStorage
      *      \c Buffer::RemoveAtStart(),
      *      \c Buffer::RemoveAtEnd().
      */
-    int32_t dataLockCount_;
+    ptrdiff_t dataLockCount_;
 
     /**
      * @brief The space for storing data (at least 1 byte).
@@ -84,7 +84,7 @@ struct BufferStorage
     uint8_t bytes_[1];
 
     // Static methods.
-    static BufferStorage* Create(uint32_t size)
+    static BufferStorage* Create(size_t size)
     {
         try
         {
@@ -94,7 +94,7 @@ struct BufferStorage
                     InvalidArgument() <<
                     ErrorMessage("Cannot allocation 0-sized buffer."));
             }
-            uint32_t storageSize = sizeof (BufferStorage) - 1 + size;
+            size_t storageSize = sizeof (BufferStorage) - 1 + size;
             uint8_t* bytes = new uint8_t[storageSize];
             BufferStorage* storage = reinterpret_cast<BufferStorage*>(bytes);
             storage->size_ = size;
@@ -129,8 +129,8 @@ struct BufferStorage
         if (--storage->refCount_ == 0)
         {
 #if !defined(NDEBUG)
-            uint32_t refCount = storage->refCount_;
-            uint32_t dataLockCount = storage->dataLockCount_;
+            ptrdiff_t refCount = storage->refCount_;
+            ptrdiff_t dataLockCount = storage->dataLockCount_;
             bool unbalanced = (storage->refCount_ < storage->dataLockCount_);
 #endif // !defined(NDEBUG)
             uint8_t* bytes = reinterpret_cast<uint8_t*>(storage);
@@ -222,9 +222,9 @@ public:
     }
 
     BufferIterator(BufferStorage* storage,
-                   uint32_t start,
-                   uint32_t end,
-                   uint32_t cursor) BOOST_NOEXCEPT :
+                   size_t start,
+                   size_t end,
+                   size_t cursor) BOOST_NOEXCEPT :
         storage_(storage),
         start_(start),
         end_(end),
@@ -293,17 +293,17 @@ private:
 
 #if !defined(NDEBUG)
 public:
-    uint32_t GetStart(void) const BOOST_NOEXCEPT
+    size_t GetStart(void) const BOOST_NOEXCEPT
     {
         return start_;
     }
 
-    uint32_t GetEnd(void) const BOOST_NOEXCEPT
+    size_t GetEnd(void) const BOOST_NOEXCEPT
     {
         return end_;
     }
 
-    uint32_t GetCursor(void) const BOOST_NOEXCEPT
+    size_t GetCursor(void) const BOOST_NOEXCEPT
     {
         return cursor_;
     }
@@ -323,7 +323,7 @@ public:
      *
      * @throw OutOfBounds
      */
-    void MoveForward(uint32_t numBytes)
+    void MoveForward(size_t numBytes)
     {
         ForwardCheck(numBytes);
         cursor_ += numBytes;
@@ -336,7 +336,7 @@ public:
      *
      * @throw OutOfBounds
      */
-    void MoveBackward(uint32_t numBytes)
+    void MoveBackward(size_t numBytes)
     {
         BackwardCheck(numBytes);
         cursor_ -= numBytes;
@@ -665,12 +665,12 @@ private:
 
     // Boundary check./*{{{*/
 private:
-    bool CanMoveForward(uint32_t numBytes) const BOOST_NOEXCEPT
+    bool CanMoveForward(size_t numBytes) const BOOST_NOEXCEPT
     {
         return cursor_ + numBytes <= end_;
     }
 
-    bool CanMoveBackward(uint32_t numBytes) const BOOST_NOEXCEPT
+    bool CanMoveBackward(size_t numBytes) const BOOST_NOEXCEPT
     {
         return cursor_ >= start_ + numBytes;
     }
@@ -678,7 +678,7 @@ private:
     /**
      * @brief Can we read the number of bytes at the cursor.
      */
-    void ForwardCheck(uint32_t numBytes) const
+    void ForwardCheck(size_t numBytes) const
     {
         if (!CanMoveForward(numBytes))
         {
@@ -691,7 +691,7 @@ private:
     /**
      * @brief Can we read the number of bytes at the cursor.
      */
-    void BackwardCheck(uint32_t numBytes) const
+    void BackwardCheck(size_t numBytes) const
     {
         if (!CanMoveBackward(numBytes))
         {
@@ -704,7 +704,7 @@ private:
     /**
      * @brief Can we write the number of bytes at the cursor.
      */
-    void WritableCheck(uint32_t numBytes) const
+    void WritableCheck(size_t numBytes) const
     {
         if (!CanMoveForward(numBytes))
         {
@@ -717,7 +717,7 @@ private:
     /**
      * @brief Can we read the number of bytes at the cursor.
      */
-    void ReadableCheck(uint32_t numBytes) const
+    void ReadableCheck(size_t numBytes) const
     {
         if (!CanMoveForward(numBytes))
         {
@@ -757,13 +757,13 @@ public:
         return it;
     }
 
-    ThisType& operator+=(uint32_t numBytes)
+    ThisType& operator+=(size_t numBytes)
     {
         MoveForward(numBytes);
         return *this;
     }
 
-    ThisType& operator-=(uint32_t numBytes)
+    ThisType& operator-=(size_t numBytes)
     {
         MoveBackward(numBytes);
         return *this;
@@ -776,9 +776,9 @@ public:
     friend bool operator< (const ThisType& lhs, const ThisType& rhs) BOOST_NOEXCEPT;
     friend bool operator<=(const ThisType& lhs, const ThisType& rhs) BOOST_NOEXCEPT;
 
-    friend ThisType operator+(const ThisType& lhs, uint32_t numBytes);
-    friend ThisType operator-(const ThisType& lhs, uint32_t numBytes);
-    friend int32_t operator-(const ThisType& lhs, const ThisType& rhs) BOOST_NOEXCEPT;
+    friend ThisType operator+(const ThisType& lhs, size_t numBytes);
+    friend ThisType operator-(const ThisType& lhs, size_t numBytes);
+    friend ptrdiff_t operator-(const ThisType& lhs, const ThisType& rhs) BOOST_NOEXCEPT;
 
     /*}}}*/
 
@@ -789,17 +789,17 @@ private:
     /**
      * @brief The start position in the data area (inclusive).
      */
-    uint32_t start_;
+    size_t start_;
 
     /**
      * @brief The end position in the data area (exclusive).
      */
-    uint32_t end_;
+    size_t end_;
 
     /**
      * @brief The current position in the data area.
      */
-    uint32_t cursor_;
+    size_t cursor_;
 
     /*}}}*/
 
@@ -856,7 +856,7 @@ inline bool operator<=(const BufferIterator& lhs,
 }
 
 inline BufferIterator
-operator+(const BufferIterator& lhs, uint32_t numBytes)
+operator+(const BufferIterator& lhs, size_t numBytes)
 {
     BufferIterator it = lhs;
     it.MoveForward(numBytes);
@@ -864,14 +864,14 @@ operator+(const BufferIterator& lhs, uint32_t numBytes)
 }
 
 inline BufferIterator
-operator-(const BufferIterator& lhs, uint32_t numBytes)
+operator-(const BufferIterator& lhs, size_t numBytes)
 {
     BufferIterator it = lhs;
     it.MoveBackward(numBytes);
     return it;
 }
 
-inline int32_t
+inline ptrdiff_t
 operator-(const BufferIterator& lhs, const BufferIterator& rhs) BOOST_NOEXCEPT
 {
     NSFX_ASSERT((lhs.storage_ == rhs.storage_) &&
@@ -973,7 +973,7 @@ public:
      *
      * @throw OutOfMemory
      */
-    Buffer(uint32_t size) :
+    Buffer(size_t size) :
         storage_(BufferStorage::Create(size)),
         start_(size),
         end_(size)
@@ -990,7 +990,7 @@ public:
      * @throw OutOfMemory
      * @throw InvalidArgument Thrown if \c start is beyond \c size.
      */
-    Buffer(uint32_t size, uint32_t start) :
+    Buffer(size_t size, size_t start) :
         storage_(BufferStorage::Create(size)),
         start_(0),
         end_(0)
@@ -1014,7 +1014,7 @@ private:
      *
      * @see \c GetChunk().
      */
-    Buffer(BufferStorage* storage, uint32_t start, uint32_t end) BOOST_NOEXCEPT :
+    Buffer(BufferStorage* storage, size_t start, size_t end) BOOST_NOEXCEPT :
         storage_(storage),
         start_(start),
         end_(end)
@@ -1118,20 +1118,33 @@ private:
     // Methods./*{{{*/
 public:
     /**
+     * @brief Get the size of storage.
+     */
+    size_t GetCapacity(void) const BOOST_NOEXCEPT
+    {
+        size_t result = 0;
+        if (storage_)
+        {
+            result = storage_->size_;
+        }
+        return result;
+    }
+
+    /**
      * @brief Get the size of data area.
      */
-    uint32_t GetSize(void) const BOOST_NOEXCEPT
+    size_t GetSize(void) const BOOST_NOEXCEPT
     {
         return end_ - start_;
     }
 
 #if !defined(NDEBUG)
-    uint32_t GetDataStart(void) const BOOST_NOEXCEPT
+    size_t GetDataStart(void) const BOOST_NOEXCEPT
     {
         return start_;
     }
 
-    uint32_t GetDataEnd(void) const BOOST_NOEXCEPT
+    size_t GetDataEnd(void) const BOOST_NOEXCEPT
     {
         return end_;
     }
@@ -1159,7 +1172,7 @@ public:
      * @throw OutOfMemory
      * @throw Unexpected  There are dangling buffer iterators.
      */
-    void AddAtStart(uint32_t numBytes)
+    void AddAtStart(size_t numBytes)
     {
         if (storage_ && BufferStorage::IsDataLocked(storage_))
         {
@@ -1174,7 +1187,7 @@ public:
         }
         else
         {
-            uint32_t dataSize = GetSize();
+            size_t dataSize = GetSize();
             if (storage_ && storage_->size_ >= numBytes + dataSize)
             {
                 std::memmove(storage_->bytes_ + numBytes,
@@ -1183,7 +1196,7 @@ public:
             }
             else
             {
-                uint32_t newSize = numBytes + dataSize;
+                size_t newSize = numBytes + dataSize;
                 BufferStorage* newStorage = BufferStorage::Create(newSize);
                 std::memcpy(newStorage->bytes_ + numBytes,
                               storage_->bytes_ + start_,
@@ -1214,7 +1227,7 @@ public:
      * @throw OutOfMemory
      * @throw Unexpected  There are dangling buffer iterators.
      */
-    void AddAtEnd(uint32_t numBytes)
+    void AddAtEnd(size_t numBytes)
     {
         if (storage_ && BufferStorage::IsDataLocked(storage_))
         {
@@ -1229,10 +1242,10 @@ public:
         }
         else
         {
-            uint32_t dataSize = GetSize();
+            size_t dataSize = GetSize();
             if (storage_ && storage_->size_ >= dataSize + numBytes)
             {
-                uint32_t delta = numBytes - (storage_->size_ - end_);
+                size_t delta = numBytes - (storage_->size_ - end_);
                 std::memmove(storage_->bytes_ + start_ - delta,
                              storage_->bytes_ + start_,
                              dataSize);
@@ -1241,7 +1254,7 @@ public:
             }
             else
             {
-                uint32_t newSize = dataSize + numBytes;
+                size_t newSize = dataSize + numBytes;
                 BufferStorage* newStorage = BufferStorage::Create(newSize);
                 std::memcpy(newStorage->bytes_,
                               storage_->bytes_ + start_,
@@ -1266,7 +1279,7 @@ public:
      *
      * @throw Unexpected  There are dangling buffer iterators.
      */
-    void RemoveAtStart(uint32_t numBytes) BOOST_NOEXCEPT
+    void RemoveAtStart(size_t numBytes) BOOST_NOEXCEPT
     {
         if (storage_ && BufferStorage::IsDataLocked(storage_))
         {
@@ -1275,7 +1288,7 @@ public:
                 ErrorMessage("There are dangling buffer iterators while "
                              "trying to resize the data area."));
         }
-        uint32_t newStart = start_ + numBytes;
+        size_t newStart = start_ + numBytes;
         if (newStart <= end_)
         {
             // Reduce pre-data area.
@@ -1300,7 +1313,7 @@ public:
      * @throw OutOfMemory
      * @throw Unexpected  There are dangling buffer iterators.
      */
-    void RemoveAtEnd(uint32_t numBytes) BOOST_NOEXCEPT
+    void RemoveAtEnd(size_t numBytes) BOOST_NOEXCEPT
     {
         if (storage_ && BufferStorage::IsDataLocked(storage_))
         {
@@ -1502,7 +1515,7 @@ public:
      *
      * @throw OutOfBounds Thrown if the chunk exceeds the data area.
      */
-    Buffer GetChunk(uint32_t start, uint32_t size) const
+    Buffer GetChunk(size_t start, size_t size) const
     {
         if (start_ + start + size > end_)
         {
@@ -1519,13 +1532,13 @@ public:
 public:
     BufferIterator begin(void) const BOOST_NOEXCEPT
     {
-        uint32_t cursor = start_;
+        size_t cursor = start_;
         return BufferIterator(storage_, start_, end_, cursor);
     }
 
     BufferIterator end(void) const BOOST_NOEXCEPT
     {
-        uint32_t cursor = end_;
+        size_t cursor = end_;
         return BufferIterator(storage_, start_, end_, cursor);
     }
 
@@ -1555,12 +1568,12 @@ private:
     /**
      * @brief Start position of the data space (inclusive).
      */
-    uint32_t start_;
+    size_t start_;
 
     /**
      * @brief End position of the data space (exclusive).
      */
-    uint32_t end_;
+    size_t end_;
 
     /*}}}*/
 
