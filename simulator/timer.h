@@ -121,7 +121,7 @@ private:
                                       const Duration& period,
                                       Ptr<ITimerSink>&& sink);
 
-    void CheckInitialized(void) BOOST_NOEXCEPT;
+    void UpdateInitialized(void) BOOST_NOEXCEPT;
 
     NSFX_INTERFACE_MAP_BEGIN(Timer)
         NSFX_INTERFACE_ENTRY(ITimer)
@@ -184,7 +184,7 @@ void Timer::UseClock(Ptr<IClock> clock)
         BOOST_THROW_EXCEPTION(InvalidPointer());
     }
     clock_ = clock;
-    CheckInitialized();
+    UpdateInitialized();
 }
 
 void Timer::UseEventScheduler(Ptr<IEventScheduler> scheduler)
@@ -198,10 +198,10 @@ void Timer::UseEventScheduler(Ptr<IEventScheduler> scheduler)
         BOOST_THROW_EXCEPTION(InvalidPointer());
     }
     scheduler_ = scheduler;
-    CheckInitialized();
+    UpdateInitialized();
 }
 
-void Timer::CheckInitialized(void) BOOST_NOEXCEPT
+void Timer::UpdateInitialized(void) BOOST_NOEXCEPT
 {
     if (clock_ && scheduler_)
     {
