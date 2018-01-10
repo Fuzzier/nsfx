@@ -22,6 +22,7 @@
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_index.hpp>
 #include <utility>
+#include <iostream>
 
 
 NSFX_OPEN_NAMESPACE
@@ -522,6 +523,13 @@ template<class T>
 inline size_t hash_value(const Ptr<T>& p) BOOST_NOEXCEPT
 {
     return boost::hash<T*>()(p.Get());
+}
+
+template<class CharT, class TraitsT, class T, bool nothrow_>
+inline std::basic_ostream<CharT, TraitsT>&
+operator<<(std::basic_ostream<CharT, TraitsT>& os, const Ptr<T, nothrow_>& rhs)
+{
+    return os << "0x" << rhs.Get();
 }
 
 
