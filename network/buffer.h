@@ -1091,6 +1091,7 @@ private:
         }
     }
 
+public:
     void Release(void) BOOST_NOEXCEPT
     {
         if (storage_)
