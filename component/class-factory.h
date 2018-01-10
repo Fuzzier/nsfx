@@ -64,36 +64,22 @@ public:
 
     void* CreateNonAggregable(const uuid& iid)
     {
-        try
+        typedef Object<Envelopable>  ObjectType;
+        ObjectType* o = new ObjectType;
+        void* result = o->QueryInterface(iid);
+        if (!result)
         {
-            typedef Object<Envelopable>  ObjectType;
-            ObjectType* o = new ObjectType;
-            void* result = o->QueryInterface(iid);
-            if (!result)
-            {
-                delete o;
-                BOOST_THROW_EXCEPTION(NoInterface());
-            }
-            return result;
+            delete o;
+            BOOST_THROW_EXCEPTION(NoInterface());
         }
-        catch (std::bad_alloc& )
-        {
-            BOOST_THROW_EXCEPTION(OutOfMemory());
-        }
+        return result;
     }
 
     void* CreateAggregable(IObject* controller)
     {
-        try
-        {
-            typedef AggObject<Envelopable>  ObjectType;
-            ObjectType* o = new ObjectType(controller);
-            return o->QueryInterface(NSFX_IID_IObject);
-        }
-        catch (std::bad_alloc& )
-        {
-            BOOST_THROW_EXCEPTION(OutOfMemory());
-        }
+        typedef AggObject<Envelopable>  ObjectType;
+        ObjectType* o = new ObjectType(controller);
+        return o->QueryInterface(NSFX_IID_IObject);
     }
 
     /*}}}*/

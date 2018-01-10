@@ -179,39 +179,32 @@ public:
         {
             BOOST_THROW_EXCEPTION(InvalidPointer());
         }
-        try
+        Ptr<EventHandleType> handle(
+            new EventHandleType(this, t, std::move(sink)));
+        if (!list_.size())
         {
-            Ptr<EventHandleType> handle(
-                new EventHandleType(this, t, std::move(sink)));
-            if (!list_.size())
+            list_.push_front(handle);
+        }
+        else // if (list_.size() > 0)
+        {
+            bool inserted = false;
+            for (auto it = list_.begin(); it != list_.end(); ++it)
             {
-                list_.push_front(handle);
-            }
-            else // if (list_.size() > 0)
-            {
-                bool inserted = false;
-                for (auto it = list_.begin(); it != list_.end(); ++it)
+                // Call the non-virtual function, since it is known that
+                // GetTimePoint() is implemented by EventHandle class.
+                if ((*it)->EventHandle::GetTimePoint() > t)
                 {
-                    // Call the non-virtual function, since it is known that
-                    // GetTimePoint() is implemented by EventHandle class.
-                    if ((*it)->EventHandle::GetTimePoint() > t)
-                    {
-                        list_.insert(it, handle);
-                        inserted = true;
-                        break;
-                    }
-                }
-                if (!inserted)
-                {
-                    list_.push_back(handle);
+                    list_.insert(it, handle);
+                    inserted = true;
+                    break;
                 }
             }
-            return Ptr<IEventHandle>(handle.Detach(), false);
+            if (!inserted)
+            {
+                list_.push_back(handle);
+            }
         }
-        catch (std::bad_alloc& )
-        {
-            BOOST_THROW_EXCEPTION(OutOfMemory());
-        }
+        return Ptr<IEventHandle>(handle.Detach(), false);
     }
 
     virtual size_t GetNumEvents(void) BOOST_NOEXCEPT NSFX_OVERRIDE

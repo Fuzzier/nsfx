@@ -52,11 +52,11 @@ typedef boost::error_info<struct tag_Message, std::string>  ErrorMessage;
  */
 struct Unexpected : Exception {};
 
-/**
- * @ingroup Exception
- * @brief Out of memory.
- */
-struct OutOfMemory: Exception {};
+// #<{(|*
+//  * @ingroup Exception
+//  * @brief Out of memory.
+//  |)}>#
+// struct OutOfMemory: Exception {};
 
 /**
  * @ingroup Exception
