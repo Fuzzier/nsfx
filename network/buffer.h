@@ -1279,7 +1279,7 @@ public:
      *
      * @throw Unexpected  There are dangling buffer iterators.
      */
-    void RemoveAtStart(size_t numBytes) BOOST_NOEXCEPT
+    void RemoveAtStart(size_t numBytes)
     {
         if (storage_ && BufferStorage::IsDataLocked(storage_))
         {
@@ -1313,7 +1313,7 @@ public:
      * @throw OutOfMemory
      * @throw Unexpected  There are dangling buffer iterators.
      */
-    void RemoveAtEnd(size_t numBytes) BOOST_NOEXCEPT
+    void RemoveAtEnd(size_t numBytes)
     {
         if (storage_ && BufferStorage::IsDataLocked(storage_))
         {
@@ -1370,45 +1370,52 @@ public:
         }
         if (this != &src)
         {
-            // If existing storage doesn't have enough space to accommodate the
-            // data in the source buffer, reallocate a storage as large as the
-            // source buffer.
-            if (!storage_ || (storage_->size_ < src.end_ - src.start_))
+            if (!src.storage_)
             {
                 Release();
-                // Allocate enough space.
-                // If exception is thrown, the buffer is in a safe state, since
-                // it's been released already.
-               storage_ = BufferStorage::Create(src.storage_->size_);
-               Acquire();
             }
-            // If existing storage has a smaller space.
-            if (storage_->size_ < src.storage_->size_)
+            else
             {
-                // Reserve the same post-data area as the source buffer
-                // if possible.
-                if (storage_->size_ >= src.storage_->size_ - src.start_)
+                // If existing storage doesn't have enough space to accommodate the
+                // data in the source buffer, reallocate a storage as large as the
+                // source buffer.
+                if (!storage_ || (storage_->size_ < src.end_ - src.start_))
                 {
-                    start_ = src.start_ - (src.storage_->size_ - storage_->size_);
-                    end_   = src.end_   - (src.storage_->size_ - storage_->size_);
+                    Release();
+                    // Allocate enough space.
+                    // If exception is thrown, the buffer is in a safe state, since
+                    // it's been released already.
+                    storage_ = BufferStorage::Create(src.storage_->size_);
+                    Acquire();
                 }
-                else
+                // If existing storage has a smaller space.
+                if (storage_->size_ < src.storage_->size_)
                 {
-                    start_ = 0;
-                    end_   = src.end_ - src.start_;
+                    // Reserve the same post-data area as the source buffer
+                    // if possible.
+                    if (storage_->size_ >= src.storage_->size_ - src.start_)
+                    {
+                        start_ = src.start_ - (src.storage_->size_ - storage_->size_);
+                        end_   = src.end_   - (src.storage_->size_ - storage_->size_);
+                    }
+                    else
+                    {
+                        start_ = 0;
+                        end_   = src.end_ - src.start_;
+                    }
                 }
+                // If existing storage has a space no smaller than the source buffer.
+                else // if (storage_->size_ >= src.storage_->size_)
+                {
+                    // Reserve the same post-data area as the source buffer.
+                    start_ = src.start_ + (storage_->size_ - src.storage_->size_);
+                    end_   = src.end_   + (storage_->size_ - src.storage_->size_);
+                }
+                // Copy data.
+                std::memcpy(    storage_->bytes_ +     start_,
+                                src.storage_->bytes_ + src.start_,
+                                src.end_ - src.start_);
             }
-            // If existing storage has a space no smaller than the source buffer.
-            else // if (storage_->size_ >= src.storage_->size_)
-            {
-                // Reserve the same post-data area as the source buffer.
-                start_ = src.start_ + (storage_->size_ - src.storage_->size_);
-                end_   = src.end_   + (storage_->size_ - src.storage_->size_);
-            }
-            // Copy data.
-            std::memcpy(    storage_->bytes_ +     start_,
-                        src.storage_->bytes_ + src.start_,
-                        src.end_ - src.start_);
         }
     }
 
@@ -1432,24 +1439,31 @@ public:
         }
         if (this != &src)
         {
-            // If existing storage doesn't have a space as large as the source
-            // buffer, reallocate a storage as large as the source buffer.
-            if (!storage_ || (storage_->size_ < src.storage_->size_))
+            if (!src.storage_)
             {
                 Release();
-                // Allocate enough space.
-                // If exception is thrown, the buffer is in a safe state, since
-                // it's been reset already.
-               storage_ = BufferStorage::Create(src.storage_->size_);
-               Acquire();
             }
-            // Reserve the same post-data area as the source buffer.
-            start_ = src.start_ + (storage_->size_ - src.storage_->size_);
-            end_   = src.end_   + (storage_->size_ - src.storage_->size_);
-            // Copy data.
-            std::memcpy(    storage_->bytes_ +     start_,
-                        src.storage_->bytes_ + src.start_,
-                        src.end_ - src.start_);
+            else
+            {
+                // If existing storage doesn't have a space as large as the source
+                // buffer, reallocate a storage as large as the source buffer.
+                if (!storage_ || (storage_->size_ < src.storage_->size_))
+                {
+                    Release();
+                    // Allocate enough space.
+                    // If exception is thrown, the buffer is in a safe state, since
+                    // it's been reset already.
+                    storage_ = BufferStorage::Create(src.storage_->size_);
+                    Acquire();
+                }
+                // Reserve the same post-data area as the source buffer.
+                start_ = src.start_ + (storage_->size_ - src.storage_->size_);
+                end_   = src.end_   + (storage_->size_ - src.storage_->size_);
+                // Copy data.
+                std::memcpy(    storage_->bytes_ +     start_,
+                                src.storage_->bytes_ + src.start_,
+                                src.end_ - src.start_);
+            }
         }
     }
 
