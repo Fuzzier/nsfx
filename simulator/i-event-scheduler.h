@@ -90,7 +90,7 @@ public:
     /**
      * @brief Get the number of scheduled events.
      */
-    virtual size_t GetNumEvents(void) BOOST_NOEXCEPT = 0;
+    virtual size_t GetNumEvents(void) = 0;
 
     /**
      * @brief Get the next scheduled event.
@@ -99,7 +99,7 @@ public:
      * since the \c IEventHandle does not share the same lifetime as the
      * \c IEventScheduler.
      */
-    virtual Ptr<IEventHandle> GetNextEvent(void) BOOST_NOEXCEPT = 0;
+    virtual Ptr<IEventHandle> GetNextEvent(void) = 0;
 
 }; // class IEventScheduler /*}}}*/
 

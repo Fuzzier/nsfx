@@ -89,7 +89,7 @@ public:
      *
      * @see \c ISimulatorSink.
      */
-    virtual void Disconnect(cookie_t cookie) BOOST_NOEXCEPT = 0;
+    virtual void Disconnect(cookie_t cookie) = 0;
 
     /**
      * @brief Run until there is no scheduled alarm.
