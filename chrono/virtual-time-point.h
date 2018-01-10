@@ -119,7 +119,7 @@ public:
         return dt_;
     }
 
-    friend BOOST_CONSTEXPR size_t hash_value(const TimePoint& t) BOOST_NOEXCEPT;
+    friend size_t hash_value(const TimePoint& t) BOOST_NOEXCEPT;
 
     void swap(TimePoint& rhs) BOOST_NOEXCEPT
     {
@@ -241,7 +241,7 @@ operator-(const VirtualTimePoint& lhs, const VirtualTimePoint& rhs) BOOST_NOEXCE
 /**
  * @brief Supports <code>boost::hash<VirtualTimePoint></code>.
  */
-inline BOOST_CONSTEXPR size_t
+inline size_t
 hash_value(const VirtualTimePoint& t) BOOST_NOEXCEPT
 {
     return hash_value(t.dt_);

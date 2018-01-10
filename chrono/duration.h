@@ -181,7 +181,7 @@ public:
         return rep_;
     }
 
-    friend BOOST_CONSTEXPR size_t hash_value(const Duration& d) BOOST_NOEXCEPT;
+    friend size_t hash_value(const Duration& d) BOOST_NOEXCEPT;
 
     void swap(Duration& rhs) BOOST_NOEXCEPT
     {
@@ -342,7 +342,7 @@ operator% (const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT
 /**
  * @brief Supports <code>boost::hash<Duration></code>.
  */
-inline BOOST_CONSTEXPR size_t
+inline size_t
 hash_value(const Duration& d) BOOST_NOEXCEPT
 {
     return boost::hash<Duration::Rep>()(d.rep_);
