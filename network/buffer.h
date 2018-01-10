@@ -86,26 +86,19 @@ struct BufferStorage
     // Static methods.
     static BufferStorage* Create(size_t size)
     {
-        try
+        if (size == 0)
         {
-            if (size == 0)
-            {
-                BOOST_THROW_EXCEPTION(
-                    InvalidArgument() <<
-                    ErrorMessage("Cannot allocation 0-sized buffer."));
-            }
-            size_t storageSize = sizeof (BufferStorage) - 1 + size;
-            uint8_t* bytes = new uint8_t[storageSize];
-            BufferStorage* storage = reinterpret_cast<BufferStorage*>(bytes);
-            storage->size_ = size;
-            storage->dataLockCount_ = 0;
-            storage->refCount_ = 0;
-            return storage;
+            BOOST_THROW_EXCEPTION(
+                InvalidArgument() <<
+                ErrorMessage("Cannot allocation 0-sized buffer."));
         }
-        catch (std::bad_alloc& )
-        {
-            BOOST_THROW_EXCEPTION(OutOfMemory());
-        }
+        size_t storageSize = sizeof (BufferStorage) - 1 + size;
+        uint8_t* bytes = new uint8_t[storageSize];
+        BufferStorage* storage = reinterpret_cast<BufferStorage*>(bytes);
+        storage->size_ = size;
+        storage->dataLockCount_ = 0;
+        storage->refCount_ = 0;
+        return storage;
     }
 
     static void AddRef(BufferStorage* storage) BOOST_NOEXCEPT
@@ -970,8 +963,6 @@ public:
      *
      * The data area is positioned at the end of the storage, optimizing for
      * adding data at the head of the storage.
-     *
-     * @throw OutOfMemory
      */
     Buffer(size_t size) :
         storage_(BufferStorage::Create(size)),
@@ -987,7 +978,6 @@ public:
      * @param[in] size  The size of the storage.
      * @param[in] start The start position of the data area.
      *
-     * @throw OutOfMemory
      * @throw InvalidArgument Thrown if \c start is beyond \c size.
      */
     Buffer(size_t size, size_t start) :
@@ -1169,7 +1159,6 @@ public:
      * @pre There are no dangling buffer iterators holding the underlying
      *      storage.
      *
-     * @throw OutOfMemory
      * @throw Unexpected  There are dangling buffer iterators.
      */
     void AddAtStart(size_t numBytes)
@@ -1224,7 +1213,6 @@ public:
      * @pre There are no dangling buffer iterators holding the underlying
      *      storage.
      *
-     * @throw OutOfMemory
      * @throw Unexpected  There are dangling buffer iterators.
      */
     void AddAtEnd(size_t numBytes)
@@ -1310,7 +1298,6 @@ public:
      * @pre There are no dangling buffer iterators holding the underlying
      *      storage.
      *
-     * @throw OutOfMemory
      * @throw Unexpected  There are dangling buffer iterators.
      */
     void RemoveAtEnd(size_t numBytes)
@@ -1342,7 +1329,6 @@ public:
      * @pre There are no dangling buffer iterators holding the underlying
      *      storage.
      *
-     * @throw OutOfMemory
      * @throw Unexpected  There are dangling buffer iterators.
      */
     void CopyFrom(const Buffer& src)
@@ -1356,7 +1342,6 @@ public:
      * @pre There are no dangling buffer iterators holding the underlying
      *      storage.
      *
-     * @throw OutOfMemory
      * @throw Unexpected  There are dangling buffer iterators.
      */
     void CopyFrom(const Buffer& src, BufferCopyPolicyAccommodateData)
@@ -1425,7 +1410,6 @@ public:
      * @pre There are no dangling buffer iterators holding the underlying
      *      storage.
      *
-     * @throw OutOfMemory
      * @throw Unexpected  There are dangling buffer iterators.
      */
     void CopyFrom(const Buffer& src, BufferCopyPolicyAccommodateSize)
@@ -1473,7 +1457,6 @@ public:
      * @pre There are no dangling buffer iterators holding the underlying
      *      storage of the destination buffer.
      *
-     * @throw OutOfMemory
      * @throw Unexpected  There are dangling buffer iterators.
      */
     void CopyTo(Buffer& dest) const
@@ -1487,7 +1470,6 @@ public:
      * @pre There are no dangling buffer iterators holding the underlying
      *      storage of the destination buffer.
      *
-     * @throw OutOfMemory
      * @throw Unexpected  There are dangling buffer iterators.
      */
     void CopyTo(Buffer& dest, BufferCopyPolicyAccommodateData) const
@@ -1501,7 +1483,6 @@ public:
      * @pre There are no dangling buffer iterators holding the underlying
      *      storage of the destination buffer.
      *
-     * @throw OutOfMemory
      * @throw Unexpected  There are dangling buffer iterators.
      */
     void CopyTo(Buffer& dest, BufferCopyPolicyAccommodateSize) const
@@ -1512,7 +1493,6 @@ public:
     /**
      * @brief Make a deap copy (clone) of the buffer.
      *
-     * @throw OutOfMemory
      */
     Buffer Copy(void) const
     {

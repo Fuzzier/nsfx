@@ -167,17 +167,10 @@ Timer::InternalStartAt(const TimePoint& t0,
     {
         BOOST_THROW_EXCEPTION(InvalidPointer());
     }
-    try
-    {
-        Ptr<HandleType> handle(
-            new HandleType(std::move(sink), scheduler_, t0, period));
-        handle->ScheduleNextTimeout();
-        return Ptr<ITimerHandle>(handle.Detach(), true);
-    }
-    catch (std::bad_alloc& )
-    {
-        BOOST_THROW_EXCEPTION(OutOfMemory());
-    }
+    Ptr<HandleType> handle(
+        new HandleType(std::move(sink), scheduler_, t0, period));
+    handle->ScheduleNextTimeout();
+    return Ptr<ITimerHandle>(handle.Detach(), true);
 }
 
 void Timer::UseClock(Ptr<IClock> clock)
