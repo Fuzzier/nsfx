@@ -46,27 +46,27 @@ public:
     /**
      * @brief The alarm is waiting to be fired.
      */
-    virtual bool IsPending(void) BOOST_NOEXCEPT = 0;
+    virtual bool IsPending(void) = 0;
 
     /**
      * @brief The alarm is being fired.
      */
-    virtual bool IsRunning(void) BOOST_NOEXCEPT = 0;
+    virtual bool IsRunning(void) = 0;
 
     /**
      * @brief The alarm is waiting or being fired.
      */
-    virtual bool IsValid(void) BOOST_NOEXCEPT = 0;
+    virtual bool IsValid(void) = 0;
 
     /**
      * @brief Cancel the alarm.
      */
-    virtual void Cancel(void) BOOST_NOEXCEPT = 0;
+    virtual void Cancel(void) = 0;
 
     /**
      * @brief Get the time point when the alarm is about to be fired.
      */
-    virtual TimePoint GetTimePoint(void) BOOST_NOEXCEPT = 0;
+    virtual TimePoint GetTimePoint(void) = 0;
 
     /**
      * @brief Fire the event.
