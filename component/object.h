@@ -21,6 +21,7 @@
 #include <nsfx/component/i-object.h>
 #include <nsfx/component/exception.h>
 #include <boost/type_traits/is_base_of.hpp>
+#include <boost/preprocessor/iterate.hpp>
 #include <functional>
 
 
@@ -277,9 +278,8 @@ private:
  *
  * A class is envelopable if it satisfies the following conditions.<br/>
  * 1. It conforms to \c IObjectConcept.<br/>
- * 2. It has a public \c InternalQueryInterface() function.<br/>
- * 3. It has a default constructible.<br/>
- * 4. It is not derived from \c ObjectBase.<br/>
+ * 2. It has a non-private \c InternalQueryInterface() function.<br/>
+ * 3. It is not derived from \c ObjectBase.<br/>
  */
 template<class T>
 struct EnvelopableConcept/*{{{*/
@@ -298,9 +298,6 @@ struct EnvelopableConcept/*{{{*/
     {
         struct Child : T
         {
-            // T is default constructible.
-            Child(void) {}
-
             // T has a private InternalQueryInterface().
             void* InternalQueryInterface(const uuid& iid) BOOST_NOEXCEPT
             {
@@ -322,11 +319,11 @@ struct EnvelopableConcept/*{{{*/
  * @brief A non-aggregable object.
  *
  * @tparam Envelopable A class that conforms to \c EnvelopableConcept.
- * @tparam autoDelete If \c true, the object is automatically deleted when its
- *                    reference count is decremented to \c 0.<br/>
- *                    The object must be allocated on heap.<br/>
- *                    Otherwise, the object can be placed on stack or as a
- *                    concrete member variable of a class.
+ * @tparam autoDelete  If \c true, the object is automatically deleted when its
+ *                     reference count is decremented to \c 0.<br/>
+ *                     The object must be allocated on heap.<br/>
+ *                     Otherwise, the object can be placed on stack or as a
+ *                     concrete member variable of a class.
  *
  * A non-aggretable object possesses a reference counter.<br/>
  * However, it does not hold a pointer to a controller, thus it cannot be
@@ -342,47 +339,25 @@ private:
     BOOST_CONCEPT_ASSERT((EnvelopableConcept<Envelopable>));
 
 public:
-    BOOST_DEFAULTED_FUNCTION(Object(void), {});
-
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
     template<class...Args>
     Object(Args&&... args) :
         Envelopable(std::forward<Args>(args)...) {}
 
 #else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-    template<class A1>
-    Object(A1&& a1) :
-        Envelopable(std::forward<A1>(a1)) {}
+    Object(void) {}
 
-    template<class A1, class A2>
-    Object(A1&& a1, A2&& a2) :
-        Envelopable(std::forward<A1>(a1), std::forward<A2>(a2)) {}
-
-    template<class A1, class A2, class A3>
-    Object(A1&& a1, A2&& a2, A3&& a3) :
-        Envelopable(std::forward<A1>(a1), std::forward<A2>(a2),
-                    std::forward<A3>(a3)) {}
-
-    template<class A1, class A2, class A3, class A4>
-    Object(A1&& a1, A2&& a2, A3&& a3, A4&& a4) :
-        Envelopable(std::forward<A1>(a1), std::forward<A2>(a2),
-                    std::forward<A3>(a3), std::forward<A4>(a4)) {}
-
-    template<class A1, class A2, class A3, class A4, class A5>
-    Object(A1&& a1, A2&& a2, A3&& a3, A4&& a4, A5&& a5) :
-        Envelopable(std::forward<A1>(a1), std::forward<A2>(a2),
-                    std::forward<A3>(a3), std::forward<A4>(a4),
-                    std::forward<A5>(a5)) {}
-
-    template<class A1, class A2, class A3, class A4, class A5, class A6>
-    Object(A1&& a1, A2&& a2, A3&& a3, A4&& a4, A5&& a5, A6&& a6) :
-        Envelopable(std::forward<A1>(a1), std::forward<A2>(a2),
-                    std::forward<A3>(a3), std::forward<A4>(a4),
-                    std::forward<A5>(a5), std::forward<A6>(a6)) {}
+# define BOOST_PP_ITERATION_PARAMS_1  (4, (1, NSFX_MAX_ARITY, <nsfx/component/object.h>, 0))
+# include BOOST_PP_ITERATE()
 
 #endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
     virtual ~Object(void) BOOST_NOEXCEPT {}
+
+    // Non-copyable.
+private:
+    BOOST_DELETED_FUNCTION(Object(const Object& ));
+    BOOST_DELETED_FUNCTION(Object& operator=(const Object& ));
 
     // IObject./*{{{*/
 public:
@@ -419,11 +394,11 @@ public:
  * @brief An aggregable object that is the navigator of an aggregated object.
  *
  * @tparam Envelopable A class that conforms to \c EnvelopableConcept.
- * @tparam autoDelete If \c true, the navigator is automatically deleted when
- *                    its reference count is decremented to \c 0.<br/>
- *                    The object must be allocated on heap.<br/>
- *                    Otherwise, the object can be placed on stack or as a
- *                    concrete member variable in the controller class.
+ * @tparam autoDelete  If \c true, the navigator is automatically deleted when
+ *                     its reference count is decremented to \c 0.<br/>
+ *                     The object must be allocated on heap.<br/>
+ *                     Otherwise, the object can be placed on stack or as a
+ *                     concrete member variable in the controller class.
  *
  * The derived object may implement \c ObjectBase::InternalQueryInterface() via
  * \c NSFX_INTERFACE_XXX() macros.
@@ -447,15 +422,6 @@ private:
         public ObjectBase
     {
     public:
-        Aggregated(IObject* controller) :
-            ObjectBase(controller)
-        {
-            if (!controller)
-            {
-                BOOST_THROW_EXCEPTION(BadAggregation());
-            }
-        }
-
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
         template<class...Args>
         Aggregated(IObject* controller, Args&&... args) :
@@ -469,10 +435,8 @@ private:
         }
 
 #else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-        template<class A1>
-        Aggregated(IObject* controller, A1&& a1) :
-            ObjectBase(controller),
-            Envelopable(std::forward<A1>(a1))
+        Aggregated(IObject* controller) :
+            ObjectBase(controller)
         {
             if (!controller)
             {
@@ -480,72 +444,20 @@ private:
             }
         }
 
-        template<class A1, class A2>
-        Aggregated(IObject* controller, A1&& a1, A2&& a2) :
-            ObjectBase(controller),
-            Envelopable(std::forward<A1>(a1), std::forward<A2>(a2))
-        {
-            if (!controller)
-            {
-                BOOST_THROW_EXCEPTION(BadAggregation());
-            }
-        }
-
-        template<class A1, class A2, class A3>
-        Aggregated(IObject* controller, A1&& a1, A2&& a2, A3&& a3) :
-            ObjectBase(controller),
-            Envelopable(std::forward<A1>(a1), std::forward<A2>(a2),
-        {
-            if (!controller)
-            {
-                BOOST_THROW_EXCEPTION(BadAggregation());
-            }
-        }
-                    std::forward<A3>(a3))
-
-        template<class A1, class A2, class A3, class A4>
-        Aggregated(IObject* controller, A1&& a1, A2&& a2, A3&& a3, A4&& a4) :
-            ObjectBase(controller),
-            Envelopable(std::forward<A1>(a1), std::forward<A2>(a2),
-                    std::forward<A3>(a3), std::forward<A4>(a4))
-        {
-            if (!controller)
-            {
-                BOOST_THROW_EXCEPTION(BadAggregation());
-            }
-        }
-
-        template<class A1, class A2, class A3, class A4, class A5>
-        Aggregated(IObject* controller, A1&& a1, A2&& a2, A3&& a3, A4&& a4, A5&& a5) :
-            ObjectBase(controller),
-            Envelopable(std::forward<A1>(a1), std::forward<A2>(a2),
-                    std::forward<A3>(a3), std::forward<A4>(a4),
-                    std::forward<A5>(a5))
-        {
-            if (!controller)
-            {
-                BOOST_THROW_EXCEPTION(BadAggregation());
-            }
-        }
-
-        template<class A1, class A2, class A3, class A4, class A5, class A6>
-        Aggregated(IObject* controller, A1&& a1, A2&& a2, A3&& a3, A4&& a4, A5&& a5, A6&& a6) :
-            ObjectBase(controller),
-            Envelopable(std::forward<A1>(a1), std::forward<A2>(a2),
-                    std::forward<A3>(a3), std::forward<A4>(a4),
-                    std::forward<A5>(a5), std::forward<A6>(a6))
-        {
-            if (!controller)
-            {
-                BOOST_THROW_EXCEPTION(BadAggregation());
-            }
-        }
+# define BOOST_PP_ITERATION_PARAMS_1  (4, (1, NSFX_MAX_ARITY, <nsfx/component/object.h>, 2))
+# include BOOST_PP_ITERATE()
 
 #endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
         virtual ~Aggregated(void) BOOST_NOEXCEPT {}
 
+    // Non-copyable.
+private:
+        BOOST_DELETED_FUNCTION(Aggregated(const Aggregated& ));
+        BOOST_DELETED_FUNCTION(Aggregated& operator=(const Aggregated& ));
+
         // IObject./*{{{*/
+public:
         virtual refcount_t AddRef(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
         {
             return ControllerAddRef();
@@ -576,50 +488,28 @@ private:
     }; // class Aggregated /*}}}*/
 
 public:
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+    template<class...Args>
+    AggObject(IObject* controller, Args&&... args) :
+        agg_(controller, std::forward<Args>(args)...) {}
+
+#else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
     AggObject(IObject* controller) :
         agg_(controller)
     {
     }
 
-#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-    template<class...Args>
-    AggObject(IObject* controller, Args&&... args) :
-        agg_(constroller, std::forward<Args>(args)...) {}
-
-#else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-    template<class A1>
-    AggObject(IObject* controller, A1&& a1) :
-        agg_(controller, std::forward<A1>(a1)) {}
-
-    template<class A1, class A2>
-    AggObject(IObject* controller, A1&& a1, A2&& a2) :
-        agg_(constroller, std::forward<A1>(a1), std::forward<A2>(a2)) {}
-
-    template<class A1, class A2, class A3>
-    AggObject(IObject* controller, A1&& a1, A2&& a2, A3&& a3) :
-        agg_(constroller, std::forward<A1>(a1), std::forward<A2>(a2),
-                    std::forward<A3>(a3)) {}
-
-    template<class A1, class A2, class A3, class A4>
-    AggObject(IObject* controller, A1&& a1, A2&& a2, A3&& a3, A4&& a4) :
-        agg_(constroller, std::forward<A1>(a1), std::forward<A2>(a2),
-                    std::forward<A3>(a3), std::forward<A4>(a4)) {}
-
-    template<class A1, class A2, class A3, class A4, class A5>
-    AggObject(IObject* controller, A1&& a1, A2&& a2, A3&& a3, A4&& a4, A5&& a5) :
-        agg_(constroller, std::forward<A1>(a1), std::forward<A2>(a2),
-                    std::forward<A3>(a3), std::forward<A4>(a4),
-                    std::forward<A5>(a5)) {}
-
-    template<class A1, class A2, class A3, class A4, class A5, class A6>
-    AggObject(IObject* controller, A1&& a1, A2&& a2, A3&& a3, A4&& a4, A5&& a5, A6&& a6) :
-        agg_(constroller, std::forward<A1>(a1), std::forward<A2>(a2),
-                    std::forward<A3>(a3), std::forward<A4>(a4),
-                    std::forward<A5>(a5), std::forward<A6>(a6)) {}
+# define BOOST_PP_ITERATION_PARAMS_1  (4, (1, NSFX_MAX_ARITY, <nsfx/component/object.h>, 1))
+# include BOOST_PP_ITERATE()
 
 #endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
     virtual ~AggObject(void) BOOST_NOEXCEPT {}
+
+    // Non-copyable.
+private:
+    BOOST_DELETED_FUNCTION(AggObject(const AggObject& ));
+    BOOST_DELETED_FUNCTION(AggObject& operator=(const AggObject& ));
 
     // IObject./*{{{*/
 public:
@@ -759,4 +649,50 @@ NSFX_CLOSE_NAMESPACE
 
 
 #endif // OBJECT_H__DB70B5FF_F35B_4309_B62C_EDD8AE30522F
+
+
+#if defined(BOOST_PP_IS_ITERATING)
+
+#define NSFX_PP_FORWARD(z, n, d)  std::forward<A ## n>(a ## n)
+
+# if BOOST_PP_ITERATION_FLAGS() == 0
+
+// template<class A0, class A1, ...>
+// Object(A0&& a0, A1&& a1, ...)) :
+//     Envelopable(std::forward<A0>(a0), std::forward<A1>(a1), ...) {}
+template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
+Object(BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, && a)) :
+    Envelopable(BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, )) {}
+
+#elif BOOST_PP_ITERATION_FLAGS() == 1
+
+// template<class A0, class A1, ...>
+// AggObject(IObject* controller, A0&& a0, A1&& a1, ...)) :
+//     agg_(controller, std::forward<A0>(a0), std::forward<A1>(a1), ...) {}
+template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
+AggObject(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, && a)) :
+    agg_(controller, BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, )) {}
+
+#elif BOOST_PP_ITERATION_FLAGS() == 2
+
+// template<class A0, class A1, ...>
+// AggObject(IObject* controller, A0&& a0, A1&& a1, ...)) :
+//     ObjectBase(controller),
+//     agg_(controller, std::forward<A0>(a0), std::forward<A1>(a1), ...) {}
+template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
+Aggregated(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, && a)) :
+    ObjectBase(controller),
+    Envelopable(BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, ))
+{
+    if (!controller)
+    {
+        BOOST_THROW_EXCEPTION(BadAggregation());
+    }
+}
+
+#endif // BOOST_PP_ITERATION_FLAGS() == x
+
+#undef NSFX_PP_FORWARD
+
+#endif // defined(BOOST_PP_IS_ITERATING)
 

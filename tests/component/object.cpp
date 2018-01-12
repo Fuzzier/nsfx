@@ -54,6 +54,33 @@ NSFX_TEST_SUITE(Object)
 
     NSFX_DEFINE_CLASS_UUID4(Test, 0, 0, 1, 1LL);
 
+    struct TestNoDefaultCtor :/*{{{*/
+        ITest
+    {
+        TestNoDefaultCtor(int n) : n_(n) {}
+
+        virtual ~TestNoDefaultCtor(void)
+        {
+            deallocated = true;
+        }
+
+        virtual refcount_t GetRefCount(void)
+        {
+            AddRef();
+            return Release();
+        }
+
+        NSFX_INTERFACE_MAP_BEGIN(TestNoDefaultCtor)
+            NSFX_INTERFACE_ENTRY(ITest)
+        NSFX_INTERFACE_MAP_END()
+
+    private:
+        int n_;
+
+    };/*}}}*/
+
+    NSFX_DEFINE_CLASS_UUID4(TestNoDefaultCtor, 0, 0, 1, 2LL);
+
     refcount_t RefCount(nsfx::IObject* p)/*{{{*/
     {
         refcount_t result = 0;
@@ -73,20 +100,42 @@ NSFX_TEST_SUITE(Object)
         {
             try
             {
-                deallocated = false;
-                typedef nsfx::Object<Test>  TestType;
-                nsfx::Ptr<ITest> q(new TestType);
-                NSFX_TEST_EXPECT(!deallocated);
-                NSFX_TEST_EXPECT(q);
-                NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1);
-                nsfx::Ptr<nsfx::IObject> p(q);
-                NSFX_TEST_EXPECT(p);
-                NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 2);
-                NSFX_TEST_EXPECT(p == q);
-                p.Reset();
-                NSFX_TEST_EXPECT(!deallocated);
-                q.Reset();
-                NSFX_TEST_EXPECT(deallocated);
+                // Has default ctor.
+                {
+                    deallocated = false;
+                    typedef nsfx::Object<Test>  TestType;
+                    nsfx::Ptr<ITest> q(new TestType);
+                    NSFX_TEST_EXPECT(!deallocated);
+                    NSFX_TEST_EXPECT(q);
+                    NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1);
+                    nsfx::Ptr<nsfx::IObject> p(q);
+                    NSFX_TEST_EXPECT(p);
+                    NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 2);
+                    NSFX_TEST_EXPECT(p == q);
+                    p.Reset();
+                    NSFX_TEST_EXPECT(!deallocated);
+                    q.Reset();
+                    NSFX_TEST_EXPECT(deallocated);
+                }
+
+                // Has no default ctor.
+                {
+                    deallocated = false;
+                    typedef nsfx::Object<TestNoDefaultCtor>  TestType;
+                    nsfx::Ptr<ITest> q(new TestType(1));
+                    NSFX_TEST_EXPECT(!deallocated);
+                    NSFX_TEST_EXPECT(q);
+                    NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1);
+                    nsfx::Ptr<nsfx::IObject> p(q);
+                    NSFX_TEST_EXPECT(p);
+                    NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 2);
+                    NSFX_TEST_EXPECT(p == q);
+                    p.Reset();
+                    NSFX_TEST_EXPECT(!deallocated);
+                    q.Reset();
+                    NSFX_TEST_EXPECT(deallocated);
+                }
+
             }
             catch (std::exception& e)
             {
@@ -98,21 +147,44 @@ NSFX_TEST_SUITE(Object)
         {
             try
             {
-                deallocated = false;
-                typedef nsfx::Object<Test, false>  TestType;
-                TestType o;
-                NSFX_TEST_EXPECT(!deallocated);
-                nsfx::Ptr<ITest> q(&o);
-                NSFX_TEST_EXPECT(q);
-                NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1);
-                nsfx::Ptr<nsfx::IObject>  p(q);
-                NSFX_TEST_EXPECT(p);
-                NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1);
-                NSFX_TEST_EXPECT(p == q);
-                p.Reset();
-                q.Reset();
-                NSFX_TEST_EXPECT_EQ(o.GetRefCount(), 1);
-                NSFX_TEST_EXPECT(!deallocated);
+                // Has default ctor.
+                {
+                    deallocated = false;
+                    typedef nsfx::Object<Test, false>  TestType;
+                    TestType o;
+                    NSFX_TEST_EXPECT(!deallocated);
+                    nsfx::Ptr<ITest> q(&o);
+                    NSFX_TEST_EXPECT(q);
+                    NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1);
+                    nsfx::Ptr<nsfx::IObject>  p(q);
+                    NSFX_TEST_EXPECT(p);
+                    NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1);
+                    NSFX_TEST_EXPECT(p == q);
+                    p.Reset();
+                    q.Reset();
+                    NSFX_TEST_EXPECT_EQ(o.GetRefCount(), 1);
+                    NSFX_TEST_EXPECT(!deallocated);
+                }
+
+                // Has no default ctor.
+                {
+                    deallocated = false;
+                    typedef nsfx::Object<TestNoDefaultCtor, false>  TestType;
+                    TestType o(1);
+                    NSFX_TEST_EXPECT(!deallocated);
+                    nsfx::Ptr<ITest> q(&o);
+                    NSFX_TEST_EXPECT(q);
+                    NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1);
+                    nsfx::Ptr<nsfx::IObject>  p(q);
+                    NSFX_TEST_EXPECT(p);
+                    NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1);
+                    NSFX_TEST_EXPECT(p == q);
+                    p.Reset();
+                    q.Reset();
+                    NSFX_TEST_EXPECT_EQ(o.GetRefCount(), 1);
+                    NSFX_TEST_EXPECT(!deallocated);
+                }
+
             }
             catch (std::exception& e)
             {
