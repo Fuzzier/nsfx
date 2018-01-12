@@ -258,5 +258,12 @@ NSFX_CLOSE_NAMESPACE
 #endif
 
 
+////////////////////////////////////////////////////////////////////////////////
+// Variadic template emulation.
+#if !defined(NSFX_MAX_ARITY)
+# define NSFX_MAX_ARITY  6
+#endif // !defined(NSFX_MAX_ARITY)
+
+
 #endif // CONFIG_H__544DA909_13DC_4D4F_AD4F_BE62ECF454E2
 
