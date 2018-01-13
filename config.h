@@ -259,7 +259,7 @@ NSFX_CLOSE_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Variadic template emulation.
+// The maximum number of function parameters for variadic template emulation.
 #if !defined(NSFX_MAX_ARITY)
 # define NSFX_MAX_ARITY  6
 #endif // !defined(NSFX_MAX_ARITY)

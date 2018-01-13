@@ -431,7 +431,8 @@ private:
         {
             if (!controller)
             {
-                BOOST_THROW_EXCEPTION(BadAggregation());
+                BOOST_THROW_EXCEPTION(
+                    BadAggregation() << ControllerErrorInfo(controller));
             }
         }
 
@@ -441,7 +442,8 @@ private:
         {
             if (!controller)
             {
-                BOOST_THROW_EXCEPTION(BadAggregation());
+                BOOST_THROW_EXCEPTION(
+                    BadAggregation() << ControllerErrorInfo(controller));
             }
         }
 
@@ -696,7 +698,7 @@ Aggregated(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION()
 {
     if (!controller)
     {
-        BOOST_THROW_EXCEPTION(BadAggregation());
+        BOOST_THROW_EXCEPTION(BadAggregation() << ControllerErrorInfo(controller));
     }
 }
 

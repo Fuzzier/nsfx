@@ -66,13 +66,16 @@ public:
     {
         typedef Object<Envelopable>  ObjectType;
         ObjectType* o = new ObjectType;
-        void* result = o->QueryInterface(iid);
-        if (!result)
+        try
+        {
+            void* result = o->QueryInterface(iid);
+            return result;
+        }
+        catch (NoInterface& )
         {
             delete o;
-            BOOST_THROW_EXCEPTION(NoInterface());
+            throw;
         }
-        return result;
     }
 
     void* CreateAggregable(IObject* controller)
