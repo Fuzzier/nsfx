@@ -42,13 +42,6 @@ struct NoInterface : ComponentException {};
 
 /**
  * @ingroup Component
- * @brief The type name of the queried interface.
- */
-typedef boost::error_info<struct tag_QuerySourceType, std::string> QuerySourceTypeErrorInfo;
-typedef boost::error_info<struct tag_QueryTargetType, std::string> QueryTargetTypeErrorInfo;
-
-/**
- * @ingroup Component
  * @brief Practice aggregation in a wrong way.
  */
 struct BadAggregation : ComponentException {};

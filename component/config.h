@@ -229,6 +229,30 @@
  *    generate a sink internally, and connect the sink to the interface.<br/>
  *    A wiring component does not take care of the connections of sinks.<br/>
  *
+ * # Event sinks.<br/>
+ *   The practice of providing an all-in-one event sink interface becomes
+ *   frustrating.<br/>
+ *   In that way, users are expected to implement all callback methods on the
+ *   interface, thus have to listen to all events, even if not all of the events
+ *   are of interest.<br/>
+ *
+ *   A workaround is to define an event sink interface with a single callback
+ *   method, along with a set of bit flags that identify the events.<br/>
+ *   Users can connect to interested events by giving the event source a bit
+ *   mask, and the callback carries a bit flag that identifies the event.<br/>
+ *   However, this approach is not elegant, since users have to use 'if-else'
+ *   or 'switch-case' to filter and catch the events.<br/>
+ *   Event processing is not in a one-to-one way, but in a many-to-one way.<br/>
+ *   i.e., the callback is a centralized hot spot of conditional branches.<br/>
+ *
+ *   To maximize flexibility, the granularity of event interfaces must be
+ *   minimized.<br/>
+ *   i.e., each event sink interface exposes only one event, and contains only
+ *   one callback method.<br/>
+ *   This way, users can connect to any combination of events as necessary.<br/>
+ *   It consumes more memory, but provides a cleaner way to connect and process
+ *   events.<br/>
+ *
  */
 
 
