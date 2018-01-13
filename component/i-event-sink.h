@@ -67,8 +67,10 @@ NSFX_OPEN_NAMESPACE
  * @brief The event sink class template.
  *
  * @tparam Proto The prototype of a callable object that looks like
- *               <code>Ret(A0, A1, ...)</code>.
+ *               \c Ret(A0, A1, ...).
  *
+ * <code>IEventSink<void(void)></code> is the <b>only</b> event sink interface
+ * that has an associated UUID defined by the library.<br/>
  * Users shall <b>derive</b> their own event sink interfaces from this class
  * template, and associate the interfaces with UUIDs.<br/>
  * Users shall not use multiple inheritance to derive their own event sink
@@ -212,6 +214,16 @@ public:
 
     virtual void Fire(void) = 0;
 };
+
+
+////////////////////////////////////////
+/**
+ * @ingroup Component
+ * @brief The uuid of <code>IEventSink<></code>.
+ */
+#define NSFX_IID_IEventSink  NSFX_UUID_OF(::nsfx::IEventSink<>)
+
+NSFX_DEFINE_CLASS_UUID4(IEventSink<>, 0x02A9EAD8, 0x0B50, 0x4292, 0x83788634408B56BDLL);
 
 
 ////////////////////////////////////////
