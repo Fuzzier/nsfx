@@ -20,6 +20,7 @@
 #include <nsfx/component/config.h>
 #include <nsfx/component/i-object.h>
 #include <nsfx/component/exception.h>
+#include <boost/type_index.hpp>
 #include <boost/type_traits/is_base_of.hpp>
 #include <boost/preprocessor/iterate.hpp>
 #include <functional>
@@ -244,19 +245,19 @@ protected:
     }
 
     // Defined via NSFX_INTERFACE_XXX() macros.
-    // void* InternalQueryInterface(const uuid& iid) BOOST_NOEXCEPT;
+    // void* InternalQueryInterface(const uuid& iid);
 
-    refcount_t ControllerAddRef(void) BOOST_NOEXCEPT
+    refcount_t ControllerAddRef(void)
     {
         return controller_->AddRef();
     }
 
-    refcount_t ControllerRelease(void) BOOST_NOEXCEPT
+    refcount_t ControllerRelease(void)
     {
         return controller_->Release();
     }
 
-    void* ControllerQueryInterface(const uuid& iid) BOOST_NOEXCEPT
+    void* ControllerQueryInterface(const uuid& iid)
     {
         return controller_->QueryInterface(iid);
     }
@@ -291,15 +292,15 @@ struct EnvelopableConcept/*{{{*/
 
     BOOST_CONCEPT_USAGE(EnvelopableConcept)
     {
-        HasNonPrivateStaticInternalQueryInterface();
+        HasNonPrivateInternalQueryInterface();
     }
 
-    void HasNonPrivateStaticInternalQueryInterface(void)
+    void HasNonPrivateInternalQueryInterface(void)
     {
         struct Child : T
         {
             // T has a private InternalQueryInterface().
-            void* InternalQueryInterface(const uuid& iid) BOOST_NOEXCEPT
+            void* InternalQueryInterface(const uuid& iid)
             {
                 return T::InternalQueryInterface(iid);
             }
@@ -331,9 +332,9 @@ struct EnvelopableConcept/*{{{*/
  */
 template<class Envelopable, bool autoDelete = true>
 class Object NSFX_FINAL :/*{{{*/
-    public Envelopable,
+    private ObjectBase,
+    public Envelopable
     // Use private inherit as the methods are only used internally.
-    private ObjectBase
 {
 private:
     BOOST_CONCEPT_ASSERT((EnvelopableConcept<Envelopable>));
@@ -367,7 +368,7 @@ public:
         return result;
     }
 
-    virtual refcount_t Release(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+    virtual refcount_t Release(void) NSFX_FINAL NSFX_OVERRIDE
     {
         refcount_t result = autoDelete ? InternalRelease() : 1;
         if (autoDelete && !result)
@@ -377,7 +378,7 @@ public:
         return result;
     }
 
-    virtual void* QueryInterface(const uuid& iid) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+    virtual void* QueryInterface(const uuid& iid) NSFX_FINAL NSFX_OVERRIDE
     {
         return InternalQueryInterface(iid);
     }
@@ -411,15 +412,15 @@ public:
 template<class Envelopable, bool autoDelete = true>
 class AggObject NSFX_FINAL :/*{{{*/
     public IObject,
-    // Use private inherit as the methods are only used internally.
     private ObjectBase
+    // Use private inherit as the methods are only used internally.
 {
 private:
     BOOST_CONCEPT_ASSERT((EnvelopableConcept<Envelopable>));
 
     class Aggregated NSFX_FINAL :/*{{{*/
-        public Envelopable,
-        public ObjectBase
+        public ObjectBase,
+        public Envelopable
     {
     public:
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
@@ -458,12 +459,12 @@ private:
 
         // IObject./*{{{*/
 public:
-        virtual refcount_t AddRef(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+        virtual refcount_t AddRef(void) NSFX_FINAL NSFX_OVERRIDE
         {
             return ControllerAddRef();
         }
 
-        virtual refcount_t Release(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+        virtual refcount_t Release(void) NSFX_FINAL NSFX_OVERRIDE
         {
             return ControllerRelease();
         }
@@ -471,7 +472,7 @@ public:
         /**
          * @brief Exposes interfaces implemented by the aggregated object.
          */
-        virtual void* QueryInterface(const uuid& iid) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+        virtual void* QueryInterface(const uuid& iid) NSFX_FINAL NSFX_OVERRIDE
         {
             return ControllerQueryInterface(iid);
         }
@@ -480,7 +481,7 @@ public:
 
         // Make the protected Envelopable::InternalQueryInterface() public
         // member of Aggregated class.
-        void* InternalQueryInterface(const uuid& iid) BOOST_NOEXCEPT
+        void* InternalQueryInterface(const uuid& iid)
         {
             return Envelopable::InternalQueryInterface(iid);
         }
@@ -519,7 +520,7 @@ public:
         return result;
     }
 
-    virtual refcount_t Release(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+    virtual refcount_t Release(void) NSFX_FINAL NSFX_OVERRIDE
     {
         refcount_t result = autoDelete ? InternalRelease() : 1;
         if (autoDelete && !result)
@@ -536,7 +537,7 @@ public:
      *         on the navigator itself.<br/>
      *         Otherwise, return the interface on the aggregated object.
      */
-    virtual void* QueryInterface(const uuid& iid) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+    virtual void* QueryInterface(const uuid& iid) NSFX_FINAL NSFX_OVERRIDE
     {
         void* result = nullptr;
         if (iid == uuid_of<IObject>())
@@ -595,7 +596,7 @@ NSFX_CLOSE_NAMESPACE
   private:                                                                \
     typedef ThisClass  ThisClass_;                                        \
   protected:                                                              \
-    void* InternalQueryInterface(const ::nsfx::uuid& iid) BOOST_NOEXCEPT  \
+    void* InternalQueryInterface(const ::nsfx::uuid& iid)                 \
     {                                                                     \
         void* result = nullptr;                                           \
         if (iid == ::nsfx::uuid_of<IObject>())                            \
@@ -641,8 +642,17 @@ NSFX_CLOSE_NAMESPACE
  * @ingroup Component
  * @brief End the interface map.
  */
-#define NSFX_INTERFACE_MAP_END()  \
-        return result;            \
+#define NSFX_INTERFACE_MAP_END()                                              \
+        if (!result)                                                          \
+        {                                                                     \
+            BOOST_THROW_EXCEPTION(                                            \
+                ::nsfx::NoInterface()                                         \
+                << ::nsfx::QuerySourceClassErrorInfo(                         \
+                    ::boost::typeindex::type_id<ThisClass_>().pretty_name())  \
+                << ::nsfx::QueryTargetIidErrorInfo(iid)                       \
+            );                                                                \
+        }                                                                     \
+        return result;                                                        \
     }
 
 /*}}}*/
@@ -651,7 +661,7 @@ NSFX_CLOSE_NAMESPACE
 #endif // OBJECT_H__DB70B5FF_F35B_4309_B62C_EDD8AE30522F
 
 
-#if defined(BOOST_PP_IS_ITERATING)
+#if defined(BOOST_PP_IS_ITERATING) /*{{{*/
 
 #define NSFX_PP_FORWARD(z, n, d)  std::forward<A ## n>(a ## n)
 
@@ -694,5 +704,5 @@ Aggregated(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION()
 
 #undef NSFX_PP_FORWARD
 
-#endif // defined(BOOST_PP_IS_ITERATING)
+#endif // defined(BOOST_PP_IS_ITERATING) /*}}}*/
 

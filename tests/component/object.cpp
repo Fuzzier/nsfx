@@ -137,6 +137,10 @@ NSFX_TEST_SUITE(Object)
                 }
 
             }
+            catch (boost::exception& e)
+            {
+                NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            }
             catch (std::exception& e)
             {
                 NSFX_TEST_EXPECT(false) << e.what();
@@ -186,6 +190,10 @@ NSFX_TEST_SUITE(Object)
                 }
 
             }
+            catch (boost::exception& e)
+            {
+                NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            }
             catch (std::exception& e)
             {
                 NSFX_TEST_EXPECT(false) << e.what();
@@ -211,6 +219,10 @@ NSFX_TEST_SUITE(Object)
             catch (nsfx::BadAggregation& )
             {
                 // Should come here.
+            }
+            catch (boost::exception& e)
+            {
+                NSFX_TEST_EXPECT(false) << diagnostic_information(e);
             }
             catch (std::exception& e)
             {
@@ -320,6 +332,10 @@ NSFX_TEST_SUITE(Object)
                 p.Reset();
                 NSFX_TEST_EXPECT(!deallocated);
                 q.Reset();
+            }
+            catch (boost::exception& e)
+            {
+                NSFX_TEST_EXPECT(false) << diagnostic_information(e);
             }
             catch (std::exception& e)
             {

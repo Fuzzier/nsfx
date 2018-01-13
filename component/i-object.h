@@ -27,6 +27,14 @@ NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// Error info.
+typedef boost::error_info<struct tag_QuerySourceClass, std::string> QuerySourceClassErrorInfo;
+typedef boost::error_info<struct tag_QuerySourceInterface, std::string> QuerySourceInterfaceErrorInfo;
+typedef boost::error_info<struct tag_QueryTargetInterface, std::string> QueryTargetInterfaceErrorInfo;
+typedef boost::error_info<struct tag_QueryTargetIid, uuid> QueryTargetIidErrorInfo;
+
+
+////////////////////////////////////////////////////////////////////////////////
 // IObject
 /**
  * @ingroup Component
@@ -40,8 +48,8 @@ public:
     virtual ~IObject(void) BOOST_NOEXCEPT {}
 
 public:
-    virtual refcount_t AddRef(void) BOOST_NOEXCEPT = 0;
-    virtual refcount_t Release(void) BOOST_NOEXCEPT = 0;
+    virtual refcount_t AddRef(void) = 0;
+    virtual refcount_t Release(void) = 0;
     /**
      * @brief Query an interface of the object.
      *
@@ -54,11 +62,10 @@ public:
      *         Users must make sure the interface type is correct.<br/>
      *         As a design pattern, the \c iid of an interface type is equal to
      *         the return value of <code>uuid_of(type*)</code>.
-     *         <p>
-     *         If \c nullptr is returned, the object does not have the queried
-     *         interface.<br/>
+     *
+     * @throw NoInterface The queried interface is not supported.
      */
-    virtual void* QueryInterface(const uuid& iid) BOOST_NOEXCEPT = 0;
+    virtual void* QueryInterface(const uuid& iid) = 0;
 
 }; // class IObject /*}}}*/
 
