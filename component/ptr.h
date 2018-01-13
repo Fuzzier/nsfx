@@ -209,19 +209,21 @@ protected:
  *     <p>
  *     Caution must be taken when writing such code:
  *     @code
- *     Ptr<T>  p(new C);
+ *     Ptr<I>  p(new C);
  *     @endcode
- *     If \c C is different than \c T, then \c p will query an interface of
- *     \c T from the newly allocated instance of \c C.<br/>
+ *     If \c C is different than \c I, then the smart pointer \c p will query
+ *     an interface of type \c I from the newly allocated instance of type \c C.<br/>
  *     However, if the query fails, there is a memory leak that the instance of
  *     \c C is not deallocated.<br/>
  *     <p>
- *     The following code is much more secure:
+ *     The above code is safe only if the user can make sure that \c C supplies
+ *     an interface of \c I.<br/>
+ *     Otherwise, the following more secure code shall be used:
  *     @code
  *     C* c = new C;
  *     try
  *     {
- *         Ptr<T>  p(c);
+ *         Ptr<I>  p(c);
  *     }
  *     catch (NoInterface& )
  *     {

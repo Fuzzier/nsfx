@@ -32,6 +32,9 @@ typedef boost::error_info<struct tag_QuerySourceClass, std::string> QuerySourceC
 typedef boost::error_info<struct tag_QuerySourceInterface, std::string> QuerySourceInterfaceErrorInfo;
 typedef boost::error_info<struct tag_QueryTargetInterface, std::string> QueryTargetInterfaceErrorInfo;
 typedef boost::error_info<struct tag_QueryTargetIid, uuid> QueryTargetIidErrorInfo;
+typedef boost::error_info<struct tag_Class, std::string> ClassErrorInfo;
+typedef boost::error_info<struct tag_ClassUuid, uuid> ClassUuidErrorInfo;
+typedef boost::error_info<struct tag_Controller, class IObject*> ControllerErrorInfo;
 
 
 ////////////////////////////////////////////////////////////////////////////////

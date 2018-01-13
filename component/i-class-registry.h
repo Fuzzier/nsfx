@@ -56,12 +56,12 @@ public:
      *
      * @param[in] cid The uuid of an object class.<br/>
      */
-    virtual void Unregister(const uuid& cid) BOOST_NOEXCEPT = 0;
+    virtual void Unregister(const uuid& cid) = 0;
 
     /**
      * @brief Unregister all class factories.
      */
-    virtual void UnregisterAll(void) BOOST_NOEXCEPT = 0;
+    virtual void UnregisterAll(void) = 0;
 
     /**
      * @brief Get an class factory.
