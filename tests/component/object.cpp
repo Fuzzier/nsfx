@@ -46,6 +46,8 @@ NSFX_TEST_SUITE(Object)
             return Release();
         }
 
+        int Internal(void) { return 0; }
+
         NSFX_INTERFACE_MAP_BEGIN(Test)
             NSFX_INTERFACE_ENTRY(ITest)
         NSFX_INTERFACE_MAP_END()
@@ -69,6 +71,8 @@ NSFX_TEST_SUITE(Object)
             AddRef();
             return Release();
         }
+
+        int Internal(void) { return 1; }
 
         NSFX_INTERFACE_MAP_BEGIN(TestNoDefaultCtor)
             NSFX_INTERFACE_ENTRY(ITest)
@@ -104,7 +108,8 @@ NSFX_TEST_SUITE(Object)
                 {
                     deallocated = false;
                     typedef nsfx::Object<Test>  TestType;
-                    nsfx::Ptr<ITest> q(new TestType);
+                    TestType* t = new TestType;
+                    nsfx::Ptr<ITest> q(t);
                     NSFX_TEST_EXPECT(!deallocated);
                     NSFX_TEST_EXPECT(q);
                     NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1);
@@ -116,13 +121,16 @@ NSFX_TEST_SUITE(Object)
                     NSFX_TEST_EXPECT(!deallocated);
                     q.Reset();
                     NSFX_TEST_EXPECT(deallocated);
+                    NSFX_TEST_ASSERT(t->GetEnveloped());
+                    NSFX_TEST_EXPECT_EQ(t->GetEnveloped()->Internal(), 0);
                 }
 
                 // Has no default ctor.
                 {
                     deallocated = false;
                     typedef nsfx::Object<TestNoDefaultCtor>  TestType;
-                    nsfx::Ptr<ITest> q(new TestType(1));
+                    TestType* t = new TestType(1);
+                    nsfx::Ptr<ITest> q(t);
                     NSFX_TEST_EXPECT(!deallocated);
                     NSFX_TEST_EXPECT(q);
                     NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1);
@@ -134,6 +142,8 @@ NSFX_TEST_SUITE(Object)
                     NSFX_TEST_EXPECT(!deallocated);
                     q.Reset();
                     NSFX_TEST_EXPECT(deallocated);
+                    NSFX_TEST_ASSERT(t->GetEnveloped());
+                    NSFX_TEST_EXPECT_EQ(t->GetEnveloped()->Internal(), 1);
                 }
 
             }
@@ -168,6 +178,8 @@ NSFX_TEST_SUITE(Object)
                     q.Reset();
                     NSFX_TEST_EXPECT_EQ(o.GetRefCount(), 1);
                     NSFX_TEST_EXPECT(!deallocated);
+                    NSFX_TEST_ASSERT(o.GetEnveloped());
+                    NSFX_TEST_EXPECT_EQ(o.GetEnveloped()->Internal(), 0);
                 }
 
                 // Has no default ctor.
@@ -187,6 +199,8 @@ NSFX_TEST_SUITE(Object)
                     q.Reset();
                     NSFX_TEST_EXPECT_EQ(o.GetRefCount(), 1);
                     NSFX_TEST_EXPECT(!deallocated);
+                    NSFX_TEST_ASSERT(o.GetEnveloped());
+                    NSFX_TEST_EXPECT_EQ(o.GetEnveloped()->Internal(), 1);
                 }
 
             }
