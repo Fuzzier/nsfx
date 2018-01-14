@@ -22,6 +22,7 @@
 #include <nsfx/component/exception.h>
 #include <boost/type_index.hpp>
 #include <boost/type_traits/is_base_of.hpp>
+#include <boost/type_traits/decay.hpp>
 #include <boost/preprocessor/iterate.hpp>
 #include <functional>
 
@@ -385,6 +386,12 @@ public:
 
     /*}}}*/
 
+    // Methods.
+    Envelopable* GetEnveloped(void)
+    {
+        return static_cast<Envelopable*>(this);
+    }
+
 }; // class Object /*}}}*/
 
 
@@ -555,6 +562,12 @@ public:
     }
 
     /*}}}*/
+
+    // Methods.
+    Envelopable* GetEnveloped(void)
+    {
+        return static_cast<Envelopable*>(&agg_);
+    }
 
 private:
     Aggregated agg_;  /// The aggregated object.
