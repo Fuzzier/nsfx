@@ -125,7 +125,7 @@ NSFX_OPEN_NAMESPACE
  *         // Define a member function to signal the event.
  *         void SignalMyEvent(short s, int i)
  *         {
- *             myEvent_.Visit([] (IMyEventSink* sink) {
+ *             myEvent_.GetEnveloped()->Visit([] (IMyEventSink* sink) {
  *                 sink->Fire(s, i);
  *             });
  *         }
