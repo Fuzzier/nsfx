@@ -18,8 +18,8 @@
 
 
 #include <nsfx/simulator/config.h>
-#include <nsfx/simulator/i-event-sink.h>
 #include <nsfx/simulator/i-event-handle.h>
+#include <nsfx/event/i-event-sink.h>
 #include <nsfx/component/ptr.h>
 
 
@@ -57,7 +57,7 @@ public:
      * @throw Uninitialized  The scheduler is not initialized.
      * @throw InvalidPointer The sink is \c nullptr.
      */
-    virtual Ptr<IEventHandle> ScheduleNow(Ptr<IEventSink> sink) = 0;
+    virtual Ptr<IEventHandle> ScheduleNow(Ptr<IEventSink<> > sink) = 0;
 
     /**
      * @brief Schedule an event.
@@ -71,7 +71,7 @@ public:
      * @throw InvalidArgument Thrown by \c IAlarm.
      */
     virtual Ptr<IEventHandle> ScheduleIn(const Duration& dt,
-                                         Ptr<IEventSink> sink) = 0;
+                                         Ptr<IEventSink<> > sink) = 0;
 
     /**
      * @brief Schedule an event.
@@ -85,7 +85,7 @@ public:
      * @throw InvalidArgument Thrown by \c IAlarm.
      */
     virtual Ptr<IEventHandle> ScheduleAt(const TimePoint& t,
-                                         Ptr<IEventSink> sink) = 0;
+                                         Ptr<IEventSink<> > sink) = 0;
 
     /**
      * @brief Get the number of scheduled events.

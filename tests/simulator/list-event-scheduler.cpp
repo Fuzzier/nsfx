@@ -8,20 +8,20 @@ NSFX_TEST_SUITE(EventScheduler)
     using nsfx::Ptr;
 
     static nsfx::TimePoint tp;
-    struct Sink : nsfx::IEventSink/*{{{*/
+    struct Sink : nsfx::IEventSink<> /*{{{*/
     {
         Sink() {}
         Sink(nsfx::TimePoint tp) : tp_(tp) {}
 
         virtual ~Sink(void) {}
 
-        virtual void OnEvent(void) NSFX_OVERRIDE
+        virtual void Fire(void) NSFX_OVERRIDE
         {
             tp = tp_;
         }
 
         NSFX_INTERFACE_MAP_BEGIN(Sink)
-            NSFX_INTERFACE_ENTRY(nsfx::IEventSink)
+            NSFX_INTERFACE_ENTRY(nsfx::IEventSink<>)
         NSFX_INTERFACE_MAP_END()
 
     private:
@@ -41,7 +41,7 @@ NSFX_TEST_SUITE(EventScheduler)
         }
 
         NSFX_INTERFACE_MAP_BEGIN(Clock)
-            NSFX_INTERFACE_ENTRY(IClock)
+            NSFX_INTERFACE_ENTRY(nsfx::IClock)
         NSFX_INTERFACE_MAP_END()
 
     };/*}}}*/
@@ -59,9 +59,7 @@ NSFX_TEST_SUITE(EventScheduler)
             {
                 Ptr<nsfx::IClock> clock =
                     nsfx::CreateObject<nsfx::IClock>(nsfx::uuid_of<Clock>());
-                Ptr<nsfx::IClockUser> u(sch);
-                NSFX_TEST_ASSERT(u);
-                u->UseClock(clock);
+                Ptr<nsfx::IClockUser>(sch)->UseClock(clock);
             }
             nsfx::TimePoint t1(nsfx::Duration(1));
             nsfx::TimePoint t2(nsfx::Duration(2));
@@ -81,29 +79,30 @@ NSFX_TEST_SUITE(EventScheduler)
 
             NSFX_TEST_EXPECT_EQ(sch->GetNextEvent()->GetTimePoint(), t1);
             clk = t1;
-            h1->Fire();
+            h1->Signal();
             NSFX_TEST_ASSERT_EQ(sch->GetNumEvents(), 2);
             NSFX_TEST_EXPECT_EQ(clk, t1);
 
             NSFX_TEST_EXPECT_EQ(sch->GetNextEvent()->GetTimePoint(), t2);
             clk = t2;
-            h2->Fire();
+            h2->Signal();
             NSFX_TEST_ASSERT_EQ(sch->GetNumEvents(), 1);
             NSFX_TEST_EXPECT_EQ(clk, t2);
 
             NSFX_TEST_EXPECT_EQ(sch->GetNextEvent()->GetTimePoint(), t3);
             clk = t3;
             Ptr<nsfx::IEventHandle> h3_1 = sch->ScheduleNow(s3_1);
-            h3->Fire();
+            h3->Signal();
             NSFX_TEST_ASSERT_EQ(sch->GetNumEvents(), 1);
             NSFX_TEST_EXPECT_EQ(clk, t3);
 
             NSFX_TEST_EXPECT_EQ(sch->GetNextEvent()->GetTimePoint(), t3);
             clk = t3;
-            h3_1->Fire();
+            h3_1->Signal();
             NSFX_TEST_ASSERT_EQ(sch->GetNumEvents(), 0);
             NSFX_TEST_EXPECT_EQ(clk, t3);
 
+            Ptr<nsfx::IDisposable>(sch)->Dispose();
         }
         catch (boost::exception& e)
         {
