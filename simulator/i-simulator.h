@@ -20,6 +20,7 @@
 #include <nsfx/simulator/config.h>
 #include <nsfx/component/i-object.h>
 #include <nsfx/component/ptr.h>
+#include <nsfx/event/i-event.h>
 
 
 NSFX_OPEN_NAMESPACE
@@ -28,28 +29,30 @@ NSFX_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 // Types.
 class ISimulator;
-class ISimulatorSink;
 class ISimulatorUser;
-enum  SimulatorEventType;
 
-#define NSFX_IID_ISimulator      NSFX_UUID_OF(::nsfx::ISimulator)
-#define NSFX_IID_ISimulatorSink  NSFX_UUID_OF(::nsfx::ISimulatorSink)
-#define NSFX_IID_ISimulatorUser  NSFX_UUID_OF(::nsfx::ISimulatorUser)
+class ISimulationBeginEvent;
+class ISimulationRunEvent;
+class ISimulationPauseEvent;
+class ISimulationEndEvent;
 
+class ISimulationBeginEventSink;
+class ISimulationRunEventSink;
+class ISimulationPauseEventSink;
+class ISimulationEndEventSink;
 
-////////////////////////////////////////////////////////////////////////////////
-/**
- * @ingroup Simulator
- * @brief Simulator event type.
- */
-enum SimulatorEventType
-{
-    NSFX_SIMULATOR_EVENT_BEGIN = 1,
-    NSFX_SIMULATOR_EVENT_RUN   = 2,
-    NSFX_SIMULATOR_EVENT_PAUSE = 4,
-    NSFX_SIMULATOR_EVENT_END   = 8,
-    NSFX_SIMULATOR_EVENT_ALL   = 0x0F
-};
+#define NSFX_IID_ISimulator                 NSFX_UUID_OF(::nsfx::ISimulator)
+#define NSFX_IID_ISimulatorUser             NSFX_UUID_OF(::nsfx::ISimulatorUser)
+
+#define NSFX_IID_ISimulationBeginEvent      NSFX_UUID_OF(::nsfx::ISimulationBeginEvent)
+#define NSFX_IID_ISimulationRunEvent        NSFX_UUID_OF(::nsfx::ISimulationRunEvent)
+#define NSFX_IID_ISimulationPauseEvent      NSFX_UUID_OF(::nsfx::ISimulationPauseEvent)
+#define NSFX_IID_ISimulationEndEvent        NSFX_UUID_OF(::nsfx::ISimulationEndEvent)
+
+#define NSFX_IID_ISimulationBeginEventSink  NSFX_UUID_OF(::nsfx::ISimulationBeginEventSink)
+#define NSFX_IID_ISimulationRunEventSink    NSFX_UUID_OF(::nsfx::ISimulationRunEventSink)
+#define NSFX_IID_ISimulationPauseEventSink  NSFX_UUID_OF(::nsfx::ISimulationPauseEventSink)
+#define NSFX_IID_ISimulationEndEventSink    NSFX_UUID_OF(::nsfx::ISimulationEndEventSink)
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -63,33 +66,6 @@ class ISimulator :/*{{{*/
 {
 public:
     virtual ~ISimulator(void) BOOST_NOEXCEPT {}
-
-    /**
-     * @brief Connect to a sink.
-     *
-     * @param[in] sink The simulation sink.
-     * @param[in] mask The event types listened by the sink.
-     *
-     * @return  Return a cookie that can be used to disconnect the sink.
-     *
-     * @throw InvalidPointer  The sink is \c nullptr.
-     * @throw InvalidArgument The mask is \c 0.
-     *
-     * @see \c SimulatorEventType.
-     */
-    virtual cookie_t Connect(Ptr<ISimulatorSink> sink,
-                             SimulatorEventType mask) = 0;
-
-    /**
-     * @brief Disconnect a sink.
-     *
-     * @param[in] cookie  The cookie obtain at connection.
-     *
-     * All sinks are automatically disconnected when the simulation ends.
-     *
-     * @see \c ISimulatorSink.
-     */
-    virtual void Disconnect(cookie_t cookie) = 0;
 
     /**
      * @brief Run until there is no scheduled alarm.
@@ -113,23 +89,26 @@ NSFX_DEFINE_CLASS_UUID4(ISimulator, 0xC079AC9A, 0x0F83, 0x48F4, 0x82F354924DBBA4
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// ISimulatorSink.
-/**
- * @ingroup Simulator
- * @brief The simulator sink interface.
- */
-class ISimulatorSink :
-    virtual public IObject
-{
-public:
-    virtual ~ISimulatorSink(void) BOOST_NOEXCEPT {}
+// Simulator events.
+NSFX_DEFINE_EVENT_SINK_INTERFACE(ISimulationBeginEventSink, ( void(void) ));
+NSFX_DEFINE_EVENT_SINK_INTERFACE(ISimulationRunEventSink,   ( void(void) ));
+NSFX_DEFINE_EVENT_SINK_INTERFACE(ISimulationPauseEventSink, ( void(void) ));
+NSFX_DEFINE_EVENT_SINK_INTERFACE(ISimulationEndEventSink,   ( void(void) ));
 
-    virtual void OnSimulatorEvent(SimulatorEventType type) = 0;
+NSFX_DEFINE_CLASS_UUID4(ISimulationBeginEventSink, 0x1E93735B, 0xDE24, 0x49A3, 0xA63CB63B3F4D93E5LL);
+NSFX_DEFINE_CLASS_UUID4(ISimulationRunEventSink,   0x7B38A8CA, 0x8876, 0x4610, 0x8B8DA51254028C58LL);
+NSFX_DEFINE_CLASS_UUID4(ISimulationPauseEventSink, 0x1811B62D, 0x42D4, 0x4F1B, 0x98CE397D524F912FLL);
+NSFX_DEFINE_CLASS_UUID4(ISimulationEndEventSink,   0xF6A303AC, 0x6088, 0x4EAE, 0xA532C6CFB34F2E8BLL);
 
-}; // class ISimulatorSink
+NSFX_DEFINE_EVENT_INTERFACE(ISimulationBeginEvent, ISimulationBeginEventSink);
+NSFX_DEFINE_EVENT_INTERFACE(ISimulationRunEvent,   ISimulationRunEventSink);
+NSFX_DEFINE_EVENT_INTERFACE(ISimulationPauseEvent, ISimulationPauseEventSink);
+NSFX_DEFINE_EVENT_INTERFACE(ISimulationEndEvent,   ISimulationEndEventSink);
 
-
-NSFX_DEFINE_CLASS_UUID4(ISimulatorSink, 0x0E1B1E22, 0x33BF, 0x42D8, 0x8F5BF4FFE3536CE9LL);
+NSFX_DEFINE_CLASS_UUID4(ISimulationBeginEvent, 0x6B0AC801, 0x9746, 0x4E4E, 0xAE347E957F7899F2LL);
+NSFX_DEFINE_CLASS_UUID4(ISimulationRunEvent,   0x3551885D, 0xB839, 0x4278, 0xB49CAF9CDFBEFA95LL);
+NSFX_DEFINE_CLASS_UUID4(ISimulationPauseEvent, 0x6B886CF2, 0x0FF3, 0x47E2, 0xBAFEC75501EA01BBLL);
+NSFX_DEFINE_CLASS_UUID4(ISimulationEndEvent,   0x3CA80256, 0xBF64, 0x4D1A, 0x8106B3F3C0C2B912LL);
 
 
 ////////////////////////////////////////////////////////////////////////////////
