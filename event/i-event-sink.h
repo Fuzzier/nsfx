@@ -279,16 +279,14 @@ public:
  * A class is an event sink if it satisfies the following conditions.<br/>
  * 1. It is derived from <code>IEventSink<></code> class template.<br/>
  * 2. It is has nested type \c Prototype that is a function type.<br/>
- * 3. The nested \c Prototype is the same type as \c Proto.<br/>
- * 4. It conforms to \c HasUuidConcept.<br/>
+ * 3. It conforms to \c HasUuidConcept.<br/>
  *
  * Since <code>IEventSink<></code> class template is derived from \c IObject,
  * the class also conforms to \c IObjectConcept.
  */
 template<class ISink>
-class IEventSinkConcept
+struct IEventSinkConcept
 {
-public:
     BOOST_CONCEPT_ASSERT((HasUuidConcept<ISink>));
 
     // Has a nested type: Prototype.
@@ -306,6 +304,7 @@ public:
                   "The type does not conform to IEventSinkConcept since it "
                   "does not have a nested 'Prototype'.");
 
+    // The nested Prototype is a function type.
     static_assert(boost::is_function<typename ISink::Prototype>::value,
                   "The type does not conform to IEventSinkConcept since it has "
                   "an invalid nested 'Prototype' that is not a function type.");
@@ -318,10 +317,16 @@ public:
 };
 
 
+/**
+ * @ingroup Event
+ * @brief The event sink interface with prototype concept.
+ *
+ * 1. The \c ISink confoms to \c IEventSinkConcept.<br/>
+ * 2. The nested \c Prototype of \c ISink is the same type as \c Proto.<br/>
+ */
 template<class ISink, class Proto>
-class IEventSinkPrototypeConcept
+struct IEventSinkPrototypeConcept
 {
-public:
     BOOST_CONCEPT_ASSERT((IEventSinkConcept<ISink>));
 
     static_assert(boost::is_same<typename ISink::Prototype, Proto>::value,
