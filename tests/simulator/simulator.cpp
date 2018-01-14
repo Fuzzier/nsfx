@@ -1,20 +1,27 @@
 #include <nsfx/test.h>
 #include <nsfx/simulator/simulator.h>
 #include <nsfx/simulator/list-event-scheduler.h>
+#include <nsfx/event/event-sink.h>
+#include <nsfx/component/i-disposable.h>
 #include <iostream>
-
-#define PTR(x)  nsfx::Ptr<x, false>
 
 NSFX_TEST_SUITE(Simulator)
 {
     static int counter = 0;
     struct Sink :/*{{{*/
-        nsfx::IEventSink,
-        nsfx::ISimulatorSink,
         nsfx::IClockUser,
         nsfx::ISimulatorUser,
-        nsfx::IEventSchedulerUser
+        nsfx::IEventSchedulerUser,
+        nsfx::IEventSink<>,
+        nsfx::IDisposable
     {
+        typedef Sink  ThisClass;
+
+        typedef nsfx::AggObject<nsfx::MemberFunctionBasedEventSink<nsfx::ISimulationBeginEventSink, ThisClass> >  BeginEventSinkClass;
+        typedef nsfx::AggObject<nsfx::MemberFunctionBasedEventSink<nsfx::ISimulationRunEventSink,   ThisClass> >  RunEventSinkClass;
+        typedef nsfx::AggObject<nsfx::MemberFunctionBasedEventSink<nsfx::ISimulationPauseEventSink, ThisClass> >  PauseEventSinkClass;
+        typedef nsfx::AggObject<nsfx::MemberFunctionBasedEventSink<nsfx::ISimulationEndEventSink,   ThisClass> >  EndEventSinkClass;
+
         virtual ~Sink(void) {}
 
         virtual void UseClock(nsfx::Ptr<nsfx::IClock> clock) NSFX_OVERRIDE
@@ -25,6 +32,14 @@ NSFX_TEST_SUITE(Simulator)
         virtual void UseSimulator(nsfx::Ptr<nsfx::ISimulator> simulator) NSFX_OVERRIDE
         {
             simulator_ = simulator;
+            beginSink_ = new BeginEventSinkClass(this, this, &ThisClass::OnSimulationBegin);
+            runSink_   = new RunEventSinkClass  (this, this, &ThisClass::OnSimulationRun);
+            pauseSink_ = new PauseEventSinkClass(this, this, &ThisClass::OnSimulationPause);
+            endSink_   = new EndEventSinkClass  (this, this, &ThisClass::OnSimulationEnd);
+            nsfx::Ptr<nsfx::ISimulationBeginEvent>(simulator_)->Connect(beginSink_);
+            nsfx::Ptr<nsfx::ISimulationRunEvent>(simulator_)->Connect(runSink_);
+            nsfx::Ptr<nsfx::ISimulationPauseEvent>(simulator_)->Connect(pauseSink_);
+            nsfx::Ptr<nsfx::ISimulationEndEvent>(simulator_)->Connect(endSink_);
         }
 
         virtual void UseEventScheduler(nsfx::Ptr<nsfx::IEventScheduler> scheduler) NSFX_OVERRIDE
@@ -32,7 +47,7 @@ NSFX_TEST_SUITE(Simulator)
             scheduler_ = scheduler;
         }
 
-        virtual void OnEvent(void) NSFX_OVERRIDE
+        virtual void Fire(void) NSFX_OVERRIDE
         {
             std::cout << clock_->Now() << ": " << ++counter << std::endl;
             if (counter < 10)
@@ -46,42 +61,53 @@ NSFX_TEST_SUITE(Simulator)
             }
         }
 
-        virtual void OnSimulatorEvent(nsfx::SimulatorEventType type) NSFX_OVERRIDE
+        virtual void Dispose(void) NSFX_OVERRIDE
         {
-            switch (type)
-            {
-            case nsfx::NSFX_SIMULATOR_EVENT_BEGIN:
-                std::cout << "BEGIN" << std::endl;
-                break;
-            case nsfx::NSFX_SIMULATOR_EVENT_RUN:
-                std::cout << "RUN" << std::endl;
-                break;
-            case nsfx::NSFX_SIMULATOR_EVENT_PAUSE:
-                std::cout << "PAUSE" << std::endl;
-                break;
-            case nsfx::NSFX_SIMULATOR_EVENT_END:
-                std::cout << "END" << std::endl;
-                simulator_ = nullptr;
-                scheduler_ = nullptr;
-                clock_ = nullptr;
-                break;
-            default:
-                break;
-            }
+            simulator_ = nullptr;
+            clock_     = nullptr;
+            scheduler_ = nullptr;
+            beginSink_ = nullptr;
+            runSink_   = nullptr;
+            pauseSink_ = nullptr;
+            endSink_   = nullptr;
         }
 
-        NSFX_INTERFACE_MAP_BEGIN(Sink)
-            NSFX_INTERFACE_ENTRY(IEventSink)
-            NSFX_INTERFACE_ENTRY(ISimulatorSink)
-            NSFX_INTERFACE_ENTRY(IClockUser)
-            NSFX_INTERFACE_ENTRY(ISimulatorUser)
-            NSFX_INTERFACE_ENTRY(IEventSchedulerUser)
+        void OnSimulationBegin(void)
+        {
+            std::cout << "BEGIN" << std::endl;
+        }
+
+        void OnSimulationRun(void)
+        {
+            std::cout << "RUN" << std::endl;
+        }
+
+        void OnSimulationPause(void)
+        {
+            std::cout << "PAUSE" << std::endl;
+        }
+
+        void OnSimulationEnd(void)
+        {
+            std::cout << "END" << std::endl;
+            Dispose();
+        }
+
+        NSFX_INTERFACE_MAP_BEGIN(ThisClass)
+            NSFX_INTERFACE_ENTRY(nsfx::IEventSink<>)
+            NSFX_INTERFACE_ENTRY(nsfx::IClockUser)
+            NSFX_INTERFACE_ENTRY(nsfx::ISimulatorUser)
+            NSFX_INTERFACE_ENTRY(nsfx::IEventSchedulerUser)
         NSFX_INTERFACE_MAP_END()
 
     private:
         nsfx::Ptr<nsfx::ISimulator> simulator_;
         nsfx::Ptr<nsfx::IClock> clock_;
         nsfx::Ptr<nsfx::IEventScheduler> scheduler_;
+        nsfx::Ptr<nsfx::IObject>  beginSink_;
+        nsfx::Ptr<nsfx::IObject>  runSink_;
+        nsfx::Ptr<nsfx::IObject>  pauseSink_;
+        nsfx::Ptr<nsfx::IObject>  endSink_;
     };/*}}}*/
 
     NSFX_TEST_CASE(Simulator)
@@ -92,28 +118,26 @@ NSFX_TEST_SUITE(Simulator)
             counter = 0;
 
             // Create objects.
-            PTR(nsfx::IEventScheduler) scheduler =
+            nsfx::Ptr<nsfx::IEventScheduler> scheduler =
                 nsfx::CreateObject<nsfx::IEventScheduler>(
                     NSFX_CID_ListEventScheduler);
 
-            PTR(nsfx::ISimulator)  simulator =
+            nsfx::Ptr<nsfx::ISimulator>  simulator =
                 nsfx::CreateObject<nsfx::ISimulator>(
                     NSFX_CID_Simulator);
-            PTR(nsfx::IClock)  clock(simulator);
+            nsfx::Ptr<nsfx::IClock>  clock(simulator);
 
-            PTR(SinkType)  sink(new SinkType);
-            PTR(nsfx::IEventSink)  eventSink(sink);
-            PTR(nsfx::ISimulatorSink)  simulatorSink(sink);
+            nsfx::Ptr<SinkType>  sink(new SinkType);
+            nsfx::Ptr<nsfx::IEventSink<> >  eventSink(sink);
 
             // Wire simulator.
             {
-                PTR(nsfx::IEventSchedulerUser) u(simulator);
-                u->UseEventScheduler(scheduler);
+                nsfx::Ptr<nsfx::IEventSchedulerUser>(simulator)->
+                    UseEventScheduler(scheduler);
             }
             // Wire scheduler.
             {
-                PTR(nsfx::IClockUser) u(scheduler);
-                u->UseClock(clock);
+                nsfx::Ptr<nsfx::IClockUser>(scheduler)->UseClock(clock);
             }
             // Wire sink.
             {
@@ -121,12 +145,6 @@ NSFX_TEST_SUITE(Simulator)
                 sink->UseSimulator(simulator);
                 sink->UseEventScheduler(scheduler);
             }
-
-            nsfx::cookie_t cookie = simulator->Connect(
-                simulatorSink, nsfx::NSFX_SIMULATOR_EVENT_ALL);
-            simulator->Disconnect(cookie);
-            cookie = simulator->Connect(
-                simulatorSink, nsfx::NSFX_SIMULATOR_EVENT_ALL);
 
             // start at 1s.
             scheduler->ScheduleAt(clock->Now() + nsfx::chrono::Seconds(1), eventSink);

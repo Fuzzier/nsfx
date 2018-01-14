@@ -22,6 +22,8 @@
 #include <nsfx/simulator/i-clock.h>
 #include <nsfx/simulator/i-event-scheduler.h>
 #include <nsfx/simulator/exception.h>
+#include <nsfx/event/event.h>
+#include <nsfx/component/i-disposable.h>
 #include <nsfx/component/class-registry.h>
 
 
@@ -43,86 +45,34 @@ class Simulator;
  *
  * This simulator provides a clock, and executes events in the scheduler.
  *
- * ### Interfaces:
+ * ## Interfaces
+ * ### Uses
  * * \c IEventSchedulerUser
+ * ### Provides
  * * \c Clock
  * * \c ISimulator
+ * * \c IDisposable
+ * ### Events
+ * * \c ISimulationBeginEvent
+ * * \c ISimulationRunEvent
+ * * \c ISimulationPauseEvent
+ * * \c ISimulationEndEvent
  */
 class Simulator :
-    public ISimulator,
+    public IEventSchedulerUser,
     public IClock,
-    public IEventSchedulerUser
+    public ISimulator,
+    public IDisposable
 {
-private:
-    class SimulatorSinks/*{{{*/
-    {
-        class SimulatorSink
-        {
-        public:
-            SimulatorSink(Ptr<ISimulatorSink>&& sink, SimulatorEventType mask) :
-                sink_(std::move(sink)),
-                mask_(mask)
-            {}
-
-            void Fire(SimulatorEventType type)
-            {
-                if (mask_ & type)
-                {
-                    sink_->OnSimulatorEvent(type);
-                }
-            }
-
-        private:
-            Ptr<ISimulatorSink> sink_;
-            SimulatorEventType  mask_;
-        };
-
-    public:
-        // For ISimulatorSink /*{{{*/
-        cookie_t Connect(Ptr<ISimulatorSink>&& sink, SimulatorEventType mask)
-        {
-            if (!sink)
-            {
-                BOOST_THROW_EXCEPTION(InvalidPointer());
-            }
-            if (!mask)
-            {
-                BOOST_THROW_EXCEPTION(InvalidArgument());
-            }
-            map_.emplace(++cookie_, SimulatorSink(std::move(sink), mask));
-            return cookie_;
-        }
-
-        void Disconnect(cookie_t cookie) BOOST_NOEXCEPT
-        {
-            map_.erase(cookie_);
-        }
-
-        void Fire(SimulatorEventType type)
-        {
-            for (auto it = map_.begin(); it != map_.end(); ++it)
-            {
-                it->second.Fire(type);
-            }
-        }
-
-        void Clear(void) BOOST_NOEXCEPT
-        {
-            map_.clear();
-        }
-
-        /*}}}*/
-
-    private:
-        cookie_t cookie_;
-        unordered_map<cookie_t, SimulatorSink>  map_;
-    };/*}}}*/
-
 public:
     Simulator(void) BOOST_NOEXCEPT :
         initialized_(false),
         started_(false),
-        finished_(false)
+        finished_(false),
+        beginEvent_(this),
+        runEvent_(this),
+        pauseEvent_(this),
+        endEvent_(this)
     {
     }
 
@@ -131,13 +81,13 @@ public:
     // IEventSchedulerUser /*{{{*/
     virtual void UseEventScheduler(Ptr<IEventScheduler> scheduler) NSFX_OVERRIDE
     {
-        if (initialized_)
-        {
-            BOOST_THROW_EXCEPTION(CannotReinitialize());
-        }
         if (!scheduler)
         {
             BOOST_THROW_EXCEPTION(InvalidPointer());
+        }
+        if (scheduler_)
+        {
+            BOOST_THROW_EXCEPTION(CannotReinitialize());
         }
         scheduler_ = scheduler;
         initialized_ = true;
@@ -154,17 +104,6 @@ public:
     /*}}}*/
 
     // ISimulator /*{{{*/
-    virtual cookie_t Connect(Ptr<ISimulatorSink> sink,
-                             SimulatorEventType mask) NSFX_OVERRIDE
-    {
-        return sinks_.Connect(std::move(sink), mask);
-    }
-
-    virtual void Disconnect(cookie_t cookie) BOOST_NOEXCEPT NSFX_OVERRIDE
-    {
-        sinks_.Disconnect(cookie);
-    }
-
     virtual void Run(void) NSFX_OVERRIDE
     {
         RunUntil(TimePoint::Max());
@@ -181,7 +120,7 @@ public:
             BOOST_THROW_EXCEPTION(SimulatorFinished());
         }
         CheckBeginOfSimulation();
-        sinks_.Fire(NSFX_SIMULATOR_EVENT_RUN);
+        SignalSimulationRunEvent();
         // An external object can schedule events in its event sink.
         while (true)
         {
@@ -196,9 +135,9 @@ public:
                 break;
             }
             t_ = t0;
-            handle->Fire();
+            handle->Signal();
         }
-        sinks_.Fire(NSFX_SIMULATOR_EVENT_PAUSE);
+        SignalSimulationPauseEvent();
         CheckEndOfSimulation();
     }
 
@@ -211,7 +150,7 @@ public:
     {
         if (!started_)
         {
-            sinks_.Fire(NSFX_SIMULATOR_EVENT_BEGIN);
+            SignalSimulationBeginEvent();
             started_ = true;
         }
     }
@@ -220,10 +159,51 @@ public:
     {
         if (!scheduler_->GetNextEvent() && !finished_)
         {
-            sinks_.Fire(NSFX_SIMULATOR_EVENT_END);
-            sinks_.Clear();
+            SignalSimulationEndEvent();
             finished_ = true;
         }
+    }
+
+    /*}}}*/
+
+    // IDisposable/*{{{*/
+    virtual void Dispose(void) NSFX_OVERRIDE
+    {
+        t_           = TimePoint();
+        initialized_ = false;
+        scheduler_   = nullptr;
+        started_     = false;
+        finished_    = false;
+        beginEvent_.GetEnveloped()->Dispose();
+        runEvent_.GetEnveloped()->Dispose();
+        pauseEvent_.GetEnveloped()->Dispose();
+        endEvent_.GetEnveloped()->Dispose();
+    }
+    /*}}}*/
+
+    // Events./*{{{*/
+    void SignalSimulationBeginEvent(void)
+    {
+        beginEvent_.GetEnveloped()->Visit(
+            [] (ISimulationBeginEventSink* sink){ sink->Fire(); });
+    }
+
+    void SignalSimulationRunEvent(void)
+    {
+        runEvent_.GetEnveloped()->Visit(
+            [] (ISimulationRunEventSink* sink){ sink->Fire(); });
+    }
+
+    void SignalSimulationPauseEvent(void)
+    {
+        pauseEvent_.GetEnveloped()->Visit(
+            [] (ISimulationPauseEventSink* sink){ sink->Fire(); });
+    }
+
+    void SignalSimulationEndEvent(void)
+    {
+        endEvent_.GetEnveloped()->Visit(
+            [] (ISimulationEndEventSink* sink){ sink->Fire(); });
     }
 
     /*}}}*/
@@ -232,6 +212,10 @@ public:
         NSFX_INTERFACE_ENTRY(ISimulator)
         NSFX_INTERFACE_ENTRY(IClock)
         NSFX_INTERFACE_ENTRY(IEventSchedulerUser)
+        NSFX_INTERFACE_AGGREGATED_ENTRY(ISimulationBeginEvent, &beginEvent_)
+        NSFX_INTERFACE_AGGREGATED_ENTRY(ISimulationRunEvent,   &runEvent_)
+        NSFX_INTERFACE_AGGREGATED_ENTRY(ISimulationPauseEvent, &pauseEvent_)
+        NSFX_INTERFACE_AGGREGATED_ENTRY(ISimulationEndEvent,   &endEvent_)
     NSFX_INTERFACE_MAP_END()
 
 private:
@@ -240,7 +224,12 @@ private:
     bool  initialized_;
     bool  started_;
     bool  finished_;
-    SimulatorSinks sinks_;
+
+    AggObject<Event<ISimulationBeginEvent>, false>  beginEvent_;
+    AggObject<Event<ISimulationRunEvent>,   false>  runEvent_;
+    AggObject<Event<ISimulationPauseEvent>, false>  pauseEvent_;
+    AggObject<Event<ISimulationEndEvent>,   false>  endEvent_;
+
 }; // class Simulator
 
 
