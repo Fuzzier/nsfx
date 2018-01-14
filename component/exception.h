@@ -77,27 +77,6 @@ struct ClassNotRegistered : ComponentException {};
 struct ClassIsRegistered : ComponentException {};
 
 
-////////////////////////////////////////////////////////////////////////////////
-// Sink connection.
-/**
- * @ingroup Component
- * @brief The event provider cannot accept additional connections any more.
- */
-struct ConnectionLimit : ComponentException {};
-
-/**
- * @ingroup Component
- * @brief The sink does not support the required interface.
- */
-struct CannotConnect : ComponentException {};
-
-/**
- * @ingroup Component
- * @brief No sink has been connected.
- */
-struct Connected : ComponentException {};
-
-
 NSFX_CLOSE_NAMESPACE
 
 
