@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Component support for Network Simulation Frameworks.
+ * @brief Event support for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -13,12 +13,12 @@
  *   All rights reserved.
  */
 
-#ifndef EVENT_SINK_CREATOR_H__816486D9_8AE8_4FE9_BFA3_5D2B657E9D64
-#define EVENT_SINK_CREATOR_H__816486D9_8AE8_4FE9_BFA3_5D2B657E9D64
+#ifndef EVENT_SINK_H__816486D9_8AE8_4FE9_BFA3_5D2B657E9D64
+#define EVENT_SINK_H__816486D9_8AE8_4FE9_BFA3_5D2B657E9D64
 
 
-#include <nsfx/component/config.h>
-#include <nsfx/component/i-event-sink.h>
+#include <nsfx/event/config.h>
+#include <nsfx/event/i-event-sink.h>
 #include <nsfx/component/object.h>
 #include <nsfx/component/ptr.h>
 #include <nsfx/component/exception.h>
@@ -34,8 +34,8 @@ NSFX_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 // Types.
 /**
- * @ingroup Component
- * @brief Implement event sink interface by a funtor.
+ * @ingroup Event
+ * @brief Implement event sink interface by a functor.
  *
  * @tparam ISink The type of an event sink interface that conforms to
  *               \c IEventSinkConcept.
@@ -45,7 +45,7 @@ template<class ISink, class F, class Proto = typename ISink::Prototype>
 class FunctorBasedEventSink;
 
 /**
- * @ingroup Component
+ * @ingroup Event
  * @brief Implement event sink interface by a function pointer.
  *
  * @tparam ISink The type of an event sink interface that conforms to
@@ -55,7 +55,7 @@ template<class ISink, class Proto = typename ISink::Prototype>
 class FunctionPointerBasedEventSink;
 
 /**
- * @ingroup Component
+ * @ingroup Event
  * @brief Implement event sink interface by an object's member function.
  *
  * @tparam ISink The type of an event sink interface that conforms to
@@ -68,8 +68,10 @@ class MemberFunctionBasedEventSink;
 
 ////////////////////////////////////////
 /**
- * @ingroup Component
- * @brief The event sink maker.
+ * @ingroup Event
+ * @brief The event sink creator class.
+ *
+ * This is a helper class that is not a component.
  *
  * @tparam ISink A user-defined event sink interface that conforms to
  *               \c IEventSinkConcept.
@@ -78,40 +80,6 @@ class MemberFunctionBasedEventSink;
  *
  * @see \c IEventSink,
  *      \c NSFX_DEFINE_EVENT_SINK_INTERFACE().
- *
- * @example For example
- *   @code
- *   // Define a custom event sink interface.
- *   NSFX_DEFINE_EVENT_SINK_INTERFACE(IMyEventSink, ( char(short, int) ));
- *
- *   // Associate the interface with a UUID.
- *   NSFX_DEFINE_CLASS_UUID4(IMyEventSink, 0x3DD34BEB, 0x2F32, 0x410B, 0x9BAD92146CBAE911LL);
- *
- *   ////////// Use EventSinkCreator<> class template. //////////
- *   // Via a lambda expression (a functor).
- *   Ptr<IMyEventSink> s1 = EventSinkCreator<IMyEventSink>()(
- *                              [] (short, int) -> char { return '0'; });
- *
- *   // Via a function pointer.
- *   char Foo(short, int);
- *   Ptr<IMyEventSink> s2 = EventSinkCreator<IMyEventSink>()(&Foo);
- *
- *   // Via an object and a pointer to its member function.
- *   struct Sink { char Foo(short, int); };
- *   Sink s;
- *   Ptr<IMyEventSink> s3 = EventSinkCreator<IMyEventSink>()(&s, &Sink::Foo);
- *
- *   ////////// Use CreateEventSink<> function template. //////////
- *   // Via a lambda expression (a functor).
- *   Ptr<IMyEventSink> s4 = CreateEventSink<IMyEventSink>(
- *                              [] (short, int) -> char { return '0'; });
- *
- *   // Via a function pointer.
- *   Ptr<IMyEventSink> s5 = CreateEventSink<IMyEventSink>(&Foo);
- *
- *   // Via an object and a pointer to its member function.
- *   Ptr<IMyEventSink> s6 = CreateEventSink<IMyEventSink>(&s, &Sink::Foo);
- *   @endcode
  */
 template<class ISink, class Proto = typename ISink::Prototype>
 class EventSinkCreator;
@@ -123,7 +91,7 @@ class EventSinkCreator;
 template<class ISink, class F, class Ret, class... Args>
 class FunctorBasedEventSink<ISink, F, Ret(Args...)> : public ISink/*{{{*/
 {
-    BOOST_CONCEPT_ASSERT((IEventSinkConcept<ISink>));
+    BOOST_CONCEPT_ASSERT((IEventSinkPrototypeConcept<ISink, Ret(Args...)>));
 
 public:
     explicit FunctorBasedEventSink(typename boost::remove_reference<F>::type const& f) :
@@ -152,7 +120,7 @@ private:
 template<class ISink, class Ret, class... Args>
 class FunctionPointerBasedEventSink<ISink, Ret(Args...)> : public ISink/*{{{*/
 {
-    BOOST_CONCEPT_ASSERT((IEventSinkConcept<ISink>));
+    BOOST_CONCEPT_ASSERT((IEventSinkPrototypeConcept<ISink, Ret(Args...)>));
 
 public:
     explicit FunctionPointerBasedEventSink(Ret(* fn)(Args...)) :
@@ -182,7 +150,7 @@ private:
 template<class ISink, class O, class Ret, class... Args>
 class MemberFunctionBasedEventSink<ISink, O, Ret(Args...)> : public ISink/*{{{*/
 {
-    BOOST_CONCEPT_ASSERT((IEventSinkConcept<ISink>));
+    BOOST_CONCEPT_ASSERT((IEventSinkPrototypeConcept<ISink, Ret(Args...)>));
 
 public:
     MemberFunctionBasedEventSink(O* o, Ret(O::* ptmf)(Args...)) :
@@ -216,7 +184,7 @@ private:
 template<class ISink, class Ret, class... Args>
 class EventSinkCreator<ISink, Ret(Args...)>/*{{{*/
 {
-    BOOST_CONCEPT_ASSERT((IEventSinkConcept<ISink>));
+    BOOST_CONCEPT_ASSERT((IEventSinkPrototypeConcept<ISink, Ret(Args...)>));
 
 public:
     // For functors.
@@ -263,8 +231,8 @@ public:
 ////////////////////////////////////////////////////////////////////////////////
 // Free functions.
 /**
- * @ingroup Component
- * @brief Make an event sink via a functor.
+ * @ingroup Event
+ * @brief Create an event sink via a functor.
  *
  * @tparam ISink A user-defined event sink interface that conforms to
  *               \c IEventSinkConcept.
@@ -282,8 +250,8 @@ inline Ptr<ISink> CreateEventSink(IObject* controller, F&& f)
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
 /**
- * @ingroup Component
- * @brief Make an event sink via a function pointer.
+ * @ingroup Event
+ * @brief Create an event sink via a function pointer.
  *
  * @tparam ISink A user-defined event sink interface that conforms to
  *               \c IEventSinkConcept.
@@ -297,8 +265,8 @@ inline Ptr<ISink> CreateEventSink(IObject* controller, Ret(* fn)(Args...))
 }
 
 /**
- * @ingroup Component
- * @brief Make an event sink via an object and a pointer to its member function.
+ * @ingroup Event
+ * @brief Create an event sink via an object and a pointer to its member function.
  *
  * @tparam ISink A user-defined event sink interface that conforms to
  *               \c IEventSinkConcept.
@@ -315,7 +283,7 @@ inline Ptr<ISink> CreateEventSink(IObject* controller, O* o, Ret(O::* ptmf)(Args
 ////////////////////////////////////////
 #else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-#define BOOST_PP_ITERATION_PARAMS_1  (3, (0, NSFX_MAX_ARITY, <nsfx/component/event-sink-creator.h>))
+#define BOOST_PP_ITERATION_PARAMS_1  (3, (0, NSFX_MAX_ARITY, <nsfx/event/event-sink.h>))
 
 #include BOOST_PP_ITERATE()
 
@@ -325,7 +293,7 @@ inline Ptr<ISink> CreateEventSink(IObject* controller, O* o, Ret(O::* ptmf)(Args
 NSFX_CLOSE_NAMESPACE
 
 
-#endif // EVENT_SINK_CREATOR_H__816486D9_8AE8_4FE9_BFA3_5D2B657E9D64
+#endif // EVENT_SINK_H__816486D9_8AE8_4FE9_BFA3_5D2B657E9D64
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -341,7 +309,8 @@ template<class ISink, class F, class Ret  BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()
 class FunctorBasedEventSink<ISink, F, Ret(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A))> :/*{{{*/
     public ISink
 {
-    BOOST_CONCEPT_ASSERT((IEventSinkConcept<ISink>));
+    // BOOST_CONCEPT_ASSERT((IEventSinkPrototypeConcept<ISink, Ret(Args...)>));
+    BOOST_CONCEPT_ASSERT((IEventSinkPrototypeConcept<ISink, Ret(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A))>));
 
 public:
     explicit FunctorBasedEventSink(typename boost::remove_reference<F>::type const& f) :
@@ -376,7 +345,8 @@ template<class ISink, class Ret  BOOST_PP_COMMA_IF(BOOST_PP_ITERATION())
 class FunctionPointerBasedEventSink<ISink, Ret(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A))> :/*{{{*/
     public ISink
 {
-    BOOST_CONCEPT_ASSERT((IEventSinkConcept<ISink>));
+    // BOOST_CONCEPT_ASSERT((IEventSinkPrototypeConcept<ISink, Ret(Args...)>));
+    BOOST_CONCEPT_ASSERT((IEventSinkPrototypeConcept<ISink, Ret(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A))>));
 
 public:
     // explicit FunctionPointerBasedEventSink(Ret(* fn)(A0, A1, ...)) :
@@ -414,7 +384,8 @@ template<class ISink, class O, class Ret  BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()
 class MemberFunctionBasedEventSink<ISink, O, Ret(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A))> :/*{{{*/
     public ISink
 {
-    BOOST_CONCEPT_ASSERT((IEventSinkConcept<ISink>));
+    // BOOST_CONCEPT_ASSERT((IEventSinkPrototypeConcept<ISink, Ret(Args...)>));
+    BOOST_CONCEPT_ASSERT((IEventSinkPrototypeConcept<ISink, Ret(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A))>));
 
 public:
     // MemberFunctionBasedEventSink(O* o, Ret(* fn)(A0, A1, ...)) :
@@ -455,7 +426,8 @@ template<class ISink, class Ret  BOOST_PP_COMMA_IF(BOOST_PP_ITERATION())
                       BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
 class EventSinkCreator<ISink, Ret(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A))>/*{{{*/
 {
-    BOOST_CONCEPT_ASSERT((IEventSinkConcept<ISink>));
+    // BOOST_CONCEPT_ASSERT((IEventSinkPrototypeConcept<ISink, Ret(Args...)>));
+    BOOST_CONCEPT_ASSERT((IEventSinkPrototypeConcept<ISink, Ret(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A))>));
 
 public:
     // For functors, lambda expressions

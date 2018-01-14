@@ -25,6 +25,8 @@
  * @defgroup Component
  * @brief Support for component-based programming.
  *
+ * Depends upon Exception module.
+ *
  * A component is an object that exposes various interfaces.<br/>
  *
  * # Component, object and interface.<br/>

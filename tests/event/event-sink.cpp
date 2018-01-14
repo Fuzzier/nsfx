@@ -1,12 +1,10 @@
 #include <nsfx/test.h>
-#include <nsfx/component/event-sink-creator.h>
+#include <nsfx/event/event-sink.h>
 #include <iostream>
 
 
-NSFX_TEST_SUITE(Ptr)
+NSFX_TEST_SUITE(EventSink)
 {
-    using nsfx::refcount_t;
-
     NSFX_DEFINE_EVENT_SINK_INTERFACE(Iv0, ( void(void) ));
     NSFX_DEFINE_CLASS_UUID4(Iv0, 0x67CB03B4, 0x5B1C, 0x4401, 0xB418C6758383839ELL);
     NSFX_DEFINE_EVENT_SINK_INTERFACE(Iv1, ( void(int) ));

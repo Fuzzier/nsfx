@@ -90,7 +90,8 @@ class IObjectConcept/*{{{*/
 {
 public:
     static_assert(boost::is_base_of<IObject, T>::value,
-                  "The type is not derived from IObject");
+                  "The type does not conform to IObjectConcept since it is not "
+                  "derived from IObject");
 
 public:
     BOOST_CONCEPT_USAGE(IObjectConcept)

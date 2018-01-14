@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Component support for Network Simulation Frameworks.
+ * @brief Event support for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -17,7 +17,7 @@
 #define I_EVENT_SINK_H__CE5ABEF5_7C7B_4D87_ABA6_27E053F3A8F1
 
 
-#include <nsfx/component/config.h>
+#include <nsfx/event/config.h>
 #include <nsfx/component/i-object.h>
 #include <nsfx/component/exception.h>
 #include <boost/preprocessor/punctuation/comma_if.hpp>
@@ -26,6 +26,7 @@
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_binary_params.hpp>
 #include <boost/preprocessor/iteration/iterate.hpp>
+#include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/is_base_of.hpp>
 #include <boost/type_traits/is_function.hpp>
 
@@ -35,10 +36,10 @@ NSFX_OPEN_NAMESPACE
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
- * @ingroup Component
+ * @ingroup Event
  * @brief Define a custom event sink interface that derives from \c IEventSink.
  *
- * @param ISink The name of the interface.
+ * @param ISink The name of the user-defined event sink interface.
  * @param Proto The prototype of the event callback.<br/>
  *              It <b>must</b> be placed within parenthesis.<br/>
  *
@@ -63,23 +64,36 @@ NSFX_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 // IEventSink.
 /**
- * @ingroup Component
+ * @ingroup Event
  * @brief The event sink class template.
  *
  * @tparam Proto The prototype of a callable object that looks like
  *               \c Ret(A0, A1, ...).
  *
+ * The responsibility of an event sink interface is to hold a callback that can
+ * be invoked by an event source when the event is fired.<br/>
+ *
+ * An event sink interface has a single method <code>Ret Fire(A0, A1, ...)</code>.<br/>
+ * It also has a nested \c Prototype that is the function type
+ * <code>Ret(A0, A1, ...)</code>, and can be used to choose the correct template
+ * specialization.<br/>
+ *
  * <code>IEventSink<void(void)></code> is the <b>only</b> event sink interface
  * that has an associated UUID defined by the library.<br/>
  * Users shall <b>derive</b> their own event sink interfaces from this class
- * template, and associate the interfaces with UUIDs.<br/>
+ * template, and associate the interfaces with UUIDs to enable <code>Ptr<></code>
+ * to manage their pointers.<br/>
  * Users shall not use multiple inheritance to derive their own event sink
  * interfaces.<br/>
  *
- * An event sink interface has a nested \c Prototype that can be used to choose
- * the correct template specialization.<br/>
+ * @code
+ * Proto IEventSink<> ---> user-defined event sink interface
+ *                           |
+ *                           V
+ *                         EventSinkCreator<>, CreateEventSink<>()
+ * @endcode
  *
- * ## Event interface definition and implementation.
+ * ## Event sink interface definition and implementation.
  *    The library provides several tools for event sink interface definition
  *    and implementation.<br/>
  *
@@ -100,8 +114,15 @@ NSFX_OPEN_NAMESPACE
  *
  *      For example
  *      @code
+ *      #include <nsfx/event/event-sink.h>
+ *
+ *      // Define an event sink interface.
  *      NSFX_DEFINE_EVENT_SINK_INTERFACE(IMyEventSink, ( char(short, int) ));
  *
+ *      // Associate the event sink interface with a UUID.
+ *      NSFX_DEFINE_CLASS_UUID4(IMyEventSink, 0x80FF43BE, 0xA2ED, 0x4FA9, 0xB17A517A490A1897LL);
+ *
+ *      // Create event sink object:
  *      // Functor based event sink.
  *      struct Functor
  *      {
@@ -144,10 +165,8 @@ NSFX_OPEN_NAMESPACE
  *
  *      For example
  *      @code
- *      NSFX_DEFINE_EVENT_SINK_INTERFACE(IMyEventSink, ( char(short, int) ));
- *
  *      // Functor based event sink.
- *      Ptr<IMyEventSink> s1 = EventSinkCreator<IMyEventSink>()(nullptr,
+ *      Ptr<IMyEventSink> s4 = EventSinkCreator<IMyEventSink>()(nullptr,
  *                              [] (short, int) { return '0'; });
  *
  *      // Function pointer based event sink.
@@ -155,7 +174,7 @@ NSFX_OPEN_NAMESPACE
  *      {
  *          return '0';
  *      }
- *      Ptr<IMyEventSink> s2 = EventSinkCreator<IMyEventSink>()(nullptr, &Bar);
+ *      Ptr<IMyEventSink> s5 = EventSinkCreator<IMyEventSink>()(nullptr, &Bar);
  *
  *      // Member function based event sink.
  *      struct Obj
@@ -166,7 +185,7 @@ NSFX_OPEN_NAMESPACE
  *          }
  *      };
  *      static Obj o;
- *      Ptr<IMyEventSink> s3 = EventSinkCreator<IMyEventSink>()(nullptr,
+ *      Ptr<IMyEventSink> s6 = EventSinkCreator<IMyEventSink>()(nullptr,
  *                              &f, &Functor::Foo));
  *      @endcode
  *
@@ -177,10 +196,8 @@ NSFX_OPEN_NAMESPACE
  *
  *      For example
  *      @code
- *      NSFX_DEFINE_EVENT_SINK_INTERFACE(IMyEventSink, ( char(short, int) ));
- *
  *      // Functor based event sink.
- *      Ptr<IMyEventSink> s1 = CreateEventSink<IMyEventSink>(nullptr,
+ *      Ptr<IMyEventSink> s7 = CreateEventSink<IMyEventSink>(nullptr,
  *                              [] (short, int) { return '0'; });
  *
  *      // Function pointer based event sink.
@@ -188,7 +205,7 @@ NSFX_OPEN_NAMESPACE
  *      {
  *          return '0';
  *      }
- *      Ptr<IMyEventSink> s2 = CreateEventSink<IMyEventSink>(nullptr, &Bar);
+ *      Ptr<IMyEventSink> s8 = CreateEventSink<IMyEventSink>(nullptr, &Bar);
  *
  *      // Member function based event sink.
  *      struct Obj
@@ -199,7 +216,7 @@ NSFX_OPEN_NAMESPACE
  *          }
  *      };
  *      static Obj o;
- *      Ptr<IMyEventSink> s3 = CreateEventSink<IMyEventSink>(nullptr,
+ *      Ptr<IMyEventSink> s9 = CreateEventSink<IMyEventSink>(nullptr,
  *                              &f, &Functor::Foo));
  *      @endcode
  */
@@ -218,7 +235,7 @@ public:
 
 ////////////////////////////////////////
 /**
- * @ingroup Component
+ * @ingroup Event
  * @brief The uuid of <code>IEventSink<></code>.
  */
 #define NSFX_IID_IEventSink  NSFX_UUID_OF(::nsfx::IEventSink<>)
@@ -246,7 +263,7 @@ public:
 #else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
 #define BOOST_PP_ITERATION_PARAMS_1  \
-    (3, (0, NSFX_MAX_ARITY, <nsfx/component/i-event-sink.h>))
+    (3, (0, NSFX_MAX_ARITY, <nsfx/event/i-event-sink.h>))
 
 #include BOOST_PP_ITERATE()
 
@@ -256,13 +273,14 @@ public:
 ////////////////////////////////////////////////////////////////////////////////
 // IEventSinkConcept.
 /**
- * @ingroup Component
+ * @ingroup Event
  * @brief The event sink interface concept.
  *
  * A class is an event sink if it satisfies the following conditions.<br/>
  * 1. It is derived from <code>IEventSink<></code> class template.<br/>
  * 2. It is has nested type \c Prototype that is a function type.<br/>
- * 3. It conforms to \c HasUuidConcept.<br/>
+ * 3. The nested \c Prototype is the same type as \c Proto.<br/>
+ * 4. It conforms to \c HasUuidConcept.<br/>
  *
  * Since <code>IEventSink<></code> class template is derived from \c IObject,
  * the class also conforms to \c IObjectConcept.
@@ -282,21 +300,33 @@ public:
     template<class >
     static no&  HasPrototype(...);
     BOOST_STATIC_CONSTANT(bool, hasPrototype =
-                          sizeof (HasPrototype<ISink>(nullptr)) == sizeof (yes));
+        sizeof (HasPrototype<ISink>(nullptr)) == sizeof (yes));
 
     static_assert(hasPrototype,
-                  "The event sink interface does not have a nested 'Prototype'.");
+                  "The type does not conform to IEventSinkConcept since it "
+                  "does not have a nested 'Prototype'.");
 
     static_assert(boost::is_function<typename ISink::Prototype>::value,
-                  "The event sink interface has an invalid nested 'Prototype' "
-                  "which should be a function type.");
+                  "The type does not conform to IEventSinkConcept since it has "
+                  "an invalid nested 'Prototype' that is not a function type.");
 
     // Derived from IEventSink<> class template.
     typedef IEventSink<typename ISink::Prototype>  BaseType;
     static_assert(boost::is_base_of<BaseType, ISink>::value,
-                  "The event sink interface is not derived from IEventSink<> "
-                  "class template.");
+                  "The type does not conform to IEventSinkConcept since it is "
+                  "not derived from IEventSink<> class template.");
+};
 
+
+template<class ISink, class Proto>
+class IEventSinkPrototypeConcept
+{
+public:
+    BOOST_CONCEPT_ASSERT((IEventSinkConcept<ISink>));
+
+    static_assert(boost::is_same<typename ISink::Prototype, Proto>::value,
+                  "The type does not conform to IEventSinkPrototypeConcept "
+                  "since it has a matching 'Prototype'.");
 };
 
 
