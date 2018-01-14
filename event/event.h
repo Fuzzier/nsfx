@@ -138,13 +138,16 @@ public:
     /*}}}*/
 
 public:
+    /**
+     * @brief Get the number of sinks.
+     */
     size_t GetNumSinks(void) const BOOST_NOEXCEPT
     {
         return sinks_.size();
     }
 
     /**
-     * @brief Visit the sinks.
+     * @brief Visit the sinks in an arbitrary order.
      *
      * @tparam Visitor A callable object that has a prototype of
      *                 <code>void Visitor(IEventSinkType*)</code>.
