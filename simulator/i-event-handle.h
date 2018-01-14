@@ -18,7 +18,7 @@
 
 
 #include <nsfx/simulator/config.h>
-#include <nsfx/simulator/i-event-sink.h>
+#include <nsfx/event/i-event-sink.h>
 
 
 NSFX_OPEN_NAMESPACE
@@ -75,9 +75,9 @@ public:
      *
      * @post <code>!IsPending() && !IsRunning() && !IsValid()</code>
      *
-     * @throw IllegalMethodCall The event is not the next event to fire.
+     * @throw IllegalMethodCall The event is not the next event to signal.
      */
-    virtual void Fire(void) = 0;
+    virtual void Signal(void) = 0;
 
 }; // class IEventHandle /*}}}*/
 

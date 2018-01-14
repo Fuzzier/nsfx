@@ -20,6 +20,7 @@
 #include <nsfx/simulator/config.h>
 #include <nsfx/simulator/i-event-scheduler.h>
 #include <nsfx/simulator/i-clock.h>
+#include <nsfx/component/i-disposable.h>
 #include <nsfx/component/class-registry.h>
 #include <functional>
 #include <memory>
@@ -41,13 +42,17 @@ class ListEventScheduler;
  * @ingroup Simulator
  * @brief The list event scheduler.
  *
- * ### Interfaces:
+ * ## Interfaces
+ * ### Uses
  * * \c IClockUser
+ * ### Provides
  * * \c IEventScheduler
+ * * \c IDisposable
  */
 class ListEventScheduler :
     public IClockUser,
-    public IEventScheduler
+    public IEventScheduler,
+    public IDisposable
 {
 private:
     typedef ListEventScheduler  ThisType;
@@ -56,16 +61,9 @@ private:
         public IEventHandle
     {
     public:
-        EventHandle(void) BOOST_NOEXCEPT:
-            scheduler_(nullptr),
-            removed_(false),
-            running_(false)
-        {
-        }
-
         EventHandle(ListEventScheduler* scheduler,
                     const TimePoint& t,
-                    Ptr<IEventSink>&& sink) BOOST_NOEXCEPT:
+                    Ptr<IEventSink<> >&& sink) BOOST_NOEXCEPT:
             scheduler_(scheduler),
             t_(t),
             sink_(std::move(sink)),
@@ -74,7 +72,7 @@ private:
         {
         }
 
-        virtual ~EventHandle(void) BOOST_NOEXCEPT {}
+        virtual ~EventHandle(void) {}
 
         // IEventHandle /*{{{*/
         virtual bool IsPending(void) BOOST_NOEXCEPT NSFX_OVERRIDE
@@ -102,16 +100,16 @@ private:
             return t_;
         }
 
-        virtual void Fire(void) NSFX_OVERRIDE
+        virtual void Signal(void) NSFX_OVERRIDE
         {
-            if (this != scheduler_->InternalGetNextEvent())
+            if (this != scheduler_->InternalGetNextEventHandle())
             {
                 BOOST_THROW_EXCEPTION(IllegalMethodCall());
             }
             if (!removed_)
             {
                 running_ = true;
-                sink_->OnEvent();
+                sink_->Fire();
                 running_ = false;
                 removed_ = true;
             }
@@ -127,22 +125,25 @@ private:
     private:
         ListEventScheduler* scheduler_;
         TimePoint t_;
-        Ptr<IEventSink> sink_;
+        Ptr<IEventSink<> > sink_;
         bool removed_;
         bool running_;
     }; // class EventHandle /*}}}*/
 
-    typedef Object<EventHandle>  EventHandleType;
+    typedef Object<EventHandle>  EventHandleClass;
 
 public:
-    ListEventScheduler(void) BOOST_NOEXCEPT: initialized_(false) {}
+    ListEventScheduler(void) BOOST_NOEXCEPT :
+        initialized_(false)
+    {}
 
-    virtual ~ListEventScheduler(void) BOOST_NOEXCEPT {}
+    virtual ~ListEventScheduler(void) {}
 
     // IClockUser /*{{{*/
+public:
     virtual void UseClock(Ptr<IClock> clock) NSFX_OVERRIDE
     {
-        if (initialized_)
+        if (clock_)
         {
             BOOST_THROW_EXCEPTION(CannotReinitialize());
         }
@@ -157,19 +158,20 @@ public:
     /*}}}*/
 
     // IEventScheduler /*{{{*/
-    virtual Ptr<IEventHandle> ScheduleNow(Ptr<IEventSink> sink) NSFX_OVERRIDE
+public:
+    virtual Ptr<IEventHandle> ScheduleNow(Ptr<IEventSink<> > sink) NSFX_OVERRIDE
     {
         return ThisType::ScheduleAt(clock_->Now(), std::move(sink));
     }
 
     virtual Ptr<IEventHandle> ScheduleIn(const Duration& dt,
-                                         Ptr<IEventSink> sink) NSFX_OVERRIDE
+                                         Ptr<IEventSink<> > sink) NSFX_OVERRIDE
     {
         return ThisType::ScheduleAt(clock_->Now() + dt, std::move(sink));
     }
 
     virtual Ptr<IEventHandle> ScheduleAt(const TimePoint& t,
-                                         Ptr<IEventSink> sink) NSFX_OVERRIDE
+                                         Ptr<IEventSink<> > sink) NSFX_OVERRIDE
     {
         if (!initialized_)
         {
@@ -179,8 +181,8 @@ public:
         {
             BOOST_THROW_EXCEPTION(InvalidPointer());
         }
-        Ptr<EventHandleType> handle(
-            new EventHandleType(this, t, std::move(sink)));
+        Ptr<EventHandleClass> handle(
+            new EventHandleClass(this, t, std::move(sink)));
         if (!list_.size())
         {
             list_.push_front(handle);
@@ -190,9 +192,8 @@ public:
             bool inserted = false;
             for (auto it = list_.begin(); it != list_.end(); ++it)
             {
-                // Call the non-virtual function, since it is known that
-                // GetTimePoint() is implemented by EventHandle class.
-                if ((*it)->EventHandle::GetTimePoint() > t)
+                Ptr<EventHandleClass>&  h = *it;
+                if (h->GetEnveloped()->EventHandle::GetTimePoint() > t)
                 {
                     list_.insert(it, handle);
                     inserted = true;
@@ -204,7 +205,7 @@ public:
                 list_.push_back(handle);
             }
         }
-        return Ptr<IEventHandle>(handle.Detach(), false);
+        return Ptr<IEventHandle>(handle.Detach(), true);
     }
 
     virtual size_t GetNumEvents(void) BOOST_NOEXCEPT NSFX_OVERRIDE
@@ -214,10 +215,11 @@ public:
 
     virtual Ptr<IEventHandle> GetNextEvent(void) BOOST_NOEXCEPT NSFX_OVERRIDE
     {
-        return InternalGetNextEvent();
+        return InternalGetNextEventHandle();
     }
 
-    IEventHandle* InternalGetNextEvent(void) BOOST_NOEXCEPT
+private:
+    IEventHandle* InternalGetNextEventHandle(void) BOOST_NOEXCEPT
     {
         IEventHandle* result = nullptr;
         if (list_.size())
@@ -234,15 +236,25 @@ public:
 
     /*}}}*/
 
+    // IDisposable /*{{{*/
+    virtual void Dispose(void) NSFX_OVERRIDE
+    {
+        initialized_ = false;
+        clock_ = nullptr;
+        list_.clear();
+    }
+    /*}}}*/
+
     NSFX_INTERFACE_MAP_BEGIN(ListEventScheduler)
         NSFX_INTERFACE_ENTRY(IEventScheduler)
         NSFX_INTERFACE_ENTRY(IClockUser)
+        NSFX_INTERFACE_ENTRY(IDisposable)
     NSFX_INTERFACE_MAP_END()
 
 private:
     bool initialized_;
     Ptr<IClock> clock_;
-    list<Ptr<EventHandleType> >  list_;
+    list<Ptr<EventHandleClass> >  list_;
 
 }; // class ListEventScheduler
 
