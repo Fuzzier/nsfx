@@ -36,10 +36,10 @@ NSFX_TEST_SUITE(Simulator)
             runSink_   = new RunEventSinkClass  (this, this, &ThisClass::OnSimulationRun);
             pauseSink_ = new PauseEventSinkClass(this, this, &ThisClass::OnSimulationPause);
             endSink_   = new EndEventSinkClass  (this, this, &ThisClass::OnSimulationEnd);
-            nsfx::Ptr<nsfx::ISimulationBeginEvent>(simulator_)->Connect(beginSink_);
-            nsfx::Ptr<nsfx::ISimulationRunEvent>(simulator_)->Connect(runSink_);
-            nsfx::Ptr<nsfx::ISimulationPauseEvent>(simulator_)->Connect(pauseSink_);
-            nsfx::Ptr<nsfx::ISimulationEndEvent>(simulator_)->Connect(endSink_);
+            beginSinkCookie_ = nsfx::Ptr<nsfx::ISimulationBeginEvent>(simulator_)->Connect(beginSink_);
+            runSinkCookie_   = nsfx::Ptr<nsfx::ISimulationRunEvent>(simulator_)->Connect(runSink_);
+            pauseSinkCookie_ = nsfx::Ptr<nsfx::ISimulationPauseEvent>(simulator_)->Connect(pauseSink_);
+            endSinkCookie_   = nsfx::Ptr<nsfx::ISimulationEndEvent>(simulator_)->Connect(endSink_);
         }
 
         virtual void UseEventScheduler(nsfx::Ptr<nsfx::IEventScheduler> scheduler) NSFX_OVERRIDE
@@ -63,6 +63,10 @@ NSFX_TEST_SUITE(Simulator)
 
         virtual void Dispose(void) NSFX_OVERRIDE
         {
+            nsfx::Ptr<nsfx::ISimulationBeginEvent>(simulator_)->Disconnect(beginSinkCookie_);
+            nsfx::Ptr<nsfx::ISimulationRunEvent>(simulator_)->Disconnect(runSinkCookie_);
+            nsfx::Ptr<nsfx::ISimulationPauseEvent>(simulator_)->Disconnect(pauseSinkCookie_);
+            nsfx::Ptr<nsfx::ISimulationEndEvent>(simulator_)->Disconnect(endSinkCookie_);
             simulator_ = nullptr;
             clock_     = nullptr;
             scheduler_ = nullptr;
@@ -108,6 +112,10 @@ NSFX_TEST_SUITE(Simulator)
         nsfx::Ptr<nsfx::IObject>  runSink_;
         nsfx::Ptr<nsfx::IObject>  pauseSink_;
         nsfx::Ptr<nsfx::IObject>  endSink_;
+        nsfx::cookie_t  beginSinkCookie_;
+        nsfx::cookie_t  runSinkCookie_;
+        nsfx::cookie_t  pauseSinkCookie_;
+        nsfx::cookie_t  endSinkCookie_;
     };/*}}}*/
 
     NSFX_TEST_CASE(Simulator)
