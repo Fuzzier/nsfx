@@ -173,10 +173,7 @@ public:
     virtual Ptr<IEventHandle> ScheduleAt(const TimePoint& t,
                                          Ptr<IEventSink<> > sink) NSFX_OVERRIDE
     {
-        if (!initialized_)
-        {
-            BOOST_THROW_EXCEPTION(Uninitialized());
-        }
+        CheckInitialized();
         if (!sink)
         {
             BOOST_THROW_EXCEPTION(InvalidPointer());
@@ -205,7 +202,7 @@ public:
                 list_.push_back(handle);
             }
         }
-        return Ptr<IEventHandle>(handle.Detach(), true);
+        return std::move(handle);
     }
 
     virtual size_t GetNumEvents(void) BOOST_NOEXCEPT NSFX_OVERRIDE
@@ -232,6 +229,21 @@ private:
     void AfterEvent(void)
     {
         list_.pop_front();
+    }
+
+    void CheckInitialized(void)
+    {
+        if (!initialized_)
+        {
+            if (clock_)
+            {
+                initialized_ = true;
+            }
+            else
+            {
+                BOOST_THROW_EXCEPTION(Uninitialized());
+            }
+        }
     }
 
     /*}}}*/

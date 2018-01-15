@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Packet model.
+ * @brief Simulator for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -17,11 +17,11 @@
 #define I_TIMER_H__55A9E030_C267_476F_873E_9B289CD21D38
 
 
-#include "config.h"
+#include <nsfx/simulator/config.h>
+#include <nsfx/simulator/i-clock.h>
+#include <nsfx/event/i-event.h>
 #include <nsfx/component/i-object.h>
 #include <nsfx/component/ptr.h>
-#include <nsfx/simulator/i-clock.h>
-#include <nsfx/simulator/i-event-scheduler.h>
 
 
 NSFX_OPEN_NAMESPACE
@@ -31,13 +31,11 @@ NSFX_OPEN_NAMESPACE
 // Types.
 class ITimer;
 class ITimerHandle;
-class ITimerSink;
 class ITimerUser;
 
 #define NSFX_IID_ITimer        NSFX_UUID_OF(::nsfx::ITimer)
 #define NSFX_IID_ITimerHandle  NSFX_UUID_OF(::nsfx::ITimerHandle)
 #define NSFX_IID_ITimerSink    NSFX_UUID_OF(::nsfx::ITimerSink)
-#define NSFX_IID_ITimerUser    NSFX_UUID_OF(::nsfx::ITimerUser)
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -58,6 +56,10 @@ NSFX_DEFINE_CLASS_UUID4(ITimerHandle, 0xEC57866B, 0x28D1, 0x4C73, 0xBE85F4FE3273
 
 ////////////////////////////////////////////////////////////////////////////////
 // ITimer.
+/**
+ * @ingroup Simulator
+ * @brief A periodic timer.
+ */
 class ITimer :
     virtual public IObject
 {
@@ -65,32 +67,16 @@ public:
     virtual ~ITimer(void) BOOST_NOEXCEPT {}
 
     virtual Ptr<ITimerHandle> StartNow(const Duration& period,
-                                       Ptr<ITimerSink> sink) = 0;
+                                       Ptr<IEventSink<> > sink) = 0;
 
     virtual Ptr<ITimerHandle> StartAt(const TimePoint& t0,
                                       const Duration& period,
-                                      Ptr<ITimerSink> sink) = 0;
+                                      Ptr<IEventSink<> > sink) = 0;
 
 }; // class ITimer
 
 
 NSFX_DEFINE_CLASS_UUID4(ITimer, 0x91A857DC, 0x2AE6, 0x496E, 0xA397FA5C80A66228LL);
-
-
-////////////////////////////////////////////////////////////////////////////////
-// ITimerSink.
-class ITimerSink :
-    virtual public IObject
-{
-public:
-    virtual ~ITimerSink(void) BOOST_NOEXCEPT {}
-
-    virtual void OnTimeout(void) = 0;
-
-}; // class ITimerSink
-
-
-NSFX_DEFINE_CLASS_UUID4(ITimerSink, 0x12E86515, 0xDD7E, 0x409F, 0xAFECAD7C771FF88CLL);
 
 
 ////////////////////////////////////////////////////////////////////////////////

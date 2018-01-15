@@ -19,6 +19,7 @@
 
 #include <nsfx/simulator/config.h>
 #include <nsfx/component/i-object.h>
+#include <nsfx/component/ptr.h>
 
 
 NSFX_OPEN_NAMESPACE

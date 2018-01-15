@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Packet model.
+ * @brief Simulator for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -17,8 +17,10 @@
 #define TIMER_H__61C0726E_E1D4_4006_A241_5D08B097ABA3
 
 
-#include "config.h"
-#include "i-timer.h"
+#include <nsfx/simulator/config.h>
+#include <nsfx/simulator/i-timer.h>
+#include <nsfx/simulator/i-event-scheduler.h>
+#include <nsfx/event/event.h>
 #include <nsfx/component/object.h>
 #include <nsfx/component/ptr.h>
 #include <nsfx/component/class-registry.h>
@@ -36,20 +38,35 @@ class Timer;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Timer.
+/**
+ * @ingroup Simulator
+ * @brief A periodic timer.
+ *
+ * ## Interfaces
+ * ### Uses
+ * * \c IClockUser
+ * * \c IEventSchedulerUser
+ * ### Provides
+ * * \c ITimer
+ * * \c IDisposable
+ */
 class Timer :
-    public ITimer,
     public IClockUser,
-    public IEventSchedulerUser
+    public IEventSchedulerUser,
+    public ITimer,
+    public IDisposable
 {
+    typedef Timer  ThisClass;
+
 private:
     class Handle :/*{{{*/
         public ITimerHandle,
-        public IEventSink
+        public IEventSink<>
     {
     public:
         Handle(void) BOOST_NOEXCEPT {}
 
-        Handle(Ptr<ITimerSink>&& sink,
+        Handle(Ptr<IEventSink<> >&& sink,
                Ptr<IEventScheduler> scheduler,
                const TimePoint& t0,
                const Duration& period) :
@@ -60,13 +77,7 @@ private:
         {
         }
 
-        virtual void OnEvent(void) NSFX_OVERRIDE
-        {
-            sink_->OnTimeout();
-            t0_ += period_;
-            ScheduleNextTimeout();
-        }
-
+        // ITimerHandle
         virtual void Stop(void) NSFX_OVERRIDE
         {
             handle_->Cancel();
@@ -75,40 +86,54 @@ private:
             scheduler_ = nullptr;
         }
 
+        // IEventSink
+        virtual void Fire(void) NSFX_OVERRIDE
+        {
+            Signal();
+        }
+
+        // Methods.
+        void Signal(void)
+        {
+            sink_->Fire();
+            t0_ += period_;
+            ScheduleNextTimeout();
+        }
+
         void ScheduleNextTimeout(void)
         {
-            handle_ = scheduler_->ScheduleAt(t0_, this);
+            handle_ = scheduler_->ScheduleAt(t0_, Ptr<IEventSink<> >(this));
         }
 
         NSFX_INTERFACE_MAP_BEGIN(Handle)
             NSFX_INTERFACE_ENTRY(ITimerHandle)
-            NSFX_INTERFACE_ENTRY(IEventSink)
+            NSFX_INTERFACE_ENTRY(IEventSink<>)
         NSFX_INTERFACE_MAP_END()
 
     private:
         Ptr<IEventHandle>     handle_;
-        Ptr<ITimerSink>       sink_;
+        Ptr<IEventSink<> >    sink_;
         Ptr<IEventScheduler>  scheduler_;
         TimePoint  t0_;
         Duration   period_;
     };/*}}}*/
 
-    typedef Object<Handle>  HandleType;
+    typedef Object<Handle>  HandleClass;
 
 public:
     Timer(void) BOOST_NOEXCEPT :
         initialized_(false)
     {}
 
-    virtual ~Timer(void) BOOST_NOEXCEPT {}
+    virtual ~Timer(void) {}
 
     // ITimer
     virtual Ptr<ITimerHandle> StartNow(const Duration& period,
-                                       Ptr<ITimerSink> sink) NSFX_OVERRIDE;
+                                       Ptr<IEventSink<> > sink) NSFX_OVERRIDE;
 
     virtual Ptr<ITimerHandle> StartAt(const TimePoint& t0,
                                       const Duration& period,
-                                      Ptr<ITimerSink> sink) NSFX_OVERRIDE;
+                                      Ptr<IEventSink<> > sink) NSFX_OVERRIDE;
 
     // IClockUser
     virtual void UseClock(Ptr<IClock> clock) NSFX_OVERRIDE;
@@ -116,15 +141,19 @@ public:
     // IEventSchedulerUser
     virtual void UseEventScheduler(Ptr<IEventScheduler> scheduler) NSFX_OVERRIDE;
 
+    // IDisposable
+    virtual void Dispose(void) NSFX_OVERRIDE;
+
 private:
     Ptr<ITimerHandle> InternalStartAt(const TimePoint& t0,
                                       const Duration& period,
-                                      Ptr<ITimerSink>&& sink);
+                                      Ptr<IEventSink<> >&& sink);
 
-    void UpdateInitialized(void) BOOST_NOEXCEPT;
+    void CheckInitialized(void);
 
-    NSFX_INTERFACE_MAP_BEGIN(Timer)
+    NSFX_INTERFACE_MAP_BEGIN(ThisClass)
         NSFX_INTERFACE_ENTRY(ITimer)
+        NSFX_INTERFACE_ENTRY(IDisposable)
         NSFX_INTERFACE_ENTRY(IClockUser)
         NSFX_INTERFACE_ENTRY(IEventSchedulerUser)
     NSFX_INTERFACE_MAP_END()
@@ -142,37 +171,6 @@ NSFX_REGISTER_CLASS(Timer);
 
 
 ////////////////////////////////////////////////////////////////////////////////
-Ptr<ITimerHandle>
-Timer::StartNow(const Duration& period, Ptr<ITimerSink> sink)
-{
-    return InternalStartAt(clock_->Now(), period, std::move(sink));
-}
-
-Ptr<ITimerHandle>
-Timer::StartAt(const TimePoint& t0, const Duration& period, Ptr<ITimerSink> sink)
-{
-    return InternalStartAt(t0, period, std::move(sink));
-}
-
-Ptr<ITimerHandle>
-Timer::InternalStartAt(const TimePoint& t0,
-                       const Duration& period,
-                       Ptr<ITimerSink>&& sink)
-{
-    if (!initialized_)
-    {
-        BOOST_THROW_EXCEPTION(Uninitialized());
-    }
-    if (!sink)
-    {
-        BOOST_THROW_EXCEPTION(InvalidPointer());
-    }
-    Ptr<HandleType> handle(
-        new HandleType(std::move(sink), scheduler_, t0, period));
-    handle->ScheduleNextTimeout();
-    return Ptr<ITimerHandle>(handle.Detach(), true);
-}
-
 void Timer::UseClock(Ptr<IClock> clock)
 {
     if (clock_)
@@ -184,7 +182,6 @@ void Timer::UseClock(Ptr<IClock> clock)
         BOOST_THROW_EXCEPTION(InvalidPointer());
     }
     clock_ = clock;
-    UpdateInitialized();
 }
 
 void Timer::UseEventScheduler(Ptr<IEventScheduler> scheduler)
@@ -198,14 +195,57 @@ void Timer::UseEventScheduler(Ptr<IEventScheduler> scheduler)
         BOOST_THROW_EXCEPTION(InvalidPointer());
     }
     scheduler_ = scheduler;
-    UpdateInitialized();
 }
 
-void Timer::UpdateInitialized(void) BOOST_NOEXCEPT
+Ptr<ITimerHandle>
+Timer::StartNow(const Duration& period, Ptr<IEventSink<> > sink)
 {
-    if (clock_ && scheduler_)
+    return InternalStartAt(clock_->Now(), period, std::move(sink));
+}
+
+Ptr<ITimerHandle>
+Timer::StartAt(const TimePoint& t0,
+               const Duration& period,
+               Ptr<IEventSink<> > sink)
+{
+    return InternalStartAt(t0, period, std::move(sink));
+}
+
+Ptr<ITimerHandle>
+Timer::InternalStartAt(const TimePoint& t0,
+                       const Duration& period,
+                       Ptr<IEventSink<> >&& sink)
+{
+    CheckInitialized();
+    if (!sink)
     {
-        initialized_ = true;
+        BOOST_THROW_EXCEPTION(InvalidPointer());
+    }
+    Ptr<HandleClass> handle(
+        new HandleClass(std::move(sink), scheduler_, t0, period));
+    handle->GetEnveloped()->ScheduleNextTimeout();
+    return std::move(handle);
+}
+
+void Timer::Dispose(void)
+{
+    initialized_ = false;
+    clock_       = nullptr;
+    scheduler_   = nullptr;
+}
+
+void Timer::CheckInitialized(void)
+{
+    if (!initialized_)
+    {
+        if (clock_ && scheduler_)
+        {
+            initialized_ = true;
+        }
+        else
+        {
+            BOOST_THROW_EXCEPTION(Uninitialized());
+        }
     }
 }
 

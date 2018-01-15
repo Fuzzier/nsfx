@@ -212,6 +212,7 @@ public:
         NSFX_INTERFACE_ENTRY(ISimulator)
         NSFX_INTERFACE_ENTRY(IClock)
         NSFX_INTERFACE_ENTRY(IEventSchedulerUser)
+        NSFX_INTERFACE_ENTRY(IDisposable)
         NSFX_INTERFACE_AGGREGATED_ENTRY(ISimulationBeginEvent, &beginEvent_)
         NSFX_INTERFACE_AGGREGATED_ENTRY(ISimulationRunEvent,   &runEvent_)
         NSFX_INTERFACE_AGGREGATED_ENTRY(ISimulationPauseEvent, &pauseEvent_)
