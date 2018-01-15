@@ -171,7 +171,7 @@ NSFX_REGISTER_CLASS(Timer);
 
 
 ////////////////////////////////////////////////////////////////////////////////
-void Timer::UseClock(Ptr<IClock> clock)
+inline void Timer::UseClock(Ptr<IClock> clock)
 {
     if (clock_)
     {
@@ -184,7 +184,7 @@ void Timer::UseClock(Ptr<IClock> clock)
     clock_ = clock;
 }
 
-void Timer::UseEventScheduler(Ptr<IEventScheduler> scheduler)
+inline void Timer::UseEventScheduler(Ptr<IEventScheduler> scheduler)
 {
     if (scheduler_)
     {
@@ -197,13 +197,13 @@ void Timer::UseEventScheduler(Ptr<IEventScheduler> scheduler)
     scheduler_ = scheduler;
 }
 
-Ptr<ITimerHandle>
+inline Ptr<ITimerHandle>
 Timer::StartNow(const Duration& period, Ptr<IEventSink<> > sink)
 {
     return InternalStartAt(clock_->Now(), period, std::move(sink));
 }
 
-Ptr<ITimerHandle>
+inline Ptr<ITimerHandle>
 Timer::StartAt(const TimePoint& t0,
                const Duration& period,
                Ptr<IEventSink<> > sink)
@@ -211,7 +211,7 @@ Timer::StartAt(const TimePoint& t0,
     return InternalStartAt(t0, period, std::move(sink));
 }
 
-Ptr<ITimerHandle>
+inline Ptr<ITimerHandle>
 Timer::InternalStartAt(const TimePoint& t0,
                        const Duration& period,
                        Ptr<IEventSink<> >&& sink)
@@ -227,14 +227,14 @@ Timer::InternalStartAt(const TimePoint& t0,
     return std::move(handle);
 }
 
-void Timer::Dispose(void)
+inline void Timer::Dispose(void)
 {
     initialized_ = false;
     clock_       = nullptr;
     scheduler_   = nullptr;
 }
 
-void Timer::CheckInitialized(void)
+inline void Timer::CheckInitialized(void)
 {
     if (!initialized_)
     {
