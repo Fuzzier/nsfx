@@ -21,6 +21,7 @@
 #include <nsfx/component/uuid.h>
 #include <nsfx/component/exception.h>
 #include <boost/type_traits/is_base_of.hpp>
+#include <boost/concept_check.hpp>
 
 
 NSFX_OPEN_NAMESPACE
