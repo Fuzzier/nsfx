@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Simulator for Network Simulation Frameworks.
+ * @brief Simulation support for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -17,9 +17,9 @@
 #define TIMER_H__61C0726E_E1D4_4006_A241_5D08B097ABA3
 
 
-#include <nsfx/simulator/config.h>
-#include <nsfx/simulator/i-timer.h>
-#include <nsfx/simulator/i-event-scheduler.h>
+#include <nsfx/simulation/config.h>
+#include <nsfx/simulation/i-timer.h>
+#include <nsfx/simulation/i-event-scheduler.h>
 #include <nsfx/event/event.h>
 #include <nsfx/component/object.h>
 #include <nsfx/component/ptr.h>
@@ -33,7 +33,7 @@ NSFX_OPEN_NAMESPACE
 // Types.
 class Timer;
 
-#define NSFX_CID_Timer        NSFX_UUID_OF(::nsfx::Timer)
+#define NSFX_CID_Timer  NSFX_UUID_OF(::nsfx::Timer)
 
 
 ////////////////////////////////////////////////////////////////////////////////

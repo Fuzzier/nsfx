@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Component support for Network Simulation Frameworks.
+ * @brief Simulation support for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -17,7 +17,7 @@
 #define EXCEPTION_H__6222290A_60F2_4FC1_935E_D13DB50330F4
 
 
-#include <nsfx/simulator/config.h>
+#include <nsfx/simulation/config.h>
 #include <nsfx/component/exception.h>
 
 

@@ -1,5 +1,5 @@
 #include <nsfx/test.h>
-#include <nsfx/simulator/list-event-scheduler.h>
+#include <nsfx/simulation/list-event-scheduler.h>
 #include <iostream>
 
 

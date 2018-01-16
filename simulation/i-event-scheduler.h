@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Simulator for Network Simulation Frameworks.
+ * @brief Simulation support for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -17,8 +17,8 @@
 #define I_EVENT_SCHEDULER_H__B3B744CD_6782_43F2_A063_8B25FD33374E
 
 
-#include <nsfx/simulator/config.h>
-#include <nsfx/simulator/i-event-handle.h>
+#include <nsfx/simulation/config.h>
+#include <nsfx/simulation/i-event-handle.h>
 #include <nsfx/event/i-event-sink.h>
 #include <nsfx/component/ptr.h>
 

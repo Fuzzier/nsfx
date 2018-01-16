@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Simulator for Network Simulation Frameworks.
+ * @brief Simulation support for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -17,7 +17,7 @@
 #define I_CLOCK_H__49523D2A_BE6A_45FA_84EA_88307B44F4D2
 
 
-#include <nsfx/simulator/config.h>
+#include <nsfx/simulation/config.h>
 #include <nsfx/component/i-object.h>
 #include <nsfx/component/ptr.h>
 

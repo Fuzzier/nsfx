@@ -1,6 +1,6 @@
 #include <nsfx/test.h>
-#include <nsfx/simulator/simulator.h>
-#include <nsfx/simulator/list-event-scheduler.h>
+#include <nsfx/simulation/simulator.h>
+#include <nsfx/simulation/list-event-scheduler.h>
 #include <nsfx/event/event-sink.h>
 #include <nsfx/component/i-disposable.h>
 #include <iostream>

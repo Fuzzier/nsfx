@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Simulator for Network Simulation Frameworks.
+ * @brief Simulation support for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -17,7 +17,7 @@
 #define I_EVENT_HANDLE_H__BE783B0F_52E9_4314_A6E8_4A229220AFB2
 
 
-#include <nsfx/simulator/config.h>
+#include <nsfx/simulation/config.h>
 #include <nsfx/event/i-event-sink.h>
 
 
