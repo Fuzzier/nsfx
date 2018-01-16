@@ -174,10 +174,10 @@ public:
         scheduler_   = nullptr;
         started_     = false;
         finished_    = false;
-        beginEvent_.GetEnveloped()->Dispose();
-        runEvent_.GetEnveloped()->Dispose();
-        pauseEvent_.GetEnveloped()->Dispose();
-        endEvent_.GetEnveloped()->Dispose();
+        beginEvent_.GetEnveloped()->DisconnectAll();
+        runEvent_.GetEnveloped()->DisconnectAll();
+        pauseEvent_.GetEnveloped()->DisconnectAll();
+        endEvent_.GetEnveloped()->DisconnectAll();
     }
     /*}}}*/
 

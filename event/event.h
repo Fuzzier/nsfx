@@ -87,8 +87,7 @@ public:
  */
 template<class IEvent_, cookie_t limit = 0x7fffffff>
 class Event :/*{{{*/
-    public IEvent_,
-    public IDisposable
+    public IEvent_
 {
     BOOST_CONCEPT_ASSERT((IEventConcept<IEvent_>));
     static_assert(limit > 0, "Invalid limit value for Event class template.");
@@ -128,16 +127,12 @@ public:
 
     /*}}}*/
 
-    // IDisposable /*{{{*/
 public:
-    virtual void Dispose(void) NSFX_OVERRIDE
+    void DisconnectAll(void)
     {
         sinks_.clear();
     }
 
-    /*}}}*/
-
-public:
     /**
      * @brief Get the number of sinks.
      */
@@ -177,8 +172,7 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 template<class IEvent_>
 class Event<IEvent_, /* limit = */ 1> :/*{{{*/
-    public IEvent_,
-    public IDisposable
+    public IEvent_
 {
     BOOST_CONCEPT_ASSERT((IEventConcept<IEvent_>));
 
@@ -209,16 +203,12 @@ public:
 
     /*}}}*/
 
-    // IDisposable /*{{{*/
 public:
-    virtual void Dispose(void) NSFX_OVERRIDE
+    void DisconnectAll(void)
     {
-        sink_ = nullptr;
+        sinks_.clear();
     }
 
-    /*}}}*/
-
-public:
     size_t GetNumSinks(void) const BOOST_NOEXCEPT
     {
         return sink_ ? 1 : 0;
