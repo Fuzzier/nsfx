@@ -96,13 +96,13 @@ NSFX_OPEN_NAMESPACE
  *     NSFX_DEFINE_EVENT_SINK_INTERFACE(IMyEventSink, ( char(short, int) ));
  *
  *     // Associate the event sink interface with a UUID.
- *     NSFX_DEFINE_CLASS_UUID4(IMyEventSink, 0x80FF43BE, 0xA2ED, 0x4FA9, 0xB17A517A490A1897LL);
+ *     NSFX_DEFINE_CLASS_UUID(IMyEventSink, 0x80FF43BE, 0xA2ED, 0x4FA9, 0xB17A517A490A1897LL);
  *
  *     // Define an event interface for the sink.
  *     NSFX_DEFINE_EVENT_INTERFACE(IMyEvent, IMyEventSink);
  *
  *     // Associate the event interface with a UUID.
- *     NSFX_DEFINE_CLASS_UUID4(IMyEvent, 0xD867E76D, 0xA5A5, 0x4834, 0x9F7008661727185FLL);
+ *     NSFX_DEFINE_CLASS_UUID(IMyEvent, 0xD867E76D, 0xA5A5, 0x4834, 0x9F7008661727185FLL);
  *
  *     // Define a class that exposes the event.
  *     class MyObject :
@@ -141,7 +141,7 @@ NSFX_OPEN_NAMESPACE
  *         MyEventClass myEvent_;
  *     };
  *
- *     NSFX_DEFINE_CLASS_UUID4(MyObject, 0xE702D84A, 0xA4F6, 0x49A2, 0xB204001D00945B11LL);
+ *     NSFX_DEFINE_CLASS_UUID(MyObject, 0xE702D84A, 0xA4F6, 0x49A2, 0xB204001D00945B11LL);
  *     NSFX_REGISTER_CLASS(MyObject);
  *
  *     // Create an object of the class, and connect a sink to the event.

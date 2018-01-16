@@ -15,7 +15,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         virtual refcount_t GetRefCount(void) = 0;
     };/*}}}*/
 
-    NSFX_DEFINE_CLASS_UUID4(ITest, 0, 0, 0, 1LL);
+    NSFX_DEFINE_CLASS_UUID(ITest, 0, 0, 0, 1LL);
 
     struct Test : public ITest/*{{{*/
     {
@@ -33,7 +33,7 @@ NSFX_TEST_SUITE(ClassRegistry)
 
     };/*}}}*/
 
-    NSFX_DEFINE_CLASS_UUID4(Test, 0, 0, 1, 1LL);
+    NSFX_DEFINE_CLASS_UUID(Test, 0, 0, 1, 1LL);
 
     refcount_t RefCount(nsfx::IObject* p)/*{{{*/
     {

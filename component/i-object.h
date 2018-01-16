@@ -73,7 +73,7 @@ public:
 }; // class IObject /*}}}*/
 
 
-NSFX_DEFINE_CLASS_UUID4(IObject, 0, 0, 0, 0LL);
+NSFX_DEFINE_CLASS_UUID(IObject, 0, 0, 0, 0LL);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -118,7 +118,7 @@ public:
  *
  * @tparam T A class that is associated with a uuid.
  *
- * @see \c NSFX_DEFINE_CLASS_UUID4.
+ * @see \c NSFX_DEFINE_CLASS_UUID.
  */
 template<class T>
 class HasUuidConcept/*{{{*/

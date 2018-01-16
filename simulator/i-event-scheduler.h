@@ -104,7 +104,7 @@ public:
 }; // class IEventScheduler /*}}}*/
 
 
-NSFX_DEFINE_CLASS_UUID4(IEventScheduler, 0x4A9E5C84, 0x1D35, 0x4CAA, 0x9FA3F155AA5E5B30LL);
+NSFX_DEFINE_CLASS_UUID(IEventScheduler, 0x4A9E5C84, 0x1D35, 0x4CAA, 0x9FA3F155AA5E5B30LL);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -124,7 +124,7 @@ public:
 }; // class IEventScheduler /*}}}*/
 
 
-NSFX_DEFINE_CLASS_UUID4(IEventSchedulerUser, 0xA72965EB, 0x80C9, 0x42ED, 0x934FC8CD3E1B3670LL);
+NSFX_DEFINE_CLASS_UUID(IEventSchedulerUser, 0xA72965EB, 0x80C9, 0x42ED, 0x934FC8CD3E1B3670LL);
 
 
 NSFX_CLOSE_NAMESPACE

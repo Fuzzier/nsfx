@@ -28,7 +28,7 @@ NSFX_TEST_SUITE(EventScheduler)
         nsfx::TimePoint tp_;
     };/*}}}*/
     typedef nsfx::Object<Sink>  SinkType;
-    NSFX_DEFINE_CLASS_UUID4(Sink, 0x684CC68A, 0x03B2, 0x4618, 0xA15A279D015DE048LL);
+    NSFX_DEFINE_CLASS_UUID(Sink, 0x684CC68A, 0x03B2, 0x4618, 0xA15A279D015DE048LL);
 
     static nsfx::TimePoint clk;
     struct Clock : nsfx::IClock/*{{{*/
@@ -46,7 +46,7 @@ NSFX_TEST_SUITE(EventScheduler)
 
     };/*}}}*/
     typedef nsfx::Object<Clock>  ClockType;
-    NSFX_DEFINE_CLASS_UUID4(Clock, 0x705B763E, 0x9C77, 0x4C26, 0x9B9EAD27263A2A05LL);
+    NSFX_DEFINE_CLASS_UUID(Clock, 0x705B763E, 0x9C77, 0x4C26, 0x9B9EAD27263A2A05LL);
     NSFX_REGISTER_CLASS(Clock);
 
     NSFX_TEST_CASE(ExternalDriven)/*{{{*/
