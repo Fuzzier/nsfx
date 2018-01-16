@@ -22,6 +22,8 @@
 #include <nsfx/component/uuid.h>
 
 #include <nsfx/component/i-object.h>
+#include <nsfx/component/object.h>
+
 #include <nsfx/component/ptr.h>
 
 #include <nsfx/component/i-disposable.h>
