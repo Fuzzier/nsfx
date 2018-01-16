@@ -278,7 +278,8 @@ public:
  * @brief The event sink interface concept.
  *
  * A class is an event sink if it satisfies the following conditions.<br/>
- * 1. It is derived from <code>IEventSink<></code> class template.<br/>
+ * 1. It is <code>IEventSink<></code> or it is derived from
+ *    <code>IEventSink<></code> class template.<br/>
  * 2. It is has nested type \c Prototype that is a function type.<br/>
  * 3. It conforms to \c HasUuidConcept.<br/>
  *
@@ -310,11 +311,13 @@ struct IEventSinkConcept
                   "The type does not conform to IEventSinkConcept since it has "
                   "an invalid nested 'Prototype' that is not a function type.");
 
-    // Derived from IEventSink<> class template.
+    // Is IEventSink<> or derived from IEventSink<> class template.
     typedef IEventSink<typename ISink::Prototype>  BaseType;
-    static_assert(boost::is_base_of<BaseType, ISink>::value,
-                  "The type does not conform to IEventSinkConcept since it is "
-                  "not derived from IEventSink<> class template.");
+    static_assert(
+        boost::is_same<IEventSink<>, ISink>::value ||
+        boost::is_base_of<BaseType, ISink>::value,
+        "The type does not conform to IEventSinkConcept since it is "
+        "not derived from IEventSink<> class template.");
 };
 
 
