@@ -58,7 +58,7 @@ NSFX_TEST_SUITE(Ptr)
         virtual ~ITest(void) {}
     };/*}}}*/
 
-    NSFX_DEFINE_CLASS_UUID4(ITest, 0, 0, 0, 1LL);
+    NSFX_DEFINE_CLASS_UUID(ITest, 0, 0, 0, 1LL);
 
     struct Test : virtual ITest/*{{{*/
     {

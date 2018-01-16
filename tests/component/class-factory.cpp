@@ -15,7 +15,7 @@ NSFX_TEST_SUITE(ClassFactory)
         virtual refcount_t GetRefCount(void) = 0;
     };/*}}}*/
 
-    NSFX_DEFINE_CLASS_UUID4(ITest, 0, 0, 0, 1LL);
+    NSFX_DEFINE_CLASS_UUID(ITest, 0, 0, 0, 1LL);
 
     struct Test : public ITest/*{{{*/
     {

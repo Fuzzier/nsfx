@@ -51,7 +51,7 @@ public:
 }; // class ITimerHandle
 
 
-NSFX_DEFINE_CLASS_UUID4(ITimerHandle, 0xEC57866B, 0x28D1, 0x4C73, 0xBE85F4FE32732235LL);
+NSFX_DEFINE_CLASS_UUID(ITimerHandle, 0xEC57866B, 0x28D1, 0x4C73, 0xBE85F4FE32732235LL);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -76,7 +76,7 @@ public:
 }; // class ITimer
 
 
-NSFX_DEFINE_CLASS_UUID4(ITimer, 0x91A857DC, 0x2AE6, 0x496E, 0xA397FA5C80A66228LL);
+NSFX_DEFINE_CLASS_UUID(ITimer, 0x91A857DC, 0x2AE6, 0x496E, 0xA397FA5C80A66228LL);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -92,7 +92,7 @@ public:
 }; // class ITimerUser
 
 
-NSFX_DEFINE_CLASS_UUID4(ITimerUser, 0x64A3D699, 0xCEC6, 0x44AD, 0xB1B4B06505A087A2LL);
+NSFX_DEFINE_CLASS_UUID(ITimerUser, 0x64A3D699, 0xCEC6, 0x44AD, 0xB1B4B06505A087A2LL);
 
 
 NSFX_CLOSE_NAMESPACE

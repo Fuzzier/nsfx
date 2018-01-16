@@ -54,7 +54,7 @@ public:
 }; // class IClock /*}}}*/
 
 
-NSFX_DEFINE_CLASS_UUID4(IClock, 0xF5B4D834, 0xC959, 0x446C, 0xB16346F2232C9787LL);
+NSFX_DEFINE_CLASS_UUID(IClock, 0xF5B4D834, 0xC959, 0x446C, 0xB16346F2232C9787LL);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -80,7 +80,7 @@ public:
 }; // class IClockUser /*}}}*/
 
 
-NSFX_DEFINE_CLASS_UUID4(IClockUser, 0x493628F2, 0x34A8, 0x4162, 0xA299C3C49BF92EB5LL);
+NSFX_DEFINE_CLASS_UUID(IClockUser, 0x493628F2, 0x34A8, 0x4162, 0xA299C3C49BF92EB5LL);
 
 
 NSFX_CLOSE_NAMESPACE

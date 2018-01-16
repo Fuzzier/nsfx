@@ -18,7 +18,7 @@ NSFX_TEST_SUITE(Object)
         virtual refcount_t GetRefCount(void) = 0;
     };/*}}}*/
 
-    NSFX_DEFINE_CLASS_UUID4(ITest, 0, 0, 0, 1LL);
+    NSFX_DEFINE_CLASS_UUID(ITest, 0, 0, 0, 1LL);
 
     struct IFoobar :/*{{{*/
         virtual nsfx::IObject
@@ -28,7 +28,7 @@ NSFX_TEST_SUITE(Object)
         virtual refcount_t GetRefCount(void) = 0;
     };/*}}}*/
 
-    NSFX_DEFINE_CLASS_UUID4(IFoobar, 0, 0, 0, 2LL);
+    NSFX_DEFINE_CLASS_UUID(IFoobar, 0, 0, 0, 2LL);
 
     static bool deallocated = false;
 
@@ -54,7 +54,7 @@ NSFX_TEST_SUITE(Object)
 
     };/*}}}*/
 
-    NSFX_DEFINE_CLASS_UUID4(Test, 0, 0, 1, 1LL);
+    NSFX_DEFINE_CLASS_UUID(Test, 0, 0, 1, 1LL);
 
     struct TestNoDefaultCtor :/*{{{*/
         ITest
@@ -83,7 +83,7 @@ NSFX_TEST_SUITE(Object)
 
     };/*}}}*/
 
-    NSFX_DEFINE_CLASS_UUID4(TestNoDefaultCtor, 0, 0, 1, 2LL);
+    NSFX_DEFINE_CLASS_UUID(TestNoDefaultCtor, 0, 0, 1, 2LL);
 
     refcount_t RefCount(nsfx::IObject* p)/*{{{*/
     {

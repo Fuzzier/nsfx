@@ -120,7 +120,7 @@ NSFX_OPEN_NAMESPACE
  *      NSFX_DEFINE_EVENT_SINK_INTERFACE(IMyEventSink, ( char(short, int) ));
  *
  *      // Associate the event sink interface with a UUID.
- *      NSFX_DEFINE_CLASS_UUID4(IMyEventSink, 0x80FF43BE, 0xA2ED, 0x4FA9, 0xB17A517A490A1897LL);
+ *      NSFX_DEFINE_CLASS_UUID(IMyEventSink, 0x80FF43BE, 0xA2ED, 0x4FA9, 0xB17A517A490A1897LL);
  *
  *      // Create event sink object:
  *      // Functor based event sink.
@@ -240,7 +240,7 @@ public:
  */
 #define NSFX_IID_IEventSink  NSFX_UUID_OF(::nsfx::IEventSink<>)
 
-NSFX_DEFINE_CLASS_UUID4(IEventSink<>, 0x02A9EAD8, 0x0B50, 0x4292, 0x83788634408B56BDLL);
+NSFX_DEFINE_CLASS_UUID(IEventSink<>, 0x02A9EAD8, 0x0B50, 0x4292, 0x83788634408B56BDLL);
 
 
 ////////////////////////////////////////

@@ -167,7 +167,7 @@ private:
 }; // class ClassRegistry /*}}}*/
 
 
-NSFX_DEFINE_CLASS_UUID4(ClassRegistry, 0xC229D24E, 0xC71F, 0x4C23, 0x8615EB2054B4FBB2LL);
+NSFX_DEFINE_CLASS_UUID(ClassRegistry, 0xC229D24E, 0xC71F, 0x4C23, 0x8615EB2054B4FBB2LL);
 
 
 ////////////////////////////////////////////////////////////////////////////////
