@@ -35,12 +35,13 @@ NSFX_OPEN_NAMESPACE
  * @param ISink   The type of a user-defined event sink interface that conforms
  *                to \c IEventSinkConcept.
  */
-#define NSFX_DEFINE_EVENT_INTERFACE(IEvent_, ISink)   \
-    class IEvent_ :                                   \
-        public ::nsfx::IEvent<ISink>                  \
-    {                                                 \
-    public:                                           \
-        virtual ~IEvent_(void) BOOST_NOEXCEPT {}      \
+#define NSFX_DEFINE_EVENT_INTERFACE(IEvent_, ISink, l, w1, w2, ll)   \
+    NSFX_DEFINE_CLASS_UUID(class IEvent_, l, w1, w2, ll);            \
+    class IEvent_ :                                                  \
+        public ::nsfx::IEvent<ISink>                                 \
+    {                                                                \
+    public:                                                          \
+        virtual ~IEvent_(void) BOOST_NOEXCEPT {}                     \
     }
 
 
@@ -93,16 +94,14 @@ NSFX_OPEN_NAMESPACE
  *     #include <nsfx/event/event.h>
  *
  *     // Define an event sink interface.
- *     NSFX_DEFINE_EVENT_SINK_INTERFACE(IMyEventSink, ( char(short, int) ));
- *
- *     // Associate the event sink interface with a UUID.
- *     NSFX_DEFINE_CLASS_UUID(IMyEventSink, 0x80FF43BE, 0xA2ED, 0x4FA9, 0xB17A517A490A1897LL);
+ *     NSFX_DEFINE_EVENT_SINK_INTERFACE(
+ *         IMyEventSink, ( char(short, int) )
+ *         0x80FF43BE, 0xA2ED, 0x4FA9, 0xB17A517A490A1897LL);
  *
  *     // Define an event interface for the sink.
- *     NSFX_DEFINE_EVENT_INTERFACE(IMyEvent, IMyEventSink);
- *
- *     // Associate the event interface with a UUID.
- *     NSFX_DEFINE_CLASS_UUID(IMyEvent, 0xD867E76D, 0xA5A5, 0x4834, 0x9F7008661727185FLL);
+ *     NSFX_DEFINE_EVENT_INTERFACE(
+ *         IMyEvent, IMyEventSink,
+ *         0xD867E76D, 0xA5A5, 0x4834, 0x9F7008661727185FLL);
  *
  *     // Define a class that exposes the event.
  *     class MyObject :
