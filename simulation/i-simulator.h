@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Simulator for Network Simulation Frameworks.
+ * @brief Simulation support for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -17,7 +17,7 @@
 #define I_SIMULATOR_H__A3B18FB8_B2C5_45A6_A822_9C4A6AC94D52
 
 
-#include <nsfx/simulator/config.h>
+#include <nsfx/simulation/config.h>
 #include <nsfx/component/i-object.h>
 #include <nsfx/component/ptr.h>
 #include <nsfx/event/i-event.h>
@@ -90,25 +90,31 @@ NSFX_DEFINE_CLASS_UUID(ISimulator, 0xC079AC9A, 0x0F83, 0x48F4, 0x82F354924DBBA46
 
 ////////////////////////////////////////////////////////////////////////////////
 // Simulator events.
-NSFX_DEFINE_EVENT_SINK_INTERFACE(ISimulationBeginEventSink, ( void(void) ));
-NSFX_DEFINE_EVENT_SINK_INTERFACE(ISimulationRunEventSink,   ( void(void) ));
-NSFX_DEFINE_EVENT_SINK_INTERFACE(ISimulationPauseEventSink, ( void(void) ));
-NSFX_DEFINE_EVENT_SINK_INTERFACE(ISimulationEndEventSink,   ( void(void) ));
+NSFX_DEFINE_EVENT_SINK_INTERFACE(
+    ISimulationBeginEventSink,
+    ( void(void) ),  0x1E93735B, 0xDE24, 0x49A3, 0xA63CB63B3F4D93E5LL);
+NSFX_DEFINE_EVENT_SINK_INTERFACE(
+    ISimulationRunEventSink,
+    ( void(void) ),  0x7B38A8CA, 0x8876, 0x4610, 0x8B8DA51254028C58LL);
+NSFX_DEFINE_EVENT_SINK_INTERFACE(
+    ISimulationPauseEventSink,
+    ( void(void) ),  0x1811B62D, 0x42D4, 0x4F1B, 0x98CE397D524F912FLL);
+NSFX_DEFINE_EVENT_SINK_INTERFACE(
+    ISimulationEndEventSink,
+    ( void(void) ),  0xF6A303AC, 0x6088, 0x4EAE, 0xA532C6CFB34F2E8BLL);
 
-NSFX_DEFINE_CLASS_UUID(ISimulationBeginEventSink, 0x1E93735B, 0xDE24, 0x49A3, 0xA63CB63B3F4D93E5LL);
-NSFX_DEFINE_CLASS_UUID(ISimulationRunEventSink,   0x7B38A8CA, 0x8876, 0x4610, 0x8B8DA51254028C58LL);
-NSFX_DEFINE_CLASS_UUID(ISimulationPauseEventSink, 0x1811B62D, 0x42D4, 0x4F1B, 0x98CE397D524F912FLL);
-NSFX_DEFINE_CLASS_UUID(ISimulationEndEventSink,   0xF6A303AC, 0x6088, 0x4EAE, 0xA532C6CFB34F2E8BLL);
-
-NSFX_DEFINE_EVENT_INTERFACE(ISimulationBeginEvent, ISimulationBeginEventSink);
-NSFX_DEFINE_EVENT_INTERFACE(ISimulationRunEvent,   ISimulationRunEventSink);
-NSFX_DEFINE_EVENT_INTERFACE(ISimulationPauseEvent, ISimulationPauseEventSink);
-NSFX_DEFINE_EVENT_INTERFACE(ISimulationEndEvent,   ISimulationEndEventSink);
-
-NSFX_DEFINE_CLASS_UUID(ISimulationBeginEvent, 0x6B0AC801, 0x9746, 0x4E4E, 0xAE347E957F7899F2LL);
-NSFX_DEFINE_CLASS_UUID(ISimulationRunEvent,   0x3551885D, 0xB839, 0x4278, 0xB49CAF9CDFBEFA95LL);
-NSFX_DEFINE_CLASS_UUID(ISimulationPauseEvent, 0x6B886CF2, 0x0FF3, 0x47E2, 0xBAFEC75501EA01BBLL);
-NSFX_DEFINE_CLASS_UUID(ISimulationEndEvent,   0x3CA80256, 0xBF64, 0x4D1A, 0x8106B3F3C0C2B912LL);
+NSFX_DEFINE_EVENT_INTERFACE(
+    ISimulationBeginEvent,
+    ISimulationBeginEventSink,  0x6B0AC801, 0x9746, 0x4E4E, 0xAE347E957F7899F2LL);
+NSFX_DEFINE_EVENT_INTERFACE(
+    ISimulationRunEvent,
+    ISimulationRunEventSink,  0x3551885D, 0xB839, 0x4278, 0xB49CAF9CDFBEFA95LL);
+NSFX_DEFINE_EVENT_INTERFACE(
+    ISimulationPauseEvent,
+    ISimulationPauseEventSink,  0x6B886CF2, 0x0FF3, 0x47E2, 0xBAFEC75501EA01BBLL);
+NSFX_DEFINE_EVENT_INTERFACE(
+    ISimulationEndEvent,
+    ISimulationEndEventSink,  0x3CA80256, 0xBF64, 0x4D1A, 0x8106B3F3C0C2B912LL);
 
 
 ////////////////////////////////////////////////////////////////////////////////

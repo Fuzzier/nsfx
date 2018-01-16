@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Component support for Network Simulation Frameworks.
+ * @brief Simulation support for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
