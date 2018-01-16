@@ -52,12 +52,13 @@ NSFX_OPEN_NAMESPACE
  *          NSFX_DEFINE_EVENT_SINK_INTERFACE(IMyEventSink, ( char(short, int) ));
  *          @endcode
  */
-#define NSFX_DEFINE_EVENT_SINK_INTERFACE(ISink, Proto)         \
-    class ISink :                                              \
-        public ::nsfx::IEventSink<BOOST_PP_TUPLE_ENUM(Proto)>  \
-    {                                                          \
-    public:                                                    \
-        virtual ~ISink(void) BOOST_NOEXCEPT {}                 \
+#define NSFX_DEFINE_EVENT_SINK_INTERFACE(ISink, Proto, l, w1, w2, ll)  \
+    NSFX_DEFINE_CLASS_UUID(class ISink, l, w1, w2, ll)                 \
+    class ISink :                                                      \
+        public ::nsfx::IEventSink<BOOST_PP_TUPLE_ENUM(Proto)>          \
+    {                                                                  \
+    public:                                                            \
+        virtual ~ISink(void) BOOST_NOEXCEPT {}                         \
     }
 
 
@@ -117,10 +118,9 @@ NSFX_OPEN_NAMESPACE
  *      #include <nsfx/event/event-sink.h>
  *
  *      // Define an event sink interface.
- *      NSFX_DEFINE_EVENT_SINK_INTERFACE(IMyEventSink, ( char(short, int) ));
- *
- *      // Associate the event sink interface with a UUID.
- *      NSFX_DEFINE_CLASS_UUID(IMyEventSink, 0x80FF43BE, 0xA2ED, 0x4FA9, 0xB17A517A490A1897LL);
+ *      NSFX_DEFINE_EVENT_SINK_INTERFACE(
+ *          IMyEventSink, ( char(short, int) ),
+ *          0x80FF43BE, 0xA2ED, 0x4FA9, 0xB17A517A490A1897LL);
  *
  *      // Create event sink object:
  *      // Functor based event sink.
