@@ -29,6 +29,7 @@
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/is_base_of.hpp>
 #include <boost/type_traits/is_function.hpp>
+#include <boost/concept_check.hpp>
 
 
 NSFX_OPEN_NAMESPACE

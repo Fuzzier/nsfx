@@ -21,6 +21,7 @@
 #include <nsfx/event/i-event-sink.h>
 #include <nsfx/component/ptr.h>
 #include <boost/type_traits/is_base_of.hpp>
+#include <boost/concept_check.hpp>
 
 
 NSFX_OPEN_NAMESPACE
