@@ -189,7 +189,7 @@ inline void RegisterClass(typename ::boost::mpl::identity<C>::type* = nullptr)
     typedef Object<ClassFactory<C> >  ClassFactoryType;
     Ptr<IClassFactory> factory(new ClassFactoryType);
     IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
-    NSFX_ASSERT(registry);
+    BOOST_ASSERT(registry);
     registry->Register(uuid_of<C>(), std::move(factory));
 }
 
@@ -202,7 +202,7 @@ inline void RegisterClass(typename ::boost::mpl::identity<C>::type* = nullptr)
 inline void RegisterClass(const uuid& cid, Ptr<IClassFactory> factory)
 {
     IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
-    NSFX_ASSERT(registry);
+    BOOST_ASSERT(registry);
     registry->Register(cid, std::move(factory));
 }
 
@@ -220,7 +220,7 @@ inline void UnregisterClass(typename ::boost::mpl::identity<C>::type* = nullptr)
 {
     BOOST_CONCEPT_ASSERT((HasUuidConcept<C>));
     IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
-    NSFX_ASSERT(registry);
+    BOOST_ASSERT(registry);
     registry->Unregister(uuid_of<C>());
 }
 
@@ -233,7 +233,7 @@ inline void UnregisterClass(typename ::boost::mpl::identity<C>::type* = nullptr)
 inline void UnregisterClass(const uuid& cid)
 {
     IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
-    NSFX_ASSERT(registry);
+    BOOST_ASSERT(registry);
     registry->Unregister(cid);
 }
 
@@ -246,7 +246,7 @@ inline void UnregisterClass(const uuid& cid)
 inline void UnregisterAllClasses(void)
 {
     IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
-    NSFX_ASSERT(registry);
+    BOOST_ASSERT(registry);
     registry->UnregisterAll();
 }
 
@@ -274,7 +274,7 @@ inline Ptr<I> CreateObject(const uuid& cid, IObject* controller = nullptr)
     try
     {
         IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
-        NSFX_ASSERT(registry);
+        BOOST_ASSERT(registry);
         Ptr<IClassFactory> factory = registry->GetClassFactory(cid);
         I* p = static_cast<I*>(factory->CreateObject(uuid_of<I>(), controller));
         return Ptr<I>(p, true);

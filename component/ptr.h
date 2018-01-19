@@ -368,15 +368,29 @@ public:
         return *this;
     }
 
-    T& operator*() const BOOST_NOEXCEPT
+    T& operator*() const
     {
-        NSFX_ASSERT(p_);
+#if !defined(NDEBUG)
+        if (!p_)
+        {
+            BOOST_THROW_EXCEPTION(
+                InvalidPointer() <<
+                ErrorMessage("Cannot dereference a Ptr<> that is nullptr."));
+        }
+#endif // !defined(NDEBUG)
         return *p_;
     }
 
-    T* operator->() const BOOST_NOEXCEPT
+    T* operator->() const
     {
-        NSFX_ASSERT(p_);
+#if !defined(NDEBUG)
+        if (!p_)
+        {
+            BOOST_THROW_EXCEPTION(
+                InvalidPointer() <<
+                ErrorMessage("Cannot dereference a Ptr<> that is nullptr."));
+        }
+#endif // !defined(NDEBUG)
         return p_;
     }
 
