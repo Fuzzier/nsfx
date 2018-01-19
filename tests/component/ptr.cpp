@@ -16,7 +16,7 @@ NSFX_TEST_SUITE(Ptr)
 
         virtual ~Object(void) BOOST_NOEXCEPT
         {
-            NSFX_ASSERT(refCount_ == 0);
+            BOOST_ASSERT(refCount_ == 0);
         }
 
         virtual refcount_t AddRef(void) BOOST_NOEXCEPT NSFX_OVERRIDE
@@ -69,7 +69,7 @@ NSFX_TEST_SUITE(Ptr)
 
         virtual ~Test(void) BOOST_NOEXCEPT
         {
-            NSFX_ASSERT(refCount_ == 0);
+            BOOST_ASSERT(refCount_ == 0);
         }
 
         virtual refcount_t AddRef(void) BOOST_NOEXCEPT NSFX_OVERRIDE

@@ -103,8 +103,8 @@ struct BufferStorage
 
     static void AddRef(BufferStorage* storage) BOOST_NOEXCEPT
     {
-        NSFX_ASSERT(storage);
-        NSFX_ASSERT(storage->refCount_ >= 0);
+        BOOST_ASSERT(storage);
+        BOOST_ASSERT(storage->refCount_ >= 0);
         ++storage->refCount_;
     }
 
@@ -117,8 +117,8 @@ struct BufferStorage
      */
     static void Release(BufferStorage* storage) BOOST_NOEXCEPT
     {
-        NSFX_ASSERT(storage);
-        NSFX_ASSERT(storage->refCount_ > 0);
+        BOOST_ASSERT(storage);
+        BOOST_ASSERT(storage->refCount_ > 0);
         if (--storage->refCount_ == 0)
         {
 #if !defined(NDEBUG)
@@ -128,7 +128,7 @@ struct BufferStorage
 #endif // !defined(NDEBUG)
             uint8_t* bytes = reinterpret_cast<uint8_t*>(storage);
             delete[] bytes;
-            NSFX_ASSERT(!unbalanced &&
+            BOOST_ASSERT_MSG(!unbalanced,
                         "A buffer iterator holds both a reference count and a "
                         "data lock count, and it must release the data lock "
                         "count before releasing the reference count. Thus, "
@@ -139,15 +139,15 @@ struct BufferStorage
 
     static void AddDataLock(BufferStorage* storage) BOOST_NOEXCEPT
     {
-        NSFX_ASSERT(storage);
-        NSFX_ASSERT(storage->dataLockCount_ >= 0);
+        BOOST_ASSERT(storage);
+        BOOST_ASSERT(storage->dataLockCount_ >= 0);
         ++storage->dataLockCount_;
     }
 
     static void ReleaseDataLock(BufferStorage* storage) BOOST_NOEXCEPT
     {
-        NSFX_ASSERT(storage);
-        NSFX_ASSERT(storage->dataLockCount_ > 0);
+        BOOST_ASSERT(storage);
+        BOOST_ASSERT(storage->dataLockCount_ > 0);
         --storage->dataLockCount_;
     }
 
@@ -803,48 +803,48 @@ private:
 inline bool operator> (const BufferIterator& lhs,
                        const BufferIterator& rhs) BOOST_NOEXCEPT
 {
-    NSFX_ASSERT((lhs.storage_ == rhs.storage_) &&
-                "Cannot compare unrelated iterators.");
+    BOOST_ASSERT_MSG(lhs.storage_ == rhs.storage_,
+                     "Cannot compare unrelated iterators.");
     return lhs.cursor_ > rhs.cursor_;
 }
 
 inline bool operator>=(const BufferIterator& lhs,
                        const BufferIterator& rhs) BOOST_NOEXCEPT
 {
-    NSFX_ASSERT((lhs.storage_ == rhs.storage_) &&
-                "Cannot compare unrelated iterators.");
+    BOOST_ASSERT_MSG(lhs.storage_ == rhs.storage_,
+                     "Cannot compare unrelated iterators.");
     return lhs.cursor_ >= rhs.cursor_;
 }
 
 inline bool operator==(const BufferIterator& lhs,
                        const BufferIterator& rhs) BOOST_NOEXCEPT
 {
-    NSFX_ASSERT((lhs.storage_ == rhs.storage_) &&
-                "Cannot compare unrelated iterators.");
+    BOOST_ASSERT_MSG(lhs.storage_ == rhs.storage_,
+                     "Cannot compare unrelated iterators.");
     return lhs.cursor_ == rhs.cursor_;
 }
 
 inline bool operator!=(const BufferIterator& lhs,
                        const BufferIterator& rhs) BOOST_NOEXCEPT
 {
-    NSFX_ASSERT((lhs.storage_ == rhs.storage_) &&
-                "Cannot compare unrelated iterators.");
+    BOOST_ASSERT_MSG(lhs.storage_ == rhs.storage_,
+                     "Cannot compare unrelated iterators.");
     return lhs.cursor_ != rhs.cursor_;
 }
 
 inline bool operator< (const BufferIterator& lhs,
                        const BufferIterator& rhs) BOOST_NOEXCEPT
 {
-    NSFX_ASSERT((lhs.storage_ == rhs.storage_) &&
-                "Cannot compare unrelated iterators.");
+    BOOST_ASSERT_MSG(lhs.storage_ == rhs.storage_,
+                     "Cannot compare unrelated iterators.");
     return lhs.cursor_ < rhs.cursor_;
 }
 
 inline bool operator<=(const BufferIterator& lhs,
                        const BufferIterator& rhs) BOOST_NOEXCEPT
 {
-    NSFX_ASSERT((lhs.storage_ == rhs.storage_) &&
-                "Cannot compare unrelated iterators.");
+    BOOST_ASSERT_MSG(lhs.storage_ == rhs.storage_,
+                     "Cannot compare unrelated iterators.");
     return lhs.cursor_ <= rhs.cursor_;
 }
 
@@ -867,8 +867,8 @@ operator-(const BufferIterator& lhs, size_t numBytes)
 inline ptrdiff_t
 operator-(const BufferIterator& lhs, const BufferIterator& rhs) BOOST_NOEXCEPT
 {
-    NSFX_ASSERT((lhs.storage_ == rhs.storage_) &&
-                "Cannot compare unrelated iterators.");
+    BOOST_ASSERT_MSG(lhs.storage_ == rhs.storage_,
+                     "Cannot compare unrelated iterators.");
     return lhs.cursor_ - rhs.cursor_;
 }
 
@@ -1091,7 +1091,6 @@ private:
         }
     }
 
-public:
     void Release(void) BOOST_NOEXCEPT
     {
         if (storage_)

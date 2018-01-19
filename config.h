@@ -224,7 +224,6 @@ NSFX_CLOSE_NAMESPACE
 
 ////////////////////////////////////////////////////////////////////////////////
 // assert.
-#include <cassert>
 /**
  * @brief The assert statement.
  *
@@ -233,7 +232,7 @@ NSFX_CLOSE_NAMESPACE
  *     \c assert() costs nothing in a release code that defines \c NDEBUG macro.<br/>
  *
  * ### Badness.<br/>
- *     \c assert() gives little information, and terminates the program.<br/>
+ *     \c assert() terminates the program with little information.<br/>
  *
  * ## When to use \c assert()?<br/>
  * ### 1. Functions with \c noexcept.<br/>
@@ -246,7 +245,7 @@ NSFX_CLOSE_NAMESPACE
  *     Usually, the program is beyond redemption in such condition.<br/>
  *
  */
-#define NSFX_ASSERT(p)  assert(p)
+#include <boost/assert.hpp>
 
 
 ////////////////////////////////////////////////////////////////////////////////
