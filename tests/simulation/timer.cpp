@@ -1,7 +1,7 @@
 #include <nsfx/test.h>
 #include <nsfx/simulation/timer.h>
 #include <nsfx/simulation/simulator.h>
-#include <nsfx/simulation/list-event-scheduler.h>
+#include <nsfx/simulation/set-event-scheduler.h>
 #include <iostream>
 
 
@@ -43,7 +43,7 @@ NSFX_TEST_SUITE(Timer)
             nsfx::Ptr<nsfx::IClock>  clock(simulator);
             nsfx::Ptr<nsfx::IEventScheduler>  scheduler =
                 nsfx::CreateObject<nsfx::IEventScheduler>(
-                    NSFX_CID_ListEventScheduler);
+                    NSFX_CID_SetEventScheduler);
             // wire scheduler
             nsfx::Ptr<nsfx::IClockUser>(scheduler)->UseClock(clock);
             // wire simulator

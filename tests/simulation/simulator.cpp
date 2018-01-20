@@ -1,6 +1,6 @@
 #include <nsfx/test.h>
 #include <nsfx/simulation/simulator.h>
-#include <nsfx/simulation/list-event-scheduler.h>
+#include <nsfx/simulation/set-event-scheduler.h>
 #include <nsfx/event/event-sink.h>
 #include <nsfx/component/i-disposable.h>
 #include <iostream>
@@ -120,7 +120,7 @@ NSFX_TEST_SUITE(Simulator)
 
     NSFX_TEST_CASE(Simulator)
     {
-        typedef nsfx::Object<Sink>  SinkType;
+        typedef nsfx::Object<Sink>  SinkClass;
         try
         {
             counter = 0;
@@ -128,14 +128,14 @@ NSFX_TEST_SUITE(Simulator)
             // Create objects.
             nsfx::Ptr<nsfx::IEventScheduler> scheduler =
                 nsfx::CreateObject<nsfx::IEventScheduler>(
-                    NSFX_CID_ListEventScheduler);
+                    NSFX_CID_SetEventScheduler);
 
             nsfx::Ptr<nsfx::ISimulator>  simulator =
                 nsfx::CreateObject<nsfx::ISimulator>(
                     NSFX_CID_Simulator);
             nsfx::Ptr<nsfx::IClock>  clock(simulator);
 
-            nsfx::Ptr<SinkType>  sink(new SinkType);
+            nsfx::Ptr<SinkClass>  sink(new SinkClass);
             nsfx::Ptr<nsfx::IEventSink<> >  eventSink(sink);
 
             // Wire simulator.
