@@ -21,9 +21,13 @@
 #include <nsfx/simulation/exception.h>
 
 #include <nsfx/simulation/i-clock.h>
+
 #include <nsfx/simulation/i-event-handle.h>
+#include <nsfx/simulation/event-handle.h>
+
 #include <nsfx/simulation/i-event-scheduler.h>
 #include <nsfx/simulation/list-event-scheduler.h>
+#include <nsfx/simulation/set-event-scheduler.h>
 
 #include <nsfx/simulation/i-simulator.h>
 #include <nsfx/simulation/simulator.h>
