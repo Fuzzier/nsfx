@@ -239,6 +239,7 @@ public:
 };
 
 
+
 ////////////////////////////////////////
 /**
  * @ingroup Event
@@ -331,10 +332,19 @@ struct IEventSinkConcept
                   "The type does not conform to IEventSinkConcept since it has "
                   "an invalid nested 'Prototype' that is not a function type.");
 
-    // Is IEventSink<> or derived from IEventSink<> class template.
+    template<class T>
+    struct IsIEventSink : boost::false_type {};
+
+    template<>
+    struct IsIEventSink<IEventSink<> > : boost::true_type {};
+
+    template<>
+    struct IsIEventSink<IEventSink<void()> > : boost::true_type {};
+
+    // Is IEventSink<void(void)> or derived from IEventSink<> class template.
     typedef IEventSink<typename ISink::Prototype>  BaseType;
     static_assert(
-        boost::is_same<IEventSink<void(void)>, ISink>::value ||
+        IsIEventSink<ISink>::value ||
         boost::is_base_of<BaseType, ISink>::value,
         "The type does not conform to IEventSinkConcept since it is "
         "not derived from IEventSink<> class template.");
