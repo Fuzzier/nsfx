@@ -1,9 +1,9 @@
 #include <nsfx/test.h>
-#include <nsfx/simulation/list-event-scheduler.h>
+#include <nsfx/simulation/set-event-scheduler.h>
 #include <iostream>
 
 
-NSFX_TEST_SUITE(ListEventScheduler)
+NSFX_TEST_SUITE(SetEventScheduler)
 {
     using nsfx::Ptr;
 
@@ -55,7 +55,7 @@ NSFX_TEST_SUITE(ListEventScheduler)
         {
             Ptr<nsfx::IEventScheduler> sch =
                 nsfx::CreateObject<nsfx::IEventScheduler>(
-                    NSFX_CID_ListEventScheduler);
+                    NSFX_CID_SetEventScheduler);
             {
                 Ptr<nsfx::IClock> clock =
                     nsfx::CreateObject<nsfx::IClock>(nsfx::uuid_of<Clock>());
