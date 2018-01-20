@@ -50,8 +50,7 @@ public:
     /**
      * @brief Schedule an event.
      *
-     * @param[in]  sink   The event sink.
-     * @param[out] handle Optional. A handle of the event.
+     * @param[in] sink The event sink.
      *
      * @throw OutOfMemory
      * @throw Uninitialized  The scheduler is not initialized.
@@ -62,13 +61,13 @@ public:
     /**
      * @brief Schedule an event.
      *
-     * @param[in]  sink   The event sink.
-     * @param[out] handle Optional. A handle of the event.
+     * @param[in] sink The event sink.
      *
      * @throw OutOfMemory
      * @throw Uninitialized   The scheduler is not initialized.
      * @throw InvalidPointer  The sink is \c nullptr.
-     * @throw InvalidArgument Thrown by \c IAlarm.
+     * @throw InvalidArgument The duration is invalid.<br/>
+     *                         e.g., it is negative.
      */
     virtual Ptr<IEventHandle> ScheduleIn(const Duration& dt,
                                          Ptr<IEventSink<> > sink) = 0;
@@ -76,30 +75,46 @@ public:
     /**
      * @brief Schedule an event.
      *
-     * @param[in]  sink   The event sink.
-     * @param[out] handle Optional. A handle of the event.
+     * @param[in] sink The event sink.
      *
      * @throw OutOfMemory
      * @throw Uninitialized   The scheduler is not initialized.
      * @throw InvalidPointer  The sink is \c nullptr.
-     * @throw InvalidArgument Thrown by \c IAlarm.
+     * @throw InvalidArgument The time point is invalid.
+     *                         e.g., it is earlier than the current time.
      */
     virtual Ptr<IEventHandle> ScheduleAt(const TimePoint& t,
                                          Ptr<IEventSink<> > sink) = 0;
 
     /**
-     * @brief Get the number of scheduled events.
+     * @brief Get the number of events in the scheduler.
+     *
+     * The events may be pending or cancelled.<br/>
+     * The currently running event is not counted.
      */
     virtual size_t GetNumEvents(void) = 0;
 
     /**
-     * @brief Get the next scheduled event.
+     * @brief Get the next event in the scheduler.
+     *
+     * @return Return \c nullptr if there is no events in the scheduler.
+     *
+     * The events may be pending or cancelled.<br/>
      *
      * This function <b>cannot</b> return a free pointer to \c IEventHandle,
      * since the \c IEventHandle does not share the same lifetime as the
      * \c IEventScheduler.
      */
     virtual Ptr<IEventHandle> GetNextEvent(void) = 0;
+
+    /**
+     * @brief Remove the next event in the scheduler.
+     *
+     * @return Return \c nullptr if there is no events in the scheduler.
+     *
+     * The events may be pending or cancelled.<br/>
+     */
+    virtual Ptr<IEventHandle> RemoveNextEvent(void) = 0;
 
 }; // class IEventScheduler /*}}}*/
 

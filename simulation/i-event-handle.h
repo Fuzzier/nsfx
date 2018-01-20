@@ -19,6 +19,7 @@
 
 #include <nsfx/simulation/config.h>
 #include <nsfx/event/i-event-sink.h>
+#include <nsfx/component/ptr.h>
 
 
 NSFX_OPEN_NAMESPACE
@@ -26,9 +27,22 @@ NSFX_OPEN_NAMESPACE
 
 ////////////////////////////////////////////////////////////////////////////////
 // Types.
+typedef uint64_t  event_id_t;
 class IEventHandle;
 
+/**
+ * @ingroup Simulator
+ * @brief The uuid of \c IEventHandle.
+ */
 #define NSFX_IID_IEventHandle  NSFX_UUID_OF(::nsfx::IEventHandle)
+
+
+////////////////////////////////////////////////////////////////////////////////
+static event_id_t GetNextEventId(void) BOOST_NOEXCEPT
+{
+    static event_id_t  id = 0;
+    return id++;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -44,40 +58,39 @@ public:
     virtual ~IEventHandle(void) BOOST_NOEXCEPT {}
 
     /**
-     * @brief The alarm is waiting to be fired.
+     * @brief The id of the event.
+     */
+    virtual event_id_t GetId(void) = 0;
+
+    /**
+     * @brief The event is waiting to be fired.
      */
     virtual bool IsPending(void) = 0;
 
     /**
-     * @brief The alarm is being fired.
+     * @brief The event is being fired.
      */
     virtual bool IsRunning(void) = 0;
 
     /**
-     * @brief The alarm is waiting or being fired.
+     * @brief The event is waiting or being fired.
      */
     virtual bool IsValid(void) = 0;
 
     /**
-     * @brief Cancel the alarm.
+     * @brief Cancel the event.
      */
     virtual void Cancel(void) = 0;
 
     /**
-     * @brief Get the time point when the alarm is about to be fired.
+     * @brief Get the time point when the event is about to be fired.
      */
     virtual TimePoint GetTimePoint(void) = 0;
 
     /**
-     * @brief Fire the event.
-     *
-     * @pre <code>this == IEventScheduler::GetNextEvent()</code>
-     *
-     * @post <code>!IsPending() && !IsRunning() && !IsValid()</code>
-     *
-     * @throw IllegalMethodCall The event is not the next event to signal.
+     * @brief Get the event sink.
      */
-    virtual void Signal(void) = 0;
+    virtual Ptr<IEventSink<> >  GetEventSink(void) = 0;
 
 }; // class IEventHandle /*}}}*/
 
