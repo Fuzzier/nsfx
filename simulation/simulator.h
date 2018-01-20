@@ -127,15 +127,24 @@ public:
             Ptr<IEventHandle> handle = scheduler_->GetNextEvent();
             if (!handle)
             {
+                // End the loop when the scheduler is empty.
                 break;
+            }
+            if (!handle->IsValid())
+            {
+                // Skip the event if it is cancelled.
+                scheduler_->RemoveNextEvent();
+                continue;
             }
             TimePoint t0 = handle->GetTimePoint();
             if (t0 > t)
             {
+                // End the loop if the event is scheduled for a later time.
                 break;
             }
             t_ = t0;
-            handle->Signal();
+            scheduler_->RemoveNextEvent();
+            handle->Fire();
         }
         SignalSimulationPauseEvent();
         CheckEndOfSimulation();
