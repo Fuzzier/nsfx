@@ -88,14 +88,7 @@ public:
         return t_;
     }
 
-    virtual Ptr<IEventSink<> >  GetEventSink(void) NSFX_OVERRIDE
-    {
-        return sink_;
-    }
-
-    /*}}}*/
-
-    void Fire(void)
+    virtual void Fire(void) NSFX_OVERRIDE
     {
         if (!removed_)
         {
@@ -105,6 +98,8 @@ public:
             removed_ = true;
         }
     }
+
+    /*}}}*/
 
     NSFX_INTERFACE_MAP_BEGIN(EventHandle)
         NSFX_INTERFACE_ENTRY(IEventHandle)
