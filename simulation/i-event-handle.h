@@ -88,9 +88,12 @@ public:
     virtual TimePoint GetTimePoint(void) = 0;
 
     /**
-     * @brief Get the event sink.
+     * @brief Fire the event.
+     *
+     * Only a pending event will be fired, and it can be fired for once.<br/>
+     * It shall be invoked by a simulator.
      */
-    virtual Ptr<IEventSink<> >  GetEventSink(void) = 0;
+    virtual void Fire(void) = 0 ;
 
 }; // class IEventHandle /*}}}*/
 
