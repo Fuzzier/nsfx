@@ -60,7 +60,8 @@ class FunctionPointerBasedEventSink;
  *
  * @tparam ISink The type of an event sink interface that conforms to
  *               \c IEventSinkConcept.
- * @tparam O     The type of an object.
+ * @tparam O     The type of an object that provides a member function that
+ *               implements the event sink.
  */
 template<class ISink, class O, class Proto = typename ISink::Prototype>
 class MemberFunctionBasedEventSink;
@@ -181,13 +182,26 @@ private:
 
 
 ////////////////////////////////////////
+/**
+ * @ingroup Event
+ * @brief A helper class that creates event sinks.
+ *
+ * @tparam ISink A user-defined event sink interface that conforms to
+ *               \c IEventSinkConcept.
+ * @tparam Ret  The return type of the callback method of the event sink.
+ * @tparam Args The type of arguments of the callback method of the event sink.
+ */
 template<class ISink, class Ret, class... Args>
 class EventSinkCreator<ISink, Ret(Args...)>/*{{{*/
 {
     BOOST_CONCEPT_ASSERT((IEventSinkPrototypeConcept<ISink, Ret(Args...)>));
 
 public:
-    // For functors.
+    /**
+     * @brief Create a functor based event sink.
+     *
+     * @param[in] f  A functor.
+     */
     template<class F>
     Ptr<ISink> operator()(IObject* controller, F&& f) const
     {
@@ -199,7 +213,11 @@ public:
             : Ptr<IObject>(new AggEventSinkType(controller, std::forward<F>(f)));
     }
 
-    // For funtion pointers.
+    /**
+     * @brief Create a function pointer based event sink.
+     *
+     * @param[in] fn A function pointer.
+     */
     template<class Ret, class... Args>
     Ptr<ISink> operator()(IObject* controller, Ret(* fn)(Args...)) const
     {
@@ -211,7 +229,12 @@ public:
             : Ptr<IObject>(new AggEventSinkType(controller, fn));
     }
 
-    // For objects and pointers to member funtions.
+    /**
+     * @brief Create a member function based event sink.
+     *
+     * @param[in] o    An object.
+     * @param[in] ptmf A pointer to a member function of the object.
+     */
     template<class O, class Ret, class... Args>
     Ptr<ISink> operator()(IObject* controller, O* o, Ret(O::* ptmf)(Args...)) const
     {
@@ -232,7 +255,7 @@ public:
 // Free functions.
 /**
  * @ingroup Event
- * @brief Create an event sink via a functor.
+ * @brief Create a functor based event sink.
  *
  * @tparam ISink A user-defined event sink interface that conforms to
  *               \c IEventSinkConcept.
@@ -251,12 +274,12 @@ inline Ptr<ISink> CreateEventSink(IObject* controller, F&& f)
 
 /**
  * @ingroup Event
- * @brief Create an event sink via a function pointer.
+ * @brief Create a function pointer based event sink.
  *
  * @tparam ISink A user-defined event sink interface that conforms to
  *               \c IEventSinkConcept.
  *
- * @param[in] fn The function pointer.
+ * @param[in] fn A function pointer.
  */
 template<class ISink, class Ret, class... Args>
 inline Ptr<ISink> CreateEventSink(IObject* controller, Ret(* fn)(Args...))
@@ -266,12 +289,13 @@ inline Ptr<ISink> CreateEventSink(IObject* controller, Ret(* fn)(Args...))
 
 /**
  * @ingroup Event
- * @brief Create an event sink via an object and a pointer to its member function.
+ * @brief Create a member function based event sink.
  *
  * @tparam ISink A user-defined event sink interface that conforms to
  *               \c IEventSinkConcept.
  *
- * @param[in] fn The function pointer.
+ * @param[in] o    An object.
+ * @param[in] ptmf A pointer to a member function of the object.
  */
 template<class ISink, class O, class Ret, class... Args>
 inline Ptr<ISink> CreateEventSink(IObject* controller, O* o, Ret(O::* ptmf)(Args...))

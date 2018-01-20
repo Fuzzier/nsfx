@@ -28,13 +28,17 @@ NSFX_OPEN_NAMESPACE
 // Types.
 class IDisposable;
 
-#define NSFX_IID_IDisposable      NSFX_UUID_OF(::nsfx::IDisposable)
+/**
+ * @ingroup Component
+ * @brief The uuid of \c IDisposable.
+ */
+#define NSFX_IID_IDisposable  NSFX_UUID_OF(::nsfx::IDisposable)
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // IDisposable.
 /**
- * @ingroup Simulator
+ * @ingroup Component
  * @brief The disposable interface.
  *
  * A disposed object is at an <b>unsable state</b>, thus <b>cannot</b> be used

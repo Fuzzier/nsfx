@@ -64,7 +64,7 @@ public:
     virtual void UnregisterAll(void) = 0;
 
     /**
-     * @brief Get an class factory.
+     * @brief Get a class factory.
      *
      * @param[in] cid The uuid of an object class.<br/>
      *                The class must conform to \c EnvelopableConcept.

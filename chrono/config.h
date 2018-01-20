@@ -23,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @defgroup Chrono
- * @brief Provide date and time support.
+ * @brief Support for time point and duration.
  *
  * Basic concepts:
  * <b>Time Point</b>: </br>

@@ -600,7 +600,7 @@ NSFX_CLOSE_NAMESPACE
 // NSFX_INTERFACE_XXX() macros./*{{{*/
 /**
  * @ingroup Component
- * @brief Begin the interface map.
+ * @brief Begin an interface map.
  *
  * @param ThisClass The class that defines the interface map.<br/>
  *                  It is the class that implements or aggregates interfaces.
@@ -625,9 +625,12 @@ NSFX_CLOSE_NAMESPACE
 
 /**
  * @ingroup Component
- * @brief Expose an interface implemented by the object.
+ * @brief Expose an interface implemented by the \c ThisClass that defines the interface map.
  *
- * @param Intf The type of the interface. It should <b>not</b> be \c IObject.
+ * @param Intf The type of the interface.<br/>
+ *             \c ThisClass that defines the interface map must derive from
+ *             \c Intf.<br/>
+ *             It should <b>not</b> be \c IObject.
  */
 #define NSFX_INTERFACE_ENTRY(Intf)                               \
         else if (iid == ::nsfx::uuid_of<Intf>())                 \
@@ -643,9 +646,11 @@ NSFX_CLOSE_NAMESPACE
  * @ingroup Component
  * @brief Expose an interface implemented by an aggregated object.
  *
- * @param Intf The type of the interface. It should <b>not</b> be \c IObject.
- * @param navi A pointer to the \c IObject interface on the navigator object.<br/>
- *             It must be accessible within \c ThisClass_.
+ * @param Intf The type of the interface.<br/>
+ *             It should <b>not</b> be \c IObject.
+ * @param navi A pointer to an object that exposes the \c Intf interface.<br/>
+ *             i.e., the objet implements \c IObject, and \c Intf can be queried
+ *             from the object.
  */
 #define NSFX_INTERFACE_AGGREGATED_ENTRY(Intf, navi)                 \
         else if (iid == ::nsfx::uuid_of<Intf>())                    \
@@ -655,7 +660,7 @@ NSFX_CLOSE_NAMESPACE
 
 /**
  * @ingroup Component
- * @brief End the interface map.
+ * @brief End an interface map.
  */
 #define NSFX_INTERFACE_MAP_END()                                              \
         if (!result)                                                          \

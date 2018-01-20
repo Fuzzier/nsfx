@@ -23,7 +23,7 @@
 /**
  * @defgroup Test
  *
- * @brief Test library.
+ * @brief The test library.
  *
  * Tests are organized in a tree structure.<br/>
  * The root of the tree is a master test suite.<br/>

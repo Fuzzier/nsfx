@@ -35,6 +35,13 @@ NSFX_OPEN_NAMESPACE
  * @param IEvent_ The name of the user-defined event interface.
  * @param ISink   The type of a user-defined event sink interface that conforms
  *                to \c IEventSinkConcept.
+ *
+ * @example For example
+ *    @code
+ *     NSFX_DEFINE_EVENT_INTERFACE(
+ *         IMyEvent,
+ *         IMyEventSink,  0xD867E76D, 0xA5A5, 0x4834, 0x9F7008661727185FLL);
+ *    @endcode
  */
 #define NSFX_DEFINE_EVENT_INTERFACE(IEvent_, ISink, l, w1, w2, ll)   \
     NSFX_DEFINE_CLASS_UUID(class IEvent_, l, w1, w2, ll);            \
@@ -96,13 +103,13 @@ NSFX_OPEN_NAMESPACE
  *
  *     // Define an event sink interface.
  *     NSFX_DEFINE_EVENT_SINK_INTERFACE(
- *         IMyEventSink, ( char(short, int) )
- *         0x80FF43BE, 0xA2ED, 0x4FA9, 0xB17A517A490A1897LL);
+ *         IMyEventSink,
+ *         ( char(short, int) ),  0x80FF43BE, 0xA2ED, 0x4FA9, 0xB17A517A490A1897LL);
  *
  *     // Define an event interface for the sink.
  *     NSFX_DEFINE_EVENT_INTERFACE(
- *         IMyEvent, IMyEventSink,
- *         0xD867E76D, 0xA5A5, 0x4834, 0x9F7008661727185FLL);
+ *         IMyEvent,
+ *         IMyEventSink,  0xD867E76D, 0xA5A5, 0x4834, 0x9F7008661727185FLL);
  *
  *     // Define a class that exposes the event.
  *     class MyObject :
@@ -164,7 +171,7 @@ NSFX_OPEN_NAMESPACE
  *     }
  *     @endcode
  *
- * @see \c IEventSink.
+ * @see <code>IEventSink<></code>.
  */
 template<class ISink>
 class IEvent:
