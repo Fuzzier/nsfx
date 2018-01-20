@@ -83,8 +83,7 @@ NSFX_DEFINE_CLASS_UUID(IObject, 0, 0, 0, 0LL);
  * @ingroup Component
  * @brief IObject concept.
  *
- * @tparam T A class that is, extends or implements \c IObject.
- * @tparam hasUuid If \c true, the class must have an associated uuid.
+ * @tparam T A type that is, extends or implements \c IObject.
  */
 template<class T>
 class IObjectConcept/*{{{*/
@@ -142,6 +141,10 @@ public:
 NSFX_CLOSE_NAMESPACE
 
 
+/**
+ * @ingroup Component
+ * @brief The uuid of \c IObject.
+ */
 #define NSFX_IID_IObject  NSFX_UUID_OF(::nsfx::IObject)
 
 

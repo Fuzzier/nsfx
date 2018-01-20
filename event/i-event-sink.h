@@ -46,11 +46,13 @@ NSFX_OPEN_NAMESPACE
  *
  * The event sink interface conforms to \c IEventSinkConcept.
  *
- * @remarks The \c Proto must be placed <b>within parenthesis</b>, so commas
- *          can be used in the \c Proto.<br/>
+ * @remarks \c Proto must be placed <b>within parenthesis</b>, so commas can be
+ *          used in the \c Proto.<br/>
  *          For example,
  *          @code
- *          NSFX_DEFINE_EVENT_SINK_INTERFACE(IMyEventSink, ( char(short, int) ));
+ *          NSFX_DEFINE_EVENT_SINK_INTERFACE(
+ *              IMyEventSink,
+ *              ( char(short, int) ),  0x80FF43BE, 0xA2ED, 0x4FA9, 0xB17A517A490A1897LL);
  *          @endcode
  */
 #define NSFX_DEFINE_EVENT_SINK_INTERFACE(ISink, Proto, l, w1, w2, ll)  \
@@ -120,8 +122,8 @@ NSFX_OPEN_NAMESPACE
  *
  *      // Define an event sink interface.
  *      NSFX_DEFINE_EVENT_SINK_INTERFACE(
- *          IMyEventSink, ( char(short, int) ),
- *          0x80FF43BE, 0xA2ED, 0x4FA9, 0xB17A517A490A1897LL);
+ *          IMyEventSink,
+ *          ( char(short, int) ),  0x80FF43BE, 0xA2ED, 0x4FA9, 0xB17A517A490A1897LL);
  *
  *      // Create event sink object:
  *      // Functor based event sink.
@@ -154,7 +156,7 @@ NSFX_OPEN_NAMESPACE
  *          }
  *      };
  *      static Obj o;
- *      typedef MemberFunctionBasedEventSink<IMyEventSink>  MyEventSink3;
+ *      typedef MemberFunctionBasedEventSink<IMyEventSink, Obj>  MyEventSink3;
  *      typedef Object<MyEventSink3>     MyEventSinkType3;
  *      Ptr<IMyEventSink> s3(new MyEventSinkType3(nullptr, &o, &Obj::Qux));
  *      @endcode
@@ -230,6 +232,9 @@ public:
 
     virtual ~IEventSink(void) BOOST_NOEXCEPT {}
 
+    /**
+     * @brief The callback method of the event sink.
+     */
     virtual void Fire(void) = 0;
 };
 
@@ -237,9 +242,9 @@ public:
 ////////////////////////////////////////
 /**
  * @ingroup Event
- * @brief The uuid of <code>IEventSink<></code>.
+ * @brief The uuid of <code>IEventSink<void(void)></code>.
  */
-#define NSFX_IID_IEventSink  NSFX_UUID_OF(::nsfx::IEventSink<>)
+#define NSFX_IID_IEventSink  NSFX_UUID_OF(::nsfx::IEventSink<void(void)>)
 
 NSFX_DEFINE_CLASS_UUID(IEventSink<>, 0x02A9EAD8, 0x0B50, 0x4292, 0x83788634408B56BDLL);
 
@@ -247,6 +252,18 @@ NSFX_DEFINE_CLASS_UUID(IEventSink<>, 0x02A9EAD8, 0x0B50, 0x4292, 0x83788634408B5
 ////////////////////////////////////////
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
+/**
+ * @ingroup Event
+ * @brief The event sink interface (specialized class template).
+ *
+ * @tparam Ret  The return type of the callback method of the event sink.
+ * @tparam Args The types of arguments of the callback method of the event sink.
+ *
+ * This class template provides template argument deduction the primary class
+ * template <code>IEventSink<></code>.
+ *
+ * @see <code>IEventSink<></code> (the primary class template)
+ */
 template<class Ret, class... Args>
 class IEventSink<Ret(Args...)> :
     virtual public IObject
@@ -256,6 +273,9 @@ public:
 
     virtual ~IEventSink(void) BOOST_NOEXCEPT {}
 
+    /**
+     * @brief The callback method of the event sink.
+     */
     virtual Ret Fire(Args... args) = 0;
 };
 
@@ -278,7 +298,7 @@ public:
  * @brief The event sink interface concept.
  *
  * A class is an event sink if it satisfies the following conditions.<br/>
- * 1. It is <code>IEventSink<></code> or it is derived from
+ * 1. It is <code>IEventSink<void(void)></code> or it is derived from
  *    <code>IEventSink<></code> class template.<br/>
  * 2. It is has nested type \c Prototype that is a function type.<br/>
  * 3. It conforms to \c HasUuidConcept.<br/>
@@ -314,7 +334,7 @@ struct IEventSinkConcept
     // Is IEventSink<> or derived from IEventSink<> class template.
     typedef IEventSink<typename ISink::Prototype>  BaseType;
     static_assert(
-        boost::is_same<IEventSink<>, ISink>::value ||
+        boost::is_same<IEventSink<void(void)>, ISink>::value ||
         boost::is_base_of<BaseType, ISink>::value,
         "The type does not conform to IEventSinkConcept since it is "
         "not derived from IEventSink<> class template.");

@@ -36,6 +36,9 @@ NSFX_OPEN_NAMESPACE
  * @ingroup Event
  * @brief Event sink visitor concept.
  *
+ * @tparam Visitor The type of a callable object.<br/>
+ *                 The prototype is <code>void(ISink*)</code>.
+ * @tparam ISink   The type of an event sink.
  */
 template<class Visitor, class ISink>
 class EventSinkVisitorConcept
@@ -82,7 +85,7 @@ public:
  *                              IEvent<> ---> user-defined event interface
  *                                              |
  *                                              V
- *                                            Event<>
+ *                                            Event<> (a concrete class)
  * @endcode
  */
 template<class IEvent_, cookie_t limit = 0x7fffffff>

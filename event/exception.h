@@ -24,9 +24,8 @@ NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Event sink connection.
 /**
- * @ingroup Event
+ * @ingroup Exception
  * @brief The event source cannot accept additional sinks any more.
  */
 struct ConnectionLimit : ComponentException {};

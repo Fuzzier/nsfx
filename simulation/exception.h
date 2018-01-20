@@ -24,10 +24,8 @@
 NSFX_OPEN_NAMESPACE
 
 
-////////////////////////////////////////////////////////////////////////////////
-// Event scheduler.
 /**
- * @ingroup Simulator
+ * @ingroup Exception
  * @brief Cannot run a finished simulator.
  */
 struct SimulatorFinished : ComponentException {};

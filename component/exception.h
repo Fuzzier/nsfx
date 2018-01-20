@@ -26,7 +26,7 @@ NSFX_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 // Base.
 /**
- * @ingroup Component
+ * @ingroup Exception
  * @brief The base class for all exceptions in component module.
  */
 struct ComponentException : Exception {};
@@ -35,13 +35,13 @@ struct ComponentException : Exception {};
 ////////////////////////////////////////////////////////////////////////////////
 // Object.
 /**
- * @ingroup Component
+ * @ingroup Exception
  * @brief The queried interface is not supported.
  */
 struct NoInterface : ComponentException {};
 
 /**
- * @ingroup Component
+ * @ingroup Exception
  * @brief Practice aggregation in a wrong way.
  */
 struct BadAggregation : ComponentException {};
@@ -50,13 +50,13 @@ struct BadAggregation : ComponentException {};
 ////////////////////////////////////////////////////////////////////////////////
 // Object initialization.
 /**
- * @ingroup Component
+ * @ingroup Exception
  * @brief An object is not initialized.
  */
 struct Uninitialized : ComponentException {};
 
 /**
- * @ingroup Component
+ * @ingroup Exception
  * @brief An initialized object cannot be initialized again.
  */
 struct CannotReinitialize : ComponentException {};
@@ -65,13 +65,13 @@ struct CannotReinitialize : ComponentException {};
 ////////////////////////////////////////////////////////////////////////////////
 // Class registration.
 /**
- * @ingroup Component
+ * @ingroup Exception
  * @brief Cannot create an object since its class factory is not registered.
  */
 struct ClassNotRegistered : ComponentException {};
 
 /**
- * @ingroup Component
+ * @ingroup Exception
  * @brief Cannot register a class factory that is already registered.
  */
 struct ClassIsRegistered : ComponentException {};

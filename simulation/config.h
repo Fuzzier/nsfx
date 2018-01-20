@@ -25,7 +25,7 @@
 
 /**
  * @defgroup Simulator
- * @brief The network simulator.
+ * @brief Support for discreet event simulation.
  *
  * Depends upon Exception, Component, Event and Chrono modules.
  *

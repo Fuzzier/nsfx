@@ -62,6 +62,10 @@ NSFX_DEFINE_CLASS_UUID(IClassFactory, 0x3F197227, 0x3015, 0x43CD, 0x977E8C0DEEF8
 NSFX_CLOSE_NAMESPACE
 
 
+/**
+ * @ingroup Component
+ * @brief The uuid of \c IClassFactory.
+ */
 #define NSFX_IID_IClassFactory  NSFX_UUID_OF(::nsfx::IClassFactory)
 
 

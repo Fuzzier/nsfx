@@ -33,6 +33,7 @@ NSFX_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 // BufferStorage./*{{{*/
 /**
+ * @ingroup Network
  * @brief The storage of a buffer (POD).
  */
 struct BufferStorage
@@ -162,6 +163,7 @@ struct BufferStorage
 ////////////////////////////////////////////////////////////////////////////////
 // BufferIterator./*{{{*/
 /**
+ * @ingroup Network
  * @brief The iterator for accessing the data.
  *
  * The iterator is limited to move alone the data area in the buffer.<br/>
@@ -176,10 +178,10 @@ struct BufferStorage
  * * operator ++, --
  * * operator +, +=, -, -=
  * * operator >, >=, ==, !=, <=, <
- * * WriteN<T>(T value)
- * * WriteL<T>(T value)
- * * WriteB<T>(T value)
- * * T ReadN<T>()
+ * * Write<T>(T data)
+ * * WriteL<T>(T data)
+ * * WriteB<T>(T data)
+ * * T Read<T>()
  * * T ReadL<T>()
  * * T ReadB<T>()
  *
@@ -1129,16 +1131,31 @@ public:
     }
 
 #if !defined(NDEBUG)
+    /**
+     * @brief Get the start position of data area.
+     *
+     * Only avaiable if \c NDEBUG is not defined.
+     */
     size_t GetDataStart(void) const BOOST_NOEXCEPT
     {
         return start_;
     }
 
+    /**
+     * @brief Get the start position of data area.
+     *
+     * Only avaiable if \c NDEBUG is not defined.
+     */
     size_t GetDataEnd(void) const BOOST_NOEXCEPT
     {
         return end_;
     }
 
+    /**
+     * @brief Get the start position of data area.
+     *
+     * Only avaiable if \c NDEBUG is not defined.
+     */
     BufferStorage* GetStorage(void) const BOOST_NOEXCEPT
     {
         return storage_;
@@ -1524,12 +1541,18 @@ public:
 
     // Iterator./*{{{*/
 public:
+    /**
+     * @brief Get a buffer iterator at the first byte of the data area.
+     */
     BufferIterator begin(void) const BOOST_NOEXCEPT
     {
         size_t cursor = start_;
         return BufferIterator(storage_, start_, end_, cursor);
     }
 
+    /**
+     * @brief Get a buffer iterator that is one byte after the last byte of the data area.
+     */
     BufferIterator end(void) const BOOST_NOEXCEPT
     {
         size_t cursor = end_;
