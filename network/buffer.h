@@ -286,7 +286,6 @@ private:
         }
     }
 
-#if !defined(NDEBUG)
 public:
     size_t GetStart(void) const BOOST_NOEXCEPT
     {
@@ -303,6 +302,7 @@ public:
         return cursor_;
     }
 
+#if !defined(NDEBUG)
     BufferStorage* GetStorage(void) const BOOST_NOEXCEPT
     {
         return storage_;
@@ -1130,11 +1130,8 @@ public:
         return end_ - start_;
     }
 
-#if !defined(NDEBUG)
     /**
      * @brief Get the start position of data area.
-     *
-     * Only avaiable if \c NDEBUG is not defined.
      */
     size_t GetDataStart(void) const BOOST_NOEXCEPT
     {
@@ -1143,8 +1140,6 @@ public:
 
     /**
      * @brief Get the start position of data area.
-     *
-     * Only avaiable if \c NDEBUG is not defined.
      */
     size_t GetDataEnd(void) const BOOST_NOEXCEPT
     {
@@ -1153,14 +1148,11 @@ public:
 
     /**
      * @brief Get the start position of data area.
-     *
-     * Only avaiable if \c NDEBUG is not defined.
      */
     BufferStorage* GetStorage(void) const BOOST_NOEXCEPT
     {
         return storage_;
     }
-#endif // !defined(NDEBUG)
 
     /**
      * @brief Expand the data area toward the start of the buffer.
