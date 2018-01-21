@@ -966,7 +966,7 @@ public:
      * The data area is positioned at the end of the storage, optimizing for
      * adding data at the head of the storage.
      */
-    Buffer(size_t size) :
+    explicit Buffer(size_t size) :
         storage_(BufferStorage::Create(size)),
         start_(size),
         end_(size)
