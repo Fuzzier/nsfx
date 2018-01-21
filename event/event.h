@@ -119,7 +119,7 @@ public:
         {
             BOOST_THROW_EXCEPTION(ConnectionLimit());
         }
-        sinks_.emplace(cookie_++, std::move(sink));
+        sinks_.emplace(++cookie_, std::move(sink));
         return cookie_;
     }
 
@@ -196,7 +196,7 @@ public:
             BOOST_THROW_EXCEPTION(ConnectionLimit());
         }
         sink_ = std::move(sink);
-        return std::numeric_limits<cookie_t>::max();
+        return 0x7fffffff;
     }
 
     virtual void Disconnect(cookie_t cookie) NSFX_OVERRIDE
