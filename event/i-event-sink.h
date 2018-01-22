@@ -239,13 +239,12 @@ public:
 };
 
 
-
 ////////////////////////////////////////
 /**
  * @ingroup Event
  * @brief The uuid of <code>IEventSink<void(void)></code>.
  */
-#define NSFX_IID_IEventSink  NSFX_UUID_OF(::nsfx::IEventSink<void(void)>)
+#define NSFX_IID_IEventSink  NSFX_UUID_OF(::nsfx::IEventSink<>)
 
 NSFX_DEFINE_CLASS_UUID(IEventSink<>, 0x02A9EAD8, 0x0B50, 0x4292, 0x83788634408B56BDLL);
 
@@ -332,19 +331,10 @@ struct IEventSinkConcept
                   "The type does not conform to IEventSinkConcept since it has "
                   "an invalid nested 'Prototype' that is not a function type.");
 
-    template<class T>
-    struct IsIEventSink : boost::false_type {};
-
-    template<>
-    struct IsIEventSink<IEventSink<> > : boost::true_type {};
-
-    template<>
-    struct IsIEventSink<IEventSink<void()> > : boost::true_type {};
-
     // Is IEventSink<void(void)> or derived from IEventSink<> class template.
     typedef IEventSink<typename ISink::Prototype>  BaseType;
     static_assert(
-        IsIEventSink<ISink>::value ||
+        boost::is_same<void(void), typename ISink::Prototype>::value ||
         boost::is_base_of<BaseType, ISink>::value,
         "The type does not conform to IEventSinkConcept since it is "
         "not derived from IEventSink<> class template.");
