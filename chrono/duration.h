@@ -21,6 +21,7 @@
 #include <boost/functional/hash.hpp>
 #include <boost/core/swap.hpp>
 #include <sstream>
+#include <iomanip>
 #include <limits>
 
 
