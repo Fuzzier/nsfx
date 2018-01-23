@@ -1,3 +1,18 @@
+/**
+ * @file
+ *
+ * @brief Test Duration.
+ *
+ * @version 1.0
+ * @author  Wei Tang <gauchyler@uestc.edu.cn>
+ * @date    2017-12-13
+ *
+ * @copyright Copyright (c) 2017.
+ *   National Key Laboratory of Science and Technology on Communications,
+ *   University of Electronic Science and Technology of China.
+ *   All rights reserved.
+ */
+
 #include <nsfx/test.h>
 #include <nsfx/chrono/duration.h>
 #include <iostream>

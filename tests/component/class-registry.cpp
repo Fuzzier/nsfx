@@ -1,3 +1,18 @@
+/**
+ * @file
+ *
+ * @brief Test ClassRegistry.
+ *
+ * @version 1.0
+ * @author  Wei Tang <gauchyler@uestc.edu.cn>
+ * @date    2017-12-28
+ *
+ * @copyright Copyright (c) 2017.
+ *   National Key Laboratory of Science and Technology on Communications,
+ *   University of Electronic Science and Technology of China.
+ *   All rights reserved.
+ */
+
 #include <nsfx/test.h>
 #include <nsfx/component/class-registry.h>
 #include <nsfx/component/ptr.h>

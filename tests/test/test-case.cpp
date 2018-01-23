@@ -1,3 +1,18 @@
+/**
+ * @file
+ *
+ * @brief test TestCase.
+ *
+ * @version 1.0
+ * @author  wei tang <gauchyler@uestc.edu.cn>
+ * @date    2017-12-07
+ *
+ * @copyright copyright (c) 2017.
+ *   national key laboratory of science and technology on communications,
+ *   university of electronic science and technology of china.
+ *   all rights reserved.
+ */
+
 #include <nsfx/test.h>
 #include <functional>
 #include <iostream>
