@@ -81,20 +81,15 @@ private:
         // ITimerHandle
         virtual void Stop(void) NSFX_OVERRIDE
         {
-            handle_->Cancel();
-            handle_ = nullptr;
-            sink_   = nullptr;
-            scheduler_ = nullptr;
+            if (handle_)
+            {
+                handle_->Cancel();
+                handle_ = nullptr;
+            }
         }
 
         // IEventSink
         virtual void Fire(void) NSFX_OVERRIDE
-        {
-            Signal();
-        }
-
-        // Methods.
-        void Signal(void)
         {
             sink_->Fire();
             t0_ += period_;
