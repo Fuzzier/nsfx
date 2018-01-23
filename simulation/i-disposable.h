@@ -67,6 +67,16 @@ class IDisposable;
  * ### The <b>order of disposing</b>.
  *     The order does not matter, as long as all objects within the boundary
  *     are not used during the disposing process.
+ *
+ *     The event source holds a set of event sinks.<br/>
+ *     To fire an event, the event source usually use a loop to iterate all
+ *     event sinks.<br/>
+ *     When an event sink is disconnected from the event source during the
+ *     disposal, the container of the event sinks is modified, and potentially
+ *     invalidates the iterators used in the loop.<br/>
+ *     Therefore, do <b>NOT</b> dispose an object in an event callback.<br/>
+ *     Dispose an object only when a simulator pauses.
+ *
  */
 class IDisposable :
     virtual public IObject

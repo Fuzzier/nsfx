@@ -20,6 +20,7 @@
 #include <nsfx/simulation/config.h>
 #include <nsfx/simulation/i-timer.h>
 #include <nsfx/simulation/i-event-scheduler.h>
+#include <nsfx/simulation/i-disposable.h>
 #include <nsfx/event/event.h>
 #include <nsfx/component/object.h>
 #include <nsfx/component/ptr.h>

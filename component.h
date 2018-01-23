@@ -26,8 +26,6 @@
 
 #include <nsfx/component/ptr.h>
 
-#include <nsfx/component/i-disposable.h>
-
 #include <nsfx/component/i-class-factory.h>
 #include <nsfx/component/class-factory.h>
 

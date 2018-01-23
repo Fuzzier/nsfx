@@ -20,7 +20,6 @@
 #include <nsfx/event/config.h>
 #include <nsfx/event/i-event.h>
 #include <nsfx/event/exception.h>
-#include <nsfx/component/i-disposable.h>
 #include <nsfx/component/object.h>
 #include <nsfx/component/ptr.h>
 #include <boost/type_traits/decay.hpp>
