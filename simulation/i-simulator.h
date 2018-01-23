@@ -129,7 +129,7 @@ class ISimulatorUser :/*{{{*/
 public:
     virtual ~ISimulatorUser(void) BOOST_NOEXCEPT {}
 
-    virtual void UseSimulator(Ptr<ISimulator> simulator) = 0;
+    virtual void Use(Ptr<ISimulator> simulator) = 0;
 
 }; // class ISimulatorUser /*}}}*/
 

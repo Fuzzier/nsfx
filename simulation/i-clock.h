@@ -75,7 +75,7 @@ public:
      * @throw InvalidPointer
      * @throw CannotReinitialize
      */
-    virtual void UseClock(Ptr<IClock> clock) = 0;
+    virtual void Use(Ptr<IClock> clock) = 0;
 
 }; // class IClockUser /*}}}*/
 

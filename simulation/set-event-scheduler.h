@@ -72,7 +72,7 @@ public:
 
     // IClockUser /*{{{*/
 public:
-    virtual void UseClock(Ptr<IClock> clock) NSFX_OVERRIDE
+    virtual void Use(Ptr<IClock> clock) NSFX_OVERRIDE
     {
         if (clock_)
         {
@@ -82,7 +82,8 @@ public:
         {
             BOOST_THROW_EXCEPTION(InvalidPointer());
         }
-        clock_ = std::move(clock);
+        clock_ = clock;
+        Initialize();
     }
 
     /*}}}*/
@@ -167,7 +168,7 @@ public:
     /*}}}*/
 
 private:
-    void CheckInitialized(void)
+    void Initialize(void)
     {
         if (!initialized_)
         {
@@ -175,10 +176,14 @@ private:
             {
                 initialized_ = true;
             }
-            else
-            {
-                BOOST_THROW_EXCEPTION(Uninitialized());
-            }
+        }
+    }
+
+    void CheckInitialized(void)
+    {
+        if (!initialized_)
+        {
+            BOOST_THROW_EXCEPTION(Uninitialized());
         }
     }
 

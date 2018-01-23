@@ -76,10 +76,10 @@ public:
     {
     }
 
-    virtual ~Simulator(void) BOOST_NOEXCEPT {}
+    virtual ~Simulator(void) {}
 
     // IEventSchedulerUser /*{{{*/
-    virtual void UseEventScheduler(Ptr<IEventScheduler> scheduler) NSFX_OVERRIDE
+    virtual void Use(Ptr<IEventScheduler> scheduler) NSFX_OVERRIDE
     {
         if (!scheduler)
         {
@@ -120,7 +120,7 @@ public:
             BOOST_THROW_EXCEPTION(SimulatorFinished());
         }
         CheckBeginOfSimulation();
-        SignalSimulationRunEvent();
+        FireSimulationRunEvent();
         // An external object can schedule events in its event sink.
         while (true)
         {
@@ -146,7 +146,7 @@ public:
             scheduler_->RemoveNextEvent();
             handle->Fire();
         }
-        SignalSimulationPauseEvent();
+        FireSimulationPauseEvent();
         CheckEndOfSimulation();
     }
 
@@ -159,7 +159,7 @@ public:
     {
         if (!started_)
         {
-            SignalSimulationBeginEvent();
+            FireSimulationBeginEvent();
             started_ = true;
         }
     }
@@ -168,7 +168,7 @@ public:
     {
         if (!scheduler_->GetNextEvent() && !finished_)
         {
-            SignalSimulationEndEvent();
+            FireSimulationEndEvent();
             finished_ = true;
         }
     }
@@ -191,25 +191,25 @@ public:
     /*}}}*/
 
     // Events./*{{{*/
-    void SignalSimulationBeginEvent(void)
+    void FireSimulationBeginEvent(void)
     {
         beginEvent_.GetEnveloped()->Visit(
             [] (ISimulationBeginEventSink* sink){ sink->Fire(); });
     }
 
-    void SignalSimulationRunEvent(void)
+    void FireSimulationRunEvent(void)
     {
         runEvent_.GetEnveloped()->Visit(
             [] (ISimulationRunEventSink* sink){ sink->Fire(); });
     }
 
-    void SignalSimulationPauseEvent(void)
+    void FireSimulationPauseEvent(void)
     {
         pauseEvent_.GetEnveloped()->Visit(
             [] (ISimulationPauseEventSink* sink){ sink->Fire(); });
     }
 
-    void SignalSimulationEndEvent(void)
+    void FireSimulationEndEvent(void)
     {
         endEvent_.GetEnveloped()->Visit(
             [] (ISimulationEndEventSink* sink){ sink->Fire(); });
@@ -218,9 +218,9 @@ public:
     /*}}}*/
 
     NSFX_INTERFACE_MAP_BEGIN(Simulator)
-        NSFX_INTERFACE_ENTRY(ISimulator)
-        NSFX_INTERFACE_ENTRY(IClock)
         NSFX_INTERFACE_ENTRY(IEventSchedulerUser)
+        NSFX_INTERFACE_ENTRY(IClock)
+        NSFX_INTERFACE_ENTRY(ISimulator)
         NSFX_INTERFACE_ENTRY(IDisposable)
         NSFX_INTERFACE_AGGREGATED_ENTRY(ISimulationBeginEvent, &beginEvent_)
         NSFX_INTERFACE_AGGREGATED_ENTRY(ISimulationRunEvent,   &runEvent_)

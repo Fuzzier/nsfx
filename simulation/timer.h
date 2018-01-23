@@ -136,10 +136,10 @@ public:
                                       Ptr<IEventSink<> > sink) NSFX_OVERRIDE;
 
     // IClockUser
-    virtual void UseClock(Ptr<IClock> clock) NSFX_OVERRIDE;
+    virtual void Use(Ptr<IClock> clock) NSFX_OVERRIDE;
 
     // IEventSchedulerUser
-    virtual void UseEventScheduler(Ptr<IEventScheduler> scheduler) NSFX_OVERRIDE;
+    virtual void Use(Ptr<IEventScheduler> scheduler) NSFX_OVERRIDE;
 
     // IDisposable
     virtual void Dispose(void) NSFX_OVERRIDE;
@@ -149,6 +149,7 @@ private:
                                       const Duration& period,
                                       Ptr<IEventSink<> >&& sink);
 
+    void Initialize(void);
     void CheckInitialized(void);
 
     NSFX_INTERFACE_MAP_BEGIN(ThisClass)
@@ -171,30 +172,32 @@ NSFX_REGISTER_CLASS(Timer);
 
 
 ////////////////////////////////////////////////////////////////////////////////
-inline void Timer::UseClock(Ptr<IClock> clock)
+inline void Timer::Use(Ptr<IClock> clock)
 {
-    if (clock_)
-    {
-        BOOST_THROW_EXCEPTION(CannotReinitialize());
-    }
     if (!clock)
     {
         BOOST_THROW_EXCEPTION(InvalidPointer());
     }
-    clock_ = clock;
-}
-
-inline void Timer::UseEventScheduler(Ptr<IEventScheduler> scheduler)
-{
-    if (scheduler_)
+    if (clock_)
     {
         BOOST_THROW_EXCEPTION(CannotReinitialize());
     }
+    clock_ = clock;
+    Initialize();
+}
+
+inline void Timer::Use(Ptr<IEventScheduler> scheduler)
+{
     if (!scheduler)
     {
         BOOST_THROW_EXCEPTION(InvalidPointer());
     }
+    if (scheduler_)
+    {
+        BOOST_THROW_EXCEPTION(CannotReinitialize());
+    }
     scheduler_ = scheduler;
+    Initialize();
 }
 
 inline Ptr<ITimerHandle>
@@ -234,7 +237,7 @@ inline void Timer::Dispose(void)
     scheduler_   = nullptr;
 }
 
-inline void Timer::CheckInitialized(void)
+inline void Timer::Initialize(void)
 {
     if (!initialized_)
     {
@@ -242,10 +245,14 @@ inline void Timer::CheckInitialized(void)
         {
             initialized_ = true;
         }
-        else
-        {
-            BOOST_THROW_EXCEPTION(Uninitialized());
-        }
+    }
+}
+
+inline void Timer::CheckInitialized(void)
+{
+    if (!initialized_)
+    {
+        BOOST_THROW_EXCEPTION(Uninitialized());
     }
 }
 

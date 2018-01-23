@@ -24,12 +24,12 @@ NSFX_TEST_SUITE(Simulator)
 
         virtual ~Sink(void) {}
 
-        virtual void UseClock(nsfx::Ptr<nsfx::IClock> clock) NSFX_OVERRIDE
+        virtual void Use(nsfx::Ptr<nsfx::IClock> clock) NSFX_OVERRIDE
         {
             clock_ = clock;
         }
 
-        virtual void UseSimulator(nsfx::Ptr<nsfx::ISimulator> simulator) NSFX_OVERRIDE
+        virtual void Use(nsfx::Ptr<nsfx::ISimulator> simulator) NSFX_OVERRIDE
         {
             simulator_ = simulator;
             beginSink_ = new BeginEventSinkClass(this, this, &ThisClass::OnSimulationBegin);
@@ -42,7 +42,7 @@ NSFX_TEST_SUITE(Simulator)
             endSinkCookie_   = nsfx::Ptr<nsfx::ISimulationEndEvent>(simulator_)->Connect(endSink_);
         }
 
-        virtual void UseEventScheduler(nsfx::Ptr<nsfx::IEventScheduler> scheduler) NSFX_OVERRIDE
+        virtual void Use(nsfx::Ptr<nsfx::IEventScheduler> scheduler) NSFX_OVERRIDE
         {
             scheduler_ = scheduler;
         }
@@ -94,14 +94,14 @@ NSFX_TEST_SUITE(Simulator)
         void OnSimulationEnd(void)
         {
             std::cout << "END" << std::endl;
-            Dispose();
         }
 
         NSFX_INTERFACE_MAP_BEGIN(ThisClass)
-            NSFX_INTERFACE_ENTRY(nsfx::IEventSink<>)
             NSFX_INTERFACE_ENTRY(nsfx::IClockUser)
             NSFX_INTERFACE_ENTRY(nsfx::ISimulatorUser)
             NSFX_INTERFACE_ENTRY(nsfx::IEventSchedulerUser)
+            NSFX_INTERFACE_ENTRY(nsfx::IDisposable)
+            NSFX_INTERFACE_ENTRY(nsfx::IEventSink<>)
         NSFX_INTERFACE_MAP_END()
 
     private:
@@ -140,18 +140,17 @@ NSFX_TEST_SUITE(Simulator)
 
             // Wire simulator.
             {
-                nsfx::Ptr<nsfx::IEventSchedulerUser>(simulator)->
-                    UseEventScheduler(scheduler);
+                nsfx::Ptr<nsfx::IEventSchedulerUser>(simulator)->Use(scheduler);
             }
             // Wire scheduler.
             {
-                nsfx::Ptr<nsfx::IClockUser>(scheduler)->UseClock(clock);
+                nsfx::Ptr<nsfx::IClockUser>(scheduler)->Use(clock);
             }
             // Wire sink.
             {
-                sink->UseClock(clock);
-                sink->UseSimulator(simulator);
-                sink->UseEventScheduler(scheduler);
+                sink->Use(clock);
+                sink->Use(simulator);
+                sink->Use(scheduler);
             }
 
             // start at 1s.
@@ -168,6 +167,10 @@ NSFX_TEST_SUITE(Simulator)
             // run to the end (20s).
             simulator->Run();
             NSFX_TEST_EXPECT_EQ(counter, 20);
+
+            nsfx::Ptr<nsfx::IDisposable>(simulator)->Dispose();
+            nsfx::Ptr<nsfx::IDisposable>(scheduler)->Dispose();
+            nsfx::Ptr<nsfx::IDisposable>(sink)->Dispose();
         }
         catch (boost::exception& e)
         {
