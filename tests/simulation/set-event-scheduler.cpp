@@ -59,7 +59,7 @@ NSFX_TEST_SUITE(SetEventScheduler)
             {
                 Ptr<nsfx::IClock> clock =
                     nsfx::CreateObject<nsfx::IClock>(nsfx::uuid_of<Clock>());
-                Ptr<nsfx::IClockUser>(sch)->UseClock(clock);
+                Ptr<nsfx::IClockUser>(sch)->Use(clock);
             }
             nsfx::TimePoint t1(nsfx::Duration(1));
             nsfx::TimePoint t2(nsfx::Duration(2));
@@ -80,14 +80,14 @@ NSFX_TEST_SUITE(SetEventScheduler)
             NSFX_TEST_EXPECT_EQ(sch->GetNextEvent()->GetTimePoint(), t1);
             clk = t1;
             NSFX_TEST_EXPECT(h1 == sch->RemoveNextEvent());
-            h1->GetEventSink()->Fire();
+            h1->Fire();
             NSFX_TEST_ASSERT_EQ(sch->GetNumEvents(), 2);
             NSFX_TEST_EXPECT_EQ(clk, t1);
 
             NSFX_TEST_EXPECT_EQ(sch->GetNextEvent()->GetTimePoint(), t2);
             clk = t2;
             NSFX_TEST_EXPECT(h2 == sch->RemoveNextEvent());
-            h2->GetEventSink()->Fire();
+            h2->Fire();
             NSFX_TEST_ASSERT_EQ(sch->GetNumEvents(), 1);
             NSFX_TEST_EXPECT_EQ(clk, t2);
 
@@ -95,14 +95,14 @@ NSFX_TEST_SUITE(SetEventScheduler)
             clk = t3;
             NSFX_TEST_EXPECT(h3 == sch->RemoveNextEvent());
             Ptr<nsfx::IEventHandle> h3_1 = sch->ScheduleNow(s3_1);
-            h3->GetEventSink()->Fire();
+            h3->Fire();
             NSFX_TEST_ASSERT_EQ(sch->GetNumEvents(), 1);
             NSFX_TEST_EXPECT_EQ(clk, t3);
 
             NSFX_TEST_EXPECT_EQ(sch->GetNextEvent()->GetTimePoint(), t3);
             clk = t3;
             NSFX_TEST_EXPECT(h3_1 == sch->RemoveNextEvent());
-            h3_1->GetEventSink()->Fire();
+            h3_1->Fire();
             NSFX_TEST_ASSERT_EQ(sch->GetNumEvents(), 0);
             NSFX_TEST_EXPECT_EQ(clk, t3);
 

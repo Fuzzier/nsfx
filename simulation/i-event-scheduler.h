@@ -134,7 +134,7 @@ class IEventSchedulerUser :/*{{{*/
 public:
     virtual ~IEventSchedulerUser(void) BOOST_NOEXCEPT {}
 
-    virtual void UseEventScheduler(Ptr<IEventScheduler> scheduler) = 0;
+    virtual void Use(Ptr<IEventScheduler> scheduler) = 0;
 
 }; // class IEventScheduler /*}}}*/
 

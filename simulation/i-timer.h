@@ -87,7 +87,7 @@ class ITimerUser :
 public:
     virtual ~ITimerUser(void) BOOST_NOEXCEPT {}
 
-    virtual void UseTimer(Ptr<ITimer> timer) = 0;
+    virtual void Use(Ptr<ITimer> timer) = 0;
 
 }; // class ITimerUser
 

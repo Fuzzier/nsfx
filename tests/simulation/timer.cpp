@@ -45,15 +45,15 @@ NSFX_TEST_SUITE(Timer)
                 nsfx::CreateObject<nsfx::IEventScheduler>(
                     NSFX_CID_SetEventScheduler);
             // wire scheduler
-            nsfx::Ptr<nsfx::IClockUser>(scheduler)->UseClock(clock);
+            nsfx::Ptr<nsfx::IClockUser>(scheduler)->Use(clock);
             // wire simulator
-            nsfx::Ptr<nsfx::IEventSchedulerUser>(simulator)->UseEventScheduler(scheduler);
+            nsfx::Ptr<nsfx::IEventSchedulerUser>(simulator)->Use(scheduler);
 
             nsfx::Ptr<nsfx::ITimer>  timer =
                 nsfx::CreateObject<nsfx::ITimer>(NSFX_CID_Timer);
             // wire timer
-            nsfx::Ptr<nsfx::IClockUser>(timer)->UseClock(clock);
-            nsfx::Ptr<nsfx::IEventSchedulerUser>(timer)->UseEventScheduler(scheduler);
+            nsfx::Ptr<nsfx::IClockUser>(timer)->Use(clock);
+            nsfx::Ptr<nsfx::IEventSchedulerUser>(timer)->Use(scheduler);
 
             nsfx::TimePoint t0(nsfx::Seconds(1));
             nsfx::Duration  p0(nsfx::Seconds(2));
