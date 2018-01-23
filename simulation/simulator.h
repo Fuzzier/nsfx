@@ -21,9 +21,9 @@
 #include <nsfx/simulation/i-simulator.h>
 #include <nsfx/simulation/i-clock.h>
 #include <nsfx/simulation/i-event-scheduler.h>
+#include <nsfx/simulation/i-disposable.h>
 #include <nsfx/simulation/exception.h>
 #include <nsfx/event/event.h>
-#include <nsfx/component/i-disposable.h>
 #include <nsfx/component/class-registry.h>
 
 

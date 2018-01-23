@@ -20,6 +20,8 @@
 #include <nsfx/simulation/config.h>
 #include <nsfx/simulation/exception.h>
 
+#include <nsfx/simulation/i-disposable.h>
+
 #include <nsfx/simulation/i-clock.h>
 
 #include <nsfx/simulation/i-event-handle.h>

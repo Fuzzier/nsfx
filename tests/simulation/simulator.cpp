@@ -2,7 +2,6 @@
 #include <nsfx/simulation/simulator.h>
 #include <nsfx/simulation/set-event-scheduler.h>
 #include <nsfx/event/event-sink.h>
-#include <nsfx/component/i-disposable.h>
 #include <iostream>
 
 NSFX_TEST_SUITE(Simulator)
