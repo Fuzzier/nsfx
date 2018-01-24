@@ -41,7 +41,6 @@ public:
         id_(GetNextEventId()),
         t_(t),
         sink_(sink),
-        removed_(false),
         running_(false)
     {}
 
@@ -50,7 +49,6 @@ public:
         id_(GetNextEventId()),
         t_(t),
         sink_(std::move(sink)),
-        removed_(false),
         running_(false)
     {}
 
@@ -65,22 +63,22 @@ public:
 
     virtual bool IsPending(void) BOOST_NOEXCEPT NSFX_OVERRIDE
     {
-        return (!removed_ && !running_);
+        return (sink_ && !running_);
     }
 
     virtual bool IsRunning(void) BOOST_NOEXCEPT NSFX_OVERRIDE
     {
-        return running_;
+        return (sink_ && running_);
     }
 
     virtual bool IsValid(void) BOOST_NOEXCEPT NSFX_OVERRIDE
     {
-        return (!removed_);
+        return sink_;
     }
 
     virtual void Cancel(void) BOOST_NOEXCEPT NSFX_OVERRIDE
     {
-        removed_ = true;
+        sink_ = nullptr;
     }
 
     virtual TimePoint GetTimePoint(void) BOOST_NOEXCEPT NSFX_OVERRIDE
@@ -90,12 +88,12 @@ public:
 
     virtual void Fire(void) NSFX_OVERRIDE
     {
-        if (!removed_)
+        if (sink_)
         {
             running_ = true;
             sink_->Fire();
             running_ = false;
-            removed_ = true;
+            sink_ = nullptr;
         }
     }
 
@@ -109,7 +107,6 @@ private:
     event_id_t id_;
     TimePoint  t_;
     Ptr<IEventSink<> >  sink_;
-    bool removed_;
     bool running_;
 
 }; // class EventHandle
