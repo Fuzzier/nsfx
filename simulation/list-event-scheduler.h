@@ -120,7 +120,7 @@ public:
             for (auto it = list_.begin(); it != list_.end(); ++it)
             {
                 Ptr<EventHandleClass>&  h = *it;
-                if (h->GetEnveloped()->EventHandle::GetTimePoint() > t)
+                if (h->GetTimePoint() > t)
                 {
                     list_.insert(it, handle);
                     inserted = true;

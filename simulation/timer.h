@@ -19,6 +19,7 @@
 
 #include <nsfx/simulation/config.h>
 #include <nsfx/simulation/i-timer.h>
+#include <nsfx/simulation/i-clock.h>
 #include <nsfx/simulation/i-event-scheduler.h>
 #include <nsfx/simulation/i-disposable.h>
 #include <nsfx/event/event.h>
@@ -60,26 +61,19 @@ class Timer :
     typedef Timer  ThisClass;
 
 private:
-    class Handle :/*{{{*/
-        public ITimerHandle,
+    class Worker :/*{{{*/
         public IEventSink<>
     {
+        typedef Worker  ThisClass;
+
     public:
-        Handle(void) BOOST_NOEXCEPT {}
+        Worker(void) BOOST_NOEXCEPT {}
 
-        Handle(Ptr<IEventSink<> >&& sink,
-               Ptr<IEventScheduler> scheduler,
-               const TimePoint& t0,
-               const Duration& period) :
-            sink_(std::move(sink)),
-            scheduler_(scheduler),
-            t0_(t0),
-            period_(period)
-        {
-        }
+        Worker(Timer* timer) :
+            timer_(timer)
+        {}
 
-        // ITimerHandle
-        virtual void Stop(void) NSFX_OVERRIDE
+        void Stop(void)
         {
             if (handle_)
             {
@@ -88,7 +82,7 @@ private:
             }
         }
 
-        // IEventSink
+        // IEventSink<>
         virtual void Fire(void) NSFX_OVERRIDE
         {
             sink_->Fire();
@@ -101,17 +95,13 @@ private:
             handle_ = scheduler_->ScheduleAt(t0_, Ptr<IEventSink<> >(this));
         }
 
-        NSFX_INTERFACE_MAP_BEGIN(Handle)
-            NSFX_INTERFACE_ENTRY(ITimerHandle)
+        NSFX_INTERFACE_MAP_BEGIN(ThisClass)
             NSFX_INTERFACE_ENTRY(IEventSink<>)
         NSFX_INTERFACE_MAP_END()
 
     private:
-        Ptr<IEventHandle>     handle_;
-        Ptr<IEventSink<> >    sink_;
-        Ptr<IEventScheduler>  scheduler_;
-        TimePoint  t0_;
-        Duration   period_;
+        Timer* timer_;
+        Ptr<IEventHandle> handle_;
     };/*}}}*/
 
     typedef Object<Handle>  HandleClass;
@@ -131,6 +121,8 @@ public:
                                       const Duration& period,
                                       Ptr<IEventSink<> > sink) NSFX_OVERRIDE;
 
+    virtual void Stop(void) NSFX_OVERRIDE;
+
     // IClockUser
     virtual void Use(Ptr<IClock> clock) NSFX_OVERRIDE;
 
@@ -140,7 +132,19 @@ public:
     // IDisposable
     virtual void Dispose(void) NSFX_OVERRIDE;
 
+    // IEventSink<>
+    virtual void Fire(void) NSFX_OVERRIDE
+    {
+        sink_->Fire();
+        ScheduleNextTimeout();
+    }
+
 private:
+    void ScheduleNextTimeout(void)
+    {
+        handle_ = scheduler_->ScheduleAt(t0_, Ptr<IEventSink<> >(this));
+    }
+
     Ptr<ITimerHandle> InternalStartAt(const TimePoint& t0,
                                       const Duration& period,
                                       Ptr<IEventSink<> >&& sink);
@@ -153,12 +157,17 @@ private:
         NSFX_INTERFACE_ENTRY(IEventSchedulerUser)
         NSFX_INTERFACE_ENTRY(ITimer)
         NSFX_INTERFACE_ENTRY(IDisposable)
+        NSFX_INTERFACE_ENTRY(IEventSink<>)
     NSFX_INTERFACE_MAP_END()
 
 private:
     bool  initialized_;
     Ptr<IClock>  clock_;
     Ptr<IEventScheduler>  scheduler_;
+
+    TimePoint t0_;
+    Duration dt_;
+    Ptr<IEventHandle> handle_;
 
 }; // class Timer
 
