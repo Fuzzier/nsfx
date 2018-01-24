@@ -206,11 +206,11 @@ public:
     Ptr<ISink> operator()(IObject* controller, F&& f) const
     {
         typedef FunctorBasedEventSink<ISink, F>  EventSink;
-        typedef Object<EventSink>     EventSinkType;
-        typedef AggObject<EventSink>  AggEventSinkType;
+        typedef Object<EventSink>     EventSinkClass;
+        typedef AggObject<EventSink>  AggEventSinkClass;
         return !controller
-            ? static_cast<ISink*>(new EventSinkType(std::forward<F>(f)))
-            : Ptr<IObject>(new AggEventSinkType(controller, std::forward<F>(f)));
+            ? static_cast<ISink*>(new EventSinkClass(std::forward<F>(f)))
+            : Ptr<IObject>(new AggEventSinkClass(controller, std::forward<F>(f)));
     }
 
     /**
@@ -222,11 +222,11 @@ public:
     Ptr<ISink> operator()(IObject* controller, Ret(* fn)(Args...)) const
     {
         typedef FunctionPointerBasedEventSink<ISink>  EventSink;
-        typedef Object<EventSink>     EventSinkType;
-        typedef AggObject<EventSink>  AggEventSinkType;
+        typedef Object<EventSink>     EventSinkClass;
+        typedef AggObject<EventSink>  AggEventSinkClass;
         return !controller
-            ? static_cast<ISink*>(new EventSinkType(fn))
-            : Ptr<IObject>(new AggEventSinkType(controller, fn));
+            ? static_cast<ISink*>(new EventSinkClass(fn))
+            : Ptr<IObject>(new AggEventSinkClass(controller, fn));
     }
 
     /**
@@ -239,11 +239,11 @@ public:
     Ptr<ISink> operator()(IObject* controller, O* o, Ret(O::* ptmf)(Args...)) const
     {
         typedef MemberFunctionBasedEventSink<ISink, O>  EventSink;
-        typedef Object<EventSink>     EventSinkType;
-        typedef AggObject<EventSink>  AggEventSinkType;
+        typedef Object<EventSink>     EventSinkClass;
+        typedef AggObject<EventSink>  AggEventSinkClass;
         return !controller
-            ? static_cast<ISink*>(new EventSinkType(o, ptmf))
-            : Ptr<IObject>(new AggEventSinkType(controller, o, ptmf));
+            ? static_cast<ISink*>(new EventSinkClass(o, ptmf))
+            : Ptr<IObject>(new AggEventSinkClass(controller, o, ptmf));
     }
 
 };/*}}}*/
@@ -459,11 +459,11 @@ public:
     Ptr<ISink> operator()(IObject* controller, F&& f) const
     {
         typedef FunctorBasedEventSink<ISink, F>  EventSink;
-        typedef Object<EventSink>     EventSinkType;
-        typedef AggObject<EventSink>  AggEventSinkType;
+        typedef Object<EventSink>     EventSinkClass;
+        typedef AggObject<EventSink>  AggEventSinkClass;
         return !controller
-            ? static_cast<ISink*>(new EventSinkType(std::forward<F>(f)))
-            : Ptr<IObject>(new AggEventSinkType(controller, std::forward<F>(f)));
+            ? static_cast<ISink*>(new EventSinkClass(std::forward<F>(f)))
+            : Ptr<IObject>(new AggEventSinkClass(controller, std::forward<F>(f)));
     }
 
     // For funtion pointers.
@@ -473,11 +473,11 @@ public:
     Ptr<ISink> operator()(IObject* controller, Ret(* fn)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A))) const
     {
         typedef FunctionPointerBasedEventSink<ISink>  EventSink;
-        typedef Object<EventSink>     EventSinkType;
-        typedef AggObject<EventSink>  AggEventSinkType;
+        typedef Object<EventSink>     EventSinkClass;
+        typedef AggObject<EventSink>  AggEventSinkClass;
         return !controller
-            ? static_cast<ISink*>(new EventSinkType(fn))
-            : Ptr<IObject>(new AggEventSinkType(controller, fn));
+            ? static_cast<ISink*>(new EventSinkClass(fn))
+            : Ptr<IObject>(new AggEventSinkClass(controller, fn));
     }
 
     // For objects and pointers to member funtions.
@@ -487,11 +487,11 @@ public:
     Ptr<ISink> operator()(IObject* controller, O* o, Ret(O::* ptmf)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A))) const
     {
         typedef MemberFunctionBasedEventSink<ISink, O>  EventSink;
-        typedef Object<EventSink>     EventSinkType;
-        typedef AggObject<EventSink>  AggEventSinkType;
+        typedef Object<EventSink>     EventSinkClass;
+        typedef AggObject<EventSink>  AggEventSinkClass;
         return !controller
-            ? static_cast<ISink*>(new EventSinkType(o, ptmf))
-            : Ptr<IObject>(new AggEventSinkType(controller, o, ptmf));
+            ? static_cast<ISink*>(new EventSinkClass(o, ptmf))
+            : Ptr<IObject>(new AggEventSinkClass(controller, o, ptmf));
     }
 
 };/*}}}*/

@@ -180,14 +180,14 @@ NSFX_TEST_SUITE(Event)
             NSFX_INTERFACE_AGGREGATED_ENTRY(Er3, &r3_)
         NSFX_INTERFACE_MAP_END()
 
-        nsfx::AggObject<nsfx::Event<Ev0>, false> v0_;
-        nsfx::AggObject<nsfx::Event<Ev1>, false> v1_;
-        nsfx::AggObject<nsfx::Event<Ev2>, false> v2_;
-        nsfx::AggObject<nsfx::Event<Ev3>, false> v3_;
-        nsfx::AggObject<nsfx::Event<Er0>, false> r0_;
-        nsfx::AggObject<nsfx::Event<Er1>, false> r1_;
-        nsfx::AggObject<nsfx::Event<Er2>, false> r2_;
-        nsfx::AggObject<nsfx::Event<Er3>, false> r3_;
+        nsfx::MemberObject<nsfx::Event<Ev0>> v0_;
+        nsfx::MemberObject<nsfx::Event<Ev1>> v1_;
+        nsfx::MemberObject<nsfx::Event<Ev2>> v2_;
+        nsfx::MemberObject<nsfx::Event<Ev3>> v3_;
+        nsfx::MemberObject<nsfx::Event<Er0>> r0_;
+        nsfx::MemberObject<nsfx::Event<Er1>> r1_;
+        nsfx::MemberObject<nsfx::Event<Er2>> r2_;
+        nsfx::MemberObject<nsfx::Event<Er3>> r3_;
     };
     NSFX_DEFINE_CLASS_UUID(Test, 0x37207699, 0x8512, 0x4846, 0xB30079F3E7ECAD15LL);
 

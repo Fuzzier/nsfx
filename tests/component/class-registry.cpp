@@ -62,7 +62,7 @@ NSFX_TEST_SUITE(ClassRegistry)
     }/*}}}*/
 
     typedef nsfx::ClassFactory<Test>  TestFactory;
-    typedef nsfx::Object<TestFactory> TestFactoryType;
+    typedef nsfx::Object<TestFactory> TestFactoryClass;
 
     NSFX_TEST_CASE(Direct)/*{{{*/
     {
@@ -104,7 +104,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         nsfx::Ptr<nsfx::IClassFactory> factory;
         try
         {
-            factory = new TestFactoryType;
+            factory = new TestFactoryClass;
             registry->Register(nsfx::uuid_of<Test>(), factory);
         }
         catch (boost::exception& e)
@@ -238,7 +238,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         // Register a class with a custom factory.
         try
         {
-            nsfx::Ptr<nsfx::IClassFactory> factory(new TestFactoryType);
+            nsfx::Ptr<nsfx::IClassFactory> factory(new TestFactoryClass);
             nsfx::RegisterClass(nsfx::uuid_of<Test>(), factory);
         }
         catch (boost::exception& e)

@@ -208,9 +208,9 @@ public:
     }
 
     NSFX_INTERFACE_MAP_BEGIN(ThisClass)
+        NSFX_INTERFACE_ENTRY(IClockUser)
         NSFX_INTERFACE_ENTRY(IEventScheduler)
         NSFX_INTERFACE_ENTRY(IDisposable)
-        NSFX_INTERFACE_ENTRY(IClockUser)
     NSFX_INTERFACE_MAP_END()
 
 private:

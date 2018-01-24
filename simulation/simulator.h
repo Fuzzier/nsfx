@@ -235,10 +235,10 @@ private:
     bool  started_;
     bool  finished_;
 
-    AggObject<Event<ISimulationBeginEvent>, false>  beginEvent_;
-    AggObject<Event<ISimulationRunEvent>,   false>  runEvent_;
-    AggObject<Event<ISimulationPauseEvent>, false>  pauseEvent_;
-    AggObject<Event<ISimulationEndEvent>,   false>  endEvent_;
+    MemberObject<Event<ISimulationBeginEvent> >  beginEvent_;
+    MemberObject<Event<ISimulationRunEvent>   >  runEvent_;
+    MemberObject<Event<ISimulationPauseEvent> >  pauseEvent_;
+    MemberObject<Event<ISimulationEndEvent>   >  endEvent_;
 
 }; // class Simulator
 
