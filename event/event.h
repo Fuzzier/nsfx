@@ -65,8 +65,8 @@ public:
  * @ingroup Event
  * @brief The event class.
  *
- * @tparam IEvent_ The type of a user-defined event sink interface that
- *                 conforms to \c IEventSinkConcept.
+ * @tparam IEventName The type of a user-defined event sink interface that
+ *                    conforms to \c IEventSinkConcept.
  * @tparam limit The maximum number of connections.
  *
  * An event class implements <code>IEvent<></code> interface.<br/>
@@ -87,14 +87,14 @@ public:
  *                                            Event<> (a concrete class)
  * @endcode
  */
-template<class IEvent_, cookie_t limit = 0x7fffffff>
+template<class IEventName, cookie_t limit = 0x7fffffff>
 class Event :/*{{{*/
-    public IEvent_
+    public IEventName
 {
-    BOOST_CONCEPT_ASSERT((IEventConcept<IEvent_>));
+    BOOST_CONCEPT_ASSERT((IEventConcept<IEventName>));
     static_assert(limit > 0, "Invalid limit value for Event class template.");
 
-    typedef IEvent_                              IEventType;
+    typedef IEventName                           IEventType;
     typedef typename IEventType::Prototype       Prototype;
     typedef typename IEventType::IEventSinkType  IEventSinkType;
 
@@ -172,15 +172,18 @@ private:
 
 
 ////////////////////////////////////////////////////////////////////////////////
-template<class IEvent_>
-class Event<IEvent_, /* limit = */ 1> :/*{{{*/
-    public IEvent_
+template<class IEventName>
+class Event<IEventName, /* limit = */ 1> :/*{{{*/
+    public IEventName
 {
-    BOOST_CONCEPT_ASSERT((IEventConcept<IEvent_>));
+    BOOST_CONCEPT_ASSERT((IEventConcept<IEventName>));
 
-    typedef IEvent_                              IEventType;
+    typedef IEventName                           IEventType;
     typedef typename IEventType::Prototype       Prototype;
     typedef typename IEventType::IEventSinkType  IEventSinkType;
+
+public:
+    virtual ~Event(void) {}
 
     // IEvent /*{{{*/
 public:

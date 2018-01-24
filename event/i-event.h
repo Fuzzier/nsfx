@@ -32,9 +32,9 @@ NSFX_OPEN_NAMESPACE
  * @ingroup Event
  * @brief Define a custom event interface that derives from \c IEvent.
  *
- * @param IEvent_ The name of the user-defined event interface.
- * @param ISink   The type of a user-defined event sink interface that conforms
- *                to \c IEventSinkConcept.
+ * @param IEventName The name of the user-defined event interface.
+ * @param ISink      The type of a user-defined event sink interface that
+ *                   conforms to \c IEventSinkConcept.
  *
  * @example For example
  *    @code
@@ -43,13 +43,13 @@ NSFX_OPEN_NAMESPACE
  *         IMyEventSink,  0xD867E76D, 0xA5A5, 0x4834, 0x9F7008661727185FLL);
  *    @endcode
  */
-#define NSFX_DEFINE_EVENT_INTERFACE(IEvent_, ISink, l, w1, w2, ll)   \
-    NSFX_DEFINE_CLASS_UUID(class IEvent_, l, w1, w2, ll);            \
-    class IEvent_ :                                                  \
-        public ::nsfx::IEvent<ISink>                                 \
-    {                                                                \
-    public:                                                          \
-        virtual ~IEvent_(void) BOOST_NOEXCEPT {}                     \
+#define NSFX_DEFINE_EVENT_INTERFACE(IEventName, ISink, l, w1, w2, ll)  \
+    NSFX_DEFINE_CLASS_UUID(class IEventName, l, w1, w2, ll);           \
+    class IEventName :                                                 \
+        public ::nsfx::IEvent<ISink>                                   \
+    {                                                                  \
+    public:                                                            \
+        virtual ~IEventName(void) BOOST_NOEXCEPT {}                    \
     }
 
 
@@ -219,10 +219,10 @@ public:
  * Since <code>IEvent<></code> class template is derived from \c IObject,
  * the class also conforms to \c IObjectConcept.
  */
-template<class IEvent_>
+template<class IEventName>
 struct IEventConcept
 {
-    BOOST_CONCEPT_ASSERT((HasUuidConcept<IEvent_>));
+    BOOST_CONCEPT_ASSERT((HasUuidConcept<IEventName>));
 
     // Has s nested type: IEventSinkType.
     typedef char yes[1];
@@ -233,19 +233,19 @@ struct IEventConcept
     template<class >
     static no&  HasIEventSinkType(...);
     BOOST_STATIC_CONSTANT(bool, hasIEventSinkType =
-        sizeof (HasIEventSinkType<IEvent_>(nullptr)) == sizeof (yes));
+        sizeof (HasIEventSinkType<IEventName>(nullptr)) == sizeof (yes));
 
     static_assert(hasIEventSinkType,
-                  "The type does not conform to IEventConcept since it does "
+                  "The type does not conform to IEventConcept, since it does "
                   "not have a nested 'IEventSinkType'.");
 
     // Conforms to IEventSinkConcept.
-    BOOST_CONCEPT_ASSERT((IEventSinkConcept<typename IEvent_::IEventSinkType>));
+    BOOST_CONCEPT_ASSERT((IEventSinkConcept<typename IEventName::IEventSinkType>));
 
     // Derive from IEvent<> class template.
-    typedef IEvent<typename IEvent_::IEventSinkType>  BaseType;
-    static_assert(boost::is_base_of<BaseType, IEvent_>::value,
-                  "The type does not conform to IEventConcept since it is "
+    typedef IEvent<typename IEventName::IEventSinkType>  BaseType;
+    static_assert(boost::is_base_of<BaseType, IEventName>::value,
+                  "The type does not conform to IEventConcept, since it is "
                   "not derived from IEvent<> class template.");
 };
 
