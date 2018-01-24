@@ -150,24 +150,6 @@ NSFX_OPEN_NAMESPACE
  * This way, the class template can call the \c InternalQueryInterface() member
  * function implemented by the user-defined class.<br/>
  *
- * 4. Poly object.<br/>
- * A poly object supports both non-aggregated and aggregated usage.<br/>
- *
- * The navigator object always exposes the interfaces on the user-defined
- * object, no matter whether it is aggregated or not.<br/>
- * The key difference is on the lifetime management.<br/>
- * For this purpose, another lifetime manager object is defined to virtualize
- * the lifetime management.<br/>
- *
- * The user-defined object delegates its own \c IObject::AddRef() and
- * \c IObject::Release() to the lifetime manager object.<br/>
- * The lifetime manager object holds a reference count, and provides
- * \c IObject::AddRef() and \c IObject::Release() that virtualize current usage.<br/>
- * If a controller is specified at the creation of the user-defined object,
- * the lifetime manager delegates the lifetime management to the controller;
- * Otherwise, the lifetime manager provides implementation for the lifetime
- * management of the user-defined object.<br/>
- *
  * ## 5. Techniques.<br/>
  * ### 5.1 Template-based virtual function implmentation.
  * A base class provides necessary data and non-virtual functions.<br/>
@@ -214,6 +196,97 @@ NSFX_OPEN_NAMESPACE
  * \c IObject::QueryInterface().<br/>
  * However, most calls to \c IObject::QueryInterface() happen at program or
  * component initialization, and it is not likely to cause performance problem.
+ *
+ * 7. Kinds of objects.<br/>
+ * 7.1 \c Object
+ *     An \c Object has a dynamic lifetime, and is allocated on heap.<br/>
+ *     It owns a reference count itself.<br/>
+ *     When \c IObject::Release() is called, and its reference count reaches
+ *     \c 0, it is deallocated automatically.<br/>
+ *     It is the most common kind of objects.
+ *
+ * 7.2 \c StaticObject
+ *     The allocation and deallocation are not always desired.<br/>
+ *     e.g., a singleton does not need a dynamic lifetime management, which
+ *     should be defined as a \c static object.<br/>
+ *     In such cases, the lifetime of the object is meaningless.<br/>
+ *     \c StaticObject can be used for such use cases.<br/>
+ *     <p>
+ *     A \c StaticObject does not have a reference count.<br/>
+ *     To prevent memory leak, a \c StaticObject must be defined as a \c static
+ *     variable.
+ *
+ * 7.3 \c AggObject
+ *     An \c AggObject is an aggregable object.<br/>
+ *     i.e., the navigator of an aggregated object.<br/>
+ *     The \c AggObject owns a reference count itself.<br/>
+ *     Thus, it can be allocated and deallocated dynamically.<br/>
+ *     However, its reference count is held only by its controller.<br/>
+ *     And it is deallocated when the controller's lifetime ends.<br/>
+ *     It holds an aggregated object that shares the same reference count with
+ *     its controller.<br/>
+ *
+ * 7.4 \c MemberObject
+ *     The lifetime of an \c AggObject is quite similar to a member variable of
+ *     its controller.<br/>
+ *     Actually, a member variable of type <code>Ptr<IObject></code> is used to
+ *     manage the lifetime of an \c AggObject.<br/>
+ *     Allocating an \c AggObject on heap is a good way to encapsulate/hide the
+ *     user-defined class away from the controller.<br/>
+ *     However, it is not efficient when the user-defined class is known to the
+ *     controller.<br/>
+ *     \c MemberObject can be used for such use cases.
+ *     <p>
+ *     A \c MemberObject does not have a reference count.<br/>
+ *     Except for this, it is the same as an \c AggObject.<br/>
+ *     A \c MemberObject must be defined as a member variable of a controller
+ *     class.<br/>
+ *     Thus, the lifetime of a \c MemberObject is naturally the same as its
+ *     controller.<br/>
+ *
+ * 7.5 \c LinkedObject
+ *     The navigability is not always desired.<br/>
+ *     One of the limitations of the component model is that a component cannot
+ *     expose an interface multiple times with different implementations.<br/>
+ *     e.g., when a component needs to provide multiple event sinks to various
+ *     event sources, it faces a problem that these event sinks share the same
+ *     interface but have different implementations.<br/>
+ *     In such cases, the component cannot expose the event sinks by using the
+ *     component model described so far.<br/>
+ *     Another problem is that the component must have a lifetime as long as the
+ *     event sinks.<br/>
+ *     i.e., as long as an event source holds an event sink, the component must
+ *     not be deallocated.<br/>
+ *     <p>
+ *     The key is to let each event sink hold a reference count of the component.<br/>
+ *     This is can be done by letting each event sink hold a <code>Ptr<></code>
+ *     that points to the component.<br/>
+ *     However, this is not efficient.<br/>
+ *     Usually, the navigability of an event sink is not important, as in most
+ *     cases an event source does not query other interfaces from an event sink.<br/>
+ *     \c LinkedObject can be used in such use cases.
+ *     <p>
+ *     A \c LinkedObject shares the same reference count with its controller,
+ *     i.e., the component that provides the object to other components.<br/>
+ *     However, the controller does not expose the interfaces on \c LinkedObject,
+ *     and the \c LinkedObject does not expose the interfaces on its controller.<br/>
+ *     They seem like two different components from outside, as the navigability
+ *     is not provided.<br/>
+ *     <p>
+ *     Usually, one must not hold a pointer to a member variable of a dynamic
+ *     object, since the deallocation of the object invalidates the pointer,
+ *     and a dangling pointer is deadly.<br/>
+ *     However, a \c LinkedObject can be defined as a member variable of the
+ *     controller, since a \c LinkedObject shares the same reference count with
+ *     the controller.<br/>
+ *     The controller is free to provide to other components smart pointers that
+ *     point to the \c LinkedObject, although it is a member variable.<br/>
+ *     The point is that a smart pointer to the \c LinkedObject actually holds
+ *     a reference count of the controller.<br/>
+ *     Thus, as long as a smart pointer to the \c LinkedObject exists, the
+ *     controller also exists.<br/>
+ *
+ *
  *
  * @see \c NSFX_INTERFACE_MAP_BEGIN,
  *      \c NSFX_INTERFACE_ENTRY,
@@ -332,11 +405,17 @@ struct EnvelopableConcept/*{{{*/
  *
  * The \c Envelopable may implement \c ObjectBase::InternalQueryInterface() via
  * \c NSFX_INTERFACE_XXX() macros.
+ *
+ * ### When to use?
+ *     \c Object can be used everywhere.
+ * ### How to use?
+ *     An \c Object must be allocated on heap.<br/>
+ *     i.e., <code>Ptr<></code> shall be used to hold an \c Object.
  */
 template<class Envelopable>
 class Object NSFX_FINAL :/*{{{*/
-    public Envelopable,
-    private ObjectBase // Use private inherit as the methods are only used internally.
+    private ObjectBase, // Use private inherit as the methods are only used internally.
+    public Envelopable
 {
 private:
     BOOST_CONCEPT_ASSERT((EnvelopableConcept<Envelopable>));
@@ -412,6 +491,14 @@ public:
  *
  * The \c Envelopable may implement \c ObjectBase::InternalQueryInterface() via
  * \c NSFX_INTERFACE_XXX() macros.
+ *
+ * ### When to use?
+ *     \c StaticObject can be used when an object has a static lifetime.
+ * ### How to use?
+ *     A \c StaticObject must be defined as a \c static variable.
+ * ### Benefits.
+ *     It saves a <code>Ptr<></code> to manage lifetime.<br/>
+ *     There is no need to allocate on heap.
  */
 template<class Envelopable>
 class StaticObject NSFX_FINAL :/*{{{*/
@@ -565,19 +652,30 @@ public:
  *
  * @tparam Envelopable A class that conforms to \c EnvelopableConcept.
  *
- * @remarks The aggregated object has the same lifetime as the navigator.<br/>
- *          So the navigator also has the same lifetime as the controller.<br/>
- *          Therefore, the controller must <b>not</b> deallocate the navigator
- *          until the controller itself is deallocated.<br/>
- *          <p>
- *          Usually, a controller defines a member varaible of type
- *          <code>Ptr<IObject></code> to hold an \c AggObject, i.e., the
- *          navigator.<br/>
- *          This smart pointer is never offer to other objects.<br/>
- *          And it is deallocated along with the controller.<br/>
+ * The aggregated object has the same lifetime as the navigator.<br/>
+ * So the navigator also has the same lifetime as the controller.<br/>
+ * Therefore, the controller must <b>not</b> deallocate the navigator until
+ * the controller itself is deallocated.<br/>
+ *
+ * A controller shall define a member varaible of type <code>Ptr<IObject></code>
+ * to hold an \c AggObject, i.e., the navigator.<br/>
+ * This smart pointer is never offer to other objects.<br/>
+ * And it is deallocated along with the controller.<br/>
  *
  * The \c Enveloped may implement \c ObjectBase::InternalQueryInterface() via
  * \c NSFX_INTERFACE_XXX() macros.
+ *
+ * ### When to use?
+ *     \c AggObject can be used by a controller to aggregate an object.
+ * ### How to use?
+ *     An \c AggObject must be allocated on heap.<br/>
+ *     The controller shall define a member variable of type <code>Ptr<IObject></code>
+ *     to hold the allocated \c AggObject.<br/>
+ *     This pointer must not be given to other objects.<br/>
+ *     The \c AggObject lives until the controller is destructed.
+ * ### Benefits.
+ *     The interfaces on an aggregated object can be exposed directly by the
+ *     controller.<br/>
  */
 template<class Envelopable>
 class AggObject NSFX_FINAL :/*{{{*/
@@ -595,8 +693,7 @@ public:
 
 #else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
     AggObject(IObject* controller) :
-        agg_(controller)
-    {}
+        agg_(controller) {}
 
 # define BOOST_PP_ITERATION_PARAMS_1  (4, (1, NSFX_MAX_ARITY, <nsfx/component/object.h>, 3))
 # include BOOST_PP_ITERATE()
@@ -665,7 +762,7 @@ private:
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// MemberAggObject
+// MemberObject
 /**
  * @ingroup Component
  * @brief An aggregable object that must be used a member variable of its constroller.
@@ -680,6 +777,18 @@ private:
  *
  * The \c Envelopable may implement \c ObjectBase::InternalQueryInterface() via
  * \c NSFX_INTERFACE_XXX() macros.
+ *
+ * ### When to use?
+ *     \c MemberObject can be used by a controller to aggregate an object.
+ * ### How to use?
+ *     A \c MemberObject must be defined as a member variable of the controller.<br/>
+ * ### Benefits.
+ *     The interfaces on an aggregated object can be exposed directly by the
+ *     controller.<br/>
+ *     A \c MemberObject naturally has the same lifetime as the controller,
+ *     which is similar to an \c AggObject.<br/>
+ *     It saves a <code>Ptr<></code> to manage lifetime.<br/>
+ *     There is no need to allocate on heap.
  */
 template<class Envelopable>
 class MemberObject NSFX_FINAL :/*{{{*/
@@ -696,9 +805,7 @@ public:
 
 #else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
     MemberObject(IObject* controller) :
-        agg_(controller)
-    {
-    }
+        agg_(controller) {}
 
 # define BOOST_PP_ITERATION_PARAMS_1  (4, (1, NSFX_MAX_ARITY, <nsfx/component/object.h>, 4))
 # include BOOST_PP_ITERATE()
@@ -757,6 +864,114 @@ private:
     Aggregated<Envelopable> agg_;  /// The aggregated object.
 
 }; // class MemberObject /*}}}*/
+
+
+////////////////////////////////////////////////////////////////////////////////
+// LinkedObject
+/**
+ * @ingroup Component
+ * @brief An object that can be exposed by its constroller with a separate set of interfaces.
+ *
+ * @tparam Envelopable A class that conforms to \c EnvelopableConcept.
+ *
+ * A linked object shares the same reference count as its controller.<br/>
+ * It can be defined as a member variable of the controller.<br/>
+ *
+ * The \c Envelopable may implement \c ObjectBase::InternalQueryInterface() via
+ * \c NSFX_INTERFACE_XXX() macros.
+ *
+ * ### When to use?
+ *     \c LinkedObject can be used by a controller to provide an object that
+ *     exposes a separate set of interfaces.<br/>
+ * ### How to use?
+ *     A \c LinkedObject can be defined as a member variable of the controller.<br/>
+ *     The controller can provide to other objects smart pointers that point to
+ *     the \c LinkedObject.<br/>
+ *     The controler must not expose the interfaces on a \c LinkedObject as its
+ *     own interfaces.
+ * ### Benefits.
+ *     The controller lives as long as other objects hold smart pointers to
+ *     the \c LinkedObject.
+ *     It saves a <code>Ptr<></code> to manage lifetime.<br/>
+ *     There is no need to allocate on heap.
+ */
+template<class Envelopable>
+class LinkedObject NSFX_FINAL :/*{{{*/
+    private ObjectBase, // Use private inherit as the methods are only used internally.
+    public Envelopable
+{
+private:
+    BOOST_CONCEPT_ASSERT((EnvelopableConcept<Envelopable>));
+
+public:
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+    template<class...Args>
+    LinkedObject(IObject* controller, Args&&... args) :
+        ObjectBase(controller),
+        Envelopable(std::forward<Args>(args)...)
+    {
+        if (!controller)
+        {
+            BOOST_THROW_EXCEPTION(
+                BadAggregation() << ControllerErrorInfo(controller));
+        }
+    }
+
+#else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+    LinkedObject(IObject* controller) :
+        ObjectBase(controller)
+    {
+        if (!controller)
+        {
+            BOOST_THROW_EXCEPTION(
+                BadAggregation() << ControllerErrorInfo(controller));
+        }
+    }
+
+# define BOOST_PP_ITERATION_PARAMS_1  (4, (1, NSFX_MAX_ARITY, <nsfx/component/object.h>, 5))
+# include BOOST_PP_ITERATE()
+
+#endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+
+    virtual ~LinkedObject(void) BOOST_NOEXCEPT {}
+
+    // Non-copyable.
+private:
+    BOOST_DELETED_FUNCTION(LinkedObject(const LinkedObject& ));
+    BOOST_DELETED_FUNCTION(LinkedObject& operator=(const LinkedObject& ));
+
+    // IObject./*{{{*/
+public:
+    virtual refcount_t AddRef(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+    {
+        return ControllerAddRef();
+    }
+
+    virtual refcount_t Release(void) NSFX_FINAL NSFX_OVERRIDE
+    {
+        return ControllerRelease();
+    }
+
+    /**
+     * @brief Query an interface from the navigator.
+     *
+     * @return The interface on the aggregated object.
+     */
+    virtual void* QueryInterface(const uuid& iid) NSFX_FINAL NSFX_OVERRIDE
+    {
+        void* result = Envelopable::InternalQueryInterface(iid);
+        return result;
+    }
+
+    /*}}}*/
+
+    // Methods.
+    Envelopable* GetEnveloped(void)
+    {
+        return static_cast<Envelopable*>(this);
+    }
+
+}; // class LinkedObject /*}}}*/
 
 
 NSFX_CLOSE_NAMESPACE
@@ -874,7 +1089,7 @@ StaticObject(BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, && a)) :
 // template<class A0, class A1, ...>
 // AggObject(IObject* controller, A0&& a0, A1&& a1, ...)) :
 //     ObjectBase(controller),
-//     agg_(controller, std::forward<A0>(a0), std::forward<A1>(a1), ...) {}
+//     Envelopable(std::forward<A0>(a0), std::forward<A1>(a1), ...)
 template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
 Aggregated(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, && a)) :
     ObjectBase(controller),
@@ -903,6 +1118,24 @@ AggObject(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(),
 template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
 MemberObject(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, && a)) :
     agg_(controller, BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, )) {}
+
+# elif BOOST_PP_ITERATION_FLAGS() == 5
+
+// template<class A0, class A1, ...>
+// LinkedObject(IObject* controller, A0&& a0, A1&& a1, ...)) :
+//     ObjectBase(controller),
+//     Envelopable(std::forward<A0>(a0), std::forward<A1>(a1), ...)
+template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
+LinkedObject(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, && a)) :
+    ObjectBase(controller),
+    Envelopable(BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, ))
+{
+    if (!controller)
+    {
+        BOOST_THROW_EXCEPTION(
+            BadAggregation() << ControllerErrorInfo(controller));
+    }
+}
 
 # endif // BOOST_PP_ITERATION_FLAGS() == x
 
