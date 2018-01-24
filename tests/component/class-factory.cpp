@@ -62,8 +62,8 @@ NSFX_TEST_SUITE(ClassFactory)
     NSFX_TEST_CASE(Object)
     {
         typedef nsfx::ClassFactory<Test>  TestFactory;
-        typedef nsfx::Object<TestFactory> TestFactoryType;
-        nsfx::Ptr<nsfx::IClassFactory> factory(new TestFactoryType);
+        typedef nsfx::Object<TestFactory> TestFactoryClass;
+        nsfx::Ptr<nsfx::IClassFactory> factory(new TestFactoryClass);
         try
         {
             // Create a non-aggregable object via class factory.
@@ -91,8 +91,8 @@ NSFX_TEST_SUITE(ClassFactory)
             Foo(void)
             {
                 typedef nsfx::ClassFactory<Test>  TestFactory;
-                typedef nsfx::Object<TestFactory> TestFactoryType;
-                nsfx::Ptr<nsfx::IClassFactory> factory(new TestFactoryType);
+                typedef nsfx::Object<TestFactory> TestFactoryClass;
+                nsfx::Ptr<nsfx::IClassFactory> factory(new TestFactoryClass);
                 try
                 {
                     // Create an aggregable object via class factory.
@@ -135,8 +135,8 @@ NSFX_TEST_SUITE(ClassFactory)
         };
 
         typedef nsfx::ClassFactory<Foo>  FooFactory;
-        typedef nsfx::Object<FooFactory> FooFactoryType;
-        nsfx::Ptr<nsfx::IClassFactory> factory(new FooFactoryType);
+        typedef nsfx::Object<FooFactory> FooFactoryClass;
+        nsfx::Ptr<nsfx::IClassFactory> factory(new FooFactoryClass);
         try
         {
             nsfx::Ptr<nsfx::IObject> o;

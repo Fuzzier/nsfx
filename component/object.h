@@ -318,24 +318,25 @@ struct EnvelopableConcept/*{{{*/
 // Object
 /**
  * @ingroup Component
- * @brief A non-aggregable object.
+ * @brief A non-aggregable object that must be allocated on heap.
  *
  * @tparam Envelopable A class that conforms to \c EnvelopableConcept.
- * @tparam autoDelete  If \c true, the object is automatically deleted when its
- *                     reference count is decremented to \c 0.<br/>
- *                     The object must be allocated on heap.<br/>
- *                     Otherwise, the object can be placed on stack or as a
- *                     concrete member variable of a class.
  *
  * A non-aggretable object possesses a reference counter.<br/>
  * However, it does not hold a pointer to a controller, thus it cannot be
- * managed by a controller.
+ * managed by a controller.<br/>
+ *
+ * An \c Object will deallocate itself when its reference count reaches \c 0.<br/>
+ * Therefore, do not define an \c Object as a static variable or a member
+ * variable.<br/>
+ *
+ * The \c Envelopable may implement \c ObjectBase::InternalQueryInterface() via
+ * \c NSFX_INTERFACE_XXX() macros.
  */
-template<class Envelopable, bool autoDelete = true>
+template<class Envelopable>
 class Object NSFX_FINAL :/*{{{*/
-    private ObjectBase,
-    public Envelopable
-    // Use private inherit as the methods are only used internally.
+    public Envelopable,
+    private ObjectBase // Use private inherit as the methods are only used internally.
 {
 private:
     BOOST_CONCEPT_ASSERT((EnvelopableConcept<Envelopable>));
@@ -365,14 +366,14 @@ private:
 public:
     virtual refcount_t AddRef(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
     {
-        refcount_t result = autoDelete ? InternalAddRef() : 1;
+        refcount_t result = InternalAddRef();
         return result;
     }
 
     virtual refcount_t Release(void) NSFX_FINAL NSFX_OVERRIDE
     {
-        refcount_t result = autoDelete ? InternalRelease() : 1;
-        if (autoDelete && !result)
+        refcount_t result = InternalRelease();
+        if (!result)
         {
             delete this;
         }
@@ -396,106 +397,195 @@ public:
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// AggObject
 /**
  * @ingroup Component
- * @brief An aggregable object that is the navigator of an aggregated object.
+ * @brief A non-aggregable object that must be used as a static variable.
  *
  * @tparam Envelopable A class that conforms to \c EnvelopableConcept.
- * @tparam autoDelete  If \c true, the navigator is automatically deleted when
- *                     its reference count is decremented to \c 0.<br/>
- *                     The object must be allocated on heap.<br/>
- *                     Otherwise, the object can be placed on stack or as a
- *                     concrete member variable in the controller class.
  *
- * The derived object may implement \c ObjectBase::InternalQueryInterface() via
+ * A \c StaticObject does not have a reference count.<br/>
+ * Thus, do not allocate a \c StaticObject on heap, since <code>Ptr<></code>
+ * cannot deallocate it automatically.<br/>
+ * It must be defined as a static variable to prevent memory leak.<br/>
+ * e.g. a singleton can be defined as a static \c StaticObject, and there is
+ * no need to allocate it on heap.<br/>
+ *
+ * The \c Envelopable may implement \c ObjectBase::InternalQueryInterface() via
  * \c NSFX_INTERFACE_XXX() macros.
- *
- * @remarks The aggregated object has the same lifetime as the navigator.<br/>
- *          So the navigator also has the same lifetime as the controller.<br/>
- *          Therefore, the controller must <b>not</b> deallocate the navigator
- *          until the controller itself is deallocated.
  */
-template<class Envelopable, bool autoDelete = true>
-class AggObject NSFX_FINAL :/*{{{*/
-    public IObject,
-    private ObjectBase
-    // Use private inherit as the methods are only used internally.
+template<class Envelopable>
+class StaticObject NSFX_FINAL :/*{{{*/
+    public Envelopable
 {
 private:
     BOOST_CONCEPT_ASSERT((EnvelopableConcept<Envelopable>));
 
-    class Aggregated NSFX_FINAL :/*{{{*/
-        public ObjectBase,
-        public Envelopable
-    {
-    public:
+public:
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-        template<class...Args>
-        Aggregated(IObject* controller, Args&&... args) :
-            ObjectBase(controller),
-            Envelopable(std::forward<Args>(args)...)
-        {
-            if (!controller)
-            {
-                BOOST_THROW_EXCEPTION(
-                    BadAggregation() << ControllerErrorInfo(controller));
-            }
-        }
+    template<class...Args>
+    StaticObject(Args&&... args) :
+        Envelopable(std::forward<Args>(args)...) {}
 
 #else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-        Aggregated(IObject* controller) :
-            ObjectBase(controller)
+    StaticObject(void) {}
+
+# define BOOST_PP_ITERATION_PARAMS_1  (4, (1, NSFX_MAX_ARITY, <nsfx/component/object.h>, 1))
+# include BOOST_PP_ITERATE()
+
+#endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+
+    virtual ~StaticObject(void) BOOST_NOEXCEPT {}
+
+    // Non-copyable.
+private:
+    BOOST_DELETED_FUNCTION(StaticObject(const StaticObject& ));
+    BOOST_DELETED_FUNCTION(StaticObject& operator=(const StaticObject& ));
+
+    // IObject./*{{{*/
+public:
+    virtual refcount_t AddRef(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+    {
+        return 1;
+    }
+
+    virtual refcount_t Release(void) NSFX_FINAL NSFX_OVERRIDE
+    {
+        return 1;
+    }
+
+    virtual void* QueryInterface(const uuid& iid) NSFX_FINAL NSFX_OVERRIDE
+    {
+        return InternalQueryInterface(iid);
+    }
+
+    /*}}}*/
+
+    // Methods.
+    Envelopable* GetEnveloped(void)
+    {
+        return static_cast<Envelopable*>(this);
+    }
+
+}; // class StaticObject /*}}}*/
+
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+ * @ingroup Component
+ * @brief A aggregated object that is internally used by \c MemberObject and \c AggObject.
+ *
+ * @tparam Envelopable A class that conforms to \c EnvelopableConcept.
+ *
+ * Users cannot use this class directly.
+ *
+ * @internal
+ */
+template<class Envelopable>
+class Aggregated NSFX_FINAL :/*{{{*/
+    private ObjectBase, // Use private inherit as the methods are only used internally.
+    public Envelopable
+{
+private:
+    template<class Envelopable> friend class AggObject;
+    template<class Envelopable> friend class MemberObject;
+
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+    template<class...Args>
+    Aggregated(IObject* controller, Args&&... args) :
+        ObjectBase(controller),
+        Envelopable(std::forward<Args>(args)...)
+    {
+        if (!controller)
         {
-            if (!controller)
-            {
-                BOOST_THROW_EXCEPTION(
-                    BadAggregation() << ControllerErrorInfo(controller));
-            }
+            BOOST_THROW_EXCEPTION(
+                BadAggregation() << ControllerErrorInfo(controller));
         }
+    }
+
+#else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+    Aggregated(IObject* controller) :
+        ObjectBase(controller)
+    {
+        if (!controller)
+        {
+            BOOST_THROW_EXCEPTION(
+                BadAggregation() << ControllerErrorInfo(controller));
+        }
+    }
 
 # define BOOST_PP_ITERATION_PARAMS_1  (4, (1, NSFX_MAX_ARITY, <nsfx/component/object.h>, 2))
 # include BOOST_PP_ITERATE()
 
 #endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-        virtual ~Aggregated(void) BOOST_NOEXCEPT {}
+    virtual ~Aggregated(void) BOOST_NOEXCEPT {}
 
-    // Non-copyable.
+// Non-copyable.
 private:
-        BOOST_DELETED_FUNCTION(Aggregated(const Aggregated& ));
-        BOOST_DELETED_FUNCTION(Aggregated& operator=(const Aggregated& ));
+    BOOST_DELETED_FUNCTION(Aggregated(const Aggregated& ));
+    BOOST_DELETED_FUNCTION(Aggregated& operator=(const Aggregated& ));
 
-        // IObject./*{{{*/
+    // IObject./*{{{*/
 public:
-        virtual refcount_t AddRef(void) NSFX_FINAL NSFX_OVERRIDE
-        {
-            return ControllerAddRef();
-        }
+    virtual refcount_t AddRef(void) NSFX_FINAL NSFX_OVERRIDE
+    {
+        return ControllerAddRef();
+    }
 
-        virtual refcount_t Release(void) NSFX_FINAL NSFX_OVERRIDE
-        {
-            return ControllerRelease();
-        }
+    virtual refcount_t Release(void) NSFX_FINAL NSFX_OVERRIDE
+    {
+        return ControllerRelease();
+    }
 
-        /**
-         * @brief Exposes interfaces implemented by the aggregated object.
-         */
-        virtual void* QueryInterface(const uuid& iid) NSFX_FINAL NSFX_OVERRIDE
-        {
-            return ControllerQueryInterface(iid);
-        }
+    /**
+     * @brief Exposes interfaces implemented by the aggregated object.
+     */
+    virtual void* QueryInterface(const uuid& iid) NSFX_FINAL NSFX_OVERRIDE
+    {
+        return ControllerQueryInterface(iid);
+    }
 
-        /*}}}*/
+    /*}}}*/
 
-        // Make the protected Envelopable::InternalQueryInterface() public
-        // member of Aggregated class.
-        void* InternalQueryInterface(const uuid& iid)
-        {
-            return Envelopable::InternalQueryInterface(iid);
-        }
+    // Make the protected Envelopable::InternalQueryInterface() a member of
+    // Aggregated class.
+    void* InternalQueryInterface(const uuid& iid)
+    {
+        return Envelopable::InternalQueryInterface(iid);
+    }
 
-    }; // class Aggregated /*}}}*/
+}; // class Aggregated /*}}}*/
+
+
+////////////////////////////////////////////////////////////////////////////////
+// AggObject
+/**
+ * @ingroup Component
+ * @brief An aggregable object that must be allocated on heap.
+ *
+ * @tparam Envelopable A class that conforms to \c EnvelopableConcept.
+ *
+ * @remarks The aggregated object has the same lifetime as the navigator.<br/>
+ *          So the navigator also has the same lifetime as the controller.<br/>
+ *          Therefore, the controller must <b>not</b> deallocate the navigator
+ *          until the controller itself is deallocated.<br/>
+ *          <p>
+ *          Usually, a controller defines a member varaible of type
+ *          <code>Ptr<IObject></code> to hold an \c AggObject, i.e., the
+ *          navigator.<br/>
+ *          This smart pointer is never offer to other objects.<br/>
+ *          And it is deallocated along with the controller.<br/>
+ *
+ * The \c Enveloped may implement \c ObjectBase::InternalQueryInterface() via
+ * \c NSFX_INTERFACE_XXX() macros.
+ */
+template<class Envelopable>
+class AggObject NSFX_FINAL :/*{{{*/
+    public IObject,
+    private ObjectBase // Use private inherit as the methods are only used internally.
+{
+private:
+    BOOST_CONCEPT_ASSERT((EnvelopableConcept<Envelopable>));
 
 public:
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
@@ -506,10 +596,9 @@ public:
 #else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
     AggObject(IObject* controller) :
         agg_(controller)
-    {
-    }
+    {}
 
-# define BOOST_PP_ITERATION_PARAMS_1  (4, (1, NSFX_MAX_ARITY, <nsfx/component/object.h>, 1))
+# define BOOST_PP_ITERATION_PARAMS_1  (4, (1, NSFX_MAX_ARITY, <nsfx/component/object.h>, 3))
 # include BOOST_PP_ITERATE()
 
 #endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
@@ -525,14 +614,14 @@ private:
 public:
     virtual refcount_t AddRef(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
     {
-        refcount_t result = autoDelete ? InternalAddRef() : 1;
+        refcount_t result = InternalAddRef();
         return result;
     }
 
     virtual refcount_t Release(void) NSFX_FINAL NSFX_OVERRIDE
     {
-        refcount_t result = autoDelete ? InternalRelease() : 1;
-        if (autoDelete && !result)
+        refcount_t result = InternalRelease();
+        if (!result)
         {
             delete this;
         }
@@ -552,7 +641,7 @@ public:
         if (iid == uuid_of<IObject>())
         {
             result = static_cast<IObject*>(this);
-            autoDelete ? InternalAddRef() : 1;
+            InternalAddRef();
         }
         else
         {
@@ -570,27 +659,104 @@ public:
     }
 
 private:
-    Aggregated agg_;  /// The aggregated object.
+    Aggregated<Envelopable> agg_;  /// The aggregated object.
 
 }; // class AggObject /*}}}*/
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Type traits./*{{{*/
-template<class T>
-struct IsNonAggregated: boost::false_type {};
+// MemberAggObject
+/**
+ * @ingroup Component
+ * @brief An aggregable object that must be used a member variable of its constroller.
+ *
+ * @tparam Envelopable A class that conforms to \c EnvelopableConcept.
+ *
+ * A member aggregable object does not have a reference count.<br/>
+ * Thus, do not allocate a \c MemberObject on heap, since <code>Ptr<></code>
+ * cannot deallocate it automatically.<br/>
+ * It must be defined as a member variable of the controller to prevent memory
+ * leak.<br/>
+ *
+ * The \c Envelopable may implement \c ObjectBase::InternalQueryInterface() via
+ * \c NSFX_INTERFACE_XXX() macros.
+ */
+template<class Envelopable>
+class MemberObject NSFX_FINAL :/*{{{*/
+    public IObject
+{
+private:
+    BOOST_CONCEPT_ASSERT((EnvelopableConcept<Envelopable>));
 
-template<class T, bool autoDelete>
-struct IsNonAggregated<Object<T, autoDelete> > : boost::true_type {};
+public:
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+    template<class...Args>
+    MemberObject(IObject* controller, Args&&... args) :
+        agg_(controller, std::forward<Args>(args)...) {}
 
+#else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+    MemberObject(IObject* controller) :
+        agg_(controller)
+    {
+    }
 
-template<class T>
-struct IsAggregated : boost::false_type {};
+# define BOOST_PP_ITERATION_PARAMS_1  (4, (1, NSFX_MAX_ARITY, <nsfx/component/object.h>, 4))
+# include BOOST_PP_ITERATE()
 
-template<class T, bool autoDelete>
-struct IsAggregated<AggObject<T, autoDelete> > : boost::true_type {};
+#endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-/*}}}*/
+    virtual ~MemberObject(void) BOOST_NOEXCEPT {}
+
+    // Non-copyable.
+private:
+    BOOST_DELETED_FUNCTION(MemberObject(const MemberObject& ));
+    BOOST_DELETED_FUNCTION(MemberObject& operator=(const MemberObject& ));
+
+    // IObject./*{{{*/
+public:
+    virtual refcount_t AddRef(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+    {
+        return 1;
+    }
+
+    virtual refcount_t Release(void) NSFX_FINAL NSFX_OVERRIDE
+    {
+        return 1;
+    }
+
+    /**
+     * @brief Query an interface from the navigator.
+     *
+     * @return If the \c iid is the uuid of \c IObject, return the \c IObject
+     *         on the navigator itself.<br/>
+     *         Otherwise, return the interface on the aggregated object.
+     */
+    virtual void* QueryInterface(const uuid& iid) NSFX_FINAL NSFX_OVERRIDE
+    {
+        void* result = nullptr;
+        if (iid == uuid_of<IObject>())
+        {
+            result = static_cast<IObject*>(this);
+        }
+        else
+        {
+            result = agg_.InternalQueryInterface(iid);
+        }
+        return result;
+    }
+
+    /*}}}*/
+
+    // Methods.
+    Envelopable* GetEnveloped(void)
+    {
+        return static_cast<Envelopable*>(&agg_);
+    }
+
+private:
+    Aggregated<Envelopable> agg_;  /// The aggregated object.
+
+}; // class MemberObject /*}}}*/
 
 
 NSFX_CLOSE_NAMESPACE
@@ -694,16 +860,16 @@ template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
 Object(BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, && a)) :
     Envelopable(BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, )) {}
 
-#elif BOOST_PP_ITERATION_FLAGS() == 1
+# elif BOOST_PP_ITERATION_FLAGS() == 1
 
 // template<class A0, class A1, ...>
-// AggObject(IObject* controller, A0&& a0, A1&& a1, ...)) :
-//     agg_(controller, std::forward<A0>(a0), std::forward<A1>(a1), ...) {}
+// StaticObject(A0&& a0, A1&& a1, ...)) :
+//     Envelopable(std::forward<A0>(a0), std::forward<A1>(a1), ...) {}
 template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
-AggObject(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, && a)) :
-    agg_(controller, BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, )) {}
+StaticObject(BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, && a)) :
+    Envelopable(BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, )) {}
 
-#elif BOOST_PP_ITERATION_FLAGS() == 2
+# elif BOOST_PP_ITERATION_FLAGS() == 2
 
 // template<class A0, class A1, ...>
 // AggObject(IObject* controller, A0&& a0, A1&& a1, ...)) :
@@ -720,7 +886,25 @@ Aggregated(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION()
     }
 }
 
-#endif // BOOST_PP_ITERATION_FLAGS() == x
+# elif BOOST_PP_ITERATION_FLAGS() == 3
+
+// template<class A0, class A1, ...>
+// AggObject(IObject* controller, A0&& a0, A1&& a1, ...)) :
+//     agg_(controller, std::forward<A0>(a0), std::forward<A1>(a1), ...) {}
+template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
+AggObject(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, && a)) :
+    agg_(controller, BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, )) {}
+
+# elif BOOST_PP_ITERATION_FLAGS() == 4
+
+// template<class A0, class A1, ...>
+// MemberObject(IObject* controller, A0&& a0, A1&& a1, ...)) :
+//     agg_(controller, std::forward<A0>(a0), std::forward<A1>(a1), ...) {}
+template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
+MemberObject(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, && a)) :
+    agg_(controller, BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, )) {}
+
+# endif // BOOST_PP_ITERATION_FLAGS() == x
 
 #undef NSFX_PP_FORWARD
 

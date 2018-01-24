@@ -47,7 +47,7 @@ NSFX_TEST_SUITE(Timer)
         nsfx::Ptr<nsfx::IClock>  clock_;
     };/*}}}*/
 
-    typedef nsfx::Object<Sink>  SinkType;
+    typedef nsfx::Object<Sink>  SinkClass;
 
     NSFX_TEST_CASE(StartAt)/*{{{*/
     {
@@ -72,7 +72,7 @@ NSFX_TEST_SUITE(Timer)
 
             nsfx::TimePoint t0(nsfx::Seconds(1));
             nsfx::Duration  p0(nsfx::Seconds(2));
-            nsfx::Ptr<SinkType>  sink(new SinkType(clock));
+            nsfx::Ptr<SinkClass>  sink(new SinkClass(clock));
 
             count = 0;
             nsfx::Ptr<nsfx::ITimerHandle>  h0 = timer->StartAt(t0, p0, sink);

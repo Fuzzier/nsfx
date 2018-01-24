@@ -111,138 +111,132 @@ NSFX_TEST_SUITE(Object)
         return result;
     }/*}}}*/
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Non-aggregable.
-    NSFX_TEST_SUITE(NonAggregable)/*{{{*/
+    NSFX_TEST_CASE(Object)/*{{{*/
     {
-        NSFX_TEST_CASE(ObjectOnHeap)
+        try
         {
-            try
+            // Has default ctor.
             {
-                // Has default ctor.
-                {
-                    deallocated = false;
-                    typedef nsfx::Object<Test>  TestType;
-                    TestType* t = new TestType;
-                    nsfx::Ptr<ITest> q(t);
-                    NSFX_TEST_EXPECT(!deallocated);
-                    NSFX_TEST_EXPECT(q);
-                    NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1);
-                    nsfx::Ptr<nsfx::IObject> p(q);
-                    NSFX_TEST_EXPECT(p);
-                    NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 2);
-                    NSFX_TEST_EXPECT(p == q);
-                    p.Reset();
-                    NSFX_TEST_EXPECT(!deallocated);
-                    q.Reset();
-                    NSFX_TEST_EXPECT(deallocated);
-                    NSFX_TEST_ASSERT(t->GetEnveloped());
-                    NSFX_TEST_EXPECT_EQ(t->GetEnveloped()->Internal(), 0);
-                }
+                deallocated = false;
+                typedef nsfx::Object<Test>  TestClass;
+                nsfx::Ptr<TestClass> t(new TestClass);
+                nsfx::Ptr<ITest> q(t); // Allocate on heap.
+                NSFX_TEST_EXPECT(!deallocated);
+                NSFX_TEST_EXPECT(q);
+                NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 2);
+                nsfx::Ptr<nsfx::IObject> p(q);
+                NSFX_TEST_EXPECT(p);
+                NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 3);
+                NSFX_TEST_EXPECT(p == q);
+                p.Reset();
+                NSFX_TEST_EXPECT(!deallocated);
+                q.Reset();
+                NSFX_TEST_EXPECT(!deallocated);
+                NSFX_TEST_ASSERT(t->GetEnveloped());
+                NSFX_TEST_EXPECT_EQ(t->GetEnveloped()->Internal(), 0);
+            }
 
-                // Has no default ctor.
-                {
-                    deallocated = false;
-                    typedef nsfx::Object<TestNoDefaultCtor>  TestType;
-                    TestType* t = new TestType(1);
-                    nsfx::Ptr<ITest> q(t);
-                    NSFX_TEST_EXPECT(!deallocated);
-                    NSFX_TEST_EXPECT(q);
-                    NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1);
-                    nsfx::Ptr<nsfx::IObject> p(q);
-                    NSFX_TEST_EXPECT(p);
-                    NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 2);
-                    NSFX_TEST_EXPECT(p == q);
-                    p.Reset();
-                    NSFX_TEST_EXPECT(!deallocated);
-                    q.Reset();
-                    NSFX_TEST_EXPECT(deallocated);
-                    NSFX_TEST_ASSERT(t->GetEnveloped());
-                    NSFX_TEST_EXPECT_EQ(t->GetEnveloped()->Internal(), 1);
-                }
+            // Has no default ctor.
+            {
+                deallocated = false;
+                typedef nsfx::Object<TestNoDefaultCtor>  TestClass;
+                nsfx::Ptr<TestClass> t(new TestClass(1));
+                nsfx::Ptr<ITest> q(t); // Allocate on heap.
+                NSFX_TEST_EXPECT(!deallocated);
+                NSFX_TEST_EXPECT(q);
+                NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 2);
+                nsfx::Ptr<nsfx::IObject> p(q);
+                NSFX_TEST_EXPECT(p);
+                NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 3);
+                NSFX_TEST_EXPECT(p == q);
+                p.Reset();
+                NSFX_TEST_EXPECT(!deallocated);
+                q.Reset();
+                NSFX_TEST_EXPECT(!deallocated);
+                NSFX_TEST_ASSERT(t->GetEnveloped());
+                NSFX_TEST_EXPECT_EQ(t->GetEnveloped()->Internal(), 1);
+            }
 
-            }
-            catch (boost::exception& e)
-            {
-                NSFX_TEST_EXPECT(false) << diagnostic_information(e);
-            }
-            catch (std::exception& e)
-            {
-                NSFX_TEST_EXPECT(false) << e.what();
-            }
+        }
+        catch (boost::exception& e)
+        {
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+        }
+        catch (std::exception& e)
+        {
+            NSFX_TEST_EXPECT(false) << e.what();
         }
 
-        NSFX_TEST_CASE(ObjectOnStack)
-        {
-            try
-            {
-                // Has default ctor.
-                {
-                    deallocated = false;
-                    typedef nsfx::Object<Test, false>  TestType;
-                    TestType o;
-                    NSFX_TEST_EXPECT(!deallocated);
-                    nsfx::Ptr<ITest> q(&o);
-                    NSFX_TEST_EXPECT(q);
-                    NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1);
-                    nsfx::Ptr<nsfx::IObject>  p(q);
-                    NSFX_TEST_EXPECT(p);
-                    NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1);
-                    NSFX_TEST_EXPECT(p == q);
-                    p.Reset();
-                    q.Reset();
-                    NSFX_TEST_EXPECT_EQ(o.GetRefCount(), 1);
-                    NSFX_TEST_EXPECT(!deallocated);
-                    NSFX_TEST_ASSERT(o.GetEnveloped());
-                    NSFX_TEST_EXPECT_EQ(o.GetEnveloped()->Internal(), 0);
-                }
-
-                // Has no default ctor.
-                {
-                    deallocated = false;
-                    typedef nsfx::Object<TestNoDefaultCtor, false>  TestType;
-                    TestType o(1);
-                    NSFX_TEST_EXPECT(!deallocated);
-                    nsfx::Ptr<ITest> q(&o);
-                    NSFX_TEST_EXPECT(q);
-                    NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1);
-                    nsfx::Ptr<nsfx::IObject>  p(q);
-                    NSFX_TEST_EXPECT(p);
-                    NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1);
-                    NSFX_TEST_EXPECT(p == q);
-                    p.Reset();
-                    q.Reset();
-                    NSFX_TEST_EXPECT_EQ(o.GetRefCount(), 1);
-                    NSFX_TEST_EXPECT(!deallocated);
-                    NSFX_TEST_ASSERT(o.GetEnveloped());
-                    NSFX_TEST_EXPECT_EQ(o.GetEnveloped()->Internal(), 1);
-                }
-
-            }
-            catch (boost::exception& e)
-            {
-                NSFX_TEST_EXPECT(false) << diagnostic_information(e);
-            }
-            catch (std::exception& e)
-            {
-                NSFX_TEST_EXPECT(false) << e.what();
-            }
-            NSFX_TEST_EXPECT(deallocated);
-        }
     }/*}}}*/
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Aggregable.
-    NSFX_TEST_SUITE(Aggregable)/*{{{*/
+    NSFX_TEST_CASE(StaticObject)/*{{{*/
+    {
+        try
+        {
+            // Has default ctor.
+            {
+                deallocated = false;
+                typedef nsfx::StaticObject<Test>  TestClass;
+                static TestClass t; // Define as a static variable.
+                nsfx::Ptr<ITest> q(&t);
+                NSFX_TEST_EXPECT(!deallocated);
+                NSFX_TEST_EXPECT(q);
+                NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1);
+                nsfx::Ptr<nsfx::IObject> p(q);
+                NSFX_TEST_EXPECT(p);
+                NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1); // Reference count is always 1.
+                NSFX_TEST_EXPECT(p == q);
+                p.Reset();
+                NSFX_TEST_EXPECT(!deallocated);
+                q.Reset();
+                NSFX_TEST_EXPECT(!deallocated);
+                NSFX_TEST_ASSERT(t.GetEnveloped());
+                NSFX_TEST_EXPECT_EQ(t.GetEnveloped()->Internal(), 0);
+            }
+
+            // Has no default ctor.
+            {
+                deallocated = false;
+                typedef nsfx::StaticObject<TestNoDefaultCtor>  TestClass;
+                static TestClass t(2); // Define as a static variable.
+                nsfx::Ptr<ITest> q(&t);
+                NSFX_TEST_EXPECT(!deallocated);
+                NSFX_TEST_EXPECT(q);
+                NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1);
+                nsfx::Ptr<nsfx::IObject> p(q);
+                NSFX_TEST_EXPECT(p);
+                NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1); // Reference count is always 1.
+                NSFX_TEST_EXPECT(p == q);
+                p.Reset();
+                NSFX_TEST_EXPECT(!deallocated);
+                q.Reset();
+                NSFX_TEST_EXPECT(!deallocated);
+                NSFX_TEST_ASSERT(t.GetEnveloped());
+                NSFX_TEST_EXPECT_EQ(t.GetEnveloped()->Internal(), 1);
+            }
+
+        }
+        catch (boost::exception& e)
+        {
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+        }
+        catch (std::exception& e)
+        {
+            NSFX_TEST_EXPECT(false) << e.what();
+        }
+
+    }/*}}}*/
+
+    NSFX_TEST_SUITE(AggObject)/*{{{*/
     {
         NSFX_TEST_CASE(RequireController)
         {
             deallocated = false;
-            typedef nsfx::AggObject<Test>  TestType;
+            typedef nsfx::AggObject<Test>  TestClass;
             try
             {
                 // Must pass a non-null controller.
-                nsfx::Ptr<nsfx::IObject> t(new TestType(nullptr));
+                nsfx::Ptr<nsfx::IObject> t(new TestClass(nullptr));
                 NSFX_TEST_EXPECT(false);
             }
             catch (nsfx::BadAggregation& )
@@ -259,18 +253,90 @@ NSFX_TEST_SUITE(Object)
             }
         }
 
-        // Heap
         struct Wedge : public IFoobar
         {
-            typedef nsfx::AggObject<Test>  TestType;
+            typedef nsfx::AggObject<Test>  TestClass;
 
-            Wedge(void)
+            Wedge(void) :
+                t_(new TestClass(this)) // Construct with a controller.
+            {}
+
+            virtual ~Wedge(void) {}
+
+            virtual refcount_t GetRefCount(void)
             {
-                t.Reset(new TestType(this));
-                if (!t)
-                {
-                    BOOST_THROW_EXCEPTION(nsfx::NoInterface());
-                }
+                AddRef();
+                return Release();
+            }
+
+            NSFX_INTERFACE_MAP_BEGIN(Wedge)
+                NSFX_INTERFACE_ENTRY(IFoobar)
+                NSFX_INTERFACE_AGGREGATED_ENTRY(ITest, t_)
+            NSFX_INTERFACE_MAP_END()
+
+            nsfx::Ptr<nsfx::IObject> t_; // A smart pointer.
+        };
+
+        NSFX_TEST_CASE(Test)
+        {
+            try
+            {
+                deallocated = false;
+                typedef nsfx::Object<Wedge> WedgeClass;
+                nsfx::Ptr<WedgeClass> w(new WedgeClass);
+                nsfx::Ptr<ITest> q(w); // Expose interfaces of aggregated object.
+                NSFX_TEST_EXPECT(!deallocated);
+                NSFX_TEST_EXPECT(q);
+                NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 2);
+                nsfx::Ptr<nsfx::IObject> p(q);
+                NSFX_TEST_EXPECT(p);
+                NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 3);
+                NSFX_TEST_EXPECT(p == q);
+                p.Reset();
+                NSFX_TEST_EXPECT(!deallocated);
+                q.Reset();
+                NSFX_TEST_EXPECT(!deallocated);
+            }
+            catch (std::exception& )
+            {
+                NSFX_TEST_EXPECT(false);
+            }
+        }
+    }/*}}}*/
+
+    NSFX_TEST_SUITE(MemberObject)/*{{{*/
+    {
+        NSFX_TEST_CASE(RequireController)
+        {
+            deallocated = false;
+            typedef nsfx::MemberObject<Test>  TestClass;
+            try
+            {
+                // Must pass a non-null controller.
+                TestClass t(nullptr);
+                NSFX_TEST_EXPECT(false);
+            }
+            catch (nsfx::BadAggregation& )
+            {
+                // Should come here.
+            }
+            catch (boost::exception& e)
+            {
+                NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            }
+            catch (std::exception& e)
+            {
+                NSFX_TEST_EXPECT(false) << e.what();
+            }
+        }
+
+        struct Wedge : public IFoobar
+        {
+            typedef nsfx::MemberObject<Test>  TestClass;
+
+            Wedge(void) :
+                t_(this) // Construct with a controller.
+            {
             }
 
             virtual ~Wedge(void) {}
@@ -283,80 +349,26 @@ NSFX_TEST_SUITE(Object)
 
             NSFX_INTERFACE_MAP_BEGIN(Wedge)
                 NSFX_INTERFACE_ENTRY(IFoobar)
-                NSFX_INTERFACE_AGGREGATED_ENTRY(ITest, t)
+                NSFX_INTERFACE_AGGREGATED_ENTRY(ITest, &t_)
             NSFX_INTERFACE_MAP_END()
 
-            nsfx::Ptr<nsfx::IObject> t;
+            TestClass t_; // A member variable.
         };
 
-        NSFX_TEST_CASE(AggObjectOnHeap)
+        NSFX_TEST_CASE(Test)
         {
             try
             {
                 deallocated = false;
-                typedef nsfx::Object<Wedge> WedgeType;
-                nsfx::Ptr<ITest> q(new WedgeType);
+                typedef nsfx::Object<Wedge> WedgeClass;
+                nsfx::Ptr<WedgeClass>  w(new WedgeClass);
+                nsfx::Ptr<ITest> q(w); // Expose interfaces of aggregated object.
                 NSFX_TEST_EXPECT(!deallocated);
                 NSFX_TEST_EXPECT(q);
-                NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1);
+                NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 2); // Share reference count with the controller.
                 nsfx::Ptr<nsfx::IObject> p(q);
                 NSFX_TEST_EXPECT(p);
-                NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 2);
-                NSFX_TEST_EXPECT(p == q);
-                p.Reset();
-                NSFX_TEST_EXPECT(!deallocated);
-                q.Reset();
-                NSFX_TEST_EXPECT(deallocated);
-            }
-            catch (std::exception& )
-            {
-                NSFX_TEST_EXPECT(false);
-            }
-        }
-
-        // Stack
-        struct Vee : public IFoobar
-        {
-            typedef nsfx::AggObject<Test, false>  TestType;
-
-#pragma warning(push)
-#pragma warning(disable: 4355)
-            Vee(void) :
-                t(this)
-            {
-            }
-#pragma warning(pop)
-
-            virtual ~Vee(void) {}
-
-            virtual refcount_t GetRefCount(void)
-            {
-                AddRef();
-                return Release();
-            }
-
-            NSFX_INTERFACE_MAP_BEGIN(Wedge)
-                NSFX_INTERFACE_ENTRY(IFoobar)
-                NSFX_INTERFACE_AGGREGATED_ENTRY(ITest, &t)
-            NSFX_INTERFACE_MAP_END()
-
-            TestType t;
-        };
-
-        NSFX_TEST_CASE(AggObjectOnStack)
-        {
-            try
-            {
-                deallocated = false;
-                typedef nsfx::Object<Vee, false> VeeType;
-                VeeType v;
-                nsfx::Ptr<ITest> q(&v);
-                NSFX_TEST_EXPECT(!deallocated);
-                NSFX_TEST_EXPECT(q);
-                NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1);
-                nsfx::Ptr<nsfx::IObject> p(q);
-                NSFX_TEST_EXPECT(p);
-                NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1);
+                NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 3); // Share reference count with the controller.
                 NSFX_TEST_EXPECT(p == q);
                 p.Reset();
                 NSFX_TEST_EXPECT(!deallocated);

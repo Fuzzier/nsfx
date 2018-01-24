@@ -136,8 +136,8 @@ NSFX_OPEN_NAMESPACE
  *          }
  *      };
  *      typedef FunctorBasedEventSink<IMyEventSink, Functor>  MyEventSink1;
- *      typedef Object<MyEventSink1>     MyEventSinkType1;
- *      Ptr<IMyEventSink> s1(new MyEventSinkType1(nullptr, Functor()));
+ *      typedef Object<MyEventSink1>     MyEventSinkClass1;
+ *      Ptr<IMyEventSink> s1(new MyEventSinkClass1(nullptr, Functor()));
  *
  *      // Function pointer based event sink.
  *      char Bar(short, int)
@@ -145,8 +145,8 @@ NSFX_OPEN_NAMESPACE
  *          return '0';
  *      }
  *      typedef FunctionPointerBasedEventSink<IMyEventSink>  MyEventSink2;
- *      typedef Object<MyEventSink2>     MyEventSinkType2;
- *      Ptr<IMyEventSink> s2(new MyEventSinkType2(nullptr, &Bar));
+ *      typedef Object<MyEventSink2>     MyEventSinkClass2;
+ *      Ptr<IMyEventSink> s2(new MyEventSinkClass2(nullptr, &Bar));
  *
  *      // Member function based event sink.
  *      struct Obj
@@ -158,8 +158,8 @@ NSFX_OPEN_NAMESPACE
  *      };
  *      static Obj o;
  *      typedef MemberFunctionBasedEventSink<IMyEventSink, Obj>  MyEventSink3;
- *      typedef Object<MyEventSink3>     MyEventSinkType3;
- *      Ptr<IMyEventSink> s3(new MyEventSinkType3(nullptr, &o, &Obj::Qux));
+ *      typedef Object<MyEventSink3>     MyEventSinkClass3;
+ *      Ptr<IMyEventSink> s3(new MyEventSinkClass3(nullptr, &o, &Obj::Qux));
  *      @endcode
  *
  * #### 2.2 Maker class.

@@ -64,8 +64,8 @@ public:
 
     void* CreateNonAggregable(const uuid& iid)
     {
-        typedef Object<Envelopable>  ObjectType;
-        ObjectType* o = new ObjectType;
+        typedef Object<Envelopable>  ObjectClass;
+        ObjectClass* o = new ObjectClass;
         try
         {
             void* result = o->QueryInterface(iid);
@@ -80,8 +80,8 @@ public:
 
     void* CreateAggregable(IObject* controller)
     {
-        typedef AggObject<Envelopable>  ObjectType;
-        ObjectType* o = new ObjectType(controller);
+        typedef AggObject<Envelopable>  ObjectClass;
+        ObjectClass* o = new ObjectClass(controller);
         return o->QueryInterface(NSFX_IID_IObject);
     }
 

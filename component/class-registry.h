@@ -106,8 +106,8 @@ public:
      */
     static IClassRegistry* GetIClassRegistry(void)
     {
-        typedef Object<ClassRegistry, false>  ClassRegistryType;
-        static ClassRegistryType registry;
+        typedef StaticObject<ClassRegistry>  ClassRegistryClass;
+        static ClassRegistryClass registry;
         // Omit AddRef() as there is no need to do so.
         // Omit QueryInterface() as the implementation is known.
         return &registry;
@@ -186,8 +186,8 @@ inline void RegisterClass(typename ::boost::mpl::identity<C>::type* = nullptr)
 {
     BOOST_CONCEPT_ASSERT((HasUuidConcept<C>));
     BOOST_CONCEPT_ASSERT((EnvelopableConcept<C>));
-    typedef Object<ClassFactory<C> >  ClassFactoryType;
-    Ptr<IClassFactory> factory(new ClassFactoryType);
+    typedef Object<ClassFactory<C> >  ClassFactoryClass;
+    Ptr<IClassFactory> factory(new ClassFactoryClass);
     IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
     BOOST_ASSERT(registry);
     registry->Register(uuid_of<C>(), std::move(factory));

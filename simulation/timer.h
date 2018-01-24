@@ -149,10 +149,10 @@ private:
     void CheckInitialized(void);
 
     NSFX_INTERFACE_MAP_BEGIN(ThisClass)
-        NSFX_INTERFACE_ENTRY(ITimer)
-        NSFX_INTERFACE_ENTRY(IDisposable)
         NSFX_INTERFACE_ENTRY(IClockUser)
         NSFX_INTERFACE_ENTRY(IEventSchedulerUser)
+        NSFX_INTERFACE_ENTRY(ITimer)
+        NSFX_INTERFACE_ENTRY(IDisposable)
     NSFX_INTERFACE_MAP_END()
 
 private:
