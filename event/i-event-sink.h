@@ -26,6 +26,7 @@
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_binary_params.hpp>
 #include <boost/preprocessor/iteration/iterate.hpp>
+#include <boost/type_traits/remove_pointer.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/is_base_of.hpp>
 #include <boost/type_traits/is_function.hpp>
@@ -223,23 +224,11 @@ NSFX_OPEN_NAMESPACE
  *                              &f, &Functor::Foo));
  *      @endcode
  */
-template<class Proto = void(void)>
-class IEventSink :
-    virtual public IObject
-{
-public:
-    typedef void(Prototype)(void);
-
-    virtual ~IEventSink(void) BOOST_NOEXCEPT {}
-
-    /**
-     * @brief The callback method of the event sink.
-     */
-    virtual void Fire(void) = 0;
-};
+template<class Proto = typename boost::remove_pointer<void(void)>::type>
+class IEventSink;
 
 
-////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Event
  * @brief The uuid of <code>IEventSink<void(void)></code>.
@@ -323,21 +312,21 @@ struct IEventSinkConcept
         sizeof (HasPrototype<ISink>(nullptr)) == sizeof (yes));
 
     static_assert(hasPrototype,
-                  "The type does not conform to IEventSinkConcept since it "
+                  "The type does not conform to IEventSinkConcept, since it "
                   "does not have a nested 'Prototype'.");
 
     // The nested Prototype is a function type.
     static_assert(boost::is_function<typename ISink::Prototype>::value,
-                  "The type does not conform to IEventSinkConcept since it has "
+                  "The type does not conform to IEventSinkConcept, since it has "
                   "an invalid nested 'Prototype' that is not a function type.");
 
     // Is IEventSink<void(void)> or derived from IEventSink<> class template.
     typedef IEventSink<typename ISink::Prototype>  BaseType;
     static_assert(
-        boost::is_same<void(void), typename ISink::Prototype>::value ||
+        boost::is_same<IEventSink<>, ISink>::value ||
         boost::is_base_of<BaseType, ISink>::value,
-        "The type does not conform to IEventSinkConcept since it is "
-        "not derived from IEventSink<> class template.");
+        "The type does not conform to IEventSinkConcept since, it is neither "
+        "IEventSink<void(void)>, nor derived from IEventSink<> class template.");
 };
 
 
