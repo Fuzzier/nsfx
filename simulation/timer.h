@@ -198,6 +198,7 @@ Timer::StartAt(const TimePoint& t0,
     }
     t_ = t0;
     dt_ = period;
+    sink_ = sink;
     ScheduleNextTimeout();
 }
 

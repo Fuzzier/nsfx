@@ -49,7 +49,7 @@ NSFX_TEST_SUITE(Timer)
 
     typedef nsfx::Object<Sink>  SinkClass;
 
-    NSFX_TEST_CASE(StartAt)/*{{{*/
+    NSFX_TEST_CASE(Start)/*{{{*/
     {
         try
         {
@@ -83,7 +83,6 @@ NSFX_TEST_SUITE(Timer)
             NSFX_TEST_EXPECT_EQ(count, 1 + 8 / 2);
 
             timer->Stop();
-            simulator->RunFor(nsfx::Seconds(4));
 
             p0 = nsfx::Seconds(2);
             timer->StartNow(p0, sink);
