@@ -19,7 +19,7 @@
 
 #include <nsfx/simulation/config.h>
 #include <nsfx/simulation/i-clock.h>
-#include <nsfx/event/i-event.h>
+#include <nsfx/event/i-event-sink.h>
 #include <nsfx/component/i-object.h>
 #include <nsfx/component/ptr.h>
 
@@ -30,28 +30,10 @@ NSFX_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 // Types.
 class ITimer;
-class ITimerHandle;
 class ITimerUser;
 
 #define NSFX_IID_ITimer        NSFX_UUID_OF(::nsfx::ITimer)
-#define NSFX_IID_ITimerHandle  NSFX_UUID_OF(::nsfx::ITimerHandle)
 #define NSFX_IID_ITimerSink    NSFX_UUID_OF(::nsfx::ITimerSink)
-
-
-////////////////////////////////////////////////////////////////////////////////
-// ITimerHandle.
-class ITimerHandle :
-    virtual public IObject
-{
-public:
-    virtual ~ITimerHandle(void) BOOST_NOEXCEPT {}
-
-    virtual void Stop(void) = 0;
-
-}; // class ITimerHandle
-
-
-NSFX_DEFINE_CLASS_UUID(ITimerHandle, 0xEC57866B, 0x28D1, 0x4C73, 0xBE85F4FE32732235LL);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -66,12 +48,14 @@ class ITimer :
 public:
     virtual ~ITimer(void) BOOST_NOEXCEPT {}
 
-    virtual Ptr<ITimerHandle> StartNow(const Duration& period,
-                                       Ptr<IEventSink<> > sink) = 0;
+    virtual void StartNow(const Duration& period,
+                          Ptr<IEventSink<> > sink) = 0;
 
-    virtual Ptr<ITimerHandle> StartAt(const TimePoint& t0,
-                                      const Duration& period,
-                                      Ptr<IEventSink<> > sink) = 0;
+    virtual void StartAt(const TimePoint& t0,
+                         const Duration& period,
+                         Ptr<IEventSink<> > sink) = 0;
+
+    virtual void Stop(void) = 0;
 
 }; // class ITimer
 

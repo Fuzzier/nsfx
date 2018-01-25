@@ -75,24 +75,19 @@ NSFX_TEST_SUITE(Timer)
             nsfx::Ptr<SinkClass>  sink(new SinkClass(clock));
 
             count = 0;
-            nsfx::Ptr<nsfx::ITimerHandle>  h0 = timer->StartAt(t0, p0, sink);
+            timer->StartAt(t0, p0, sink);
             simulator->RunUntil(t0);
             NSFX_TEST_EXPECT_EQ(count, 1);
 
             simulator->RunUntil(t0 + nsfx::Seconds(8));
             NSFX_TEST_EXPECT_EQ(count, 1 + 8 / 2);
 
-            nsfx::Duration  p1(nsfx::Seconds(1));
-            nsfx::Ptr<nsfx::ITimerHandle>  h1 = timer->StartNow(p1, sink);
+            timer->Stop();
+            simulator->RunFor(nsfx::Seconds(4));
+
+            p0 = nsfx::Seconds(2);
+            timer->StartNow(p0, sink);
             simulator->RunFor(nsfx::Seconds(8));
-            NSFX_TEST_EXPECT_EQ(count, 5 + 8 / 2 + 9);
-
-            h0->Stop();
-            simulator->RunFor(nsfx::Seconds(4));
-
-            h1->Stop();
-            simulator->RunFor(nsfx::Seconds(4));
-            NSFX_TEST_EXPECT_EQ(count, 22);
 
             nsfx::Ptr<nsfx::IDisposable>(simulator)->Dispose();
             nsfx::Ptr<nsfx::IDisposable>(scheduler)->Dispose();
