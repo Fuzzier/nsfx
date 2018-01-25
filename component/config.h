@@ -37,9 +37,21 @@
  *   `is-a' means the component is the object that implements the interface.<br/>
  *   `has-a' means the component aggregates an object that implements the
  *   interface.<br/>
+ *   @code
+ *   interface
+ *      | implemented by
+ *      V
+ *      object
+ *         | aggregated into
+ *         V
+ *         compoment
+ *            | exposes
+ *            V
+ *            interface
+ *   @endcode
  *
  *   For convenience, a user can <b>always</b> assume that a component
- *   `is' \c IObject, and `has' other interfaces.<br/>
+ *   `is' an \c IObject, and `has' other interfaces.<br/>
  *   i.e., a component implements \c IObject itself, and all other interfaces
  *   are implemented by internally aggregated objects.<br/>
  *
@@ -48,46 +60,66 @@
  *   When multiple objects implements the same interface, the component can
  *   expose an enumerator interface for users to obtain the required objects.<br/>
  *
- * # What component model should be used?<br/>
- * ## 1. How to obtain different interfaces on a object?<br/>
+ * # The component model.
+ * ## 1. How to obtain different interfaces on a component?<br/>
  *
- * ### 1.1 Use concrete class directly.<br/>
+ * ### 1.1 Use concrete class and downcast.<br/>
  *     The primary form of interface implementation is to create a concrete
  *     class that inherits from pure abstract bases, and implements the methods.<br/>
  *     Such classes can be large and heavy, since a class inherits from all
- *     interfaces it implements, and presents to users a huge table of virtual
- *     functions, as long as a set of non-virtual functions.<br>
+ *     interfaces it exposes, and presents to users a huge table of virtual
+ *     functions, along with a set of non-virtual functions.<br/>
+ *     The code of the class becomes hard to read or understand.<br/>
  *     It becomes unclear how interfaces are cohesive with each other, but they
  *     are just coupled tightly together within a class.<br/>
  *
- *     Interfaces are generally not aware of each other.<br/>
+ *     Another key problem is that this approach lacks <b>navigability</b>.<br/>
+ *     If one holds a pointer to the object, one can safely upcast it to one of
+ *     the interfaces it derives from.<br/>
+ *     However, if one holds a pointer to an interface on the object, one have
+ *     to downcast the interface to the object, then downcast to obtain the
+ *     other interfaces on that object.<br/>
+ *
+ *     The key is that interfaces are generally not aware of each other.<br/>
  *     The users generally have to know the concrete type of the object and use
- *     member functions or type cast to obtain the interfaces.<br/>
+ *     member functions or type casts to obtain the interfaces.<br/>
  *     When other objects want to use the object, they either have to know its
- *     concrete type, or the users have to extract and pass all necessary
+ *     concrete type, or the provider have to extract and pass all necessary
  *     interfaces.<br/>
  *
- * ### 1.2 Hide object behind a navigator interface.<br/>
- *     Use a dictated navigator interface to query interfaces.<br/>
- *     The navigator interface can be considered as the object itself.<br/>
- *     Use an object factory to obtain the navigator interface, so there is no
- *     need to know the concrete type of an object.<br/>
- *     Pass the navigator interface to other objects.<br/>
- *     Let other objects query the required interfaces.<br/>
+ *     It is very inconvenient and error prone.<br/>
+ *     It emphasizes upon inheritance, and discourages encapsulation.<br/>
+ *     Microsoft Component Model (COM) offers practical methods to solve these
+ *     problems.<br/>
+ *
+ * ### 1.2 Hide objects behind a navigator interface.<br/>
+ *     A dictated navigator interface \c IObject is defined to query interfaces
+ *     on a component.<br/>
+ *     The method \c IObject::QueryInterface() is defined for this purpose.<br/>
+ *     The navigator interface can be considered as the component itself.<br/>
+ *     There is no need to know the concrete type of the object behind an
+ *     interface, and the usage of downcast (the dependency upon inheritance)
+ *     is completely eliminated.<br/>
+ *     Object factories can be used to obtain the navigator interface on
+ *     components, which completely hides their implementations.<br/>
+ *     The users can query the required interfaces in a safe way, as an
+ *     exception is thrown when an interface is not supported.<br/>
  *
  * ### 1.3 Make all interfaces navigable.<br/>
- *     All interfaces provide navigability around the object, such as Microsoft
- *     COM.<br/>
+ *     All interfaces inherit from the navigator interface, and provide
+ *     navigability around the component.<br/>
  *     Virtual inheritance has to be used, as all interfaces extends the root
  *     navigator interface.<br/>
  *
  * ## 2. How to manage object lifetime?<br/>
- *    Only deterministic methods are considered, since a garbage collector is
- *    not considered right now.<br/>
+ *    Only deterministic methods are considered.<br/>
+ *    A garbage collector is not considered right now.<br/>
  *
  * ### 2.1 Implicit transfer of responsibility.<br/>
  *     Transfer the responsibility of deallocating an object when a raw-pointer
  *     is transferred.<br/>
+ *
+ *     This approach must <b>never</b> be used.<br/>
  *     Use \c std::unique_ptr to enforce the transfer of responsibility.<br/>
  *
  * ### 2.2 Creator-based management.<br/>
@@ -96,12 +128,13 @@
  *     The creator must not be deallocated until the created object is no longer
  *     used.<br/>
  *     It requires a careful pre-design of the software system to properly
- *     layout the objects.<br/>
+ *     layout and manage the objects.<br/>
+ *     An allocated object has one and only one allocator that is responsible
+ *     to deallocate it.<br/>
  *     The allocation relationships must form directed trees, where the vertices
  *     are objects, and an edge starts from an allocator to an allocated.<br/>
  *     This way, a clear deallocation path is formed so that no object is
- *     deallocated more than once or leaked, since an allocated object has one
- *     and only one allocator (parent) that is responsible to deallocate it.<br/>
+ *     deallocated more than once or leaked.<br/>
  *
  * ### 2.3 Reference counting.<br/>
  *     Use a reference count to manage object lifetime, either intrusively or
@@ -111,33 +144,38 @@
  *     Users can use \c std::shared_ptr and \c std::weak_ptr for non-intrusive
  *     reference counting.<br/>
  *
- *     It has a problem of cyclic reference counting, since deferencing is
- *     passive.<br/>
- *     i.e., the intent to deallocate an object is not given to all holders of
- *     the object.<br/>
- *     It can be solved by giving a signal explicitly to every holder of an
- *     object to deallocate it.<br/>
- *
+ *     The use of non-intrusive reference count provided by a smart pointer also
+ *     has a problem.<br/>
  *     To manage the lifetime of <i>different</i> interfaces on a single object,
  *     a smart pointer must either know the concrete type of the object, or
  *     have a way to access the reference count.<br/>
  *     If the interface held by a smart pointer doesn't provide lifetime
  *     management itself, the smart pointer has to store a variable or function
  *     pointer to access the reference count (cost memory).<br/>
- *     And even has to query a dictated lifetime manager interface at runtime
- *     (cost CPU cycles).<br/>
- *     If every interface provides lifetime management, such as microsoft COM,
- *     virtual inheritance has to be used.<br/>
+ *     It may even have to query a dictated lifetime manager interface at
+ *     runtime (cost CPU cycles).<br/>
  *
- * ### 2.4 Mixed schemes.<br/>
- *     Mixing lifetime management schemes could be beneficial, but could cause
- *     more headaches for users to use them properly.<br/>
+ *     To solve the problem, similar to Microsoft COM, every interface must
+ *     provide methods to manage the reference count of the component.<br/>
+ *     Virtual inheritance has to be used.<br/>
  *
- * ### 2.5. Transfer of reference counts across functions.<br/>
+ *     \c IObject::AddRef() and \c IObject::Release() are defined for this
+ *     purpose.<br/>
+ *     And class template <code>Ptr<></code> is provided as smart pointers to
+ *     manage the reference count of a component.<br/>
+ *
+ *     Reference counting has a problem of cyclic reference counting, since
+ *     deferencing is passive.<br/>
+ *     i.e., the intent to deallocate an object is not given to all holders of
+ *     the object.<br/>
+ *     It can be solved by actively/explicitly notify every user of a component
+ *     to release the reference count they hold.<br/>
+ *
+ * ### 2.4. Transfer of reference counts across functions.<br/>
  *     When a pointer to an object is passed into a function call, the caller
  *     must guarantee that the object remains valid until the function returns.<br/>
- *     Usually, the caller has to increment the reference count by one before
- *     calling the function.<br/>
+ *     Usually, the caller increments the reference count by one before calling
+ *     the function.<br/>
  *
  *     Should that one reference count be transferred to the callee?<br/>
  *     Microsoft COM rules specify that there is no transferring, and the caller
@@ -151,7 +189,7 @@
  *     Usually, the callee has to increment the reference count by one, and
  *     transfer that one reference count to the caller.<br/>
  *
- *     In NSFX, the intention whether to transfer a reference count is stated
+ *     The intention whether to transfer a reference count must be stated
  *     explicitly.<br/>
  *     -# If a <b>smart pointer</b> is used, a reference count is transferred
  *        across the function call.<br/>
@@ -164,7 +202,7 @@
  *     acquisition and object creation.<br/>
  *     Since a virtual function cannot have multiple return types, and function
  *     templates cannot be mixed with virtual funtions, the return type has to
- *     be \c void*.<br/>
+ *     be \c void*, instead of a pointer to a specific interface.<br/>
  *     Examples are \c IObject::QueryInterface() and \c IFactory::CreateObject().<br/>
  *     Such cases are handled by library-provided smart pointers and template
  *     functions (e.g., \c CreateObject()), and should not bother the users.<br/>
@@ -186,9 +224,11 @@
  *    The library is not performance hunger.<br/>
  *    Try not to shift burdens to the users.<br/>
  *    Intrusive reference counting is welcome.<br/>
- *    Objects are hidden behind interfaces.<br/>
+ *    Objects are hidden behind interfaces exposed by components.<br/>
  *
- * # How to wire components together?<br/>
+ * # The wiring model.<br/>
+ *   TinyOS provides practical methods to wire components together.<br/>
+ *
  *   A component usually depends upon other components to work.<br/>
  *   The former component is called a <b>user</b>, and the latters are called
  *   <b>providers</b>.<br/>
@@ -204,56 +244,125 @@
  *   i.e., it must provide interfaces that allow a wiring component to pass in
  *   the required interfaces on the providers.<br/>
  *
- * ## Component-to-interface scheme.
- *   Each interface should define an associated <i>`User'</i> interface.<br/>
- *   e.g., for an interface \c IClock, an associated interface \c IClockUser
- *   should be defined, and it has a method \c Use(IClock*) that
- *   allows a wiring component to provide a clock to the component.<br/>
- *   If a component uses a clock, it should expose the interface to acquire
- *   a clock.<br/>
- *   A wiring component is responsible to query the interfaces that are used by
- *   the components being wired.<br/>
+ * ## The <i>'User'</i> interfaces.
+ *    Each interface should define an associated <i>`User'</i> interface.<br/>
+ *    e.g., for an interface \c IClock, an associated interface \c IClockUser
+ *    should be defined, and it has a single method \c Use(Ptr<IClock>) that
+ *    allows a wiring component to provide a clock to its user.<br/>
+ *    If a component uses a clock, it should expose the interface to acquire
+ *    a clock.<br/>
  *
- * ## Component-to-component scheme.
- *   A component obtains an \c IObject of a component, and quries the interfaces
- *   on that component.<br/>
- *   However, in practice, each component may use a different set of components.<br/>
- *   Each component may have to provide a separate <i>initialization</i>
- *   interface that suits its own need.<br/>
- *   This may result in interface storming.<br/>
- *   The initialization interface may only suit a specific usage scenario.<br/>
- *   Instead, a component shall expose a combination of <i>`User'</i> interfaces.<br/>
+ *    A component can expose a combination of <i>`User'</i> interfaces.<br/>
+ *    A wiring component is responsible to query the interfaces that are used by
+ *    the components being wired.<br/>
  *
- * ## Expose <i>`User'</i>, instead of <i>`Sink'</i>.
- *    A component shall not expose a <i>`Sink'</i> interface directly.<br/>
- *    Instead, it shall expose a <i>`User'</i> interface.<br/>
- *    When an interface is obtained from the <i>`User'</i> interface, it can
- *    generate a sink internally, and connect the sink to the interface.<br/>
- *    A wiring component does not take care of the connections of sinks.<br/>
+ *    @code
+ *    provider component        user component
+ *       | exposes                 | exposes
+ *       V                         V
+ *       IXxx --- provided to ---> IXxxUser
+ *                     A
+ *                     |
+ *              wiring component
+ *    @endcode
  *
- * # Event sinks.<br/>
- *   The practice of providing an all-in-one event sink interface becomes
+ * # The event model.
+ * ## All-in-one event.
+ *   The practice of providing an all-in-one event sink interface becomes quite
  *   frustrating.<br/>
+ *   @code
+ *   IXxxAllInOneEventSink
+ *      | defines
+ *      V
+ *      OnEvent1(args), OnEvent2(args), ...
+ *         | implemented by
+ *         V
+ *         event sink component
+ *   @endcode
+ *
  *   In that way, users are expected to implement all callback methods on the
  *   interface, thus have to listen to all events, even if not all of the events
- *   are of interest.<br/>
+ *   are interested.<br/>
  *
+ * ## Many-to-one event.
  *   A workaround is to define an event sink interface with a single callback
  *   method, along with a set of bit flags that identify the events.<br/>
  *   Users can connect to interested events by giving the event source a bit
  *   mask, and the callback carries a bit flag that identifies the event.<br/>
- *   However, this approach is not elegant, since users have to use 'if-else'
- *   or 'switch-case' to filter and catch the events.<br/>
+ *   @code
+ *   IXxxManyToOneEventSink
+ *      | defines
+ *      V
+ *      OnEvent(eventKind, args)
+ *         | implemented by
+ *         V
+ *         event sink component
+ *   @endcode
+ *
+ *   This approach is not elegant, since users have to use 'if-else' or
+ *   'switch-case' to filter and catch the events.<br/>
  *   Event processing is not in a one-to-one way, but in a many-to-one way.<br/>
  *   i.e., the callback is a centralized hot spot of conditional branches.<br/>
  *
- *   To maximize flexibility, the granularity of event interfaces must be
+ *   Another problem is that, the designers have to unify the arguments for
+ *   different events.<br/>
+ *
+ * ## One-to-one event.
+ *   To maximize flexibility, the granularity of event sink interfaces must be
  *   minimized.<br/>
  *   i.e., each event sink interface exposes only one event, and contains only
  *   one callback method.<br/>
- *   This way, users can connect to any combination of events as necessary.<br/>
+ *   @code
+ *   IXxxEventSink
+ *      | defines
+ *      V
+ *      Fire(args)
+ *         | implemented by
+ *         V
+ *         event sink component
+ *   @endcode
+ *
+ *   This way, users can connect to any combination of events as they want.<br/>
  *   It consumes more memory, but provides a cleaner way to connect and process
  *   events.<br/>
+ *
+ * ### Event and sinks.
+ *    The responsibility of an event sink interface is to provide a virtual
+ *    callback method for the event sinks (listeners) to implement.<br/>
+ *
+ *    On the other hand, for each event sink interface, there is an associated
+ *    event interface.<br/>
+ *    The responsibility of an event interface is to let an event sink connect
+ *    to the event source.<br/>
+ *
+ *    An event interface provides two methods, <code>Connect()</code> and
+ *    <code>Disconnect</code>.<br/>
+ *    An event source component exposes a combination of event interfaces.<br/>
+ *    The event sink components query the event interfaces, and connect their
+ *    event sinks.<br/>
+ *
+ *    An event sink component exposes a <i>'User'</i> interface to use the
+ *    event source component.<br/>
+ *    The wiring component provides the event source to the event sink.<br/>
+ *    It is the event sink's responsibility to perform the connection.<br/>
+ *    @code
+ *    IXxxEventSink                IXxxEvent
+ *       | defines                    | defines
+ *       V                            V
+ *       Fire(args)                   Connect(Ptr<IXxxEventSink>), Disconnect()
+ *          | implemented by             | exposed by
+ *          V                            V
+ *          event sink component         event source component
+ *          (user) ---- connects to ---> (provider)
+ *    @endcode
+ *
+ * ### Expose <i>`User'</i>, instead of <i>`Sink'</i>.
+ *     A component shall not expose a <i>`Sink'</i> interface directly.<br/>
+ *     Instead, it shall expose a <i>`User'</i> interface.<br/>
+ *     When an interface is obtained from the <i>`User'</i> interface, it can
+ *     query the <i>'Event'</i> interface of interest, and offer an event sink
+ *     <i>internally</i>, and connect the event sink to the interface.<br/>
+ *     A wiring component does not take care of the connections of sinks.<br/>
  *
  */
 
