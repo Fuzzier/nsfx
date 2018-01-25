@@ -304,12 +304,12 @@ NSFX_TEST_SUITE(Object)
         }
     }/*}}}*/
 
-    NSFX_TEST_SUITE(MemberObject)/*{{{*/
+    NSFX_TEST_SUITE(MemberAggObject)/*{{{*/
     {
         NSFX_TEST_CASE(RequireController)
         {
             deallocated = false;
-            typedef nsfx::MemberObject<Test>  TestClass;
+            typedef nsfx::MemberAggObject<Test>  TestClass;
             try
             {
                 // Must pass a non-null controller.
@@ -332,7 +332,7 @@ NSFX_TEST_SUITE(Object)
 
         struct Wedge : public IFoobar
         {
-            typedef nsfx::MemberObject<Test>  TestClass;
+            typedef nsfx::MemberAggObject<Test>  TestClass;
 
             Wedge(void) :
                 t_(this) // Construct with a controller.
@@ -387,12 +387,12 @@ NSFX_TEST_SUITE(Object)
 
     }/*}}}*/
 
-    NSFX_TEST_SUITE(LinkedObject)/*{{{*/
+    NSFX_TEST_SUITE(MutualObject)/*{{{*/
     {
         NSFX_TEST_CASE(RequireController)
         {
             deallocated = false;
-            typedef nsfx::LinkedObject<Test>  TestClass;
+            typedef nsfx::MutualObject<Test>  TestClass;
             try
             {
                 // Must pass a non-null controller.
@@ -442,7 +442,7 @@ NSFX_TEST_SUITE(Object)
 
         struct Wedge : public IFoobar
         {
-            typedef nsfx::LinkedObject<Callback<Wedge> >  CallbackClass;
+            typedef nsfx::MutualObject<Callback<Wedge> >  CallbackClass;
 
             Wedge(void) :
                 i_(1),

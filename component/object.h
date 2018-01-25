@@ -37,165 +37,178 @@ NSFX_OPEN_NAMESPACE
  * @brief The base class for implementing \c IObject.
  *
  * ## 1. Introduction.<br/>
- * Usually, an object provides a reference count for lifetime management.<br/>
- * When an object want to implement an interface, it may reuse an existing
- * object that has already implemented the interface.<br/>
- * The container creates an instance of the contained object, and delegates the
- * calls on the interface to the contained object.<br/>
+ *    Usually, an object provides a reference count for lifetime management.<br/>
+ *    When an object wants to implement an interface, it may reuse an existing
+ *    object that has already implemented the interface.<br/>
+ *    The container creates an instance of the contained object, and delegates
+ *    the calls on the interface to the contained object.<br/>
  *
- * The problem is that the container cannot expose the interfaces on the
- * contained object directly to the users.<br/>
- * Because the contained object cannot know or expose other interfaces on the
- * container object.<br/>
- * Thus, from an interface on the contained object, a user cannot obtain other
- * interfaces exposed by the container.<br/>
- * Therefore, a container have to create <i>an extra layer of virtual function
- * call</i> to delegate the interface to the contained object.<br/>
- * i.e., the container derives from the pure abstract interface, and the virtual
- * functions on the interface call the virtual functions implemented by the
- * contained object.<br/>
- * It places extra burden upon coding, memory and CPU cycles.<br/>
+ *    A container have to create <i>an extra layer of virtual function call</i>
+ *    to delegate the calls to the interface on the contained object.<br/>
+ *    i.e., the container derives from the pure abstract interface, and the
+ *    virtual functions on the interface call the virtual functions implemented
+ *    by the contained object.<br/>
+ *    It places extra burden upon coding, memory and CPU cycles.<br/>
+ *    @code
+ *    caller
+ *       | virtual call
+ *       V
+ *       a method on the interface of the container
+ *          | virtual call
+ *          V
+ *          the method on the interface of the contained object
+ *    @endcode
  *
- * This is the primary form of interface implementation: a concrete class
- * inherits a pure abstract interface, and implements the methods on it.<br/>
- * The main drawback of this approach is that, as the reuse depth goes deeper,
- * more layers of virtual function calls are formed.<br/>
- * Such indirection harms the performance of the software system.<br/>
- * And designers have to take an effort to limit the reuse depth.<br/>
+ *    The problem is that the container cannot expose the interfaces on the
+ *    contained object directly to the users.<br/>
+ *    Because the contained object cannot know or expose other interfaces on
+ *    the container object.<br/>
+ *    Also, from an interface on the contained object, a user cannot obtain
+ *    other interfaces exposed by the container.<br/>
  *
- * Object aggregation allows a container (controller) object to expose the
- * interfaces on the contained (aggregated) object directly to the users.<br/>
+ *    This is the primary form of interface implementation: a concrete class
+ *    inherits a pure abstract interface, and implements the methods on the
+ *    interface.<br/>
+ *    The main drawback of this approach is that, as the reuse depth goes deeper,
+ *    more layers of virtual function calls are formed.<br/>
+ *    Such indirection harms the performance of the software system.<br/>
+ *    And designers may be forced to take an effort to limit the reuse depth.<br/>
  *
- * An interface exposed by an aggregated object <i>acts like</i> an interface
- * implemented by its controller.<br/>
- * A user cannot distinguish whether the interface is implemented by an
- * aggregated object or not.<br/>
+ *    Object aggregation allows a container (controller) object to expose the
+ *    interfaces on the contained (aggregated) object directly to the users.<br/>
  *
- * The key idea is to <b>separate the responsibility</b> of the aggregated
- * object.<br/>
- * The aggregated object is responsible to implement interfaces, while the
- * lifetime management and navigability functions of \c IObject are delegated
- * to the \c IObject on its controller.<br/>
- * In order for the controller to query interfaces on the aggregated object,
- * a separate navigator object is responsible to expose the interfaces on the
- * aggregated object.<br/>
+ *    An interface exposed by an aggregated object <i>acts like</i> an interface
+ *    implemented by its controller.<br/>
+ *    A user cannot distinguish whether the interface is implemented by an
+ *    aggregated object or not.<br/>
+ *
+ *    The key idea is to <b>separate the responsibility</b> of the aggregated
+ *    object.<br/>
+ *    The aggregated object is responsible to implement interfaces, while the
+ *    lifetime management and navigability functions of \c IObject are delegated
+ *    to the \c IObject on its controller.<br/>
+ *    In order for the controller to query interfaces on the aggregated object,
+ *    a separate navigator object is responsible to expose the interfaces on the
+ *    aggregated object.<br/>
  *
  * ## 2. Lifetime management.<br/>
- * An aggregated object has the same lifetime as its controller.<br/>
- * i.e., aggregated objects and its controller share a single reference count.<br/>
- * The reference count is provided by the controller.<br/>
- * An aggregated object holds a pointer to the \c IObject interface on the
- * controller.<br/>
- * Calls to \c IObject::AddRef() and \c IObject::Release() are delegated to the
- * controller.<br/>
+ *    An aggregated object has the same lifetime as its controller.<br/>
+ *    i.e., aggregated objects and its controller share a single reference count.<br/>
+ *    The reference count is provided by the controller.<br/>
+ *    An aggregated object holds a pointer to the \c IObject interface on the
+ *    controller.<br/>
+ *    Calls to \c IObject::AddRef() and \c IObject::Release() are delegated to
+ *    the controller.<br/>
  *
  * ## 3. Interface navigation.<br/>
- * The interface exposed by an aggregated object is exposed directly to users.<br/>
- * This frees the controller from having to create an extra layer to access the
- * aggregated object indirectly, which saves codes, memory and CPU cycles.<br/>
+ *    The interface exposed by an aggregated object is exposed directly to users.<br/>
+ *    This frees the controller from having to create an extra layer to access
+*    the aggregated object indirectly, which saves codes, memory and CPU cycles.<br/>
  *
- * The \c IObject interface on an aggregated object must be able to navigate all
- * other interfaces exposed by the controller.<br/>
- * However, only the controller knows the set of interfaces it exposes.<br/>
- * So an aggregated object has to delegate calls to \c IObject::QueryInterface()
- * to its controller's \c IObject::QueryInterface().<br/>
- * However, an aggregated object cannot distinguish who calls its
- * \c IObject::QueryInterface(), whether it is a user or its controller.<br/>
- * Therefore, the \c IObject on the aggregated object loses the ability to
- * navigate its own interfaces.<br/>
+ *    The \c IObject interface on an aggregated object must be able to navigate
+ *    all other interfaces exposed by the controller.<br/>
+ *    However, only the controller knows the set of interfaces it exposes.<br/>
+ *    So an aggregated object has to delegate calls to \c IObject::QueryInterface()
+ *    to its controller's \c IObject::QueryInterface().<br/>
+ *    However, an aggregated object cannot distinguish who calls its
+ *    \c IObject::QueryInterface(), whether it is a user or its controller.<br/>
+ *    Therefore, the \c IObject on the aggregated object loses the ability to
+ *    navigate its own interfaces.<br/>
  *
- * To solve this problem, an separate <b>navigator object</b> is created.<br/>
- * It implements \c IObject that exposes the interfaces on the aggregated object.<br/>
- * The controller can use the navigator object to query the interfaces on the
- * aggregated object.<br/>
- * The controller never exposes this object to others.<br/>
+ *    To solve this problem, an separate <b>navigator object</b> is created.<br/>
+ *    It implements \c IObject that exposes the interfaces on the aggregated
+ *    object.<br/>
+ *    The controller can use the navigator object to query the interfaces on the
+ *    aggregated object.<br/>
+ *    The controller never exposes this object to others.<br/>
  *
- * For a user-defined aggregable class, its instance should be a navigator, not
- * an aggregated object.<br/>
- * If it would be an aggregated object, then a user might mistakenly use the
- * object directly without using a navigator.<br/>
- * e.g., a controller would be able to create an aggregated object by passing a
- * pointer to its own \c IObject.<br/>
- * Then the controller would query an interface directly from the aggregated
- * object, which in turn queries the controller, causing an infinite call loop.<br/>
- * Nevertheless, an aggregable object should always be a navigator.<br/>
- * A user must not be able to create an aggregated object directly.<br/>
- * An aggregated object can only be exposed by its navigator.<br/>
+ *    For a user-defined aggregable class, its instance should be a navigator,
+ *    not an aggregated object.<br/>
+ *    If it would be an aggregated object, then a user might mistakenly use the
+ *    object directly without using a navigator.<br/>
+ *    e.g., a controller would be able to create an aggregated object by passing
+ *    a pointer to its own \c IObject.<br/>
+ *    Then the controller would query an interface directly from the aggregated
+ *    object, which in turn queries the controller, causing an infinite call
+ *    loop.<br/>
+ *    Nevertheless, an aggregable object should always be a navigator.<br/>
+ *    A user must not be able to create an aggregated object directly.<br/>
+ *    An aggregated object can only be exposed by its navigator.<br/>
  *
- * This creates a coding problem.<br/>
- * An object cannot be a navigator, and at the same time an aggregated object,
- * since they have different implementations of \c IObject.<br/>
- * Traditionally, a library provides a base class, and let users derive a child
- * class from it, and the child class provides implementations of interfaces.<br/>
- * However, such child class cannot be both an implementor and a navigator.<br/>
- * A navigator have to be a separate class, possibly provided by the library.<br/>
- * To prevent users from mis-using an aggregated class, the aggregated class can
- * be nested within the navigator class with a non-public access right.<br/>
- * The library can provide a navigator class template that has user-defined
- * aggregated class as a type parameter.<br/>
+ *    This creates a coding problem.<br/>
+ *    An object cannot be a navigator, and at the same time an aggregated object,
+ *    since they have different implementations of \c IObject.<br/>
+ *    Traditionally, a library provides a base class, and let users derive a
+ *    child class from it, and the child class provides implementations of
+ *    interfaces.<br/>
+ *    However, such child class cannot be both an implementor and a navigator.<br/>
+ *    A navigator have to be a separate class, possibly provided by the library.<br/>
+ *    To prevent users from mis-using an aggregated class, the aggregated class
+ *    can be nested within the navigator class with a non-public access right.<br/>
+ *    The library can provide a navigator class template that has user-defined
+ *    aggregated class as a type parameter.<br/>
  *
- * The aggregated object is created alone with (by) the navigator, and exposed
- * to the controller via the navigator's \c IObject.<br/>
- * An aggregated object can be a member variable or smart pointer held by the
- * navigator, thus they share the same lifetime.<br/>
- * The navigator's \c IObject::QueryInterface() returns the navigator's own
- * \c IObject if \c IObject is queried.<br/>
- * If other interfaces are queried, the navigator exposes the interfaces on
- * the aggregated object.<br/>
+ *    The aggregated object is created alone with (by) the navigator, and
+ *    exposed to the controller via the navigator's \c IObject.<br/>
+ *    An aggregated object can be a member variable or smart pointer held by the
+ *    navigator, thus they share the same lifetime.<br/>
+ *    The navigator's \c IObject::QueryInterface() returns the navigator's own
+ *    \c IObject if \c IObject is queried.<br/>
+ *    If other interfaces are queried, the navigator exposes the interfaces on
+ *    the aggregated object.<br/>
  *
- * The user-defined class implements a non-public \c InternalQueryInterface()
- * member function.<br/>
- * The user-defined class derives from a specialized class template,
- * and let the class template hold the type of user-defined class.<br/>
- * This way, the class template can call the \c InternalQueryInterface() member
- * function implemented by the user-defined class.<br/>
+ *    The user-defined class implements a non-public \c InternalQueryInterface()
+ *    member function.<br/>
+ *    The user-defined class derives from a specialized class template,
+ *    and let the class template hold the type of user-defined class.<br/>
+ *    This way, the class template can call the \c InternalQueryInterface()
+ *    member function implemented by the user-defined class.<br/>
  *
  * ## 5. Techniques.<br/>
  * ### 5.1 Template-based virtual function implmentation.
- * A base class provides necessary data and non-virtual functions.<br/>
- * A dervied class implements its virtual functions by calling the appropriate
- * non-virtual functions.<br/>
+ *     A base class provides necessary data and non-virtual functions.<br/>
+ *     A dervied class implements its virtual functions by calling the
+ *     appropriate non-virtual functions.<br/>
  *
  * ### 5.2 Union-based data compression.
- * When there are two pieces of data, and only one of them is used after
- * creation, them can be compressed into a union.<br/>
- * This is indeed the case here.
- * When an object is not aggregated, it has a reference count; when it is
- * aggregated, it has a pointer to the controller.
- * Only one piece of data is used after creation, so they can be packed into
- * a union.
+ *     When there are two pieces of data, and only one of them is used after
+ *     creation, them can be compressed into a union.<br/>
+ *     This is indeed the case here.
+ *     When an object is not aggregated, it has a reference count; when it is
+ *     aggregated, it has a pointer to the controller.
+ *     Only one piece of data is used after creation, so they can be packed into
+ *     a union.
  *
- * let one provide data, and the other virtual inherit from the former, and .
- *
- * A non-aggregated object has a reference count.<br/>
- * An aggregated object has a pointer to the controller's \c IObject.<br/>
- * A poly object uses one of the data according to whether a valid pointer to
- * the controller is specified at creation.<br/>
+ *     A non-aggregated object has a reference count.<br/>
+ *     An aggregated object has a pointer to the controller's \c IObject.<br/>
+ *     A poly object uses one of the data according to whether a valid pointer
+ *     to the controller is specified at creation.<br/>
  *
  * ## 6. \c ObjectBase.<br/>
- * \c ObjectBase provides necessary data and non-virtual functions for
- * implementing \c IObject.<br/>
- * It provides compressed data that can be a reference count or a controller
- * pointer.<br/>
- * It provides non-virtual functions to manipulate the data.<br/>
+ *    \c ObjectBase provides necessary data and non-virtual functions for
+ *    implementing \c IObject.<br/>
+ *    It provides compressed data that can be a reference count or a controller
+ *    pointer.<br/>
+ *    It provides non-virtual functions to manipulate the data.<br/>
  *
- * User-defined object classes can focus upon implementing dictated interfaces,
- * and do not implement \c IObject themselves (remain abstract).<br/>
- * The library provides <code>Object<></code> and <code>AggObject<></code>
- * class templates to envelope the user-defined classes, equipping user-defined
- * classes with a reference count or a controller pointer, and implementing
- * \c IObject as appropriate.<br/>
- * \c ObjectBase is intended to be used by the class templates.<br/>
- * It is not intended to be constructed directly, thus its methods are not
- * public.<br/>
+ *    User-defined classes can focus upon implementing dictated interfaces, and
+ *    do not implement \c IObject themselves (remain abstract).<br/>
+ *    The library provides <code>Object<></code> and <code>AggObject<></code>
+ *    class templates to envelope the user-defined classes, arming user-defined
+ *    classes with a reference count or a controller pointer, and implementing
+ *    \c IObject as appropriate.<br/>
+ *    \c ObjectBase is intended to be used by the class templates.<br/>
+ *    It is not intended to be constructed directly, thus its methods are not
+ *    public.<br/>
  *
- * Users can use \c NSFX_INTERFACE_XXX() macros to ease the implementation of
- * \c NavigatorQueryInterface().<br/>
+ *    Users can use \c NSFX_INTERFACE_XXX() macros to ease the implementation of
+ *    \c NavigatorQueryInterface().<br/>
  *
- * Such design does add extra layers of virtual function calls for
- * \c IObject::QueryInterface().<br/>
- * However, most calls to \c IObject::QueryInterface() happen at program or
- * component initialization, and it is not likely to cause performance problem.
+ *    Such design does add extra layers of virtual function calls for
+ *    \c IObject::QueryInterface().<br/>
+ *    However, most calls to \c IObject::QueryInterface() happen at program or
+ *    component initialization (component wiring and event sink connection),
+ *    and it is not likely to cause performance problem.
  *
  * 7. Kinds of objects.<br/>
  * 7.1 \c Object
@@ -211,7 +224,7 @@ NSFX_OPEN_NAMESPACE
  *     should be defined as a \c static object.<br/>
  *     In such cases, the lifetime of the object is meaningless.<br/>
  *     \c StaticObject can be used for such use cases.<br/>
- *     <p>
+ *
  *     A \c StaticObject does not have a reference count.<br/>
  *     To prevent memory leak, a \c StaticObject must be defined as a \c static
  *     variable.
@@ -222,11 +235,11 @@ NSFX_OPEN_NAMESPACE
  *     The \c AggObject owns a reference count itself.<br/>
  *     Thus, it can be allocated and deallocated dynamically.<br/>
  *     However, its reference count is held only by its controller.<br/>
- *     And it is deallocated when the controller's lifetime ends.<br/>
+ *     It must not be deallocated until the controller's lifetime ends.<br/>
  *     It holds an aggregated object that shares the same reference count with
  *     its controller.<br/>
  *
- * 7.4 \c MemberObject
+ * 7.4 \c MemberAggObject
  *     The lifetime of an \c AggObject is quite similar to a member variable of
  *     its controller.<br/>
  *     Actually, a member variable of type <code>Ptr<IObject></code> is used to
@@ -235,58 +248,63 @@ NSFX_OPEN_NAMESPACE
  *     user-defined class away from the controller.<br/>
  *     However, it is not efficient when the user-defined class is known to the
  *     controller.<br/>
- *     \c MemberObject can be used for such use cases.
- *     <p>
- *     A \c MemberObject does not have a reference count.<br/>
- *     Except for this, it is the same as an \c AggObject.<br/>
- *     A \c MemberObject must be defined as a member variable of a controller
+ *     \c MemberAggObject can be used for such use cases.
+ *
+ *     A \c MemberAggObject does not have a reference count.<br/>
+ *     A \c MemberAggObject must be defined as a member variable of a controller
  *     class.<br/>
- *     Thus, the lifetime of a \c MemberObject is naturally the same as its
+ *     The lifetime of a \c MemberAggObject is naturally the same as its
  *     controller.<br/>
  *
- * 7.5 \c LinkedObject
- *     The navigability is not always desired.<br/>
+ * 7.5 \c MutualObject
  *     One of the limitations of the component model is that a component cannot
- *     expose an interface multiple times with different implementations.<br/>
+ *     expose the same interface multiple times with different implementations.<br/>
  *     e.g., when a component needs to provide multiple event sinks to various
  *     event sources, it faces a problem that these event sinks share the same
  *     interface but have different implementations.<br/>
- *     In such cases, the component cannot expose the event sinks by using the
- *     component model described so far.<br/>
- *     Another problem is that the component must have a lifetime as long as the
- *     event sinks.<br/>
+ *
+ *     The first problem is that a component cannot expose an event sink
+ *     interface for multiple times by aggregation, nor by inheritance.<br/>
+ *     A natural solution is to create internal objects (event sinks) that
+ *     implement the event sink interface, and connect these event sinks to
+ *     the event sources.<br/>
+ *
+ *     Another problem is that the component must have a lifetime as long as
+ *     the event sinks.<br/>
  *     i.e., as long as an event source holds an event sink, the component must
  *     not be deallocated.<br/>
- *     <p>
  *     The key is to let each event sink hold a reference count of the component.<br/>
- *     This is can be done by letting each event sink hold a <code>Ptr<></code>
- *     that points to the component.<br/>
+ *     i.e., let each event sink hold a <code>Ptr<></code> that points to the
+ *     component.<br/>
  *     However, this is not efficient.<br/>
- *     Usually, the navigability of an event sink is not important, as in most
- *     cases an event source does not query other interfaces from an event sink.<br/>
- *     \c LinkedObject can be used in such use cases.
- *     <p>
- *     A \c LinkedObject shares the same reference count with its controller,
- *     i.e., the component that provides the object to other components.<br/>
- *     However, the controller does not expose the interfaces on \c LinkedObject,
- *     and the \c LinkedObject does not expose the interfaces on its controller.<br/>
- *     They seem like two different components from outside, as the navigability
- *     is not provided.<br/>
- *     <p>
+ *
+ *     In most cases, an event source does not query other interfaces from an
+ *     event sink.<br/>
+ *     Therefore, the navigability of an event sink is not important.<br/>
+ *     What is important is that an event sink holds a reference count of the
+ *     component.<br/>
+ *     \c MutualObject can be used in such use cases.
+ *
+ *     A \c MutualObject shares the same reference count with its controller
+ *     that provides the \c MutualObject to other components.<br/>
+ *     However, the controller does not expose the interfaces on \c MutualObject,
+ *     nor does the \c MutualObject expose the interfaces on its controller.<br/>
+ *     They seem like two different components from outside.<br/>
+ *
  *     Usually, one must not hold a pointer to a member variable of a dynamic
  *     object, since the deallocation of the object invalidates the pointer,
  *     and a dangling pointer is deadly.<br/>
- *     However, a \c LinkedObject can be defined as a member variable of the
- *     controller, since a \c LinkedObject shares the same reference count with
+ *     However, a \c MutualObject can be defined as a member variable of the
+ *     controller, since a \c MutualObject shares the same reference count with
  *     the controller.<br/>
  *     The controller is free to provide to other components smart pointers that
- *     point to the \c LinkedObject, although it is a member variable.<br/>
- *     The point is that a smart pointer to the \c LinkedObject actually holds
+ *     point to the \c MutualObject, although it is a member variable.<br/>
+ *     The point is that a smart pointer to the \c MutualObject actually holds
  *     a reference count of the controller.<br/>
- *     Thus, as long as a smart pointer to the \c LinkedObject exists, the
+ *     Thus, as long as a smart pointer to the \c MutualObject exists, the
  *     controller also exists.<br/>
- *
- *
+ *     Actually, a \c MutualObject that is defined as a member variable shares
+ *     the same lifetime as its controller.<br/>
  *
  * @see \c NSFX_INTERFACE_MAP_BEGIN,
  *      \c NSFX_INTERFACE_ENTRY,
@@ -559,7 +577,7 @@ public:
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Component
- * @brief A aggregated object that is internally used by \c MemberObject and \c AggObject.
+ * @brief A aggregated object that is internally used by \c MemberAggObject and \c AggObject.
  *
  * @tparam Envelopable A class that conforms to \c EnvelopableConcept.
  *
@@ -574,7 +592,7 @@ class Aggregated NSFX_FINAL :/*{{{*/
 {
 private:
     template<class Envelopable> friend class AggObject;
-    template<class Envelopable> friend class MemberObject;
+    template<class Envelopable> friend class MemberAggObject;
 
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
     template<class...Args>
@@ -762,7 +780,7 @@ private:
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// MemberObject
+// MemberAggObject
 /**
  * @ingroup Component
  * @brief An aggregable object that must be used a member variable of its constroller.
@@ -770,7 +788,7 @@ private:
  * @tparam Envelopable A class that conforms to \c EnvelopableConcept.
  *
  * A member aggregable object does not have a reference count.<br/>
- * Thus, do not allocate a \c MemberObject on heap, since <code>Ptr<></code>
+ * Thus, do not allocate a \c MemberAggObject on heap, since <code>Ptr<></code>
  * cannot deallocate it automatically.<br/>
  * It must be defined as a member variable of the controller to prevent memory
  * leak.<br/>
@@ -779,19 +797,19 @@ private:
  * \c NSFX_INTERFACE_XXX() macros.
  *
  * ### When to use?
- *     \c MemberObject can be used by a controller to aggregate an object.
+ *     \c MemberAggObject can be used by a controller to aggregate an object.
  * ### How to use?
- *     A \c MemberObject must be defined as a member variable of the controller.<br/>
+ *     A \c MemberAggObject must be defined as a member variable of the controller.<br/>
  * ### Benefits.
  *     The interfaces on an aggregated object can be exposed directly by the
  *     controller.<br/>
- *     A \c MemberObject naturally has the same lifetime as the controller,
+ *     A \c MemberAggObject naturally has the same lifetime as the controller,
  *     which is similar to an \c AggObject.<br/>
  *     It saves a <code>Ptr<></code> to manage lifetime.<br/>
  *     There is no need to allocate on heap.
  */
 template<class Envelopable>
-class MemberObject NSFX_FINAL :/*{{{*/
+class MemberAggObject NSFX_FINAL :/*{{{*/
     public IObject
 {
 private:
@@ -800,11 +818,11 @@ private:
 public:
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
     template<class...Args>
-    MemberObject(IObject* controller, Args&&... args) :
+    MemberAggObject(IObject* controller, Args&&... args) :
         agg_(controller, std::forward<Args>(args)...) {}
 
 #else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-    MemberObject(IObject* controller) :
+    MemberAggObject(IObject* controller) :
         agg_(controller) {}
 
 # define BOOST_PP_ITERATION_PARAMS_1  (4, (1, NSFX_MAX_ARITY, <nsfx/component/object.h>, 4))
@@ -812,12 +830,12 @@ public:
 
 #endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-    virtual ~MemberObject(void) BOOST_NOEXCEPT {}
+    virtual ~MemberAggObject(void) BOOST_NOEXCEPT {}
 
     // Non-copyable.
 private:
-    BOOST_DELETED_FUNCTION(MemberObject(const MemberObject& ));
-    BOOST_DELETED_FUNCTION(MemberObject& operator=(const MemberObject& ));
+    BOOST_DELETED_FUNCTION(MemberAggObject(const MemberAggObject& ));
+    BOOST_DELETED_FUNCTION(MemberAggObject& operator=(const MemberAggObject& ));
 
     // IObject./*{{{*/
 public:
@@ -863,11 +881,11 @@ public:
 private:
     Aggregated<Envelopable> agg_;  /// The aggregated object.
 
-}; // class MemberObject /*}}}*/
+}; // class MemberAggObject /*}}}*/
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// LinkedObject
+// MutualObject
 /**
  * @ingroup Component
  * @brief An object that can be exposed by its constroller with a separate set of interfaces.
@@ -881,22 +899,22 @@ private:
  * \c NSFX_INTERFACE_XXX() macros.
  *
  * ### When to use?
- *     \c LinkedObject can be used by a controller to provide an object that
+ *     \c MutualObject can be used by a controller to provide an object that
  *     exposes a separate set of interfaces.<br/>
  * ### How to use?
- *     A \c LinkedObject can be defined as a member variable of the controller.<br/>
+ *     A \c MutualObject can be defined as a member variable of the controller.<br/>
  *     The controller can provide to other objects smart pointers that point to
- *     the \c LinkedObject.<br/>
- *     The controler must not expose the interfaces on a \c LinkedObject as its
+ *     the \c MutualObject.<br/>
+ *     The controler must not expose the interfaces on a \c MutualObject as its
  *     own interfaces.
  * ### Benefits.
  *     The controller lives as long as other objects hold smart pointers to
- *     the \c LinkedObject.
+ *     the \c MutualObject.
  *     It saves a <code>Ptr<></code> to manage lifetime.<br/>
  *     There is no need to allocate on heap.
  */
 template<class Envelopable>
-class LinkedObject NSFX_FINAL :/*{{{*/
+class MutualObject NSFX_FINAL :/*{{{*/
     private ObjectBase, // Use private inherit as the methods are only used internally.
     public Envelopable
 {
@@ -906,7 +924,7 @@ private:
 public:
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
     template<class...Args>
-    LinkedObject(IObject* controller, Args&&... args) :
+    MutualObject(IObject* controller, Args&&... args) :
         ObjectBase(controller),
         Envelopable(std::forward<Args>(args)...)
     {
@@ -918,7 +936,7 @@ public:
     }
 
 #else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-    LinkedObject(IObject* controller) :
+    MutualObject(IObject* controller) :
         ObjectBase(controller)
     {
         if (!controller)
@@ -933,12 +951,12 @@ public:
 
 #endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-    virtual ~LinkedObject(void) BOOST_NOEXCEPT {}
+    virtual ~MutualObject(void) BOOST_NOEXCEPT {}
 
     // Non-copyable.
 private:
-    BOOST_DELETED_FUNCTION(LinkedObject(const LinkedObject& ));
-    BOOST_DELETED_FUNCTION(LinkedObject& operator=(const LinkedObject& ));
+    BOOST_DELETED_FUNCTION(MutualObject(const MutualObject& ));
+    BOOST_DELETED_FUNCTION(MutualObject& operator=(const MutualObject& ));
 
     // IObject./*{{{*/
 public:
@@ -971,7 +989,7 @@ public:
         return static_cast<Envelopable*>(this);
     }
 
-}; // class LinkedObject /*}}}*/
+}; // class MutualObject /*}}}*/
 
 
 NSFX_CLOSE_NAMESPACE
@@ -1113,20 +1131,20 @@ AggObject(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(),
 # elif BOOST_PP_ITERATION_FLAGS() == 4
 
 // template<class A0, class A1, ...>
-// MemberObject(IObject* controller, A0&& a0, A1&& a1, ...)) :
+// MemberAggObject(IObject* controller, A0&& a0, A1&& a1, ...)) :
 //     agg_(controller, std::forward<A0>(a0), std::forward<A1>(a1), ...) {}
 template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
-MemberObject(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, && a)) :
+MemberAggObject(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, && a)) :
     agg_(controller, BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, )) {}
 
 # elif BOOST_PP_ITERATION_FLAGS() == 5
 
 // template<class A0, class A1, ...>
-// LinkedObject(IObject* controller, A0&& a0, A1&& a1, ...)) :
+// MutualObject(IObject* controller, A0&& a0, A1&& a1, ...)) :
 //     ObjectBase(controller),
 //     Envelopable(std::forward<A0>(a0), std::forward<A1>(a1), ...)
 template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
-LinkedObject(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, && a)) :
+MutualObject(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, && a)) :
     ObjectBase(controller),
     Envelopable(BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, ))
 {
