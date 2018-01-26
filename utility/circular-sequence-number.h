@@ -24,6 +24,7 @@
 #include <boost/functional/hash.hpp>
 #include <boost/core/swap.hpp>
 #include <iostream>
+#include <sstream>
 
 
 NSFX_OPEN_NAMESPACE
@@ -166,7 +167,7 @@ private:
     }
 
 public:
-    BOOST_CONSTEXPR bool operator< (const ThisType& rhs) BOOST_NOEXCEPT
+    bool operator< (const ThisType& rhs) const BOOST_NOEXCEPT
     {
         if (value_ < rhs.value_)
         {
@@ -180,7 +181,7 @@ public:
         }
     }
 
-    BOOST_CONSTEXPR bool operator<=(const ThisType& rhs) BOOST_NOEXCEPT
+    bool operator<=(const ThisType& rhs) const BOOST_NOEXCEPT
     {
         if (value_ <= rhs.value_)
         {
@@ -194,33 +195,26 @@ public:
         }
     }
 
-    BOOST_CONSTEXPR bool operator==(const ThisType& rhs) BOOST_NOEXCEPT
+    bool operator==(const ThisType& rhs) const BOOST_NOEXCEPT
     {
         return value_ == rhs.value_;
     }
 
-    BOOST_CONSTEXPR bool operator!=(const ThisType& rhs) BOOST_NOEXCEPT
+    bool operator!=(const ThisType& rhs) const BOOST_NOEXCEPT
     {
         return value_ != rhs.value_;
     }
 
-    BOOST_CONSTEXPR bool operator> (const ThisType& rhs) BOOST_NOEXCEPT
+    bool operator> (const ThisType& rhs) const BOOST_NOEXCEPT
     {
         return !(*this <= rhs);
     }
 
-    BOOST_CONSTEXPR bool operator>=(const ThisType& rhs) BOOST_NOEXCEPT
+    bool operator>=(const ThisType& rhs) const BOOST_NOEXCEPT
     {
         return !(*this < rhs);
     }
 
-public:
-    BOOST_CONSTEXPR operator ValueType() const BOOST_NOEXCEPT
-    {
-        return value_;
-    }
-
-public:
     void swap(ThisType& rhs) BOOST_NOEXCEPT
     {
         if (this != &rhs)
@@ -228,6 +222,29 @@ public:
             boost::swap(value_, rhs.value_);
         }
     }
+
+    std::string ToString(void) const
+    {
+        return ToString(
+            boost::integral_constant<bool, sizeof (ValueType) == 1>());
+    }
+
+private:
+    std::string ToString(boost::true_type /* 8-bit */) const
+    {
+        std::ostringstream oss;
+        oss << static_cast<typename LeastInt<32>::Type>(value_);
+        oss << value_;
+        return oss.str();
+    }
+
+    std::string ToString(boost::false_type /* larger than 8-bit */) const
+    {
+        std::ostringstream oss;
+        oss << value_;
+        return oss.str();
+    }
+
 
 private:
     ValueType value_;
@@ -238,7 +255,7 @@ private:
 /////////////////////////////////////////////////////////////////////////////////
 // Free functions./*{{{*/
 template<size_t bits>
-inline BOOST_CONSTEXPR size_t
+inline size_t
 hash_value(const CircularSequenceNumber<bits>& csn) BOOST_NOEXCEPT
 {
     typedef typename CircularSequenceNumber<bits>::ValueType  ValueType;
@@ -252,6 +269,15 @@ swap(CircularSequenceNumber<bits>& lhs,
 {
     return lhs.swap(rhs);
 }
+
+template<class Char, class Traits, size_t bits>
+inline std::basic_ostream<Char, Traits>&
+operator<<(std::basic_ostream<Char, Traits>& os,
+           const CircularSequenceNumber<bits>& seqno)
+{
+    return os << seqno.ToString();
+}
+
 
 /*}}}*/
 
