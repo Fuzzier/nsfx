@@ -694,6 +694,80 @@ public:
  * ### Benefits.
  *     The interfaces on an aggregated object can be exposed directly by the
  *     controller.<br/>
+ *
+ * @code
+ * aggregable object (navigator, Ptr<IObject>)
+ *    | exposes
+ *    V
+ *    interfaces on the aggregated object
+ *                         A
+ * controller              |
+ *    | exposes            | aggregates a subset of
+ *    V                    |
+ *    interfaces on the controller
+ * @endcode
+ *
+ * @remarks The interfaces on an aggregated object must be queried from its
+ *          navigator.<br/>
+ *          The interfaces on the controller shall be queried from 'this'
+ *          pointer.<br/>
+ *          The rule of thumb is that a controller shall never query an
+ *          interface from an <i>aggregated interface</i>.<br/>
+ *          <p>
+ *          The following example shows a pit-fall when trying to obtain
+ *          interfaces on an aggregated object or on a controller.<br/>
+ *          @code
+ *          // MyObject exposes IXxx, IYyy and IZzz
+ *          struct MyObject : IXxx, IYyy, IZzz
+ *          {
+ *              NSFX_INTERFACE_MAP_BEGIN(MyObject)
+ *                  NSFX_INTERFACE_ENTRY(IXxx)
+ *                  NSFX_INTERFACE_ENTRY(IYyy)
+ *                  NSFX_INTERFACE_ENTRY(IZzz)
+ *              NSFX_INTERFACE_MAP_END()
+ *              ...
+ *          };
+ *
+ *          // Controler also exposes IXxx and IYyy
+ *          struct Controller : IXxx
+ *          {
+ *              Ptr<IObject>  agg_;
+ *
+ *              NSFX_INTERFACE_MAP_BEGIN(Controller)
+ *                  NSFX_INTERFACE_ENTRY(IXxx)
+ *                  NSFX_INTERFACE_AGGREGATED_ENTRY(IYyy, agg_)
+ *              NSFX_INTERFACE_MAP_END()
+ *
+ *              void Initialize(void)
+ *              {
+ *                  agg_ = CreateObject<IObject>(cid_of_MyObject, this);
+ *
+ *                  // The IXxx on MyObject
+ *                  Ptr<IXxx> x_on_MyObject(agg_);
+ *
+ *                  // The IZzz on MyObject
+ *                  Ptr<IZzz> z_on_MyObject(agg_);
+ *
+ *                  // The aggregated IYyy on both MyObject and Controller
+ *                  // However, IYyy shall be considered as an interface on
+ *                  // Controller.
+ *                  Ptr<IYyy> y(agg_);
+ *
+ *                  // Cannot query IZzz from y !
+ *                  // It is salvaged as 'NoInterface' exception is thrown.
+ *                  Ptr<IZzz> z(y);
+ *
+ *                  // Pit-fall !!!
+ *                  // The IXxx on Controller, which is not the IXxx on MyObject
+ *                  // Since y is the IYyy on MyObject, it is not obvious which
+ *                  // IXxx is queried.
+ *                  Ptr<IXxx> x_not_on_MyObject(y);
+ *
+ *                  // The recommended usage
+ *                  Ptr<IXxx> x_on_Controller(this);
+ *              }
+ *          };
+ *          @endcode
  */
 template<class Envelopable>
 class AggObject NSFX_FINAL :/*{{{*/
