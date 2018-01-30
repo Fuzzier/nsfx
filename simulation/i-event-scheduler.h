@@ -20,6 +20,7 @@
 #include <nsfx/simulation/config.h>
 #include <nsfx/simulation/i-event-handle.h>
 #include <nsfx/event/i-event-sink.h>
+#include <nsfx/component/i-user.h>
 #include <nsfx/component/ptr.h>
 
 
@@ -124,22 +125,9 @@ NSFX_DEFINE_CLASS_UUID(IEventScheduler, 0x4A9E5C84, 0x1D35, 0x4CAA, 0x9FA3F155AA
 
 ////////////////////////////////////////////////////////////////////////////////
 // IEventSchedulerUser.
-/**
- * @ingroup Simulator
- * @brief The event scheduler user interface.
- */
-class IEventSchedulerUser :/*{{{*/
-    virtual public IObject
-{
-public:
-    virtual ~IEventSchedulerUser(void) BOOST_NOEXCEPT {}
-
-    virtual void Use(Ptr<IEventScheduler> scheduler) = 0;
-
-}; // class IEventScheduler /*}}}*/
-
-
-NSFX_DEFINE_CLASS_UUID(IEventSchedulerUser, 0xA72965EB, 0x80C9, 0x42ED, 0x934FC8CD3E1B3670LL);
+NSFX_DEFINE_USER_INTERFACE(
+    IEventSchedulerUser,
+    IEventScheduler,  0xDB076B9C, 0x1FAC, 0x45F0, 0xADF95AB942B93D6ALL);
 
 
 NSFX_CLOSE_NAMESPACE

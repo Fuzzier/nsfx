@@ -18,9 +18,10 @@
 
 
 #include <nsfx/simulation/config.h>
-#include <nsfx/component/i-object.h>
-#include <nsfx/component/ptr.h>
 #include <nsfx/event/i-event.h>
+#include <nsfx/component/i-object.h>
+#include <nsfx/component/i-user.h>
+#include <nsfx/component/ptr.h>
 
 
 NSFX_OPEN_NAMESPACE
@@ -119,22 +120,9 @@ NSFX_DEFINE_EVENT_INTERFACE(
 
 ////////////////////////////////////////////////////////////////////////////////
 // ISimulatorUser.
-/**
- * @ingroup Simulator
- * @brief The simulator user interface.
- */
-class ISimulatorUser :/*{{{*/
-    virtual public IObject
-{
-public:
-    virtual ~ISimulatorUser(void) BOOST_NOEXCEPT {}
-
-    virtual void Use(Ptr<ISimulator> simulator) = 0;
-
-}; // class ISimulatorUser /*}}}*/
-
-
-NSFX_DEFINE_CLASS_UUID(ISimulatorUser, 0xF4055358, 0x7910, 0x4982, 0x89BA0839D539482FLL);
+NSFX_DEFINE_USER_INTERFACE(
+    ISimulatorUser,
+    ISimulator,  0xF462A23A, 0x52AF, 0x4A5B, 0xAAB02A572E700A84LL);
 
 
 NSFX_CLOSE_NAMESPACE
