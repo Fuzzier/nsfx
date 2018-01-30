@@ -20,10 +20,8 @@
 #include <nsfx/simulation/config.h>
 #include <nsfx/simulation/i-clock.h>
 #include <nsfx/event/i-event-sink.h>
-#include <nsfx/component/i-object.h>
+#include <nsfx/component/i-user.h>
 #include <nsfx/component/ptr.h>
-
-
 NSFX_OPEN_NAMESPACE
 
 
@@ -65,18 +63,9 @@ NSFX_DEFINE_CLASS_UUID(ITimer, 0x91A857DC, 0x2AE6, 0x496E, 0xA397FA5C80A66228LL)
 
 ////////////////////////////////////////////////////////////////////////////////
 // ITimerUser.
-class ITimerUser :
-    virtual public IObject
-{
-public:
-    virtual ~ITimerUser(void) BOOST_NOEXCEPT {}
-
-    virtual void Use(Ptr<ITimer> timer) = 0;
-
-}; // class ITimerUser
-
-
-NSFX_DEFINE_CLASS_UUID(ITimerUser, 0x64A3D699, 0xCEC6, 0x44AD, 0xB1B4B06505A087A2LL);
+NSFX_DEFINE_USER_INTERFACE(
+    ITimerUser,
+    ITimer,  0xE5F38F1D, 0x9A16, 0x4E5E, 0xAE7FD827CD000EE2LL);
 
 
 NSFX_CLOSE_NAMESPACE
