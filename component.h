@@ -26,6 +26,8 @@
 
 #include <nsfx/component/ptr.h>
 
+#include <nsfx/component/i-user.h>
+
 #include <nsfx/component/i-class-factory.h>
 #include <nsfx/component/class-factory.h>
 
