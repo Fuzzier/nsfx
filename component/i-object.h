@@ -29,13 +29,17 @@ NSFX_OPEN_NAMESPACE
 
 ////////////////////////////////////////////////////////////////////////////////
 // Error info.
-typedef boost::error_info<struct tag_QuerySourceClass, std::string> QuerySourceClassErrorInfo;
-typedef boost::error_info<struct tag_QuerySourceInterface, std::string> QuerySourceInterfaceErrorInfo;
-typedef boost::error_info<struct tag_QueryTargetInterface, std::string> QueryTargetInterfaceErrorInfo;
-typedef boost::error_info<struct tag_QueryTargetIid, uuid> QueryTargetIidErrorInfo;
-typedef boost::error_info<struct tag_Class, std::string> ClassErrorInfo;
-typedef boost::error_info<struct tag_ClassUuid, uuid> ClassUuidErrorInfo;
-typedef boost::error_info<struct tag_Controller, class IObject*> ControllerErrorInfo;
+typedef boost::error_info<struct tag_QueriedClass,         std::string>  QueriedClassErrorInfo;
+typedef boost::error_info<struct tag_QueriedInterface,     std::string>  QueriedInterfaceErrorInfo;
+typedef boost::error_info<struct tag_QueriedInterfaceUuid, uuid>         QueriedInterfaceUuidErrorInfo;
+typedef boost::error_info<struct tag_QueriedFromInterface, std::string>  QueriedFromInterfaceErrorInfo;
+
+typedef boost::error_info<struct tag_Class,                std::string>  ClassErrorInfo;
+typedef boost::error_info<struct tag_ClassUuid,            uuid>         ClassUuidErrorInfo;
+typedef boost::error_info<struct tag_Interface,            std::string>  InterfaceErrorInfo;
+typedef boost::error_info<struct tag_InterfaceUuid,        uuid>         InterfaceUuidErrorInfo;
+
+typedef boost::error_info<struct tag_Controller,        class IObject*>  ControllerErrorInfo;
 
 
 ////////////////////////////////////////////////////////////////////////////////
