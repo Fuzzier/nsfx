@@ -49,7 +49,7 @@ NSFX_OPEN_NAMESPACE
  *
  * @remarks \c Proto must be placed <b>within parenthesis</b>, so commas can be
  *          used in the \c Proto.<br/>
- *          For example,
+ *          For example
  *          @code
  *          NSFX_DEFINE_EVENT_SINK_INTERFACE(
  *              IMyEventSink,
@@ -57,7 +57,7 @@ NSFX_OPEN_NAMESPACE
  *          @endcode
  */
 #define NSFX_DEFINE_EVENT_SINK_INTERFACE(ISink, Proto, l, w1, w2, ll)  \
-    NSFX_DEFINE_CLASS_UUID(class ISink, l, w1, w2, ll)                 \
+    NSFX_DEFINE_CLASS_UUID(class ISink, l, w1, w2, ll);                \
     class ISink :                                                      \
         public ::nsfx::IEventSink<BOOST_PP_TUPLE_ENUM(Proto)>          \
     {                                                                  \

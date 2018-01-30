@@ -1140,9 +1140,9 @@ NSFX_CLOSE_NAMESPACE
         {                                                                     \
             BOOST_THROW_EXCEPTION(                                            \
                 ::nsfx::NoInterface()                                         \
-                << ::nsfx::QuerySourceClassErrorInfo(                         \
+                << ::nsfx::QueriedClassErrorInfo(                             \
                     ::boost::typeindex::type_id<ThisClass_>().pretty_name())  \
-                << ::nsfx::QueryTargetIidErrorInfo(iid)                       \
+                << ::nsfx::QueriedInterfaceUuidErrorInfo(iid)                 \
             );                                                                \
         }                                                                     \
         return result;                                                        \

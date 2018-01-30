@@ -87,14 +87,14 @@ protected:
                 {
                     BOOST_THROW_EXCEPTION(
                         NoInterface() <<
-                        QueryTargetIidErrorInfo(uuid_of<T>()));
+                        QueriedInterfaceUuidErrorInfo(uuid_of<T>()));
                 }
             }
             catch (NoInterface& e)
             {
-                e << QuerySourceInterfaceErrorInfo(
+                e << QueriedFromInterfaceErrorInfo(
                         boost::typeindex::type_id<U>().pretty_name())
-                  << QueryTargetInterfaceErrorInfo(
+                  << QueriedInterfaceErrorInfo(
                         boost::typeindex::type_id<T>().pretty_name());
                 throw;
             }
@@ -145,14 +145,14 @@ protected:
                 {
                     BOOST_THROW_EXCEPTION(
                         NoInterface() <<
-                        QueryTargetIidErrorInfo(uuid_of<T>()));
+                        QueriedInterfaceUuidErrorInfo(uuid_of<T>()));
                 }
             }
             catch (NoInterface& e)
             {
-                e << QuerySourceInterfaceErrorInfo(
+                e << QueriedFromInterfaceErrorInfo(
                         boost::typeindex::type_id<U>().pretty_name())
-                  << QueryTargetInterfaceErrorInfo(
+                  << QueriedInterfaceErrorInfo(
                         boost::typeindex::type_id<T>().pretty_name());
                 throw;
             }
