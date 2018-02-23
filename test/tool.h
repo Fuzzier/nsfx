@@ -856,7 +856,11 @@ public:
     std::string GetTolerance(void) const
     {
         typedef typename boost::common_type<Limit, Tol>::type  CommonType;
+# if (NSFX_TEST_TOOL_OPERATOR == 0) // Absolute closeness
+        return TestFormatValue((tol_));
+# else // !(NSFX_TEST_TOOL_OPERATOR == 0) // Relative closeness
         return TestFormatValue((limit_ * tol_));
+# endif // (NSFX_TEST_TOOL_OPERATOR == n)
     }
 
     bool GetResult(void) const
