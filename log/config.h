@@ -18,14 +18,13 @@
 
 
 #include <nsfx/config.h>
-#include <nsfx/exception/exception.h>
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
- * @defgroup Logging
+ * @defgroup Log
  *
- * @brief Logging support.
+ * @brief Log support.
  *
  * To use the default logger, users simply use the following macros:
  * NSFX_LOG(severity)  << "a message";
@@ -85,8 +84,7 @@
  * To let the default log source generate a record automatically, a user
  * provides the name of the field, along with a value generator object.
  * The value generator object can be viewed as a callback that can be invoked
- * by the default logger to query the value at runtime from the users.
- *
+ * by the default log source to query the value at runtime from the users.
  * Usually, the value generator consists of a callback method and a set of
  * parameters.
  * For this purpose, the library provides \c Attribute class that takes the
@@ -103,35 +101,38 @@
  *
  * The library assumes that the log sink knows the type of the underlying value
  * of each record.
- *
+ * Thus, the \c AttributeValue directly exposes the underlying value to the log
+ * sink.
  *
  * \c AttributeValue itself is type neutral, and it holds an object of virtual
- * base class \c AttributeValueImpl.
+ * base class \c IAttributeValueBase.
  *
- * \c AttributeValueImpl is responsible to enable the acquisition of the
- * underlying value.
- * Thus, it provides two virtual methods: \c AttributeValueImpl::GetTypeId() and
- * \c AttributeValueImpl::Dispatch().
- * The first method is used to get \c std::type_info of the value.
- * The second method accepts a type visitor.
+ * \c IAttributeValueBase provides two methods:
+ * \c IAttributeValueBase::GetTypeId() and \c IAttributeValueBase::ToString().
+ * The first method provides the type information of the value, and the second
+ * method provides a basic means of retrieving the value without using its type.
  *
- * A type visitor holds a \c std::type_info, and a callback method.
- * \c AttributeValueImpl converts the underlying value into a value of the type
- * indicated by the \c std::type_info, and passes the converted value to the
- * callback method.
- * In this way, the underlying value is not directly exposed to the context
- * outside of \c AttributeValueImpl.
- * The need of copying the converted value can also be eliminated.
- * However, it does complicates the coding logic, as the access to the
- * underlying value is rather indirect.
- * i.e., the underlying value is obtained as the argument of the callback method.
- * To prevent copying the value, users have to be perform tasks within the
- * callback method.
- * e.g., the tasks to query additional values, format, display and store the
- * values have to be performed within the callback method of the visitor.
- * It also increases the level of call stack, and the number of virtual function
- * calls.
+ * <code>IAttributeValue<></code> interface that derives from
+ * \c IAttributeValueBase is defined to provide type-specific operations upon
+ * the underlying value.
+ * User-defined attribute value classes must implement <code>IAttributeValue<></code>.
  *
+ * \c AttributeValue class holds a poiner to <code>IAttributeValue<></code>.
+ * To be type-neutral, it actaully holds the a pointer to \c IAttributeValueBase.
+ * Upon the request of log sinks, the pointer to \c IAttributeValueBase is
+ * converted to type-specific <code>IAttributeValue<></code>, so the log sinks
+ * is able to access the type-specific value.
+ *
+ * Users that implement attribute value classes must make sure that the
+ * underlying value is kept available when log sinks access it.
+ * However, the log sources may not always know when the underlying value will
+ * be accessed by the log sinks.
+ * e.g., it is not a problem in a single-threaded environment, the logger will
+ * deliver log records to log sinks immediately and wait for them to complete.
+ * However, in a multithreaded environment, the log sinks may reside in a
+ * different thread and consumes the log records in a later time.
+ * Therefore, user-defined attribute value classes shall store or refer to
+ * persistent values whenever possible.
  */
 
 

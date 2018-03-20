@@ -5,7 +5,7 @@
  *
  * @version 1.0
  * @author  Fuzzier Tang <gauchyler@gmail.com>
- * @date    2015-02-16
+ * @date    date
  *
  * @copyright Copyright (c) 2015.
  *            National Key Laboratory of Science and Technology on Communications,
@@ -13,8 +13,8 @@
  *            All rights reserved.
  */
 
-#ifndef ATTRIBUTE_VALUE_H__5D31C8F6_9FF7_4FA8_9DC4_7DDF3716CE1B
-#define ATTRIBUTE_VALUE_H__5D31C8F6_9FF7_4FA8_9DC4_7DDF3716CE1B
+#ifndef ATTRIBUTE_H__015B46E7_7444_4BDD_A1DE_4F70E1D8BBCE
+#define ATTRIBUTE_H__015B46E7_7444_4BDD_A1DE_4F70E1D8BBCE
 
 
 #include <nsfx/log/config.h>
@@ -190,7 +190,7 @@ inline AttributeValue MakeConstantAttributeValue(Args&&... args)
 NSFX_LOG_CLOSE_NAMESPACE
 
 
-#endif // ATTRIBUTE_VALUE_H__5D31C8F6_9FF7_4FA8_9DC4_7DDF3716CE1B
+#endif // ATTRIBUTE_H__015B46E7_7444_4BDD_A1DE_4F70E1D8BBCE
 
 
 ////////////////////////////////////////////////////////////////////////////////
