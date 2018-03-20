@@ -323,7 +323,7 @@ NSFX_CLOSE_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 #if defined(BOOST_PP_IS_ITERATING)/*{{{*/
 
-#define NSFX_PP_FORWARD(z, n, d)  std::forward<A ## n>(a ## n)
+# define NSFX_PP_FORWARD(z, n, d)  std::forward<A ## n>(a ## n)
 
 ////////////////////////////////////////
 // template<class ISink, class F, class Ret, class A0, class A1, ...>
@@ -517,7 +517,7 @@ inline Ptr<ISink> CreateEventSink(IObject* controller, O* o, Ret(O::* ptmf)(BOOS
     return EventSinkCreator<ISink>()(controller, o, ptmf);
 }
 
-#undef NSFX_PP_FORWARD
+# undef NSFX_PP_FORWARD
 
 #endif // defined(BOOST_PP_IS_ITERATING) /*}}}*/
 

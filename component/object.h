@@ -1098,7 +1098,7 @@ NSFX_CLOSE_NAMESPACE
 
 #if defined(BOOST_PP_IS_ITERATING) /*{{{*/
 
-#define NSFX_PP_FORWARD(z, n, d)  std::forward<A ## n>(a ## n)
+# define NSFX_PP_FORWARD(z, n, d)  std::forward<A ## n>(a ## n)
 
 # if BOOST_PP_ITERATION_FLAGS() == 0
 
@@ -1155,7 +1155,7 @@ MemberAggObject(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERAT
 
 # endif // BOOST_PP_ITERATION_FLAGS() == x
 
-#undef NSFX_PP_FORWARD
+# undef NSFX_PP_FORWARD
 
 #endif // defined(BOOST_PP_IS_ITERATING) /*}}}*/
 
