@@ -144,12 +144,12 @@ public:
 
     virtual ~ConstantAttributeValue(void) {}
 
-    virtual const std::type_info& GetTypeId(void) NSFX_OVERRIDE
+    virtual const std::type_info& GetTypeId(void) const NSFX_OVERRIDE
     {
         return typeid (T);
     }
 
-    virtual const T& Get(void) NSFX_OVERRIDE
+    virtual const T& Get(void) const NSFX_OVERRIDE
     {
         return value_;
     }
@@ -167,7 +167,7 @@ private:
  * @brief Make a constant attribute value.
  *
  * @tparam T    Type of value stored in the \c AttributeValue object.
- * @tparam Args Type of arguments to construct a \c ValueT object.
+ * @tparam Args Type of arguments to construct a \c T object.
  */
 template<class T, class... Args>
 inline AttributeValue MakeConstantAttributeValue(Args&&... args)
@@ -205,8 +205,7 @@ NSFX_LOG_CLOSE_NAMESPACE
 // ConstantAttributeValue(A0&& a0, A1&& a1, ...) :
 //     value_(std::forward<A0>(a0), std::forward<A1>(a1), ...)
 template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
-ConstantAttributeValue(
-    BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, &&a)) :
+ConstantAttributeValue(BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, &&a)) :
     value_(BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, ))
 {}
 #  endif // BOOST_PP_ITERATION() >= 1

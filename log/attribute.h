@@ -18,6 +18,7 @@
 
 
 #include <nsfx/log/config.h>
+#include <nsfx/log/attribute-value.h>
 #include <nsfx/component/exception.h>
 #include <boost/preprocessor/repetition/enum.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
@@ -34,56 +35,41 @@ NSFX_LOG_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Log
- * @brief The virtual base class of type-specific attribute value interfaces.
- */
-class IAttributeValueBase
-{
-public:
-    virtual ~IAttributeValueBase(void) BOOST_NOEXCEPT {}
-    virtual const std::type_info& GetTypeId(void) = 0;
-};
-
-
-////////////////////////////////////////////////////////////////////////////////
-/**
- * @ingroup Log
- * @brief The virtual base class of type-specific attribute value classes.
+ * @brief The virtual base class of type-specific attribute classes.
  */
 template<class T>
-class IAttributeValue : public IAttributeValueBase
+class IAttribute : public IAttributeBase
 {
 public:
-    virtual ~IAttributeValue(void) BOOST_NOEXCEPT {}
-    virtual const std::type_info& GetTypeId(void) NSFX_OVERRIDE = 0;
-    virtual const T& Get(void) = 0;
+    virtual ~IAttribute(void) BOOST_NOEXCEPT {}
+    virtual const std::type_info& GetTypeId(void) = 0;
+    virtual AttributeValue Get(void) = 0;
 };
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Log
- * @brief Attribute value is carried by log records.
+ * @brief Attribute is used by log sources to genrate attribute values.
  *
- * \c AttributeValue object never stores references, it stores concreet values.
+ * \c Attribute object generates \c AttributeValue.
  */
-class AttributeValue
+class Attribute
 {
 public:
-    template<class T>
-    AttributeValue(const std::shared_ptr<IAttributeValue<T> >& value) :
-        value_(value)
+    Attribute(const std::shared_ptr<IAttribute>& attr) :
+        attr_(attr)
     {
-        if (!value_)
+        if (!attr_)
         {
             BOOST_THROW_EXCEPTION(InvalidPointer());
         }
     }
 
-    template<class T>
-    AttributeValue(std::shared_ptr<IAttributeValue<T> >&& value) :
-        value_(std::move(value))
+    Attribute(std::shared_ptr<IAttribute>&& attr) :
+        attr_(std::move(attr))
     {
-        if (!value_)
+        if (!attr_)
         {
             BOOST_THROW_EXCEPTION(InvalidPointer());
         }
@@ -94,68 +80,62 @@ public:
     const std::type_info& GetTypeId(void) const
     {
         BOOST_ASSERT(!!value_);
-        return value_->GetTypeId();
+        return attr_->GetTypeId();
     }
 
-    template<class T>
-    const T& Get(void) const
+    AttributeValue Get(void) const
     {
-        if (value_->GetTypeId() != typeid (T))
-        {
-            BOOST_THROW_EXCEPTION(
-                IllegalMethodCall() <<
-                ErrorMessage("Cannot access the log attribute value, since "
-                             "the requested type mismatches the type of value."));
-        }
-        return static_cast<IAttributeValue<T>*>(value_.get())->Get();
+        return attr_->Get();
     }
 
     // Properties.
 private:
-    std::shared_ptr<IAttributeValueBase> value_;
+    std::shared_ptr<IAttribute> attr_;
 };
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Log
- * @brief Constant attribute value.
+ * @brief Constant attribute.
  *
- * @tparam T Type of stored value.
+ * @tparam T Type of value.
  */
 template<class T>
-class ConstantAttributeValue : public IAttributeValue<T>
+class ConstantAttribute : public IAttribute
 {
 public:
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
     template<class... Args>
-    ConstantAttributeValue(Args&&... args) :
-        value_(std::forward<Args>(args)...)
+    ConstantAttribute(Args&&... args) :
+        value_(MakeConstantAttributeValue<T>(std::forward<Args>(args)...))
     {}
 #else // defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-    ConstantAttributeValue(void) {}
+    ConstantAttribute(void) :
+        value_(MakeConstantAttributeValue<T>())
+    {}
 
-#define BOOST_PP_ITERATION_PARAMS_1  (4, (0, NSFX_MAX_ARITY, <nsfx/log/attribute-value.h>, 0))
+#define BOOST_PP_ITERATION_PARAMS_1  (4, (0, NSFX_MAX_ARITY, <nsfx/log/attribute.h>, 0))
 
 #include BOOST_PP_ITERATE()
 
 #endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-    virtual ~ConstantAttributeValue(void) {}
+    virtual ~ConstantAttribute(void) {}
 
-    virtual const std::type_info& GetTypeId(void) NSFX_OVERRIDE
+    virtual const std::type_info& GetTypeId(void) const NSFX_OVERRIDE
     {
         return typeid (T);
     }
 
-    virtual const T& Get(void) NSFX_OVERRIDE
+    virtual AttributeValue Get(void) const NSFX_OVERRIDE
     {
         return value_;
     }
 
 private:
-    T value_;
+    AttributeValue value_;
 };
 
 
@@ -164,23 +144,23 @@ private:
 
 /**
  * @ingroup Log
- * @brief Make a constant attribute value.
+ * @brief Make a constant attribute.
  *
- * @tparam T    Type of value stored in the \c AttributeValue object.
- * @tparam Args Type of arguments to construct a \c ValueT object.
+ * @tparam T    Type of value stored in the \c Attribute object.
+ * @tparam Args Type of arguments to construct a \c T object.
  */
 template<class T, class... Args>
-inline AttributeValue MakeConstantAttributeValue(Args&&... args)
+inline Attribute MakeConstantAttribute(Args&&... args)
 {
-    return AttributeValue(
-        std::shared_ptr<IAttributeValue<T> >(
-            std::make_shared<ConstantAttributeValue<T> >(
+    return Attribute(
+        std::shared_ptr<IAttribute>(
+            std::make_shared<ConstantAttribute<T> >(
                 std::forward<Args>(args)...)));
 }
 
 #else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-#define BOOST_PP_ITERATION_PARAMS_1  (4, (0, NSFX_MAX_ARITY, <nsfx/log/attribute-value.h>, 1))
+#define BOOST_PP_ITERATION_PARAMS_1  (4, (0, NSFX_MAX_ARITY, <nsfx/log/attribute.h>, 1))
 
 #include BOOST_PP_ITERATE()
 
@@ -202,31 +182,30 @@ NSFX_LOG_CLOSE_NAMESPACE
 
 #  if BOOST_PP_ITERATION() >= 1
 // template<class A0, class A1, ...>
-// ConstantAttributeValue(A0&& a0, A1&& a1, ...) :
-//     value_(std::forward<A0>(a0), std::forward<A1>(a1), ...)
+// ConstantAttribute(A0&& a0, A1&& a1, ...) :
+//     value_(MakeConstantAttributeValue<T>(std::forward<A0>(a0), std::forward<A1>(a1), ...))
 template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
-ConstantAttributeValue(
-    BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, &&a)) :
-    value_(BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, ))
+ConstantAttribute(BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, &&a)) :
+    value_(MakeConstantAttributeValue<T>(BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, )))
 {}
 #  endif // BOOST_PP_ITERATION() >= 1
 
 # elif BOOST_PP_ITERATION_FLAGS() == 1
 
 // template<class T, class A0, class A1, ...>
-// inline AttributeValue MakeConstantAttributeValue(A0&& a0, A1&& a1, ...)
+// inline Attribute MakeConstantAttribute(A0&& a0, A1&& a1, ...)
 template<class T  BOOST_PP_COMMA_IF(BOOST_PP_ITERATION())
                   BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
-inline AttributeValue MakeConstantAttributeValue(
+inline Attribute MakeConstantAttribute(
         BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, &&a))
 {
-    // return AttributeValue(
-    //     std::shared_ptr<IAttributeValue<T> >(
-    //         std::make_shared<ConstantAttributeValue<T> >(
+    // return Attribute(
+    //     std::shared_ptr<IAttribute>(
+    //         std::make_shared<ConstantAttribute<T> >(
     //             std::forward<A0>(a0), std::forward<A1>(a1), ...)));
-    return AttributeValue(
-        std::shared_ptr<IAttributeValue<T> >(
-            std::make_shared<ConstantAttributeValue<T> >(
+    return Attribute(
+        std::shared_ptr<IAttribute>(
+            std::make_shared<ConstantAttribute<T> >(
                 BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, ))));
 }
 
