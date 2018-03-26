@@ -1,7 +1,7 @@
 ﻿/**
  * @file
  *
- * @brief Logging support for Network Simulation Frameworks.
+ * @brief Log support for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Fuzzier Tang <gauchyler@gmail.com>
