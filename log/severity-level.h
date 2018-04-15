@@ -33,8 +33,6 @@ NSFX_LOG_OPEN_NAMESPACE
  */
 enum SeverityLevel
 {
-    LOG_NONE     = 0x00000000,
-
     /**
      * @brief Any error that forces the program to shutdown to prevent from corruption.
      *
@@ -78,7 +76,7 @@ enum SeverityLevel
     LOG_INFO     = 0x00000008,
 
     /**
-     * @brief Information that diagnostcally helpful.
+     * @brief Information that diagnostically helpful.
      */
     LOG_DEBUG    = 0x00000010,
 
@@ -102,10 +100,6 @@ inline std::ostream& operator<<(std::ostream& os, SeverityLevel level)
     const char* label;
     switch (level)
     {
-    case LOG_NONE:
-        label = "UNCOND";
-        break;
-
     case LOG_FATAL:
         label = "FATAL";
         break;
@@ -135,7 +129,9 @@ inline std::ostream& operator<<(std::ostream& os, SeverityLevel level)
         break;
 
     default:
-        label = "Unknown severity level";
+        BOOST_THROW_EXCEPTION(
+            InvalidArgument() <<
+            ErrorMessage("Unknown log severity level."));
         break;
     }
     return (os << label);
