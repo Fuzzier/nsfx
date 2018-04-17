@@ -18,7 +18,7 @@
 
 
 #include <nsfx/component/config.h>
-#include <nsfx/component/uuid.h>
+#include <nsfx/component/uid.h>
 #include <nsfx/component/i-object.h>
 #include <nsfx/component/ptr.h>
 
@@ -39,18 +39,18 @@ NSFX_OPEN_NAMESPACE
  * @example For example
  *    @code
  *    NSFX_DEFINE_USER_INTERFACE(
- *        IMyInterfaceUser,
- *        IMyInterface,  0x68EB6D5D, 0x1467, 0x44A1, 0x8ACB71B83E595430LL);
+ *        IMyInterfaceUser, "edu.uestc.nsfx.IMyInterfaceUser"
+ *        IMyInterface);
  *    @endcode
  */
-#define NSFX_DEFINE_USER_INTERFACE(IXxxUser, IXxx, l, w1, w2, ll)   \
-    NSFX_DEFINE_CLASS_UUID(class IXxxUser, l, w1, w2, ll);          \
-    class IXxxUser :                                                \
-        virtual public ::nsfx::IObject                              \
-    {                                                               \
-    public:                                                         \
-        virtual ~IXxxUser(void) BOOST_NOEXCEPT {}                   \
-        virtual void Use(Ptr<IXxx> x) = 0;                          \
+#define NSFX_DEFINE_USER_INTERFACE(IXxxUser, iid, IXxx)  \
+    NSFX_DEFINE_CLASS_UID(class IXxxUser, iid);          \
+    class IXxxUser :                                     \
+        virtual public ::nsfx::IObject                   \
+    {                                                    \
+    public:                                              \
+        virtual ~IXxxUser(void) BOOST_NOEXCEPT {}        \
+        virtual void Use(Ptr<IXxx> x) = 0;               \
     }
 
 

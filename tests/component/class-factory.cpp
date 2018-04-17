@@ -30,7 +30,7 @@ NSFX_TEST_SUITE(ClassFactory)
         virtual refcount_t GetRefCount(void) = 0;
     };/*}}}*/
 
-    NSFX_DEFINE_CLASS_UUID(ITest, 0, 0, 0, 1LL);
+    NSFX_DEFINE_CLASS_UID(ITest, "edu.uestc.nsfx.test.ITest");
 
     struct Test : public ITest/*{{{*/
     {
@@ -68,19 +68,19 @@ NSFX_TEST_SUITE(ClassFactory)
         {
             // Create a non-aggregable object via class factory.
             nsfx::IObject* o = static_cast<nsfx::IObject*>(
-                    factory->CreateObject(nsfx::uuid_of<nsfx::IObject>(),
+                    factory->CreateObject(nsfx::uid_of<nsfx::IObject>(),
                                           nullptr));
             nsfx::Ptr<nsfx::IObject> p(o);
 
             // Create a non-aggregable object via class factory.
             ITest* t = static_cast<ITest*>(
-                    factory->CreateObject(nsfx::uuid_of<ITest>(),
+                    factory->CreateObject(nsfx::uid_of<ITest>(),
                                           nullptr));
             nsfx::Ptr<ITest> q(t);
         }
         catch (std::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << e.what();
+            NSFX_TEST_EXPECT(false) << e.what() << std::endl;
         }
     }
 
@@ -96,13 +96,17 @@ NSFX_TEST_SUITE(ClassFactory)
                 try
                 {
                     // Create an aggregable object via class factory.
-                    t = static_cast<IObject*>(
-                        factory->CreateObject(nsfx::uuid_of<nsfx::IObject>(),
+                    t = static_cast<nsfx::IObject*>(
+                        factory->CreateObject(nsfx::uid_of<nsfx::IObject>(),
                                               this));
+                }
+                catch (boost::exception& e)
+                {
+                    std::cerr << diagnostic_information(e) << std::endl;
                 }
                 catch (std::exception& e)
                 {
-                    NSFX_TEST_EXPECT(false) << e.what();
+                    std::cerr << e.what() << std::endl;
                 }
 
                 try
@@ -110,7 +114,7 @@ NSFX_TEST_SUITE(ClassFactory)
                     // Create an aggregable object via class factory:
                     // throw nsfx::BadAggregation.
                     t = static_cast<ITest*>(
-                        factory->CreateObject(nsfx::uuid_of<ITest>(),
+                        factory->CreateObject(nsfx::uid_of<ITest>(),
                                               this));
                     NSFX_TEST_EXPECT(false);
                 }
@@ -120,7 +124,7 @@ NSFX_TEST_SUITE(ClassFactory)
                 }
                 catch (std::exception& e)
                 {
-                    NSFX_TEST_EXPECT(false) << e.what();
+                    NSFX_TEST_EXPECT(false) << e.what() << std::endl;
                 }
             }
 
@@ -141,12 +145,12 @@ NSFX_TEST_SUITE(ClassFactory)
         {
             nsfx::Ptr<nsfx::IObject> o;
             o = static_cast<nsfx::IObject*>(
-                    factory->CreateObject(nsfx::uuid_of<nsfx::IObject>(),
+                    factory->CreateObject(nsfx::uid_of<nsfx::IObject>(),
                                           nullptr));
 
             nsfx::Ptr<ITest> t;
             t = static_cast<ITest*>(
-                    factory->CreateObject(nsfx::uuid_of<ITest>(),
+                    factory->CreateObject(nsfx::uid_of<ITest>(),
                                           nullptr));
         }
         catch (std::exception& e)

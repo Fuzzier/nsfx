@@ -75,19 +75,19 @@ protected:
     PtrBase(U* p, bool takeRefCount, boost::false_type) :
         p_(nullptr)
     {
-        BOOST_CONCEPT_ASSERT((HasUuidConcept<T>));
+        BOOST_CONCEPT_ASSERT((HasUidConcept<T>));
         BOOST_CONCEPT_ASSERT((IObjectConcept<U>));
         static_assert(!boost::is_same<T, U>::value, "");
         if (p)
         {
             try
             {
-                p_ = static_cast<T*>(p->QueryInterface(uuid_of<T>()));
+                p_ = static_cast<T*>(p->QueryInterface(uid_of<T>()));
                 if (!p_)
                 {
                     BOOST_THROW_EXCEPTION(
                         NoInterface() <<
-                        QueriedInterfaceUuidErrorInfo(uuid_of<T>()));
+                        QueriedInterfaceUidErrorInfo(uid_of<T>()));
                 }
             }
             catch (NoInterface& e)
@@ -132,7 +132,7 @@ protected:
     template<class U>
     void Reset(U* p, bool takeRefCount, boost::false_type)
     {
-        BOOST_CONCEPT_ASSERT((HasUuidConcept<T>));
+        BOOST_CONCEPT_ASSERT((HasUidConcept<T>));
         BOOST_CONCEPT_ASSERT((IObjectConcept<U>));
         static_assert(!boost::is_same<T, U>::value, "");
         Reset();
@@ -140,12 +140,12 @@ protected:
         {
             try
             {
-                p_ = static_cast<T*>(p->QueryInterface(uuid_of<T>()));
+                p_ = static_cast<T*>(p->QueryInterface(uid_of<T>()));
                 if (!p_)
                 {
                     BOOST_THROW_EXCEPTION(
                         NoInterface() <<
-                        QueriedInterfaceUuidErrorInfo(uuid_of<T>()));
+                        QueriedInterfaceUidErrorInfo(uid_of<T>()));
                 }
             }
             catch (NoInterface& e)
@@ -171,7 +171,7 @@ protected:
     template<class U>
     bool IsSameObject(U* p, boost::false_type) const
     {
-        BOOST_CONCEPT_ASSERT((HasUuidConcept<T>));
+        BOOST_CONCEPT_ASSERT((HasUidConcept<T>));
         BOOST_CONCEPT_ASSERT((IObjectConcept<U>));
         static_assert(!boost::is_same<T, U>::value, "");
         // Query the IObject interface.
@@ -195,7 +195,7 @@ protected:
  *
  * @remarks If the smart pointer is constructed from or assigned to a pointer of
  *          a different type, then the template parameter \c T must also conform
- *          to \c HasUuidConcept.<br/>
+ *          to \c HasUidConcept.<br/>
  *          Thus, the smart pointer is able to query an interface of type \c T
  *          from the source pointer.
  *

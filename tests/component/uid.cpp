@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Test uuid.
+ * @brief Test uid.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -14,31 +14,29 @@
  */
 
 #include <nsfx/test.h>
-#include <nsfx/component/uuid.h>
+#include <nsfx/component/uid.h>
 #include <iostream>
 
 
-NSFX_TEST_SUITE(uuid)
+NSFX_TEST_SUITE(uid)
 {
-    typedef nsfx::uuid  uuid;
-
     struct Object
     {
     }* o = nullptr;
-    NSFX_DEFINE_CLASS_UUID(Object, 0x01234567, 0x89ab, 0xcdef, 0x0123456789abcdefLL);
+    NSFX_DEFINE_CLASS_UID(Object, "edu.uestc.nsfx.test.Object");
 
     struct Interface
     {
     }* i = nullptr;
-    NSFX_DEFINE_CLASS_UUID(Interface, 0x11234567, 0x89ab, 0xcdef, 0x0123456789abcdefLL);
+    NSFX_DEFINE_CLASS_UID(Interface, "edu.uestc.nsfx.test.Interface");
 
-    NSFX_TEST_CASE(DEFINE_TYPE_UUID)
+    NSFX_TEST_CASE(DEFINE_TYPE_UID)
     {
-        NSFX_TEST_EXPECT_EQ(to_string(nsfx::uuid_of<Object>()),
-                            "01234567-89ab-cdef-0123-456789abcdef");
+        NSFX_TEST_EXPECT(!strcmp(nsfx::uid_of<Object>(),
+                                 "edu.uestc.nsfx.test.Object"));
 
-        NSFX_TEST_EXPECT_EQ(to_string(nsfx::uuid_of<Interface>()),
-                            "11234567-89ab-cdef-0123-456789abcdef");
+        NSFX_TEST_EXPECT(!strcmp(nsfx::uid_of<Interface>(),
+                                 "edu.uestc.nsfx.test.Interface"));
     }
 
 }

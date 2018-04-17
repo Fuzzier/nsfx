@@ -49,10 +49,10 @@ NSFX_TEST_SUITE(Ptr)
             return result;
         }
 
-        virtual void* QueryInterface(const nsfx::uuid& iid) NSFX_OVERRIDE
+        virtual void* QueryInterface(const nsfx::Uid& iid) NSFX_OVERRIDE
         {
             void* result = nullptr;
-            if (iid == nsfx::uuid_of<nsfx::IObject>())
+            if (iid == nsfx::uid_of<nsfx::IObject>())
             {
                 AddRef();
                 result = static_cast<nsfx::IObject*>(this);
@@ -73,7 +73,7 @@ NSFX_TEST_SUITE(Ptr)
         virtual ~ITest(void) {}
     };/*}}}*/
 
-    NSFX_DEFINE_CLASS_UUID(ITest, 0, 0, 0, 1LL);
+    NSFX_DEFINE_CLASS_UID(ITest, "edu.uestc.nsfx.test.ITest");
 
     struct Test : virtual ITest/*{{{*/
     {
@@ -102,15 +102,15 @@ NSFX_TEST_SUITE(Ptr)
             return result;
         }
 
-        virtual void* QueryInterface(const nsfx::uuid& iid) NSFX_OVERRIDE
+        virtual void* QueryInterface(const nsfx::Uid& iid) NSFX_OVERRIDE
         {
             void* result = nullptr;
-            if (iid == nsfx::uuid_of<nsfx::IObject>())
+            if (iid == nsfx::uid_of<nsfx::IObject>())
             {
                 AddRef();
                 result = static_cast<nsfx::IObject*>(this);
             }
-            else if (iid == nsfx::uuid_of<ITest>())
+            else if (iid == nsfx::uid_of<ITest>())
             {
                 AddRef();
                 result = static_cast<ITest*>(this);
@@ -137,9 +137,9 @@ NSFX_TEST_SUITE(Ptr)
         return result;
     }/*}}}*/
 
-    NSFX_TEST_CASE(HasNoUuid)
+    NSFX_TEST_CASE(HasNoUid)
     {
-        // Object has no UUID, but can be managed by nsfx::Ptr<>.
+        // Object has no UID, but can be managed by nsfx::Ptr<>.
         try
         {
             nsfx::Ptr<Object> o(new Object);
