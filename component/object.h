@@ -337,7 +337,7 @@ protected:
     }
 
     // Defined via NSFX_INTERFACE_XXX() macros.
-    // void* InternalQueryInterface(const uuid& iid);
+    // void* InternalQueryInterface(const Uid& iid);
 
     refcount_t ControllerAddRef(void)
     {
@@ -349,7 +349,7 @@ protected:
         return controller_->Release();
     }
 
-    void* ControllerQueryInterface(const uuid& iid)
+    void* ControllerQueryInterface(const Uid& iid)
     {
         return controller_->QueryInterface(iid);
     }
@@ -364,10 +364,10 @@ private:
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// EnvelopableConcept
+// ObjectImplConcept
 /**
  * @ingroup Component
- * @brief Envelopable concept.
+ * @brief ObjectImpl concept.
  *
  * A class is envelopable if it satisfies the following conditions.<br/>
  * 1. It conforms to \c IObjectConcept.<br/>
@@ -375,14 +375,14 @@ private:
  * 3. It is not derived from \c ObjectBase.<br/>
  */
 template<class T>
-struct EnvelopableConcept/*{{{*/
+struct ObjectImplConcept/*{{{*/
 {
     static_assert(!boost::is_base_of<ObjectBase, T>::value,
                   "An envelopable class must not derive from ObjectBase.");
 
     BOOST_CONCEPT_ASSERT((IObjectConcept<T>));
 
-    BOOST_CONCEPT_USAGE(EnvelopableConcept)
+    BOOST_CONCEPT_USAGE(ObjectImplConcept)
     {
         HasNonPrivateInternalQueryInterface();
     }
@@ -392,17 +392,17 @@ struct EnvelopableConcept/*{{{*/
         struct Child : T
         {
             // T has a private InternalQueryInterface().
-            void* InternalQueryInterface(const uuid& iid)
+            void* InternalQueryInterface(const Uid& iid)
             {
                 return T::InternalQueryInterface(iid);
             }
         };
 
         Child* child = nullptr;
-        void* iobj = child->InternalQueryInterface(uuid_of<IObject>());
+        void* iobj = child->InternalQueryInterface(uid_of<IObject>());
     }
 
-}; // class EnvelopableConcept /*}}}*/
+}; // class ObjectImplConcept /*}}}*/
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -411,7 +411,7 @@ struct EnvelopableConcept/*{{{*/
  * @ingroup Component
  * @brief A non-aggregable object that must be allocated on heap.
  *
- * @tparam Envelopable A class that conforms to \c EnvelopableConcept.
+ * @tparam ObjectImpl A class that conforms to \c ObjectImplConcept.
  *
  * A non-aggretable object possesses a reference counter.<br/>
  * However, it does not hold a pointer to a controller, thus it cannot be
@@ -421,7 +421,7 @@ struct EnvelopableConcept/*{{{*/
  * Therefore, do not define an \c Object as a static variable or a member
  * variable.<br/>
  *
- * The \c Envelopable may implement \c ObjectBase::InternalQueryInterface() via
+ * The \c ObjectImpl may implement \c ObjectBase::InternalQueryInterface() via
  * \c NSFX_INTERFACE_XXX() macros.
  *
  * ### When to use?
@@ -430,19 +430,19 @@ struct EnvelopableConcept/*{{{*/
  *     An \c Object must be allocated on heap.<br/>
  *     i.e., <code>Ptr<></code> shall be used to hold an \c Object.
  */
-template<class Envelopable>
+template<class ObjectImpl>
 class Object NSFX_FINAL :/*{{{*/
     private ObjectBase, // Use private inherit as the methods are only used internally.
-    public Envelopable
+    public ObjectImpl
 {
 private:
-    BOOST_CONCEPT_ASSERT((EnvelopableConcept<Envelopable>));
+    BOOST_CONCEPT_ASSERT((ObjectImplConcept<ObjectImpl>));
 
 public:
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
     template<class...Args>
     Object(Args&&... args) :
-        Envelopable(std::forward<Args>(args)...) {}
+        ObjectImpl(std::forward<Args>(args)...) {}
 
 #else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
     Object(void) {}
@@ -477,7 +477,7 @@ public:
         return result;
     }
 
-    virtual void* QueryInterface(const uuid& iid) NSFX_FINAL NSFX_OVERRIDE
+    virtual void* QueryInterface(const Uid& iid) NSFX_FINAL NSFX_OVERRIDE
     {
         return InternalQueryInterface(iid);
     }
@@ -485,9 +485,9 @@ public:
     /*}}}*/
 
     // Methods.
-    Envelopable* GetEnveloped(void)
+    ObjectImpl* GetImpl(void)
     {
-        return static_cast<Envelopable*>(this);
+        return static_cast<ObjectImpl*>(this);
     }
 
 }; // class Object /*}}}*/
@@ -498,7 +498,7 @@ public:
  * @ingroup Component
  * @brief A non-aggregable object that must be used as a static variable.
  *
- * @tparam Envelopable A class that conforms to \c EnvelopableConcept.
+ * @tparam ObjectImpl A class that conforms to \c ObjectImplConcept.
  *
  * A \c StaticObject does not have a reference count.<br/>
  * Thus, do not allocate a \c StaticObject on heap, since <code>Ptr<></code>
@@ -507,7 +507,7 @@ public:
  * e.g. a singleton can be defined as a static \c StaticObject, and there is
  * no need to allocate it on heap.<br/>
  *
- * The \c Envelopable may implement \c ObjectBase::InternalQueryInterface() via
+ * The \c ObjectImpl may implement \c ObjectBase::InternalQueryInterface() via
  * \c NSFX_INTERFACE_XXX() macros.
  *
  * ### When to use?
@@ -518,18 +518,18 @@ public:
  *     It saves a <code>Ptr<></code> to manage lifetime.<br/>
  *     There is no need to allocate on heap.
  */
-template<class Envelopable>
+template<class ObjectImpl>
 class StaticObject NSFX_FINAL :/*{{{*/
-    public Envelopable
+    public ObjectImpl
 {
 private:
-    BOOST_CONCEPT_ASSERT((EnvelopableConcept<Envelopable>));
+    BOOST_CONCEPT_ASSERT((ObjectImplConcept<ObjectImpl>));
 
 public:
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
     template<class...Args>
     StaticObject(Args&&... args) :
-        Envelopable(std::forward<Args>(args)...) {}
+        ObjectImpl(std::forward<Args>(args)...) {}
 
 #else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
     StaticObject(void) {}
@@ -558,7 +558,7 @@ public:
         return 1;
     }
 
-    virtual void* QueryInterface(const uuid& iid) NSFX_FINAL NSFX_OVERRIDE
+    virtual void* QueryInterface(const Uid& iid) NSFX_FINAL NSFX_OVERRIDE
     {
         return InternalQueryInterface(iid);
     }
@@ -566,9 +566,9 @@ public:
     /*}}}*/
 
     // Methods.
-    Envelopable* GetEnveloped(void)
+    ObjectImpl* GetImpl(void)
     {
-        return static_cast<Envelopable*>(this);
+        return static_cast<ObjectImpl*>(this);
     }
 
 }; // class StaticObject /*}}}*/
@@ -579,26 +579,26 @@ public:
  * @ingroup Component
  * @brief A aggregated object that is internally used by \c MemberAggObject and \c AggObject.
  *
- * @tparam Envelopable A class that conforms to \c EnvelopableConcept.
+ * @tparam ObjectImpl A class that conforms to \c ObjectImplConcept.
  *
  * Users cannot use this class directly.
  *
  * @internal
  */
-template<class Envelopable>
+template<class ObjectImpl>
 class Aggregated NSFX_FINAL :/*{{{*/
     private ObjectBase, // Use private inherit as the methods are only used internally.
-    public Envelopable
+    public ObjectImpl
 {
 private:
-    template<class Envelopable> friend class AggObject;
-    template<class Envelopable> friend class MemberAggObject;
+    template<class ObjectImpl> friend class AggObject;
+    template<class ObjectImpl> friend class MemberAggObject;
 
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
     template<class...Args>
     Aggregated(IObject* controller, Args&&... args) :
         ObjectBase(controller),
-        Envelopable(std::forward<Args>(args)...)
+        ObjectImpl(std::forward<Args>(args)...)
     {
         if (!controller)
         {
@@ -613,8 +613,7 @@ private:
     {
         if (!controller)
         {
-            BOOST_THROW_EXCEPTION(
-                BadAggregation() << ControllerErrorInfo(controller));
+            BOOST_THROW_EXCEPTION(BadAggregation());
         }
     }
 
@@ -645,18 +644,18 @@ public:
     /**
      * @brief Exposes interfaces implemented by the aggregated object.
      */
-    virtual void* QueryInterface(const uuid& iid) NSFX_FINAL NSFX_OVERRIDE
+    virtual void* QueryInterface(const Uid& iid) NSFX_FINAL NSFX_OVERRIDE
     {
         return ControllerQueryInterface(iid);
     }
 
     /*}}}*/
 
-    // Make the protected Envelopable::InternalQueryInterface() a member of
+    // Make the protected ObjectImpl::InternalQueryInterface() a member of
     // Aggregated class.
-    void* InternalQueryInterface(const uuid& iid)
+    void* InternalQueryInterface(const Uid& iid)
     {
-        return Envelopable::InternalQueryInterface(iid);
+        return ObjectImpl::InternalQueryInterface(iid);
     }
 
 }; // class Aggregated /*}}}*/
@@ -668,7 +667,7 @@ public:
  * @ingroup Component
  * @brief An aggregable object that must be allocated on heap.
  *
- * @tparam Envelopable A class that conforms to \c EnvelopableConcept.
+ * @tparam ObjectImpl A class that conforms to \c ObjectImplConcept.
  *
  * The aggregated object has the same lifetime as the navigator.<br/>
  * So the navigator also has the same lifetime as the controller.<br/>
@@ -680,7 +679,7 @@ public:
  * This smart pointer is never offer to other objects.<br/>
  * And it is deallocated along with the controller.<br/>
  *
- * The \c Enveloped may implement \c ObjectBase::InternalQueryInterface() via
+ * The \c ObjectImpld may implement \c ObjectBase::InternalQueryInterface() via
  * \c NSFX_INTERFACE_XXX() macros.
  *
  * ### When to use?
@@ -769,13 +768,13 @@ public:
  *          };
  *          @endcode
  */
-template<class Envelopable>
+template<class ObjectImpl>
 class AggObject NSFX_FINAL :/*{{{*/
     public IObject,
     private ObjectBase // Use private inherit as the methods are only used internally.
 {
 private:
-    BOOST_CONCEPT_ASSERT((EnvelopableConcept<Envelopable>));
+    BOOST_CONCEPT_ASSERT((ObjectImplConcept<ObjectImpl>));
 
 public:
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
@@ -820,14 +819,14 @@ public:
     /**
      * @brief Query an interface from the navigator.
      *
-     * @return If the \c iid is the uuid of \c IObject, return the \c IObject
+     * @return If the \c iid is the UID of \c IObject, return the \c IObject
      *         on the navigator itself.<br/>
      *         Otherwise, return the interface on the aggregated object.
      */
-    virtual void* QueryInterface(const uuid& iid) NSFX_FINAL NSFX_OVERRIDE
+    virtual void* QueryInterface(const Uid& iid) NSFX_FINAL NSFX_OVERRIDE
     {
         void* result = nullptr;
-        if (iid == uuid_of<IObject>())
+        if (iid == uid_of<IObject>())
         {
             result = static_cast<IObject*>(this);
             InternalAddRef();
@@ -842,13 +841,13 @@ public:
     /*}}}*/
 
     // Methods.
-    Envelopable* GetEnveloped(void)
+    ObjectImpl* GetImpl(void)
     {
-        return static_cast<Envelopable*>(&agg_);
+        return static_cast<ObjectImpl*>(&agg_);
     }
 
 private:
-    Aggregated<Envelopable> agg_;  /// The aggregated object.
+    Aggregated<ObjectImpl> agg_;  /// The aggregated object.
 
 }; // class AggObject /*}}}*/
 
@@ -859,7 +858,7 @@ private:
  * @ingroup Component
  * @brief An aggregable object that must be used a member variable of its constroller.
  *
- * @tparam Envelopable A class that conforms to \c EnvelopableConcept.
+ * @tparam ObjectImpl A class that conforms to \c ObjectImplConcept.
  *
  * A member aggregable object does not have a reference count.<br/>
  * Thus, do not allocate a \c MemberAggObject on heap, since <code>Ptr<></code>
@@ -867,7 +866,7 @@ private:
  * It must be defined as a member variable of the controller to prevent memory
  * leak.<br/>
  *
- * The \c Envelopable may implement \c ObjectBase::InternalQueryInterface() via
+ * The \c ObjectImpl may implement \c ObjectBase::InternalQueryInterface() via
  * \c NSFX_INTERFACE_XXX() macros.
  *
  * ### When to use?
@@ -882,12 +881,12 @@ private:
  *     It saves a <code>Ptr<></code> to manage lifetime.<br/>
  *     There is no need to allocate on heap.
  */
-template<class Envelopable>
+template<class ObjectImpl>
 class MemberAggObject NSFX_FINAL :/*{{{*/
     public IObject
 {
 private:
-    BOOST_CONCEPT_ASSERT((EnvelopableConcept<Envelopable>));
+    BOOST_CONCEPT_ASSERT((ObjectImplConcept<ObjectImpl>));
 
 public:
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
@@ -926,14 +925,14 @@ public:
     /**
      * @brief Query an interface from the navigator.
      *
-     * @return If the \c iid is the uuid of \c IObject, return the \c IObject
+     * @return If the \c iid is the UID of \c IObject, return the \c IObject
      *         on the navigator itself.<br/>
      *         Otherwise, return the interface on the aggregated object.
      */
-    virtual void* QueryInterface(const uuid& iid) NSFX_FINAL NSFX_OVERRIDE
+    virtual void* QueryInterface(const Uid& iid) NSFX_FINAL NSFX_OVERRIDE
     {
         void* result = nullptr;
-        if (iid == uuid_of<IObject>())
+        if (iid == uid_of<IObject>())
         {
             result = static_cast<IObject*>(this);
         }
@@ -947,13 +946,13 @@ public:
     /*}}}*/
 
     // Methods.
-    Envelopable* GetEnveloped(void)
+    ObjectImpl* GetImpl(void)
     {
-        return static_cast<Envelopable*>(&agg_);
+        return static_cast<ObjectImpl*>(&agg_);
     }
 
 private:
-    Aggregated<Envelopable> agg_;  /// The aggregated object.
+    Aggregated<ObjectImpl> agg_;  /// The aggregated object.
 
 }; // class MemberAggObject /*}}}*/
 
@@ -964,12 +963,12 @@ private:
  * @ingroup Component
  * @brief An object that can be exposed by its constroller with a separate set of interfaces.
  *
- * @tparam Envelopable A class that conforms to \c EnvelopableConcept.
+ * @tparam ObjectImpl A class that conforms to \c ObjectImplConcept.
  *
  * A linked object shares the same reference count as its controller.<br/>
  * It can be defined as a member variable of the controller.<br/>
  *
- * The \c Envelopable may implement \c ObjectBase::InternalQueryInterface() via
+ * The \c ObjectImpl may implement \c ObjectBase::InternalQueryInterface() via
  * \c NSFX_INTERFACE_XXX() macros.
  *
  * ### When to use?
@@ -987,20 +986,20 @@ private:
  *     It saves a <code>Ptr<></code> to manage lifetime.<br/>
  *     There is no need to allocate on heap.
  */
-template<class Envelopable>
+template<class ObjectImpl>
 class MutualObject NSFX_FINAL :/*{{{*/
     private ObjectBase, // Use private inherit as the methods are only used internally.
-    public Envelopable
+    public ObjectImpl
 {
 private:
-    BOOST_CONCEPT_ASSERT((EnvelopableConcept<Envelopable>));
+    BOOST_CONCEPT_ASSERT((ObjectImplConcept<ObjectImpl>));
 
 public:
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
     template<class...Args>
     MutualObject(IObject* controller, Args&&... args) :
         ObjectBase(controller),
-        Envelopable(std::forward<Args>(args)...)
+        ObjectImpl(std::forward<Args>(args)...)
     {
         if (!controller)
         {
@@ -1015,8 +1014,7 @@ public:
     {
         if (!controller)
         {
-            BOOST_THROW_EXCEPTION(
-                BadAggregation() << ControllerErrorInfo(controller));
+            BOOST_THROW_EXCEPTION(BadAggregation());
         }
     }
 
@@ -1049,18 +1047,18 @@ public:
      *
      * @return The interface on the aggregated object.
      */
-    virtual void* QueryInterface(const uuid& iid) NSFX_FINAL NSFX_OVERRIDE
+    virtual void* QueryInterface(const Uid& iid) NSFX_FINAL NSFX_OVERRIDE
     {
-        void* result = Envelopable::InternalQueryInterface(iid);
+        void* result = ObjectImpl::InternalQueryInterface(iid);
         return result;
     }
 
     /*}}}*/
 
     // Methods.
-    Envelopable* GetEnveloped(void)
+    ObjectImpl* GetImpl(void)
     {
-        return static_cast<Envelopable*>(this);
+        return static_cast<ObjectImpl*>(this);
     }
 
 }; // class MutualObject /*}}}*/
@@ -1081,18 +1079,18 @@ NSFX_CLOSE_NAMESPACE
  * @remarks The macros changes the access rights to \c protected.
  */
 #define NSFX_INTERFACE_MAP_BEGIN(ThisClass)                               \
-  private:                                                                \
-    typedef ThisClass  ThisClass_;                                        \
-  protected:                                                              \
-    void* InternalQueryInterface(const ::nsfx::uuid& iid)                 \
+    private:                                                              \
+        typedef ThisClass  ThisClass_;                                    \
+    protected:                                                            \
+    void* InternalQueryInterface(const ::nsfx::Uid& iid)                  \
     {                                                                     \
         void* result = nullptr;                                           \
-        if (iid == ::nsfx::uuid_of<IObject>())                            \
+        if (iid == ::nsfx::uid_of<::nsfx::IObject>())                     \
         {                                                                 \
             static_assert(                                                \
                 ::boost::is_base_of<::nsfx::IObject, ThisClass_>::value,  \
                 "Cannot expose an unimplemented interface");              \
-            result = static_cast<IObject*>(this);                         \
+            result = static_cast<::nsfx::IObject*>(this);                 \
             AddRef();                                                     \
         }
 
@@ -1105,14 +1103,14 @@ NSFX_CLOSE_NAMESPACE
  *             \c Intf.<br/>
  *             It should <b>not</b> be \c IObject.
  */
-#define NSFX_INTERFACE_ENTRY(Intf)                               \
-        else if (iid == ::nsfx::uuid_of<Intf>())                 \
-        {                                                        \
-            static_assert(                                       \
-                ::boost::is_base_of<Intf, ThisClass_>::value,    \
-                "Cannot expose an unimplemented interface");     \
-            result = static_cast<Intf*>(this);                   \
-            AddRef();                                            \
+#define NSFX_INTERFACE_ENTRY(Intf)                             \
+        else if (iid == ::nsfx::uid_of<Intf>())                \
+        {                                                      \
+            static_assert(                                     \
+                ::boost::is_base_of<Intf, ThisClass_>::value,  \
+                "Cannot expose an unimplemented interface");   \
+            result = static_cast<Intf*>(this);                 \
+            AddRef();                                          \
         }
 
 /**
@@ -1125,10 +1123,10 @@ NSFX_CLOSE_NAMESPACE
  *             i.e., the objet implements \c IObject, and \c Intf can be queried
  *             from the object.
  */
-#define NSFX_INTERFACE_AGGREGATED_ENTRY(Intf, navi)                 \
-        else if (iid == ::nsfx::uuid_of<Intf>())                    \
-        {                                                           \
-            result = (navi)->QueryInterface(iid);                   \
+#define NSFX_INTERFACE_AGGREGATED_ENTRY(Intf, navi)  \
+        else if (iid == ::nsfx::uid_of<Intf>())      \
+        {                                            \
+            result = (navi)->QueryInterface(iid);    \
         }
 
 /**
@@ -1142,7 +1140,7 @@ NSFX_CLOSE_NAMESPACE
                 ::nsfx::NoInterface()                                         \
                 << ::nsfx::QueriedClassErrorInfo(                             \
                     ::boost::typeindex::type_id<ThisClass_>().pretty_name())  \
-                << ::nsfx::QueriedInterfaceUuidErrorInfo(iid)                 \
+                << ::nsfx::QueriedInterfaceUidErrorInfo(iid)                  \
             );                                                                \
         }                                                                     \
         return result;                                                        \
@@ -1162,30 +1160,30 @@ NSFX_CLOSE_NAMESPACE
 
 // template<class A0, class A1, ...>
 // Object(A0&& a0, A1&& a1, ...)) :
-//     Envelopable(std::forward<A0>(a0), std::forward<A1>(a1), ...) {}
+//     ObjectImpl(std::forward<A0>(a0), std::forward<A1>(a1), ...) {}
 template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
 Object(BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, && a)) :
-    Envelopable(BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, )) {}
+    ObjectImpl(BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, )) {}
 
 # elif BOOST_PP_ITERATION_FLAGS() == 1
 
 // template<class A0, class A1, ...>
 // StaticObject(A0&& a0, A1&& a1, ...)) :
-//     Envelopable(std::forward<A0>(a0), std::forward<A1>(a1), ...) {}
+//     ObjectImpl(std::forward<A0>(a0), std::forward<A1>(a1), ...) {}
 template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
 StaticObject(BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, && a)) :
-    Envelopable(BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, )) {}
+    ObjectImpl(BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, )) {}
 
 # elif BOOST_PP_ITERATION_FLAGS() == 2
 
 // template<class A0, class A1, ...>
 // AggObject(IObject* controller, A0&& a0, A1&& a1, ...)) :
 //     ObjectBase(controller),
-//     Envelopable(std::forward<A0>(a0), std::forward<A1>(a1), ...)
+//     ObjectImpl(std::forward<A0>(a0), std::forward<A1>(a1), ...)
 template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
 Aggregated(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, && a)) :
     ObjectBase(controller),
-    Envelopable(BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, ))
+    ObjectImpl(BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, ))
 {
     if (!controller)
     {
@@ -1216,16 +1214,15 @@ MemberAggObject(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERAT
 // template<class A0, class A1, ...>
 // MutualObject(IObject* controller, A0&& a0, A1&& a1, ...)) :
 //     ObjectBase(controller),
-//     Envelopable(std::forward<A0>(a0), std::forward<A1>(a1), ...)
+//     ObjectImpl(std::forward<A0>(a0), std::forward<A1>(a1), ...)
 template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
 MutualObject(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, && a)) :
     ObjectBase(controller),
-    Envelopable(BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, ))
+    ObjectImpl(BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, ))
 {
     if (!controller)
     {
-        BOOST_THROW_EXCEPTION(
-            BadAggregation() << ControllerErrorInfo(controller));
+        BOOST_THROW_EXCEPTION(BadAggregation());
     }
 }
 

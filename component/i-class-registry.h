@@ -41,7 +41,7 @@ public:
     /**
      * @brief Register a class factory.
      *
-     * @param[in] cid The uuid of an object class.<br/>
+     * @param[in] cid The UID of an object class.<br/>
      *                The class must conform to \c EnvelopableConcept.
      * @param[in] factory The class factory.
      *
@@ -49,14 +49,14 @@ public:
      * @throw ClassIsRegistered The class is already registered.
      * @throw InvalidPointer The factory is \c nullptr.
      */
-    virtual void Register(const uuid& cid, Ptr<IClassFactory> factory) = 0;
+    virtual void Register(const Uid& cid, Ptr<IClassFactory> factory) = 0;
 
     /**
      * @brief Unregister a class factory.
      *
-     * @param[in] cid The uuid of an object class.<br/>
+     * @param[in] cid The UID of an object class.<br/>
      */
-    virtual void Unregister(const uuid& cid) = 0;
+    virtual void Unregister(const Uid& cid) = 0;
 
     /**
      * @brief Unregister all class factories.
@@ -66,23 +66,20 @@ public:
     /**
      * @brief Get a class factory.
      *
-     * @param[in] cid The uuid of an object class.<br/>
+     * @param[in] cid The UID of an object class.<br/>
      *                The class must conform to \c EnvelopableConcept.
      *
      * @throw ClassNotRegistered The class is not registered.
      */
-    virtual Ptr<IClassFactory> GetClassFactory(const uuid& cid) = 0;
+    virtual Ptr<IClassFactory> GetClassFactory(const Uid& cid) = 0;
 
 }; // class IClassRegistry /*}}}*/
 
 
-NSFX_DEFINE_CLASS_UUID(IClassRegistry, 0x46F5D329, 0xE6EC, 0x4816, 0x959939B6B707FC1CLL);
+NSFX_DEFINE_CLASS_UID(IClassRegistry, "edu.uestc.nsfx.IClassRegistry");
 
 
 NSFX_CLOSE_NAMESPACE
-
-
-#define NSFX_IID_IClassRegistry  NSFX_IID_OF(::nsfx::IClassRegistry)
 
 
 #endif // I_CLASS_REGISTRY_H__24814113_77CB_46E0_AF88_DDFB672AB6CE

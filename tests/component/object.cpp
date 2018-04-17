@@ -33,7 +33,7 @@ NSFX_TEST_SUITE(Object)
         virtual refcount_t GetRefCount(void) = 0;
     };/*}}}*/
 
-    NSFX_DEFINE_CLASS_UUID(ITest, 0, 0, 0, 1LL);
+    NSFX_DEFINE_CLASS_UID(ITest, "edu.uestc.nsfx.test.ITest");
 
     struct IFoobar :/*{{{*/
         virtual nsfx::IObject
@@ -43,7 +43,7 @@ NSFX_TEST_SUITE(Object)
         virtual refcount_t GetRefCount(void) = 0;
     };/*}}}*/
 
-    NSFX_DEFINE_CLASS_UUID(IFoobar, 0, 0, 0, 2LL);
+    NSFX_DEFINE_CLASS_UID(IFoobar, "edu.uestc.nsfx.test.IFoobar");
 
     static bool deallocated = false;
 
@@ -69,7 +69,7 @@ NSFX_TEST_SUITE(Object)
 
     };/*}}}*/
 
-    NSFX_DEFINE_CLASS_UUID(Test, 0, 0, 1, 1LL);
+    NSFX_DEFINE_CLASS_UID(Test, "edu.uestc.nsfx.test.Test");
 
     struct TestNoDefaultCtor :/*{{{*/
         ITest
@@ -98,7 +98,7 @@ NSFX_TEST_SUITE(Object)
 
     };/*}}}*/
 
-    NSFX_DEFINE_CLASS_UUID(TestNoDefaultCtor, 0, 0, 1, 2LL);
+    NSFX_DEFINE_CLASS_UID(TestNoDefaultCtor, "edu.uestc.nsfx.test.TestNoDefaultCtor");
 
     refcount_t RefCount(nsfx::IObject* p)/*{{{*/
     {
@@ -132,8 +132,8 @@ NSFX_TEST_SUITE(Object)
                 NSFX_TEST_EXPECT(!deallocated);
                 q.Reset();
                 NSFX_TEST_EXPECT(!deallocated);
-                NSFX_TEST_ASSERT(t->GetEnveloped());
-                NSFX_TEST_EXPECT_EQ(t->GetEnveloped()->Internal(), 0);
+                NSFX_TEST_ASSERT(t->GetImpl());
+                NSFX_TEST_EXPECT_EQ(t->GetImpl()->Internal(), 0);
             }
 
             // Has no default ctor.
@@ -153,8 +153,8 @@ NSFX_TEST_SUITE(Object)
                 NSFX_TEST_EXPECT(!deallocated);
                 q.Reset();
                 NSFX_TEST_EXPECT(!deallocated);
-                NSFX_TEST_ASSERT(t->GetEnveloped());
-                NSFX_TEST_EXPECT_EQ(t->GetEnveloped()->Internal(), 1);
+                NSFX_TEST_ASSERT(t->GetImpl());
+                NSFX_TEST_EXPECT_EQ(t->GetImpl()->Internal(), 1);
             }
 
         }
@@ -190,8 +190,8 @@ NSFX_TEST_SUITE(Object)
                 NSFX_TEST_EXPECT(!deallocated);
                 q.Reset();
                 NSFX_TEST_EXPECT(!deallocated);
-                NSFX_TEST_ASSERT(t.GetEnveloped());
-                NSFX_TEST_EXPECT_EQ(t.GetEnveloped()->Internal(), 0);
+                NSFX_TEST_ASSERT(t.GetImpl());
+                NSFX_TEST_EXPECT_EQ(t.GetImpl()->Internal(), 0);
             }
 
             // Has no default ctor.
@@ -211,8 +211,8 @@ NSFX_TEST_SUITE(Object)
                 NSFX_TEST_EXPECT(!deallocated);
                 q.Reset();
                 NSFX_TEST_EXPECT(!deallocated);
-                NSFX_TEST_ASSERT(t.GetEnveloped());
-                NSFX_TEST_EXPECT_EQ(t.GetEnveloped()->Internal(), 1);
+                NSFX_TEST_ASSERT(t.GetImpl());
+                NSFX_TEST_EXPECT_EQ(t.GetImpl()->Internal(), 1);
             }
 
         }
@@ -418,7 +418,7 @@ NSFX_TEST_SUITE(Object)
             virtual ~ICallback(void) {}
             virtual int Get(void) = 0;
         };
-        NSFX_DEFINE_CLASS_UUID(ICallback, 0xF0F97FBC, 0x48CE, 0x42F4, 0xBA86757BFA65D105LL);
+        NSFX_DEFINE_CLASS_UID(ICallback, "edu.uestc.nsfx.test.ICallback");
 
         template<class O>
         struct Callback : ICallback
@@ -496,7 +496,7 @@ NSFX_TEST_SUITE(Object)
                 typedef nsfx::Object<Wedge> WedgeClass;
                 nsfx::Ptr<WedgeClass> w(new WedgeClass);
                 // Hold a reference count of the controller.
-                nsfx::Ptr<ICallback> q(w->GetEnveloped()->GetCallback());
+                nsfx::Ptr<ICallback> q(w->GetImpl()->GetCallback());
                 NSFX_TEST_EXPECT(!deallocated);
                 NSFX_TEST_EXPECT(q);
                 NSFX_TEST_EXPECT_EQ(RefCount(q.Get()), 2);
@@ -504,7 +504,7 @@ NSFX_TEST_SUITE(Object)
                 NSFX_TEST_EXPECT(p);
                 NSFX_TEST_EXPECT_EQ(RefCount(q.Get()), 3);
                 NSFX_TEST_EXPECT(p == q);
-                w->GetEnveloped()->Set(123);
+                w->GetImpl()->Set(123);
                 w.Reset();
                 NSFX_TEST_EXPECT(!deallocated);
                 // w is not deallocated, as its destructor would have set the

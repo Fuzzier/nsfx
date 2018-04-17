@@ -18,7 +18,7 @@
 
 
 #include <nsfx/component/config.h>
-#include <nsfx/component/uuid.h>
+#include <nsfx/component/uid.h>
 #include <nsfx/component/exception.h>
 #include <boost/type_traits/is_base_of.hpp>
 #include <boost/concept_check.hpp>
@@ -31,15 +31,13 @@ NSFX_OPEN_NAMESPACE
 // Error info.
 typedef boost::error_info<struct tag_QueriedClass,         std::string>  QueriedClassErrorInfo;
 typedef boost::error_info<struct tag_QueriedInterface,     std::string>  QueriedInterfaceErrorInfo;
-typedef boost::error_info<struct tag_QueriedInterfaceUuid, uuid>         QueriedInterfaceUuidErrorInfo;
+typedef boost::error_info<struct tag_QueriedInterfaceUid,  Uid>          QueriedInterfaceUidErrorInfo;
 typedef boost::error_info<struct tag_QueriedFromInterface, std::string>  QueriedFromInterfaceErrorInfo;
 
 typedef boost::error_info<struct tag_Class,                std::string>  ClassErrorInfo;
-typedef boost::error_info<struct tag_ClassUuid,            uuid>         ClassUuidErrorInfo;
+typedef boost::error_info<struct tag_ClassUid,             Uid>          ClassUidErrorInfo;
 typedef boost::error_info<struct tag_Interface,            std::string>  InterfaceErrorInfo;
-typedef boost::error_info<struct tag_InterfaceUuid,        uuid>         InterfaceUuidErrorInfo;
-
-typedef boost::error_info<struct tag_Controller,        class IObject*>  ControllerErrorInfo;
+typedef boost::error_info<struct tag_InterfaceUid,         Uid>          InterfaceUidErrorInfo;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -61,24 +59,24 @@ public:
     /**
      * @brief Query an interface of the object.
      *
-     * @param iid The uuid of the interface.
+     * @param iid The UID of the interface.
      *
      * @return A pointer to the interface that holds one reference count.<br/>
      *         Users is responsible to release the reference count.<br/>
      *         Users must use \c static_cast to convert it to a pointer of the
      *         actual interface type.<br/>
      *         Users must make sure the interface type is correct.<br/>
-     *         As a design pattern, the \c iid of an interface type is equal to
-     *         the return value of <code>uuid_of(type*)</code>.
+     *         As a design pattern, the \c iid of an interface \c IXxx is
+     *         equal to the return value of <code>uid_of<IXxx>()</code>.
      *
      * @throw NoInterface The queried interface is not supported.
      */
-    virtual void* QueryInterface(const uuid& iid) = 0;
+    virtual void* QueryInterface(const Uid& iid) = 0;
 
 }; // class IObject /*}}}*/
 
 
-NSFX_DEFINE_CLASS_UUID(IObject, 0, 0, 0, 0LL);
+NSFX_DEFINE_CLASS_UID(IObject, "edu.uestc.nsfx.IObject");
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -108,48 +106,40 @@ public:
         T* o = nullptr;
         refcount_t r1 = o->AddRef();
         refcount_t r2 = o->Release();
-        T* p = static_cast<T*>(o->QueryInterface(uuid_of<IObject>()));
+        T* p = static_cast<T*>(o->QueryInterface(uid_of<IObject>()));
     }
 
 }; // class IObjectConcept /*}}}*/
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// HasUuid concept.
+// HasUid concept.
 /**
  * @ingroup Component
- * @brief Has uuid concept.
+ * @brief Has UID concept.
  *
- * @tparam T A class that is associated with a uuid.
+ * @tparam T A class that is associated with a UID.
  *
- * @see \c NSFX_DEFINE_CLASS_UUID.
+ * @see \c NSFX_DEFINE_CLASS_UID.
  */
 template<class T>
-class HasUuidConcept/*{{{*/
+class HasUidConcept/*{{{*/
 {
 public:
-    BOOST_CONCEPT_USAGE(HasUuidConcept)
+    BOOST_CONCEPT_USAGE(HasUidConcept)
     {
-        HasUuid();
+        HasUid();
     }
 
-    void HasUuid(void)
+    void HasUid(void)
     {
-        T* o = nullptr;
-        uuid iid = uuid_of<T>(o);
+        const Uid& uid = uid_of<T>();
     }
 
-}; // class HasUuidConcept /*}}}*/
+}; // class HasUidConcept /*}}}*/
 
 
 NSFX_CLOSE_NAMESPACE
-
-
-/**
- * @ingroup Component
- * @brief The uuid of \c IObject.
- */
-#define NSFX_IID_IObject  NSFX_UUID_OF(::nsfx::IObject)
 
 
 #endif // I_OBJECT_H__6ADF3ED4_FCD6_4E8F_B847_B9596FBA75E8

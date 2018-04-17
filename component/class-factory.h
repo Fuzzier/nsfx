@@ -32,29 +32,29 @@ NSFX_OPEN_NAMESPACE
  * @ingroup Component
  * @brief A class factory.
  *
- * @tparam Envelopable A class that conforms to \c EnvelopableConcept.
+ * @tparam ObjectImpl A class that conforms to \c ObjectImplConcept.
  *
  * Objects created by a factory are enveloped in \c Object or \c AggObject
  * according to whether a controller is specified.<br/>
  *
- * The specialized class template conforms to \c EnvelopableConcept.<br/>
+ * The specialized class template conforms to \c ObjectImplConcept.<br/>
  * Thus, it shall be used in conjunction with \c Object or \c AggObject.<br/>
  */
-template<class Envelopable>
+template<class ObjectImpl>
 class ClassFactory :/*{{{*/
     public IClassFactory
 {
 private:
-    BOOST_CONCEPT_ASSERT((EnvelopableConcept<Envelopable>));
+    BOOST_CONCEPT_ASSERT((ObjectImplConcept<ObjectImpl>));
 
 public:
     virtual ~ClassFactory(void) BOOST_NOEXCEPT {}
 
 public:
     // IClassFactory /*{{{*/
-    virtual void* CreateObject(const uuid& iid, IObject* controller) NSFX_FINAL NSFX_OVERRIDE
+    virtual void* CreateObject(const Uid& iid, IObject* controller) NSFX_FINAL NSFX_OVERRIDE
     {
-        if (controller && iid != NSFX_IID_IObject)
+        if (controller && iid != uid_of<IObject>())
         {
             BOOST_THROW_EXCEPTION(BadAggregation());
         }
@@ -62,9 +62,9 @@ public:
                           : CreateNonAggregable(iid);
     }
 
-    void* CreateNonAggregable(const uuid& iid)
+    void* CreateNonAggregable(const Uid& iid)
     {
-        typedef Object<Envelopable>  ObjectClass;
+        typedef Object<ObjectImpl>  ObjectClass;
         ObjectClass* o = new ObjectClass;
         try
         {
@@ -80,9 +80,9 @@ public:
 
     void* CreateAggregable(IObject* controller)
     {
-        typedef AggObject<Envelopable>  ObjectClass;
+        typedef AggObject<ObjectImpl>  ObjectClass;
         ObjectClass* o = new ObjectClass(controller);
-        return o->QueryInterface(NSFX_IID_IObject);
+        return o->QueryInterface(uid_of<IObject>());
     }
 
     /*}}}*/
