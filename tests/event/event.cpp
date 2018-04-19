@@ -23,57 +23,41 @@ NSFX_TEST_SUITE(Event)
 {
     // IEventSink
     NSFX_DEFINE_EVENT_SINK_INTERFACE(
-        Iv0, ( void(void) ),
-        0x67CB03B4, 0x5B1C, 0x4401, 0xB418C6758383839ELL);
+        Iv0, "edu.uestc.nsfx.test.Iv0", ( void(void) ));
     NSFX_DEFINE_EVENT_SINK_INTERFACE(
-        Iv1, ( void(int) ),
-        0xC2B34B86, 0xA3F2, 0x45FD, 0x9654CD79A928B1A6LL);
+        Iv1, "edu.uestc.nsfx.test.Iv1", ( void(int) ));
     NSFX_DEFINE_EVENT_SINK_INTERFACE(
-        Iv2, ( void(int, double) ),
-        0x1F02B3BA, 0x7567, 0x423B, 0xBDD995AE1F87D30ALL);
+        Iv2, "edu.uestc.nsfx.test.Iv2", ( void(int, double) ));
     NSFX_DEFINE_EVENT_SINK_INTERFACE(
-        Iv3, ( void(int, double, std::string) ),
-        0x5193AFBA, 0x12C5, 0x49ED, 0xAF9C11D00334EC44LL);
+        Iv3, "edu.uestc.nsfx.test.Iv3", ( void(int, double, std::string) ));
 
     NSFX_DEFINE_EVENT_SINK_INTERFACE(
-        Ir0, ( float(void) ),
-        0x5E008399, 0x8D24, 0x4229, 0x84135C57A065AE32LL);
+        Ir0, "edu.uestc.nsfx.test.Ir0", ( float(void) ));
     NSFX_DEFINE_EVENT_SINK_INTERFACE(
-        Ir1, ( float(int) ),
-        0xA9E86104, 0x16A0, 0x4CA4, 0xA4B7380190520F5FLL);
+        Ir1, "edu.uestc.nsfx.test.Ir1", ( float(int) ));
     NSFX_DEFINE_EVENT_SINK_INTERFACE(
-        Ir2, ( float(int, double) ),
-        0x1D34DD48, 0x566D, 0x4645, 0x9198BB055E281AF9LL);
+        Ir2, "edu.uestc.nsfx.test.Ir2", ( float(int, double) ));
     NSFX_DEFINE_EVENT_SINK_INTERFACE(
-        Ir3, ( float(int, double, std::string) ),
-        0x27951022, 0x2516, 0x43F0, 0xAC57106233362CB0LL);
+        Ir3, "edu.uestc.nsfx.test.Ir3", ( float(int, double, std::string) ));
 
     // IEvent
     NSFX_DEFINE_EVENT_INTERFACE(
-        Ev0, Iv0,
-        0x7F1AE701, 0xAA48, 0x469D, 0x922576E4CB76F385LL);
+        Ev0, "edu.uestc.nsfx.test.Ev0", Iv0);
     NSFX_DEFINE_EVENT_INTERFACE(
-        Ev1, Iv1,
-        0x21416D80, 0xF7B4, 0x4302, 0x8E8EC3DE38DED5B9LL);
+        Ev1, "edu.uestc.nsfx.test.Ev1", Iv1);
     NSFX_DEFINE_EVENT_INTERFACE(
-        Ev2, Iv2,
-        0x8C4B03E4, 0x8137, 0x4DC1, 0x9AEC76EDABFE09BCLL);
+        Ev2, "edu.uestc.nsfx.test.Ev2", Iv2);
     NSFX_DEFINE_EVENT_INTERFACE(
-        Ev3, Iv3,
-        0x2C4F3609, 0x6C25, 0x4B48, 0x8D559A1013F9380CLL);
+        Ev3, "edu.uestc.nsfx.test.Ev3", Iv3);
 
     NSFX_DEFINE_EVENT_INTERFACE(
-        Er0, Ir0,
-        0xB9255B19, 0x5C91, 0x47A0, 0xBA0A8D9B920504F8LL);
+        Er0, "edu.uestc.nsfx.test.Er0", Ir0);
     NSFX_DEFINE_EVENT_INTERFACE(
-        Er1, Ir1,
-        0x7E4FD966, 0x57E7, 0x4109, 0xB06889D28DA8B5EDLL);
+        Er1, "edu.uestc.nsfx.test.Er1", Ir1);
     NSFX_DEFINE_EVENT_INTERFACE(
-        Er2, Ir2,
-        0x30B62CAA, 0x5BBF, 0x413C, 0xA7E3FE5CFCFF5A13LL);
+        Er2, "edu.uestc.nsfx.test.Er2", Ir2);
     NSFX_DEFINE_EVENT_INTERFACE(
-        Er3, Ir3,
-        0x1E5947E6, 0x8B0B, 0x43A3, 0xA210DD62A76017E5LL);
+        Er3, "edu.uestc.nsfx.test.Er3", Ir3);
 
     // Tools
     void v0(void) {}
@@ -108,7 +92,7 @@ NSFX_TEST_SUITE(Event)
         virtual float R2(int, double) = 0;
         virtual float R3(int, double, std::string) = 0;
     };
-    NSFX_DEFINE_CLASS_UUID(ITest, 0x87738A28, 0xE040, 0x408D, 0xA2CBC09772AA6D6DLL);
+    NSFX_DEFINE_CLASS_UID(ITest, "edu.uestc.nsfx.test.ITest");
 
     struct Test : ITest, Ev0, Ev1, Ev2, Ev3, Er0, Er1, Er2, Er3
     {
@@ -130,42 +114,42 @@ NSFX_TEST_SUITE(Event)
 
         virtual void V0(void) NSFX_OVERRIDE
         {
-            v0_.GetEnveloped()->Visit([&] (Iv0* sink) { sink->Fire(); });
+            v0_.GetImpl()->Visit([&] (Iv0* sink) { sink->Fire(); });
         }
 
         virtual void V1(int i) NSFX_OVERRIDE
         {
-            v1_.GetEnveloped()->Visit([&] (Iv1* sink) { sink->Fire(i); });
+            v1_.GetImpl()->Visit([&] (Iv1* sink) { sink->Fire(i); });
         }
 
         virtual void V2(int i, double d) NSFX_OVERRIDE
         {
-            v2_.GetEnveloped()->Visit([&] (Iv2* sink) { sink->Fire(i, d); });
+            v2_.GetImpl()->Visit([&] (Iv2* sink) { sink->Fire(i, d); });
         }
 
         virtual void V3(int i, double d, std::string s) NSFX_OVERRIDE
         {
-            v3_.GetEnveloped()->Visit([&] (Iv3* sink) { sink->Fire(i, d, s); });
+            v3_.GetImpl()->Visit([&] (Iv3* sink) { sink->Fire(i, d, s); });
         }
 
         virtual float R0(void) NSFX_OVERRIDE
         {
-            r0_.GetEnveloped()->Visit([&] (Ir0* sink) { return sink->Fire(); });
+            r0_.GetImpl()->Visit([&] (Ir0* sink) { return sink->Fire(); });
         }
 
         virtual float R1(int i) NSFX_OVERRIDE
         {
-            r1_.GetEnveloped()->Visit([&] (Ir1* sink) { return sink->Fire(i); });
+            r1_.GetImpl()->Visit([&] (Ir1* sink) { return sink->Fire(i); });
         }
 
         virtual float R2(int i, double d) NSFX_OVERRIDE
         {
-            r2_.GetEnveloped()->Visit([&] (Ir2* sink) { return sink->Fire(i, d); });
+            r2_.GetImpl()->Visit([&] (Ir2* sink) { return sink->Fire(i, d); });
         }
 
         virtual float R3(int i, double d, std::string s) NSFX_OVERRIDE
         {
-            r3_.GetEnveloped()->Visit([&] (Ir3* sink) { return sink->Fire(i, d, s); });
+            r3_.GetImpl()->Visit([&] (Ir3* sink) { return sink->Fire(i, d, s); });
         }
 
         NSFX_INTERFACE_MAP_BEGIN(Test)
@@ -180,16 +164,16 @@ NSFX_TEST_SUITE(Event)
             NSFX_INTERFACE_AGGREGATED_ENTRY(Er3, &r3_)
         NSFX_INTERFACE_MAP_END()
 
-        nsfx::MemberObject<nsfx::Event<Ev0>> v0_;
-        nsfx::MemberObject<nsfx::Event<Ev1>> v1_;
-        nsfx::MemberObject<nsfx::Event<Ev2>> v2_;
-        nsfx::MemberObject<nsfx::Event<Ev3>> v3_;
-        nsfx::MemberObject<nsfx::Event<Er0>> r0_;
-        nsfx::MemberObject<nsfx::Event<Er1>> r1_;
-        nsfx::MemberObject<nsfx::Event<Er2>> r2_;
-        nsfx::MemberObject<nsfx::Event<Er3>> r3_;
+        nsfx::MemberAggObject<nsfx::Event<Ev0>> v0_;
+        nsfx::MemberAggObject<nsfx::Event<Ev1>> v1_;
+        nsfx::MemberAggObject<nsfx::Event<Ev2>> v2_;
+        nsfx::MemberAggObject<nsfx::Event<Ev3>> v3_;
+        nsfx::MemberAggObject<nsfx::Event<Er0>> r0_;
+        nsfx::MemberAggObject<nsfx::Event<Er1>> r1_;
+        nsfx::MemberAggObject<nsfx::Event<Er2>> r2_;
+        nsfx::MemberAggObject<nsfx::Event<Er3>> r3_;
     };
-    NSFX_DEFINE_CLASS_UUID(Test, 0x37207699, 0x8512, 0x4846, 0xB30079F3E7ECAD15LL);
+    NSFX_DEFINE_CLASS_UID(Test, "edu.uestc.nsfx.test.Test");
 
     NSFX_TEST_CASE(Event)
     {
@@ -267,11 +251,11 @@ NSFX_TEST_SUITE(Event)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
         }
         catch (std::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << e.what();
+            NSFX_TEST_EXPECT(false) << e.what() << std::endl;
         }
     }
 
@@ -351,11 +335,11 @@ NSFX_TEST_SUITE(Event)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
         }
         catch (std::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << e.what();
+            NSFX_TEST_EXPECT(false) << e.what() << std::endl;
         }
     }
 
