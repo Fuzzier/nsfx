@@ -33,23 +33,24 @@ NSFX_OPEN_NAMESPACE
  * @brief Define a custom event interface that derives from \c IEvent.
  *
  * @param IEventName The name of the user-defined event interface.
+ * @param iid        The UID of the user-defined event interface.
  * @param ISink      The type of a user-defined event sink interface that
  *                   conforms to \c IEventSinkConcept.
  *
  * @example For example
  *    @code
  *     NSFX_DEFINE_EVENT_INTERFACE(
- *         IMyEvent,
- *         IMyEventSink,  0xD867E76D, 0xA5A5, 0x4834, 0x9F7008661727185FLL);
+ *         IMyEvent, "edu.uestc.nsfx.example.IMyEvent",
+ *         IMyEventSink);
  *    @endcode
  */
-#define NSFX_DEFINE_EVENT_INTERFACE(IEventName, ISink, l, w1, w2, ll)  \
-    NSFX_DEFINE_CLASS_UUID(class IEventName, l, w1, w2, ll);           \
-    class IEventName :                                                 \
-        public ::nsfx::IEvent<ISink>                                   \
-    {                                                                  \
-    public:                                                            \
-        virtual ~IEventName(void) BOOST_NOEXCEPT {}                    \
+#define NSFX_DEFINE_EVENT_INTERFACE(IEventName, iid, ISink)  \
+    NSFX_DEFINE_CLASS_UID(class IEventName, iid);            \
+    class IEventName :                                       \
+        public ::nsfx::IEvent<ISink>                         \
+    {                                                        \
+    public:                                                  \
+        virtual ~IEventName(void) BOOST_NOEXCEPT {}          \
     }
 
 
@@ -76,8 +77,8 @@ NSFX_OPEN_NAMESPACE
  * specialization.<br/>
  *
  * Users shall <b>derive</b> their own event interfaces from this class
- * template, and associate the interfaces with UUIDs so they can be queried by
- * their UUIDs.<br/>
+ * template, and associate the interfaces with UIDs so they can be queried by
+ * their UIDs.<br/>
  * Users shall not use multiple inheritance to derive their own event interfaces.<br/>
  *
  * @code
@@ -103,20 +104,20 @@ NSFX_OPEN_NAMESPACE
  *
  *     // Define an event sink interface.
  *     NSFX_DEFINE_EVENT_SINK_INTERFACE(
- *         IMyEventSink,
- *         ( char(short, int) ),  0x80FF43BE, 0xA2ED, 0x4FA9, 0xB17A517A490A1897LL);
+ *         IMyEventSink, "edu.uestc.nsfx.example.IMyEventSink",
+ *         ( char(short, int) ));
  *
  *     // Define an event interface for the sink.
  *     NSFX_DEFINE_EVENT_INTERFACE(
- *         IMyEvent,
- *         IMyEventSink,  0xD867E76D, 0xA5A5, 0x4834, 0x9F7008661727185FLL);
+ *         IMyEvent, "edu.uestc.nsfx.example.IMyEvent",
+ *         IMyEventSink);
  *
  *     // Define a class that exposes the event.
  *     class MyObject :
  *         public IMyEvent
  *     {
  *         // Declare the event class.
- *         // An event class does not have to have an associated a UUID.
+ *         // An event class does not have to have an associated a UID.
  *         typedef Event<IMyEvent>  MyEvent;
  *
  *         // Envelope in AggObject<>.
@@ -148,13 +149,13 @@ NSFX_OPEN_NAMESPACE
  *         MyEventClass myEvent_;
  *     };
  *
- *     NSFX_DEFINE_CLASS_UUID(MyObject, 0xE702D84A, 0xA4F6, 0x49A2, 0xB204001D00945B11LL);
- *     NSFX_REGISTER_CLASS(MyObject);
+ *     NSFX_DEFINE_CLASS_UID(MyObject, "edu.uestc.nsfx.example.MyObject");
+ *     NSFX_REGISTER_CLASS(MyObject, uid_of<MyObject>());
  *
  *     // Create an object of the class, and connect a sink to the event.
  *     try
  *     {
- *         Ptr<IObject> o = CreateObject<IObject>(uuid_of<MyObject>());
+ *         Ptr<IObject> o = CreateObject<IObject>(uid_of<MyObject>());
  *         Ptr<IMyEvent>(o)->Connect(CreateEventSink<IMyEventSink>(
  *             nullptr, [] (short s, int i) {
  *                 // Process the event.
@@ -163,11 +164,11 @@ NSFX_OPEN_NAMESPACE
  *     }
  *     catch (boost::exception& e)
  *     {
- *         NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+ *         NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
  *     }
  *     catch (std::exception& e)
  *     {
- *         NSFX_TEST_EXPECT(false) << e.what();
+ *         NSFX_TEST_EXPECT(false) << e.what() << std::endl;
  *     }
  *     @endcode
  *
@@ -214,7 +215,7 @@ public:
  * A class is an event if it satisfies the following conditions.<br/>
  * 1. It has a nested \c IEventSinkType that conforms to \c IEventSinkConcept.<br/>
  * 2. It is derived from <code>IEvent<></code> class template.<br/>
- * 3. It conforms to \c HasUuidConcept.<br/>
+ * 3. It conforms to \c HasUidConcept.<br/>
  *
  * Since <code>IEvent<></code> class template is derived from \c IObject,
  * the class also conforms to \c IObjectConcept.
@@ -222,7 +223,7 @@ public:
 template<class IEventName>
 struct IEventConcept
 {
-    BOOST_CONCEPT_ASSERT((HasUuidConcept<IEventName>));
+    BOOST_CONCEPT_ASSERT((HasUidConcept<IEventName>));
 
     // Has s nested type: IEventSinkType.
     typedef char yes[1];

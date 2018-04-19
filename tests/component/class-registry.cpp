@@ -200,7 +200,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         // Register class with default factory.
         try
         {
-            nsfx::RegisterClass<Test>();
+            nsfx::RegisterClass<Test>(nsfx::uid_of<Test>());
         }
         catch (boost::exception& e)
         {
@@ -220,7 +220,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         }
 
         // Unregister class (template-based).
-        nsfx::UnregisterClass<Test>();
+        nsfx::UnregisterClass(nsfx::uid_of<Test>());
         try
         {
             t = nsfx::CreateObject<ITest>(nsfx::uid_of<Test>(), nullptr);
@@ -276,7 +276,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         // Unregister all classes.
         try
         {
-            nsfx::RegisterClass<Test>();
+            nsfx::RegisterClass<Test>(nsfx::uid_of<Test>());
             nsfx::UnregisterAllClasses();
         }
         catch (boost::exception& e)

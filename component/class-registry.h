@@ -182,15 +182,14 @@ NSFX_DEFINE_CLASS_UID(ClassRegistry, "edu.uestc.nsfx.ClassRegistry");
  * @see \c IClassRegistry::Register().
  */
 template<class C>
-inline void RegisterClass(typename ::boost::mpl::identity<C>::type* = nullptr)
+inline void RegisterClass(const Uid& cid)
 {
-    BOOST_CONCEPT_ASSERT((HasUidConcept<C>));
     BOOST_CONCEPT_ASSERT((ObjectImplConcept<C>));
     typedef Object<ClassFactory<C> >  ClassFactoryClass;
     Ptr<IClassFactory> factory(new ClassFactoryClass);
     IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
     BOOST_ASSERT(registry);
-    registry->Register(uid_of<C>(), std::move(factory));
+    registry->Register(cid, std::move(factory));
 }
 
 /**
@@ -204,24 +203,6 @@ inline void RegisterClass(const Uid& cid, Ptr<IClassFactory> factory)
     IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
     BOOST_ASSERT(registry);
     registry->Register(cid, std::move(factory));
-}
-
-/**
- * @ingroup Component
- * @brief Unregister a class.
- *
- * @param C The class to unregister.<br/>
- *          It must conform to \c HasUidConcept.
- *
- * @see \c IClassRegistry::Unregister().
- */
-template<class C>
-inline void UnregisterClass(typename ::boost::mpl::identity<C>::type* = nullptr)
-{
-    BOOST_CONCEPT_ASSERT((HasUidConcept<C>));
-    IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
-    BOOST_ASSERT(registry);
-    registry->Unregister(uid_of<C>());
 }
 
 /**

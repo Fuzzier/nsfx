@@ -32,9 +32,6 @@ NSFX_OPEN_NAMESPACE
 class IEventScheduler;
 class IEventSchedulerUser;
 
-#define NSFX_IID_IEventScheduler      NSFX_UUID_OF(::nsfx::IEventScheduler)
-#define NSFX_IID_IEventSchedulerUser  NSFX_UUID_OF(::nsfx::IEventSchedulerUser)
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // IEventScheduler.
@@ -120,14 +117,14 @@ public:
 }; // class IEventScheduler /*}}}*/
 
 
-NSFX_DEFINE_CLASS_UUID(IEventScheduler, 0x4A9E5C84, 0x1D35, 0x4CAA, 0x9FA3F155AA5E5B30LL);
+NSFX_DEFINE_CLASS_UID(IEventScheduler, "edu.uestc.nsfx.IEventScheduler");
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // IEventSchedulerUser.
 NSFX_DEFINE_USER_INTERFACE(
-    IEventSchedulerUser,
-    IEventScheduler,  0xDB076B9C, 0x1FAC, 0x45F0, 0xADF95AB942B93D6ALL);
+    IEventSchedulerUser, "edu.uestc.nsfx.IEventSchedulerUser",
+    IEventScheduler);
 
 
 NSFX_CLOSE_NAMESPACE

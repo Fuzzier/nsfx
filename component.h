@@ -19,7 +19,7 @@
 
 #include <nsfx/component/config.h>
 #include <nsfx/component/exception.h>
-#include <nsfx/component/uuid.h>
+#include <nsfx/component/uid.h>
 
 #include <nsfx/component/i-object.h>
 #include <nsfx/component/object.h>

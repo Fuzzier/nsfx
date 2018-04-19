@@ -42,6 +42,7 @@ NSFX_OPEN_NAMESPACE
  * @brief Define a custom event sink interface that derives from \c IEventSink.
  *
  * @param ISink The name of the user-defined event sink interface.
+ * @param iid   The UID of the user-defined event sink interface.
  * @param Proto The prototype of the event callback.<br/>
  *              It <b>must</b> be placed within parenthesis.<br/>
  *
@@ -52,17 +53,17 @@ NSFX_OPEN_NAMESPACE
  *          For example
  *          @code
  *          NSFX_DEFINE_EVENT_SINK_INTERFACE(
- *              IMyEventSink,
- *              ( char(short, int) ),  0x80FF43BE, 0xA2ED, 0x4FA9, 0xB17A517A490A1897LL);
+ *              IMyEventSink, "edu.uestc.nsfx.example.IMyEventSink",
+ *              ( char(short, int) ));
  *          @endcode
  */
-#define NSFX_DEFINE_EVENT_SINK_INTERFACE(ISink, Proto, l, w1, w2, ll)  \
-    NSFX_DEFINE_CLASS_UUID(class ISink, l, w1, w2, ll);                \
-    class ISink :                                                      \
-        public ::nsfx::IEventSink<BOOST_PP_TUPLE_ENUM(Proto)>          \
-    {                                                                  \
-    public:                                                            \
-        virtual ~ISink(void) BOOST_NOEXCEPT {}                         \
+#define NSFX_DEFINE_EVENT_SINK_INTERFACE(ISink, iid, Proto)    \
+    NSFX_DEFINE_CLASS_UID(class ISink, iid);                   \
+    class ISink :                                              \
+        public ::nsfx::IEventSink<BOOST_PP_TUPLE_ENUM(Proto)>  \
+    {                                                          \
+    public:                                                    \
+        virtual ~ISink(void) BOOST_NOEXCEPT {}                 \
     }
 
 
@@ -84,9 +85,9 @@ NSFX_OPEN_NAMESPACE
  * specialization.<br/>
  *
  * <code>IEventSink<void(void)></code> is the <b>only</b> event sink interface
- * that has an associated UUID defined by the library.<br/>
+ * that has an associated UID defined by the library.<br/>
  * Users shall <b>derive</b> their own event sink interfaces from this class
- * template, and associate the interfaces with UUIDs to enable <code>Ptr<></code>
+ * template, and associate the interfaces with UIDs to enable <code>Ptr<></code>
  * to manage their pointers.<br/>
  * Users shall not use multiple inheritance to derive their own event sink
  * interfaces.<br/>
@@ -123,8 +124,8 @@ NSFX_OPEN_NAMESPACE
  *
  *      // Define an event sink interface.
  *      NSFX_DEFINE_EVENT_SINK_INTERFACE(
- *          IMyEventSink,
- *          ( char(short, int) ),  0x80FF43BE, 0xA2ED, 0x4FA9, 0xB17A517A490A1897LL);
+ *          IMyEventSink, "edu.uestc.nsfx.example.IMyEventSink"
+ *          ( char(short, int) ));
  *
  *      // Create event sink object:
  *      // Functor based event sink.
@@ -230,12 +231,10 @@ class IEventSink;
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
- * @ingroup Event
- * @brief The uuid of <code>IEventSink<void(void)></code>.
+ * @ingroup Component
+ * @brief Define the UID of <code>IEventSink<></code>.
  */
-#define NSFX_IID_IEventSink  NSFX_UUID_OF(::nsfx::IEventSink<>)
-
-NSFX_DEFINE_CLASS_UUID(IEventSink<>, 0x02A9EAD8, 0x0B50, 0x4292, 0x83788634408B56BDLL);
+NSFX_DEFINE_CLASS_UID(IEventSink<>, "edu.uestc.nsfx.IEventSink");
 
 
 ////////////////////////////////////////
@@ -290,7 +289,7 @@ public:
  * 1. It is <code>IEventSink<void(void)></code> or it is derived from
  *    <code>IEventSink<></code> class template.<br/>
  * 2. It is has nested type \c Prototype that is a function type.<br/>
- * 3. It conforms to \c HasUuidConcept.<br/>
+ * 3. It conforms to \c HasUidConcept.<br/>
  *
  * Since <code>IEventSink<></code> class template is derived from \c IObject,
  * the class also conforms to \c IObjectConcept.
@@ -298,7 +297,7 @@ public:
 template<class ISink>
 struct IEventSinkConcept
 {
-    BOOST_CONCEPT_ASSERT((HasUuidConcept<ISink>));
+    BOOST_CONCEPT_ASSERT((HasUidConcept<ISink>));
 
     // Has a nested type: Prototype.
     typedef char yes[1];

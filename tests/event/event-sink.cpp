@@ -21,30 +21,22 @@
 NSFX_TEST_SUITE(EventSink)
 {
     NSFX_DEFINE_EVENT_SINK_INTERFACE(
-        Iv0, ( void(void) ),
-        0x67CB03B4, 0x5B1C, 0x4401, 0xB418C6758383839ELL);
+        Iv0, "edu.uestc.nsfx.test.Iv0", ( void(void) ));
     NSFX_DEFINE_EVENT_SINK_INTERFACE(
-        Iv1, ( void(int) ),
-        0xC2B34B86, 0xA3F2, 0x45FD, 0x9654CD79A928B1A6LL);
+        Iv1, "edu.uestc.nsfx.test.Iv1", ( void(int) ));
     NSFX_DEFINE_EVENT_SINK_INTERFACE(
-        Iv2, ( void(int, double) ),
-        0x1F02B3BA, 0x7567, 0x423B, 0xBDD995AE1F87D30ALL);
+        Iv2, "edu.uestc.nsfx.test.Iv2", ( void(int, double) ));
     NSFX_DEFINE_EVENT_SINK_INTERFACE(
-        Iv3, ( void(int, double, std::string) ),
-        0x5193AFBA, 0x12C5, 0x49ED, 0xAF9C11D00334EC44LL);
+        Iv3, "edu.uestc.nsfx.test.Iv3", ( void(int, double, std::string) ));
 
     NSFX_DEFINE_EVENT_SINK_INTERFACE(
-        Ir0, ( float(void) ),
-        0x5E008399, 0x8D24, 0x4229, 0x84135C57A065AE32LL);
+        Ir0, "edu.uestc.nsfx.test.Ir0", ( float(void) ));
     NSFX_DEFINE_EVENT_SINK_INTERFACE(
-        Ir1, ( float(int) ),
-        0xA9E86104, 0x16A0, 0x4CA4, 0xA4B7380190520F5FLL);
+        Ir1, "edu.uestc.nsfx.test.Ir1", ( float(int) ));
     NSFX_DEFINE_EVENT_SINK_INTERFACE(
-        Ir2, ( float(int, double) ),
-        0x1D34DD48, 0x566D, 0x4645, 0x9198BB055E281AF9LL);
+        Ir2, "edu.uestc.nsfx.test.Ir2", ( float(int, double) ));
     NSFX_DEFINE_EVENT_SINK_INTERFACE(
-        Ir3, ( float(int, double, std::string) ),
-        0x27951022, 0x2516, 0x43F0, 0xAC57106233362CB0LL);
+        Ir3, "edu.uestc.nsfx.test.Ir3", ( float(int, double, std::string) ));
 
     NSFX_TEST_CASE(Concept)
     {
@@ -154,11 +146,11 @@ NSFX_TEST_SUITE(EventSink)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
         }
         catch (std::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << e.what();
+            NSFX_TEST_EXPECT(false) << e.what() << std::endl;
         }
     }
 
@@ -238,11 +230,11 @@ NSFX_TEST_SUITE(EventSink)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
         }
         catch (std::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << e.what();
+            NSFX_TEST_EXPECT(false) << e.what() << std::endl;
         }
     }
 
