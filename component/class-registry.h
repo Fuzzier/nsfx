@@ -35,26 +35,26 @@
  *
  * @see \c RegisterClass().
  */
-#define NSFX_REGISTER_CLASS(C)                           \
-    static struct C ## ClassRegister                     \
-    {                                                    \
-        C ## ClassRegister(void)                         \
-        {                                                \
-            static bool registered = false;              \
-            try                                          \
-            {                                            \
-                if (!registered)                         \
-                {                                        \
-                    ::nsfx::RegisterClass<C>();          \
-                    registered = true;                   \
-                }                                        \
-            }                                            \
-            catch (boost::exception& e)                  \
-            {                                            \
-                std::cerr << diagnostic_information(e);  \
-                throw;                                   \
-            }                                            \
-        }                                                \
+#define NSFX_REGISTER_CLASS(C, cid)                                   \
+    static struct C ## ClassRegister                                  \
+    {                                                                 \
+        C ## ClassRegister(void)                                      \
+        {                                                             \
+            static bool registered = false;                           \
+            try                                                       \
+            {                                                         \
+                if (!registered)                                      \
+                {                                                     \
+                    ::nsfx::RegisterClass<C>(cid);                    \
+                    registered = true;                                \
+                }                                                     \
+            }                                                         \
+            catch (boost::exception& e)                               \
+            {                                                         \
+                std::cerr << diagnostic_information(e) << std::endl;  \
+                throw;                                                \
+            }                                                         \
+        }                                                             \
     } s_ ## C ## ClassRegister
 
 /*}}}*/

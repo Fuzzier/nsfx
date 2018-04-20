@@ -160,11 +160,11 @@ NSFX_TEST_SUITE(Object)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
         }
         catch (std::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << e.what();
+            NSFX_TEST_EXPECT(false) << e.what() << std::endl;
         }
 
     }/*}}}*/
@@ -218,11 +218,11 @@ NSFX_TEST_SUITE(Object)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
         }
         catch (std::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << e.what();
+            NSFX_TEST_EXPECT(false) << e.what() << std::endl;
         }
 
     }/*}}}*/
@@ -245,11 +245,11 @@ NSFX_TEST_SUITE(Object)
             }
             catch (boost::exception& e)
             {
-                NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+                NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
             }
             catch (std::exception& e)
             {
-                NSFX_TEST_EXPECT(false) << e.what();
+                NSFX_TEST_EXPECT(false) << e.what() << std::endl;
             }
         }
 
@@ -322,11 +322,11 @@ NSFX_TEST_SUITE(Object)
             }
             catch (boost::exception& e)
             {
-                NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+                NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
             }
             catch (std::exception& e)
             {
-                NSFX_TEST_EXPECT(false) << e.what();
+                NSFX_TEST_EXPECT(false) << e.what() << std::endl;
             }
         }
 
@@ -376,11 +376,11 @@ NSFX_TEST_SUITE(Object)
             }
             catch (boost::exception& e)
             {
-                NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+                NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
             }
             catch (std::exception& e)
             {
-                NSFX_TEST_EXPECT(false) << e.what();
+                NSFX_TEST_EXPECT(false) << e.what() << std::endl;
             }
             NSFX_TEST_EXPECT(deallocated);
         }
@@ -405,11 +405,11 @@ NSFX_TEST_SUITE(Object)
             }
             catch (boost::exception& e)
             {
-                NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+                NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
             }
             catch (std::exception& e)
             {
-                NSFX_TEST_EXPECT(false) << e.what();
+                NSFX_TEST_EXPECT(false) << e.what() << std::endl;
             }
         }
 

@@ -155,7 +155,7 @@ NSFX_TEST_SUITE(ClassFactory)
         }
         catch (std::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << e.what();
+            NSFX_TEST_EXPECT(false) << e.what() << std::endl;
         }
     }
 

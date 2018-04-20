@@ -203,7 +203,7 @@ public:
     /**
      * @brief Convert from formatted string "D HH:MM:SS.mmm.uuu.nnn".
      */
-    void FromString(void);
+    void FromString(const std::string& str);
 
     /*}}}*/
 

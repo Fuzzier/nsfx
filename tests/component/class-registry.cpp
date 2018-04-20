@@ -82,7 +82,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
         }
 
         // Get unregistered factory (throw).
@@ -97,7 +97,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
         }
 
         // Register.
@@ -109,7 +109,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
         }
 
         // Register already registered (throw).
@@ -124,7 +124,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
         }
 
         // Get registered factory.
@@ -135,7 +135,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
         }
         NSFX_TEST_ASSERT(f);
         NSFX_TEST_EXPECT(factory == f);
@@ -157,7 +157,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
         }
 
         // Unregister.
@@ -173,7 +173,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
         }
 
         // Unregister all.
@@ -190,7 +190,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
         }
 
     }/*}}}*/
@@ -204,7 +204,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
         }
 
         // Create object.
@@ -216,7 +216,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
         }
 
         // Unregister class (template-based).
@@ -232,7 +232,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
         }
 
         // Register a class with a custom factory.
@@ -243,7 +243,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
         }
 
         // Create object.
@@ -254,7 +254,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
         }
 
         // Unregister class.
@@ -270,7 +270,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
         }
 
         // Unregister all classes.
@@ -281,7 +281,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
         }
         try
         {
@@ -294,7 +294,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
         }
 
     }/*}}}*/
