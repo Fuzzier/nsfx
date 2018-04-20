@@ -49,9 +49,8 @@ class Simulator;
  * ### Uses
  * * \c IEventSchedulerUser
  * ### Provides
- * * \c Clock
+ * * \c IClock
  * * \c ISimulator
- * * \c IDisposable
  * ### Events
  * * \c ISimulationBeginEvent
  * * \c ISimulationRunEvent
