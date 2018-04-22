@@ -42,9 +42,8 @@ NSFX_TEST_SUITE(EventHandle)
     private:
         nsfx::TimePoint tp_;
     };/*}}}*/
-    typedef nsfx::Object<Sink>  SinkClass;
-    NSFX_DEFINE_CLASS_UUID(Sink, 0x684CC68A, 0x03B2, 0x4618, 0xA15A279D015DE048LL);
 
+    typedef nsfx::Object<Sink>  SinkClass;
     typedef nsfx::Object<nsfx::EventHandle>  EventHandleClass;
 
     NSFX_TEST_CASE(Comparison)/*{{{*/
@@ -99,7 +98,11 @@ NSFX_TEST_SUITE(EventHandle)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
+        }
+        catch (std::exception& e)
+        {
+            NSFX_TEST_EXPECT(false) << e.what() << std::endl;
         }
     }/*}}}*/
 

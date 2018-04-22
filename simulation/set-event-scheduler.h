@@ -21,7 +21,6 @@
 #include <nsfx/simulation/i-event-scheduler.h>
 #include <nsfx/simulation/event-handle.h>
 #include <nsfx/simulation/i-clock.h>
-#include <nsfx/simulation/i-disposable.h>
 #include <nsfx/component/class-registry.h>
 #include <functional>
 #include <memory>
@@ -33,12 +32,6 @@ NSFX_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 // Types.
 class SetEventScheduler;
-
-/**
- * @ingroup Simulator
- * @brief The uuid of \c SetEventScheduler.
- */
-#define NSFX_CID_SetEventScheduler  NSFX_UUID_OF(::nsfx::SetEventScheduler)
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -52,12 +45,10 @@ class SetEventScheduler;
  * * \c IClockUser
  * ### Provides
  * * \c IEventScheduler
- * * \c IDisposable
  */
 class SetEventScheduler :
     public IClockUser,
-    public IEventScheduler,
-    public IDisposable
+    public IEventScheduler
 {
 private:
     typedef SetEventScheduler   ThisClass;
@@ -125,10 +116,10 @@ public:
         return Ptr<IEventHandle>(result);
     }
 
-    virtual Ptr<IEventHandle> RemoveNextEvent(void) BOOST_NOEXCEPT NSFX_OVERRIDE
+    void FireAndRemoveNextEvent(void) BOOST_NOEXCEPT
     {
         EventHandleClass* result = InternalRemoveNextEvent();
-        return Ptr<IEventHandle>(result);
+        result->Fire();
     }
 
 private:
@@ -156,17 +147,6 @@ private:
 
     /*}}}*/
 
-    // IDisposable /*{{{*/
-public:
-    virtual void Dispose(void) NSFX_OVERRIDE
-    {
-        initialized_ = false;
-        clock_ = nullptr;
-        set_.clear();
-    }
-
-    /*}}}*/
-
 private:
     void Initialize(void)
     {
@@ -190,7 +170,6 @@ private:
     NSFX_INTERFACE_MAP_BEGIN(ThisClass)
         NSFX_INTERFACE_ENTRY(IClockUser)
         NSFX_INTERFACE_ENTRY(IEventScheduler)
-        NSFX_INTERFACE_ENTRY(IDisposable)
     NSFX_INTERFACE_MAP_END()
 
 private:
@@ -201,8 +180,7 @@ private:
 }; // class SetEventScheduler
 
 
-NSFX_DEFINE_CLASS_UUID(SetEventScheduler, 0x5C13A8CC, 0x2698, 0x44BB, 0x9F59A651AA9755D3LL);
-NSFX_REGISTER_CLASS(SetEventScheduler);
+NSFX_REGISTER_CLASS(SetEventScheduler, "edu.uestc.nsfx.SetEventScheduler");
 
 
 NSFX_CLOSE_NAMESPACE

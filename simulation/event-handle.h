@@ -112,9 +112,6 @@ private:
 }; // class EventHandle
 
 
-NSFX_DEFINE_CLASS_UUID(EventHandle, 0xE29A3E4D, 0x30A5, 0x4662, 0xBDEDB578CB5A84C2LL);
-
-
 ////////////////////////////////////////////////////////////////////////////////
 typedef Object<EventHandle>  EventHandleClass;
 

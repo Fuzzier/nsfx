@@ -22,6 +22,8 @@
 #include <nsfx/event/i-event-sink.h>
 #include <nsfx/component/i-user.h>
 #include <nsfx/component/ptr.h>
+
+
 NSFX_OPEN_NAMESPACE
 
 
@@ -29,9 +31,6 @@ NSFX_OPEN_NAMESPACE
 // Types.
 class ITimer;
 class ITimerUser;
-
-#define NSFX_IID_ITimer        NSFX_UUID_OF(::nsfx::ITimer)
-#define NSFX_IID_ITimerSink    NSFX_UUID_OF(::nsfx::ITimerSink)
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -58,14 +57,14 @@ public:
 }; // class ITimer
 
 
-NSFX_DEFINE_CLASS_UUID(ITimer, 0x91A857DC, 0x2AE6, 0x496E, 0xA397FA5C80A66228LL);
+NSFX_DEFINE_CLASS_UID(ITimer, "edu.uestc.nsfx.ITimer");
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // ITimerUser.
 NSFX_DEFINE_USER_INTERFACE(
-    ITimerUser,
-    ITimer,  0xE5F38F1D, 0x9A16, 0x4E5E, 0xAE7FD827CD000EE2LL);
+    ITimerUser, "edu.uestc.nsfx.ITimerUser",
+    ITimer);
 
 
 NSFX_CLOSE_NAMESPACE

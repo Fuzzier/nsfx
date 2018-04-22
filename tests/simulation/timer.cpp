@@ -54,18 +54,20 @@ NSFX_TEST_SUITE(Timer)
         try
         {
             nsfx::Ptr<nsfx::ISimulator>  simulator =
-                nsfx::CreateObject<nsfx::ISimulator>(NSFX_CID_Simulator);
+                nsfx::CreateObject<nsfx::ISimulator>(
+                    "edu.uestc.nsfx.Simulator");
             nsfx::Ptr<nsfx::IClock>  clock(simulator);
             nsfx::Ptr<nsfx::IEventScheduler>  scheduler =
                 nsfx::CreateObject<nsfx::IEventScheduler>(
-                    NSFX_CID_SetEventScheduler);
+                    "edu.uestc.nsfx.SetEventScheduler");
             // wire scheduler
             nsfx::Ptr<nsfx::IClockUser>(scheduler)->Use(clock);
             // wire simulator
             nsfx::Ptr<nsfx::IEventSchedulerUser>(simulator)->Use(scheduler);
 
             nsfx::Ptr<nsfx::ITimer>  timer =
-                nsfx::CreateObject<nsfx::ITimer>(NSFX_CID_Timer);
+                nsfx::CreateObject<nsfx::ITimer>(
+                    "edu.uestc.nsfx.Timer");
             // wire timer
             nsfx::Ptr<nsfx::IClockUser>(timer)->Use(clock);
             nsfx::Ptr<nsfx::IEventSchedulerUser>(timer)->Use(scheduler);
@@ -88,9 +90,6 @@ NSFX_TEST_SUITE(Timer)
             timer->StartNow(p0, sink);
             simulator->RunFor(nsfx::Seconds(8));
 
-            nsfx::Ptr<nsfx::IDisposable>(simulator)->Dispose();
-            nsfx::Ptr<nsfx::IDisposable>(scheduler)->Dispose();
-            nsfx::Ptr<nsfx::IDisposable>(timer)->Dispose();
         }
         catch (boost::exception& e)
         {

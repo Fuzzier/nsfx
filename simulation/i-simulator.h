@@ -42,19 +42,6 @@ class ISimulationRunEventSink;
 class ISimulationPauseEventSink;
 class ISimulationEndEventSink;
 
-#define NSFX_IID_ISimulator                 NSFX_UUID_OF(::nsfx::ISimulator)
-#define NSFX_IID_ISimulatorUser             NSFX_UUID_OF(::nsfx::ISimulatorUser)
-
-#define NSFX_IID_ISimulationBeginEvent      NSFX_UUID_OF(::nsfx::ISimulationBeginEvent)
-#define NSFX_IID_ISimulationRunEvent        NSFX_UUID_OF(::nsfx::ISimulationRunEvent)
-#define NSFX_IID_ISimulationPauseEvent      NSFX_UUID_OF(::nsfx::ISimulationPauseEvent)
-#define NSFX_IID_ISimulationEndEvent        NSFX_UUID_OF(::nsfx::ISimulationEndEvent)
-
-#define NSFX_IID_ISimulationBeginEventSink  NSFX_UUID_OF(::nsfx::ISimulationBeginEventSink)
-#define NSFX_IID_ISimulationRunEventSink    NSFX_UUID_OF(::nsfx::ISimulationRunEventSink)
-#define NSFX_IID_ISimulationPauseEventSink  NSFX_UUID_OF(::nsfx::ISimulationPauseEventSink)
-#define NSFX_IID_ISimulationEndEventSink    NSFX_UUID_OF(::nsfx::ISimulationEndEventSink)
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // ISimulator.
@@ -86,43 +73,43 @@ public:
 }; // class ISimulator /*}}}*/
 
 
-NSFX_DEFINE_CLASS_UUID(ISimulator, 0xC079AC9A, 0x0F83, 0x48F4, 0x82F354924DBBA46CLL);
+NSFX_DEFINE_CLASS_UID(ISimulator, "edu.uestc.nsfx.ISimulator");
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // Simulator events.
 NSFX_DEFINE_EVENT_SINK_INTERFACE(
-    ISimulationBeginEventSink,
-    ( void(void) ),  0x1E93735B, 0xDE24, 0x49A3, 0xA63CB63B3F4D93E5LL);
+    ISimulationBeginEventSink, "edu.uestc.nsfx.ISimulationBeginEventSink",
+    ( void(void) ));
 NSFX_DEFINE_EVENT_SINK_INTERFACE(
-    ISimulationRunEventSink,
-    ( void(void) ),  0x7B38A8CA, 0x8876, 0x4610, 0x8B8DA51254028C58LL);
+    ISimulationRunEventSink, "edu.uestc.nsfx.ISimulationRunEventSink",
+    ( void(void) ));
 NSFX_DEFINE_EVENT_SINK_INTERFACE(
-    ISimulationPauseEventSink,
-    ( void(void) ),  0x1811B62D, 0x42D4, 0x4F1B, 0x98CE397D524F912FLL);
+    ISimulationPauseEventSink, "edu.uestc.nsfx.ISimulationPauseEventSink",
+    ( void(void) ));
 NSFX_DEFINE_EVENT_SINK_INTERFACE(
-    ISimulationEndEventSink,
-    ( void(void) ),  0xF6A303AC, 0x6088, 0x4EAE, 0xA532C6CFB34F2E8BLL);
+    ISimulationEndEventSink, "edu.uestc.nsfx.ISimulationEndEventSink",
+    ( void(void) ));
 
 NSFX_DEFINE_EVENT_INTERFACE(
-    ISimulationBeginEvent,
-    ISimulationBeginEventSink,  0x6B0AC801, 0x9746, 0x4E4E, 0xAE347E957F7899F2LL);
+    ISimulationBeginEvent, "edu.uestc.nsfx.ISimulationBeginEvent",
+    ISimulationBeginEventSink);
 NSFX_DEFINE_EVENT_INTERFACE(
-    ISimulationRunEvent,
-    ISimulationRunEventSink,  0x3551885D, 0xB839, 0x4278, 0xB49CAF9CDFBEFA95LL);
+    ISimulationRunEvent, "edu.uestc.nsfx.ISimulationRunEvent",
+    ISimulationRunEventSink);
 NSFX_DEFINE_EVENT_INTERFACE(
-    ISimulationPauseEvent,
-    ISimulationPauseEventSink,  0x6B886CF2, 0x0FF3, 0x47E2, 0xBAFEC75501EA01BBLL);
+    ISimulationPauseEvent, "edu.uestc.nsfx.ISimulationPauseEvent",
+    ISimulationPauseEventSink);
 NSFX_DEFINE_EVENT_INTERFACE(
-    ISimulationEndEvent,
-    ISimulationEndEventSink,  0x3CA80256, 0xBF64, 0x4D1A, 0x8106B3F3C0C2B912LL);
+    ISimulationEndEvent, "edu.uestc.nsfx.ISimulationEndEvent",
+    ISimulationEndEventSink);
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // ISimulatorUser.
 NSFX_DEFINE_USER_INTERFACE(
-    ISimulatorUser,
-    ISimulator,  0xF462A23A, 0x52AF, 0x4A5B, 0xAAB02A572E700A84LL);
+    ISimulatorUser, "edu.uestc.nsfx.ISimulatorUser",
+    ISimulator);
 
 
 NSFX_CLOSE_NAMESPACE
