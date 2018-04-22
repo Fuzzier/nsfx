@@ -231,6 +231,11 @@ protected:
  *         throw;
  *     }
  *     @endcode
+ *     Generally, it is safe to write:
+ *     @code
+ *     Ptr<C>        c(new C);
+ *     Ptr<IObject>  o(new C);
+ *     @endcode
  */
 template<class T = IObject>
 class Ptr : private PtrBase<T>/*{{{*/

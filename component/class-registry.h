@@ -75,7 +75,7 @@ NSFX_OPEN_NAMESPACE
  *    The library provides two tiers of tools for class registration.
  *
  * ### 1.1 Free functions.
- *     \c RegisterClass(), \c UnregisterClass and \c UnregisterAllClasses.
+ *     \c RegisterClassFactory().
  *
  * ### 1.2 Macro.
  *     \c NSFX_REGISTER_CLASS().
@@ -182,7 +182,7 @@ NSFX_DEFINE_CLASS_UID(ClassRegistry, "edu.uestc.nsfx.ClassRegistry");
  * @see \c IClassRegistry::Register().
  */
 template<class C>
-inline void RegisterClass(const Uid& cid)
+inline void RegisterClassFactory(const Uid& cid)
 {
     BOOST_CONCEPT_ASSERT((ObjectImplConcept<C>));
     typedef Object<ClassFactory<C> >  ClassFactoryClass;
@@ -198,37 +198,11 @@ inline void RegisterClass(const Uid& cid)
  *
  * @see \c IClassRegistry::Register().
  */
-inline void RegisterClass(const Uid& cid, Ptr<IClassFactory> factory)
+inline void RegisterClassFactory(const Uid& cid, Ptr<IClassFactory> factory)
 {
     IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
     BOOST_ASSERT(registry);
     registry->Register(cid, std::move(factory));
-}
-
-/**
- * @ingroup Component
- * @brief Unregister a class.
- *
- * @see \c IClassRegistry::Unregister().
- */
-inline void UnregisterClass(const Uid& cid)
-{
-    IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
-    BOOST_ASSERT(registry);
-    registry->Unregister(cid);
-}
-
-/**
- * @ingroup Component
- * @brief Unregister all classes.
- *
- * @see \c IClassRegistry::UnregisterAll().
- */
-inline void UnregisterAllClasses(void)
-{
-    IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
-    BOOST_ASSERT(registry);
-    registry->UnregisterAll();
 }
 
 /**
