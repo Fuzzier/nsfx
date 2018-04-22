@@ -106,13 +106,11 @@ public:
     virtual Ptr<IEventHandle> GetNextEvent(void) = 0;
 
     /**
-     * @brief Remove the next event in the scheduler.
+     * @brief Fire and remove the next event in the scheduler.
      *
-     * @return Return \c nullptr if there is no events in the scheduler.
-     *
-     * The events may be pending or cancelled.<br/>
+     * If the events has been cancelled, it is remove without being fired.<br/>
      */
-    virtual Ptr<IEventHandle> RemoveNextEvent(void) = 0;
+    virtual void FireAndRemoveNextEvent(void) = 0;
 
 }; // class IEventScheduler /*}}}*/
 

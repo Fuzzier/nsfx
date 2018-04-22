@@ -86,7 +86,7 @@ public:
         return t_;
     }
 
-    virtual void Fire(void) NSFX_OVERRIDE
+    void Fire(void)
     {
         if (sink_)
         {
