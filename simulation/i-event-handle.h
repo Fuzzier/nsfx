@@ -30,12 +30,6 @@ NSFX_OPEN_NAMESPACE
 typedef uint64_t  event_id_t;
 class IEventHandle;
 
-/**
- * @ingroup Simulator
- * @brief The uuid of \c IEventHandle.
- */
-#define NSFX_IID_IEventHandle  NSFX_UUID_OF(::nsfx::IEventHandle)
-
 
 ////////////////////////////////////////////////////////////////////////////////
 static event_id_t GetNextEventId(void) BOOST_NOEXCEPT
@@ -87,18 +81,10 @@ public:
      */
     virtual TimePoint GetTimePoint(void) = 0;
 
-    /**
-     * @brief Fire the event.
-     *
-     * Only a pending event will be fired, and it can be fired for once.<br/>
-     * It shall be invoked by a simulator.
-     */
-    virtual void Fire(void) = 0 ;
-
 }; // class IEventHandle /*}}}*/
 
 
-NSFX_DEFINE_CLASS_UUID(IEventHandle, 0x9563654A, 0x8984, 0x448A, 0xBBFD8C654C7AEC61LL);
+NSFX_DEFINE_CLASS_UUID(IEventHandle, "edu.uestc.nsfx.IEventHandle");
 
 
 NSFX_CLOSE_NAMESPACE
