@@ -685,8 +685,11 @@ public:
  *     \c AggObject can be used by a controller to aggregate an object.
  * ### How to use?
  *     An \c AggObject must be allocated on heap.<br/>
- *     The controller shall define a member variable of type <code>Ptr<IObject></code>
+ *     The controller shall define a member variable of type
+ *     <code>Ptr<IObject></code> or <code>Ptr<AggObject<ObjectImpl> ></code>
  *     to hold the allocated \c AggObject.<br/>
+ *     (The rule is that <code>Ptr<></code> that holds the allocated \c AggObject
+ *     does NOT query any of its interfaces except for <code>IObject</code>.)<br/>
  *     This pointer must not be given to other objects.<br/>
  *     The \c AggObject lives until the controller is destructed.
  * ### Benefits.
@@ -726,7 +729,7 @@ public:
  *              ...
  *          };
  *
- *          // Controler also exposes IXxx and IYyy
+ *          // Controller also exposes IXxx and IYyy
  *          struct Controller : IXxx
  *          {
  *              Ptr<IObject>  agg_;
@@ -871,7 +874,8 @@ private:
  * ### When to use?
  *     \c MemberAggObject can be used by a controller to aggregate an object.
  * ### How to use?
- *     A \c MemberAggObject must be defined as a member variable of the controller.<br/>
+ *     A \c MemberAggObject must be defined as a member variable of
+ *     the controller class.<br/>
  * ### Benefits.
  *     The interfaces on an aggregated object can be exposed directly by the
  *     controller.<br/>
