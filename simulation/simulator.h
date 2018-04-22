@@ -21,7 +21,6 @@
 #include <nsfx/simulation/i-simulator.h>
 #include <nsfx/simulation/i-clock.h>
 #include <nsfx/simulation/i-event-scheduler.h>
-#include <nsfx/simulation/i-disposable.h>
 #include <nsfx/simulation/exception.h>
 #include <nsfx/event/event.h>
 #include <nsfx/component/class-registry.h>
@@ -33,8 +32,6 @@ NSFX_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 // Types.
 class Simulator;
-
-#define NSFX_CID_Simulator  NSFX_UUID_OF(::nsfx::Simulator)
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -60,8 +57,7 @@ class Simulator;
 class Simulator :
     public IEventSchedulerUser,
     public IClock,
-    public ISimulator,
-    public IDisposable
+    public ISimulator
 {
 public:
     Simulator(void) BOOST_NOEXCEPT :
@@ -129,12 +125,6 @@ public:
                 // End the loop when the scheduler is empty.
                 break;
             }
-            if (!handle->IsValid())
-            {
-                // Skip the event if it is cancelled.
-                scheduler_->RemoveNextEvent();
-                continue;
-            }
             TimePoint t0 = handle->GetTimePoint();
             if (t0 > t)
             {
@@ -142,8 +132,7 @@ public:
                 break;
             }
             t_ = t0;
-            scheduler_->RemoveNextEvent();
-            handle->Fire();
+            scheduler_->FireAndRemoveNextEvent();
         }
         FireSimulationPauseEvent();
         CheckEndOfSimulation();
@@ -174,43 +163,28 @@ public:
 
     /*}}}*/
 
-    // IDisposable/*{{{*/
-    virtual void Dispose(void) NSFX_OVERRIDE
-    {
-        t_           = TimePoint();
-        initialized_ = false;
-        scheduler_   = nullptr;
-        started_     = false;
-        finished_    = false;
-        beginEvent_.GetEnveloped()->DisconnectAll();
-        runEvent_.GetEnveloped()->DisconnectAll();
-        pauseEvent_.GetEnveloped()->DisconnectAll();
-        endEvent_.GetEnveloped()->DisconnectAll();
-    }
-    /*}}}*/
-
     // Events./*{{{*/
     void FireSimulationBeginEvent(void)
     {
-        beginEvent_.GetEnveloped()->Visit(
+        beginEvent_.GetImpl()->Visit(
             [] (ISimulationBeginEventSink* sink){ sink->Fire(); });
     }
 
     void FireSimulationRunEvent(void)
     {
-        runEvent_.GetEnveloped()->Visit(
+        runEvent_.GetImpl()->Visit(
             [] (ISimulationRunEventSink* sink){ sink->Fire(); });
     }
 
     void FireSimulationPauseEvent(void)
     {
-        pauseEvent_.GetEnveloped()->Visit(
+        pauseEvent_.GetImpl()->Visit(
             [] (ISimulationPauseEventSink* sink){ sink->Fire(); });
     }
 
     void FireSimulationEndEvent(void)
     {
-        endEvent_.GetEnveloped()->Visit(
+        endEvent_.GetImpl()->Visit(
             [] (ISimulationEndEventSink* sink){ sink->Fire(); });
     }
 
@@ -220,7 +194,6 @@ public:
         NSFX_INTERFACE_ENTRY(IEventSchedulerUser)
         NSFX_INTERFACE_ENTRY(IClock)
         NSFX_INTERFACE_ENTRY(ISimulator)
-        NSFX_INTERFACE_ENTRY(IDisposable)
         NSFX_INTERFACE_AGGREGATED_ENTRY(ISimulationBeginEvent, &beginEvent_)
         NSFX_INTERFACE_AGGREGATED_ENTRY(ISimulationRunEvent,   &runEvent_)
         NSFX_INTERFACE_AGGREGATED_ENTRY(ISimulationPauseEvent, &pauseEvent_)
@@ -242,8 +215,7 @@ private:
 }; // class Simulator
 
 
-NSFX_DEFINE_CLASS_UUID(Simulator, 0xC079AC9A, 0x0F83, 0x48F4, 0x82F354924DBBA46CLL);
-NSFX_REGISTER_CLASS(Simulator);
+NSFX_REGISTER_CLASS(Simulator, "edu.uestc.nsfx.Simulator");
 
 
 NSFX_CLOSE_NAMESPACE

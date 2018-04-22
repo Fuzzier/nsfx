@@ -43,7 +43,6 @@ NSFX_TEST_SUITE(SetEventScheduler)
         nsfx::TimePoint tp_;
     };/*}}}*/
     typedef nsfx::Object<Sink>  SinkClass;
-    NSFX_DEFINE_CLASS_UUID(Sink, 0x684CC68A, 0x03B2, 0x4618, 0xA15A279D015DE048LL);
 
     static nsfx::TimePoint clk;
     struct Clock : nsfx::IClock/*{{{*/
@@ -61,8 +60,7 @@ NSFX_TEST_SUITE(SetEventScheduler)
 
     };/*}}}*/
     typedef nsfx::Object<Clock>  ClockClass;
-    NSFX_DEFINE_CLASS_UUID(Clock, 0x705B763E, 0x9C77, 0x4C26, 0x9B9EAD27263A2A05LL);
-    NSFX_REGISTER_CLASS(Clock);
+    NSFX_REGISTER_CLASS(Clock, "edu.uestc.nsfx.test.Clock");
 
     NSFX_TEST_CASE(ExternalDriven)/*{{{*/
     {
@@ -70,10 +68,11 @@ NSFX_TEST_SUITE(SetEventScheduler)
         {
             Ptr<nsfx::IEventScheduler> sch =
                 nsfx::CreateObject<nsfx::IEventScheduler>(
-                    NSFX_CID_SetEventScheduler);
+                    "edu.uestc.nsfx.SetEventScheduler");
             {
                 Ptr<nsfx::IClock> clock =
-                    nsfx::CreateObject<nsfx::IClock>(nsfx::uuid_of<Clock>());
+                    nsfx::CreateObject<nsfx::IClock>(
+                        "edu.uestc.nsfx.test.Clock");
                 Ptr<nsfx::IClockUser>(sch)->Use(clock);
             }
             nsfx::TimePoint t1(nsfx::Duration(1));
@@ -94,38 +93,36 @@ NSFX_TEST_SUITE(SetEventScheduler)
 
             NSFX_TEST_EXPECT_EQ(sch->GetNextEvent()->GetTimePoint(), t1);
             clk = t1;
-            NSFX_TEST_EXPECT(h1 == sch->RemoveNextEvent());
-            h1->Fire();
+            sch->FireAndRemoveNextEvent();
             NSFX_TEST_ASSERT_EQ(sch->GetNumEvents(), 2);
             NSFX_TEST_EXPECT_EQ(clk, tp);
 
             NSFX_TEST_EXPECT_EQ(sch->GetNextEvent()->GetTimePoint(), t2);
             clk = t2;
-            NSFX_TEST_EXPECT(h2 == sch->RemoveNextEvent());
-            h2->Fire();
+            sch->FireAndRemoveNextEvent();
             NSFX_TEST_ASSERT_EQ(sch->GetNumEvents(), 1);
             NSFX_TEST_EXPECT_EQ(clk, tp);
 
             NSFX_TEST_EXPECT_EQ(sch->GetNextEvent()->GetTimePoint(), t3);
             clk = t3;
-            NSFX_TEST_EXPECT(h3 == sch->RemoveNextEvent());
+            sch->FireAndRemoveNextEvent();
             Ptr<nsfx::IEventHandle> h3_1 = sch->ScheduleNow(s3_1);
-            h3->Fire();
             NSFX_TEST_ASSERT_EQ(sch->GetNumEvents(), 1);
             NSFX_TEST_EXPECT_EQ(clk, tp);
 
             NSFX_TEST_EXPECT_EQ(sch->GetNextEvent()->GetTimePoint(), t3);
             clk = t3;
-            NSFX_TEST_EXPECT(h3_1 == sch->RemoveNextEvent());
-            h3_1->Fire();
+            sch->FireAndRemoveNextEvent();
             NSFX_TEST_ASSERT_EQ(sch->GetNumEvents(), 0);
             NSFX_TEST_EXPECT_EQ(clk, tp);
-
-            Ptr<nsfx::IDisposable>(sch)->Dispose();
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
+        }
+        catch (std::exception& e)
+        {
+            NSFX_TEST_EXPECT(false) << e.what() << std::endl;
         }
     }/*}}}*/
 

@@ -45,7 +45,7 @@
             {                                                         \
                 if (!registered)                                      \
                 {                                                     \
-                    ::nsfx::RegisterClass<C>(cid);                    \
+                    ::nsfx::RegisterClassFactory<C>(cid);             \
                     registered = true;                                \
                 }                                                     \
             }                                                         \

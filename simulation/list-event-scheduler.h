@@ -21,7 +21,6 @@
 #include <nsfx/simulation/i-event-scheduler.h>
 #include <nsfx/simulation/i-clock.h>
 #include <nsfx/simulation/event-handle.h>
-#include <nsfx/simulation/i-disposable.h>
 #include <nsfx/component/class-registry.h>
 #include <functional>
 #include <memory>
@@ -33,12 +32,6 @@ NSFX_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 // Types.
 class ListEventScheduler;
-
-/**
- * @ingroup Simulator
- * @brief The uuid of \c ListEventScheduler.
- */
-#define NSFX_CID_ListEventScheduler  NSFX_UUID_OF(::nsfx::ListEventScheduler)
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -52,12 +45,10 @@ class ListEventScheduler;
  * * \c IClockUser
  * ### Provides
  * * \c IEventScheduler
- * * \c IDisposable
  */
 class ListEventScheduler :
     public IClockUser,
-    public IEventScheduler,
-    public IDisposable
+    public IEventScheduler
 {
 private:
     typedef ListEventScheduler  ThisClass;
@@ -146,10 +137,10 @@ public:
         return Ptr<IEventHandle>(result);
     }
 
-    virtual Ptr<IEventHandle> RemoveNextEvent(void) NSFX_OVERRIDE
+    virtual void FireAndRemoveNextEvent(void) NSFX_OVERRIDE
     {
         EventHandleClass* result = InternalRemoveNextEvent();
-        return Ptr<IEventHandle>(result);
+        result->Fire();
     }
 
 private:
@@ -172,17 +163,6 @@ private:
             list_.pop_front();
         }
         return result;
-    }
-
-    /*}}}*/
-
-    // IDisposable /*{{{*/
-public:
-    virtual void Dispose(void) NSFX_OVERRIDE
-    {
-        initialized_ = false;
-        clock_ = nullptr;
-        list_.clear();
     }
 
     /*}}}*/
@@ -210,7 +190,6 @@ public:
     NSFX_INTERFACE_MAP_BEGIN(ThisClass)
         NSFX_INTERFACE_ENTRY(IClockUser)
         NSFX_INTERFACE_ENTRY(IEventScheduler)
-        NSFX_INTERFACE_ENTRY(IDisposable)
     NSFX_INTERFACE_MAP_END()
 
 private:
@@ -221,8 +200,7 @@ private:
 }; // class ListEventScheduler
 
 
-NSFX_DEFINE_CLASS_UUID(ListEventScheduler, 0xD365832F, 0x64C0, 0x4618, 0x8B4D34948267A900LL);
-NSFX_REGISTER_CLASS(ListEventScheduler);
+NSFX_REGISTER_CLASS(ListEventScheduler, "edu.uestc.nsfx.ListEventScheduler");
 
 
 NSFX_CLOSE_NAMESPACE

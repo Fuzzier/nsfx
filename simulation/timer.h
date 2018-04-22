@@ -21,7 +21,6 @@
 #include <nsfx/simulation/i-timer.h>
 #include <nsfx/simulation/i-clock.h>
 #include <nsfx/simulation/i-event-scheduler.h>
-#include <nsfx/simulation/i-disposable.h>
 #include <nsfx/event/event-sink.h>
 #include <nsfx/component/object.h>
 #include <nsfx/component/ptr.h>
@@ -34,8 +33,6 @@ NSFX_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 // Types.
 class Timer;
-
-#define NSFX_CID_Timer  NSFX_UUID_OF(::nsfx::Timer)
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -50,13 +47,11 @@ class Timer;
  * * \c IEventSchedulerUser
  * ### Provides
  * * \c ITimer
- * * \c IDisposable
  */
 class Timer :
     public IClockUser,
     public IEventSchedulerUser,
-    public ITimer,
-    public IDisposable
+    public ITimer
 {
     typedef Timer  ThisClass;
 
@@ -84,9 +79,6 @@ public:
     // IEventSchedulerUser
     virtual void Use(Ptr<IEventScheduler> scheduler) NSFX_OVERRIDE;
 
-    // IDisposable
-    virtual void Dispose(void) NSFX_OVERRIDE;
-
 private:
     void Fire(void)
     {
@@ -108,7 +100,6 @@ private:
         NSFX_INTERFACE_ENTRY(IClockUser)
         NSFX_INTERFACE_ENTRY(IEventSchedulerUser)
         NSFX_INTERFACE_ENTRY(ITimer)
-        NSFX_INTERFACE_ENTRY(IDisposable)
     NSFX_INTERFACE_MAP_END()
 
 private:
@@ -127,8 +118,7 @@ private:
 }; // class Timer
 
 
-NSFX_DEFINE_CLASS_UUID(Timer, 0x8642A6AF, 0x03CA, 0x4F1C, 0x8287C1CDB1CB20E5LL);
-NSFX_REGISTER_CLASS(Timer);
+NSFX_REGISTER_CLASS(Timer, "edu.uestc.nsfx.Timer");
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -210,16 +200,6 @@ inline void Timer::Stop(void)
         handle_ = nullptr;
         sink_   = nullptr;
     }
-}
-
-inline void Timer::Dispose(void)
-{
-    handle_->Cancel();
-    initialized_ = false;
-    clock_       = nullptr;
-    scheduler_   = nullptr;
-    handle_      = nullptr;
-    sink_        = nullptr;
 }
 
 inline void Timer::Initialize(void)

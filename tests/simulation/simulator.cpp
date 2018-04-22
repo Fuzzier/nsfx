@@ -26,8 +26,7 @@ NSFX_TEST_SUITE(Simulator)
         nsfx::IClockUser,
         nsfx::ISimulatorUser,
         nsfx::IEventSchedulerUser,
-        nsfx::IEventSink<>,
-        nsfx::IDisposable
+        nsfx::IEventSink<>
     {
         typedef Sink  ThisClass;
 
@@ -75,21 +74,6 @@ NSFX_TEST_SUITE(Simulator)
             }
         }
 
-        virtual void Dispose(void) NSFX_OVERRIDE
-        {
-            nsfx::Ptr<nsfx::ISimulationBeginEvent>(simulator_)->Disconnect(beginSinkCookie_);
-            nsfx::Ptr<nsfx::ISimulationRunEvent>(simulator_)->Disconnect(runSinkCookie_);
-            nsfx::Ptr<nsfx::ISimulationPauseEvent>(simulator_)->Disconnect(pauseSinkCookie_);
-            nsfx::Ptr<nsfx::ISimulationEndEvent>(simulator_)->Disconnect(endSinkCookie_);
-            simulator_ = nullptr;
-            clock_     = nullptr;
-            scheduler_ = nullptr;
-            beginSink_ = nullptr;
-            runSink_   = nullptr;
-            pauseSink_ = nullptr;
-            endSink_   = nullptr;
-        }
-
         void OnSimulationBegin(void)
         {
             std::cout << "BEGIN" << std::endl;
@@ -114,7 +98,6 @@ NSFX_TEST_SUITE(Simulator)
             NSFX_INTERFACE_ENTRY(nsfx::IClockUser)
             NSFX_INTERFACE_ENTRY(nsfx::ISimulatorUser)
             NSFX_INTERFACE_ENTRY(nsfx::IEventSchedulerUser)
-            NSFX_INTERFACE_ENTRY(nsfx::IDisposable)
             NSFX_INTERFACE_ENTRY(nsfx::IEventSink<>)
         NSFX_INTERFACE_MAP_END()
 
@@ -142,11 +125,11 @@ NSFX_TEST_SUITE(Simulator)
             // Create objects.
             nsfx::Ptr<nsfx::IEventScheduler> scheduler =
                 nsfx::CreateObject<nsfx::IEventScheduler>(
-                    NSFX_CID_SetEventScheduler);
+                    "edu.uestc.nsfx.SetEventScheduler");
 
             nsfx::Ptr<nsfx::ISimulator>  simulator =
                 nsfx::CreateObject<nsfx::ISimulator>(
-                    NSFX_CID_Simulator);
+                    "edu.uestc.nsfx.Simulator");
             nsfx::Ptr<nsfx::IClock>  clock(simulator);
 
             nsfx::Ptr<SinkClass>  sink(new SinkClass);
@@ -182,17 +165,14 @@ NSFX_TEST_SUITE(Simulator)
             simulator->Run();
             NSFX_TEST_EXPECT_EQ(counter, 20);
 
-            nsfx::Ptr<nsfx::IDisposable>(simulator)->Dispose();
-            nsfx::Ptr<nsfx::IDisposable>(scheduler)->Dispose();
-            nsfx::Ptr<nsfx::IDisposable>(sink)->Dispose();
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
         }
         catch (std::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << e.what();
+            NSFX_TEST_EXPECT(false) << e.what() << std::endl;
         }
     }
 }

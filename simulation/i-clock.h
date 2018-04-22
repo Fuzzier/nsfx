@@ -31,9 +31,6 @@ NSFX_OPEN_NAMESPACE
 class IClock;
 class IClockUser;
 
-#define NSFX_IID_IClock      NSFX_UUID_OF(::nsfx::IClock)
-#define NSFX_IID_IClockUser  NSFX_UUID_OF(::nsfx::IClockUser)
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // IClock.
@@ -54,15 +51,14 @@ public:
 
 }; // class IClock /*}}}*/
 
-
-NSFX_DEFINE_CLASS_UUID(IClock, 0xF5B4D834, 0xC959, 0x446C, 0xB16346F2232C9787LL);
+NSFX_DEFINE_CLASS_UID(IClock, "edu.uestc.nsfx.IClock");
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // IClockUser.
 NSFX_DEFINE_USER_INTERFACE(
-    IClockUser,
-    IClock,  0x7EE60B3E, 0xE914, 0x48BD, 0x9300733327843DA8LL);
+    IClockUser, "edu.uestc.nsfx.IClockUser",
+    IClock);
 
 
 NSFX_CLOSE_NAMESPACE

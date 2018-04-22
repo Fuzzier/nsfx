@@ -84,7 +84,7 @@ public:
 }; // class IEventHandle /*}}}*/
 
 
-NSFX_DEFINE_CLASS_UUID(IEventHandle, "edu.uestc.nsfx.IEventHandle");
+NSFX_DEFINE_CLASS_UID(IEventHandle, "edu.uestc.nsfx.IEventHandle");
 
 
 NSFX_CLOSE_NAMESPACE
