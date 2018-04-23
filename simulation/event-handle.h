@@ -86,6 +86,9 @@ public:
         return t_;
     }
 
+    /*}}}*/
+
+public:
     void Fire(void)
     {
         if (sink_)
@@ -96,8 +99,6 @@ public:
             sink_ = nullptr;
         }
     }
-
-    /*}}}*/
 
     NSFX_INTERFACE_MAP_BEGIN(EventHandle)
         NSFX_INTERFACE_ENTRY(IEventHandle)
