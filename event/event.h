@@ -87,7 +87,7 @@ public:
  *                                            Event<> (a concrete class)
  * @endcode
  */
-template<class IEventName, cookie_t limit = 0x7fffffff>
+template<class IEventName, size_t limit = 0x7fffffff>
 class Event :/*{{{*/
     public IEventName
 {
