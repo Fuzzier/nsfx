@@ -119,7 +119,7 @@ public:
     void FireAndRemoveNextEvent(void) BOOST_NOEXCEPT
     {
         EventHandleClass* result = InternalRemoveNextEvent();
-        result->Fire();
+        Ptr<EventHandleClass>(result)->Fire();
     }
 
 private:

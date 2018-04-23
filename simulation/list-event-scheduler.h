@@ -140,7 +140,7 @@ public:
     virtual void FireAndRemoveNextEvent(void) NSFX_OVERRIDE
     {
         EventHandleClass* result = InternalRemoveNextEvent();
-        result->Fire();
+        Ptr<EventHandleClass>(result)->Fire();
     }
 
 private:
