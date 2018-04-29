@@ -56,6 +56,7 @@ public:
 public:
     virtual refcount_t AddRef(void) = 0;
     virtual refcount_t Release(void) = 0;
+
     /**
      * @brief Query an interface of the object.
      *
