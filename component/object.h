@@ -232,9 +232,9 @@ NSFX_OPEN_NAMESPACE
  * 7.3 \c AggObject
  *     An \c AggObject is an aggregable object.<br/>
  *     i.e., the navigator of an aggregated object.<br/>
- *     The \c AggObject owns a reference count itself.<br/>
- *     Thus, it can be allocated and deallocated dynamically.<br/>
- *     However, its reference count is held only by its controller.<br/>
+ *     It holds a pointer to its controller.<br/>
+ *     The \c QueryInterface() method returns the navigator itself if \c IObject
+ *     is queried, while delegates all other queries to its controller.<br/>
  *     It must not be deallocated until the controller's lifetime ends.<br/>
  *     It holds an aggregated object that shares the same reference count with
  *     its controller.<br/>
@@ -255,56 +255,6 @@ NSFX_OPEN_NAMESPACE
  *     class.<br/>
  *     The lifetime of a \c MemberAggObject is naturally the same as its
  *     controller.<br/>
- *
- * 7.5 \c MutualObject
- *     One of the limitations of the component model is that a component cannot
- *     expose the same interface multiple times with different implementations.<br/>
- *     e.g., when a component needs to provide multiple event sinks to various
- *     event sources, it faces a problem that these event sinks share the same
- *     interface but have different implementations.<br/>
- *
- *     The first problem is that a component cannot expose an event sink
- *     interface for multiple times by aggregation, nor by inheritance.<br/>
- *     A natural solution is to create internal objects (event sinks) that
- *     implement the event sink interface, and connect these event sinks to
- *     the event sources.<br/>
- *
- *     Another problem is that the component must have a lifetime as long as
- *     the event sinks.<br/>
- *     i.e., as long as an event source holds an event sink, the component must
- *     not be deallocated.<br/>
- *     The key is to let each event sink hold a reference count of the component.<br/>
- *     i.e., let each event sink hold a <code>Ptr<></code> that points to the
- *     component.<br/>
- *     However, this is not efficient.<br/>
- *
- *     In most cases, an event source does not query other interfaces from an
- *     event sink.<br/>
- *     Therefore, the navigability of an event sink is not important.<br/>
- *     What is important is that an event sink holds a reference count of the
- *     component.<br/>
- *     \c MutualObject can be used in such use cases.
- *
- *     A \c MutualObject shares the same reference count with its controller
- *     that provides the \c MutualObject to other components.<br/>
- *     However, the controller does not expose the interfaces on \c MutualObject,
- *     nor does the \c MutualObject expose the interfaces on its controller.<br/>
- *     They seem like two different components from outside.<br/>
- *
- *     Usually, one must not hold a pointer to a member variable of a dynamic
- *     object, since the deallocation of the object invalidates the pointer,
- *     and a dangling pointer is deadly.<br/>
- *     However, a \c MutualObject can be defined as a member variable of the
- *     controller, since a \c MutualObject shares the same reference count with
- *     the controller.<br/>
- *     The controller is free to provide to other components smart pointers that
- *     point to the \c MutualObject, although it is a member variable.<br/>
- *     The point is that a smart pointer to the \c MutualObject actually holds
- *     a reference count of the controller.<br/>
- *     Thus, as long as a smart pointer to the \c MutualObject exists, the
- *     controller also exists.<br/>
- *     Actually, a \c MutualObject that is defined as a member variable shares
- *     the same lifetime as its controller.<br/>
  *
  * @see \c NSFX_INTERFACE_MAP_BEGIN,
  *      \c NSFX_INTERFACE_ENTRY,
@@ -361,6 +311,10 @@ private:
         IObject*   controller_; /// The controller.
     };
 }; // class ObjectBase /*}}}*/
+
+
+struct InterfaceTag  {};
+struct AggregatedTag {};
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -759,7 +713,7 @@ public:
  *                  Ptr<IZzz> z(y);
  *
  *                  // Pit-fall !!!
- *                  // The IXxx on Controller, which is not the IXxx on MyObject
+ *                  // This is he IXxx on Controller, not the IXxx on MyObject.
  *                  // Since y is the IYyy on MyObject, it is not obvious which
  *                  // IXxx is queried.
  *                  Ptr<IXxx> x_not_on_MyObject(y);
@@ -960,112 +914,6 @@ private:
 }; // class MemberAggObject /*}}}*/
 
 
-////////////////////////////////////////////////////////////////////////////////
-// MutualObject
-/**
- * @ingroup Component
- * @brief An object that can be exposed by its constroller with a separate set of interfaces.
- *
- * @tparam ObjectImpl A class that conforms to \c ObjectImplConcept.
- *
- * A linked object shares the same reference count as its controller.<br/>
- * It can be defined as a member variable of the controller.<br/>
- *
- * The \c ObjectImpl may implement \c ObjectBase::InternalQueryInterface() via
- * \c NSFX_INTERFACE_XXX() macros.
- *
- * ### When to use?
- *     \c MutualObject can be used by a controller to provide an object that
- *     exposes a separate set of interfaces.<br/>
- * ### How to use?
- *     A \c MutualObject can be defined as a member variable of the controller.<br/>
- *     The controller can provide to other objects smart pointers that point to
- *     the \c MutualObject.<br/>
- *     The controler must not expose the interfaces on a \c MutualObject as its
- *     own interfaces.
- * ### Benefits.
- *     The controller lives as long as other objects hold smart pointers to
- *     the \c MutualObject.
- *     It saves a <code>Ptr<></code> to manage lifetime.<br/>
- *     There is no need to allocate on heap.
- */
-template<class ObjectImpl>
-class MutualObject NSFX_FINAL :/*{{{*/
-    private ObjectBase, // Use private inherit as the methods are only used internally.
-    public ObjectImpl
-{
-private:
-    BOOST_CONCEPT_ASSERT((ObjectImplConcept<ObjectImpl>));
-
-public:
-#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-    template<class...Args>
-    MutualObject(IObject* controller, Args&&... args) :
-        ObjectBase(controller),
-        ObjectImpl(std::forward<Args>(args)...)
-    {
-        if (!controller)
-        {
-            BOOST_THROW_EXCEPTION(BadAggregation());
-        }
-    }
-
-#else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-    MutualObject(IObject* controller) :
-        ObjectBase(controller)
-    {
-        if (!controller)
-        {
-            BOOST_THROW_EXCEPTION(BadAggregation());
-        }
-    }
-
-# define BOOST_PP_ITERATION_PARAMS_1  (4, (1, NSFX_MAX_ARITY, <nsfx/component/object.h>, 5))
-# include BOOST_PP_ITERATE()
-
-#endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-
-    virtual ~MutualObject(void) BOOST_NOEXCEPT {}
-
-    // Non-copyable.
-private:
-    BOOST_DELETED_FUNCTION(MutualObject(const MutualObject& ));
-    BOOST_DELETED_FUNCTION(MutualObject& operator=(const MutualObject& ));
-
-    // IObject./*{{{*/
-public:
-    virtual refcount_t AddRef(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
-    {
-        return ControllerAddRef();
-    }
-
-    virtual refcount_t Release(void) NSFX_FINAL NSFX_OVERRIDE
-    {
-        return ControllerRelease();
-    }
-
-    /**
-     * @brief Query an interface from the navigator.
-     *
-     * @return The interface on the aggregated object.
-     */
-    virtual void* QueryInterface(const Uid& iid) NSFX_FINAL NSFX_OVERRIDE
-    {
-        void* result = ObjectImpl::InternalQueryInterface(iid);
-        return result;
-    }
-
-    /*}}}*/
-
-    // Methods.
-    ObjectImpl* GetImpl(void)
-    {
-        return static_cast<ObjectImpl*>(this);
-    }
-
-}; // class MutualObject /*}}}*/
-
-
 NSFX_CLOSE_NAMESPACE
 
 
@@ -1078,23 +926,53 @@ NSFX_CLOSE_NAMESPACE
  * @param ThisClass The class that defines the interface map.<br/>
  *                  It is the class that implements or aggregates interfaces.
  *
- * @remarks The macros changes the access rights to \c protected.
+ * @remarks The macros defines a public member function template
+ *          \c InternalVisitInterfaceMap() for the component class.<br/>
+ *          The template parameter \c Visitor must be a functor class that
+ *          supports tag-based function dispatch.
+ *          <p>
+ *          For example,
+ *          @code
+ *          struct Visitor
+ *          {
+ *              // @param[in] iid  The UID of the interface Intf.
+ *              // @param[in] intf The pointer to the interface.
+ *              template<class Intf>
+ *              bool operator()(const Uid& iid, Intf*    intf, InterfaceTag);
+ *
+ *              // @param[in] iid  The UID of the aggregated interface.
+ *              // @param[in] navi The pointer to the navigator.
+ *              bool operator()(const Uid& iid, IObject* navi, AggregatedTag);
+ *          };
+ *          @endcode
+ *          <p>
+ *          The functor (visitor) returns \c false to conitnue the visiting.<br/>
+ *          Or it returns \c true to terminate the visiting.
+ *          <p>
+ *          The funtion template returns the return value of visitor.<br/>
+ *          i.e., the function template returns \c true if the visiting is
+ *          terminated by the visitor.<br/>
+ *          Otherwise, it returns \c false.
  */
-#define NSFX_INTERFACE_MAP_BEGIN(ThisClass)                               \
-    private:                                                              \
-        typedef ThisClass  ThisClass_;                                    \
-    protected:                                                            \
-    void* InternalQueryInterface(const ::nsfx::Uid& iid)                  \
-    {                                                                     \
-        void* result = nullptr;                                           \
-        if (iid == ::nsfx::uid_of<::nsfx::IObject>())                     \
-        {                                                                 \
-            static_assert(                                                \
-                ::boost::is_base_of<::nsfx::IObject, ThisClass_>::value,  \
-                "Cannot expose an unimplemented interface");              \
-            result = static_cast<::nsfx::IObject*>(this);                 \
-            AddRef();                                                     \
-        }
+#define NSFX_INTERFACE_MAP_BEGIN(ThisClass)                                   \
+    private:                                                                  \
+        typedef ThisClass  ThisClass_;                                        \
+    public:                                                                   \
+        template<class Visitor>                                               \
+        bool InternalVisitInterfaceMap(Visitor&& visitor)                     \
+        {                                                                     \
+            bool result = true;                                               \
+            do                                                                \
+            {                                                                 \
+                static_assert(                                                \
+                    ::boost::is_base_of<::nsfx::IObject, ThisClass_>::value,  \
+                    "Cannot expose an unimplemented interface");              \
+                if (visitor(::nsfx::uid_of<::nsfx::IObject>(),                \
+                            static_cast<::nsfx::IObject*>(this),              \
+                            ::nsfx::InterfaceTag()))                          \
+                {                                                             \
+                    break;                                                    \
+                }
 
 /**
  * @ingroup Component
@@ -1105,15 +983,16 @@ NSFX_CLOSE_NAMESPACE
  *             \c Intf.<br/>
  *             It should <b>not</b> be \c IObject.
  */
-#define NSFX_INTERFACE_ENTRY(Intf)                             \
-        else if (iid == ::nsfx::uid_of<Intf>())                \
-        {                                                      \
-            static_assert(                                     \
-                ::boost::is_base_of<Intf, ThisClass_>::value,  \
-                "Cannot expose an unimplemented interface");   \
-            result = static_cast<Intf*>(this);                 \
-            AddRef();                                          \
-        }
+#define NSFX_INTERFACE_ENTRY(Intf)                                 \
+                static_assert(                                     \
+                    ::boost::is_base_of<Intf, ThisClass_>::value,  \
+                    "Cannot expose an unimplemented interface");   \
+                if (visitor(::nsfx::uid_of<Intf>(),                \
+                            static_cast<Intf*>(this),              \
+                            ::nsfx::InterfaceTag()))               \
+                {                                                  \
+                    break;                                         \
+                }
 
 /**
  * @ingroup Component
@@ -1121,32 +1000,81 @@ NSFX_CLOSE_NAMESPACE
  *
  * @param Intf The type of the interface.<br/>
  *             It should <b>not</b> be \c IObject.
- * @param navi A pointer to an object that exposes the \c Intf interface.<br/>
- *             i.e., the objet implements \c IObject, and \c Intf can be queried
- *             from the object.
+ * @param navi It must be a poiner to an aggregated object that exposes the
+ *             \c Intf interface.<br/>
+ *             i.e., the object implements \c IObject, and \c Intf can be
+ *             queried from the object.<br/>
+ *             The object must be accessible within the component class.
  */
-#define NSFX_INTERFACE_AGGREGATED_ENTRY(Intf, navi)  \
-        else if (iid == ::nsfx::uid_of<Intf>())      \
-        {                                            \
-            result = (navi)->QueryInterface(iid);    \
-        }
+#define NSFX_INTERFACE_AGGREGATED_ENTRY(Intf, navi)               \
+                if (visitor(::nsfx::uid_of<Intf>(),               \
+                            static_cast<::nsfx::IObject*>(navi),  \
+                            ::nsfx::AggregatedTag()))             \
+                {                                                 \
+                    break;                                        \
+                }
 
 /**
  * @ingroup Component
  * @brief End an interface map.
+ *
+ * @remarks The macros changes the access rights to \c protected.
  */
-#define NSFX_INTERFACE_MAP_END()                                              \
-        if (!result)                                                          \
-        {                                                                     \
-            BOOST_THROW_EXCEPTION(                                            \
-                ::nsfx::NoInterface()                                         \
-                << ::nsfx::QueriedClassErrorInfo(                             \
-                    ::boost::typeindex::type_id<ThisClass_>().pretty_name())  \
-                << ::nsfx::QueriedInterfaceUidErrorInfo(iid)                  \
-            );                                                                \
-        }                                                                     \
-        return result;                                                        \
-    }
+#define NSFX_INTERFACE_MAP_END()                                    \
+                result = false;                                     \
+            }                                                       \
+            while (false);                                          \
+            return result;                                          \
+        } /* bool InternalVisitInterfaceMap() */                    \
+    protected:                                                      \
+        void* InternalQueryInterface(const ::nsfx::Uid& iid) const  \
+        {                                                           \
+            struct Visitor                                          \
+            {                                                       \
+                const ::nsfx::Uid& iid_;                            \
+                void*& result_;                                     \
+                Visitor(const ::nsfx::Uid& iid, void*& result) :    \
+                    iid_(iid),                                      \
+                    result_(result)                                 \
+                {}                                                  \
+                template<class Intf>                                \
+                bool operator()(const ::nsfx::Uid& iid,             \
+                                Intf* intf,                         \
+                                ::nsfx::InterfaceTag)               \
+                {                                                   \
+                    bool found = (iid_ == iid);                     \
+                    if (found)                                      \
+                    {                                               \
+                        result_ = intf;                             \
+                    }                                               \
+                    return found;                                   \
+                }                                                   \
+                bool operator()(const ::nsfx::Uid& iid,             \
+                                ::nsfx::IObject* navi,              \
+                                ::nsfx::AggregatedTag)              \
+                {                                                   \
+                    bool found = (iid_ == iid);                     \
+                    if (found)                                      \
+                    {                                               \
+                        result_ = navi->QueryInterface(iid);        \
+                    }                                               \
+                    return found;                                   \
+                }                                                   \
+            };                                                      \
+            void* result = nullptr;                                 \
+            InternalVisitInterfaceMap(Visitor(iid, result));        \
+            if (!result)                                            \
+            {                                                       \
+                BOOST_THROW_EXCEPTION(                              \
+                    ::nsfx::NoInterface()                           \
+                    << ::nsfx::QueriedClassErrorInfo(               \
+                        ::boost::typeindex::type_id<ThisClass_>()   \
+                            .pretty_name())                         \
+                    << ::nsfx::QueriedInterfaceUidErrorInfo(iid)    \
+                );                                                  \
+            }                                                       \
+            return result;                                          \
+        }
 
 /*}}}*/
 
@@ -1210,23 +1138,6 @@ AggObject(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(),
 template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
 MemberAggObject(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, && a)) :
     agg_(controller, BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, )) {}
-
-# elif BOOST_PP_ITERATION_FLAGS() == 5
-
-// template<class A0, class A1, ...>
-// MutualObject(IObject* controller, A0&& a0, A1&& a1, ...)) :
-//     ObjectBase(controller),
-//     ObjectImpl(std::forward<A0>(a0), std::forward<A1>(a1), ...)
-template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
-MutualObject(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, && a)) :
-    ObjectBase(controller),
-    ObjectImpl(BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, ))
-{
-    if (!controller)
-    {
-        BOOST_THROW_EXCEPTION(BadAggregation());
-    }
-}
 
 # endif // BOOST_PP_ITERATION_FLAGS() == x
 

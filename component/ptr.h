@@ -177,7 +177,7 @@ protected:
         // Query the IObject interface.
         // Do not query other interfaces, since an object may not support them.
         PtrBase<IObject> lhs(p_, false, boost::is_same<IObject, T>::type());
-        PtrBase<IObject> rhs(p, false, boost::is_same<IObject, U>::type());
+        PtrBase<IObject> rhs(p,  false, boost::is_same<IObject, U>::type());
         return (lhs.p_ == rhs.p_);
     }
 
