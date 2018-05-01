@@ -266,7 +266,7 @@
  *    A component <b>should</b> have a name.
  *
  * ## Access a component
- *    A component is
+ *    A component can be accessed by its hierarchical full path.
  *
  */
 
