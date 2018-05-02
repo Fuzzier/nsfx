@@ -914,6 +914,48 @@ private:
 }; // class MemberAggObject /*}}}*/
 
 
+////////////////////////////////////////////////////////////////////////////////
+/**
+ * @brief A visitor to visit the interface map.
+ *
+ * Implements \c InternalQueryInterface().
+ */
+class InternalQueryInterfaceVisitor
+{
+public:
+    InternalQueryInterfaceVisitor(const Uid& iid, void*& result) :
+        iid_(iid),
+        result_(result)
+    {}
+
+    template<class Intf>
+    bool operator()(const Uid& iid, Intf* intf, InterfaceTag)
+    {
+        bool found = (iid_ == iid);
+        if (found)
+        {
+            intf->AddRef();
+            result_ = intf;
+        }
+        return found;
+    }
+
+    bool operator()(const Uid& iid, IObject* navi, AggregatedTag)
+    {
+        bool found = (iid_ == iid);
+        if (found)
+        {
+            result_ = navi->QueryInterface(iid);
+        }
+        return found;
+    }
+
+private:
+    const Uid& iid_;
+    void*& result_;
+};
+
+
 NSFX_CLOSE_NAMESPACE
 
 
@@ -938,7 +980,7 @@ NSFX_CLOSE_NAMESPACE
  *              // @param[in] iid  The UID of the interface Intf.
  *              // @param[in] intf The pointer to the interface.
  *              template<class Intf>
- *              bool operator()(const Uid& iid, Intf*    intf, InterfaceTag);
+ *              bool operator()(const Uid& iid, Intf* intf, InterfaceTag);
  *
  *              // @param[in] iid  The UID of the aggregated interface.
  *              // @param[in] navi The pointer to the navigator.
@@ -1000,8 +1042,8 @@ NSFX_CLOSE_NAMESPACE
  *
  * @param Intf The type of the interface.<br/>
  *             It should <b>not</b> be \c IObject.
- * @param navi It must be a poiner to an aggregated object that exposes the
- *             \c Intf interface.<br/>
+ * @param navi It must be a <b>raw</b> poiner to an aggregable object that
+ *             exposes the \c Intf interface.<br/>
  *             i.e., the object implements \c IObject, and \c Intf can be
  *             queried from the object.<br/>
  *             The object must be accessible within the component class.
@@ -1018,62 +1060,34 @@ NSFX_CLOSE_NAMESPACE
  * @ingroup Component
  * @brief End an interface map.
  *
+ * Uses \c InternalQueryInterfaceVisitor functor class to implement
+ * \c InternalQueryInterface().
+ *
  * @remarks The macros changes the access rights to \c protected.
  */
-#define NSFX_INTERFACE_MAP_END()                                    \
-                result = false;                                     \
-            }                                                       \
-            while (false);                                          \
-            return result;                                          \
-        } /* bool InternalVisitInterfaceMap() */                    \
-    protected:                                                      \
-        void* InternalQueryInterface(const ::nsfx::Uid& iid) const  \
-        {                                                           \
-            struct Visitor                                          \
-            {                                                       \
-                const ::nsfx::Uid& iid_;                            \
-                void*& result_;                                     \
-                Visitor(const ::nsfx::Uid& iid, void*& result) :    \
-                    iid_(iid),                                      \
-                    result_(result)                                 \
-                {}                                                  \
-                template<class Intf>                                \
-                bool operator()(const ::nsfx::Uid& iid,             \
-                                Intf* intf,                         \
-                                ::nsfx::InterfaceTag)               \
-                {                                                   \
-                    bool found = (iid_ == iid);                     \
-                    if (found)                                      \
-                    {                                               \
-                        result_ = intf;                             \
-                    }                                               \
-                    return found;                                   \
-                }                                                   \
-                bool operator()(const ::nsfx::Uid& iid,             \
-                                ::nsfx::IObject* navi,              \
-                                ::nsfx::AggregatedTag)              \
-                {                                                   \
-                    bool found = (iid_ == iid);                     \
-                    if (found)                                      \
-                    {                                               \
-                        result_ = navi->QueryInterface(iid);        \
-                    }                                               \
-                    return found;                                   \
-                }                                                   \
-            };                                                      \
-            void* result = nullptr;                                 \
-            InternalVisitInterfaceMap(Visitor(iid, result));        \
-            if (!result)                                            \
-            {                                                       \
-                BOOST_THROW_EXCEPTION(                              \
-                    ::nsfx::NoInterface()                           \
-                    << ::nsfx::QueriedClassErrorInfo(               \
-                        ::boost::typeindex::type_id<ThisClass_>()   \
-                            .pretty_name())                         \
-                    << ::nsfx::QueriedInterfaceUidErrorInfo(iid)    \
-                );                                                  \
-            }                                                       \
-            return result;                                          \
+#define NSFX_INTERFACE_MAP_END()                                      \
+                result = false;                                       \
+            }                                                         \
+            while (false);                                            \
+            return result;                                            \
+        } /* bool InternalVisitInterfaceMap() */                      \
+    protected:                                                        \
+        void* InternalQueryInterface(const ::nsfx::Uid& iid)          \
+        {                                                             \
+            void* result = nullptr;                                   \
+            InternalVisitInterfaceMap(                                \
+                ::nsfx::InternalQueryInterfaceVisitor(iid, result));  \
+            if (!result)                                              \
+            {                                                         \
+                BOOST_THROW_EXCEPTION(                                \
+                    ::nsfx::NoInterface()                             \
+                    << ::nsfx::QueriedClassErrorInfo(                 \
+                        ::boost::typeindex::type_id<ThisClass_>()     \
+                            .pretty_name())                           \
+                    << ::nsfx::QueriedInterfaceUidErrorInfo(iid)      \
+                );                                                    \
+            }                                                         \
+            return result;                                            \
         }
 
 /*}}}*/
