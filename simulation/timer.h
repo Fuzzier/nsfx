@@ -112,8 +112,8 @@ private:
     Ptr<IEventSink<> > sink_;
     Ptr<IEventHandle> handle_;
 
-    MutualObject<MemberFunctionBasedEventSink<IEventSink<>, ThisClass> >
-        timeoutEventSink_;
+    MemberAggObject<MemberFunctionBasedEventSink<IEventSink<>, ThisClass> >
+            timeoutEventSink_;
 
 }; // class Timer
 
