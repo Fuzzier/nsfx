@@ -610,9 +610,8 @@
  *    <p>
  *    e.g., a MAC layer component requires a clock and a scheduler to work.
  *    However, without a physical layer or a network layer, it can run without
- *    fatal error.
- *    Although it cannot receive any packet, nor transmit to other MAC layers.
- *    This can be considered as a configuration error in some situations.
+ *    fatal error, even if it cannot receive nor send any packet.
+ *    Although, it can be considered as a configuration error in some situations.
  *    Whether a component is required is determined by the requirement of the
  *    system.
  *    <p>
@@ -622,10 +621,74 @@
  *    prevent fatal runtime errors, while the prevention of other kinds of
  *    errors are out of the scope of the library.
  *
+ * ## Disposal strategy
+ *    The disposing process often involves a sub-system of components that have
+ *    functional dependencies.
+ *    The key difficulty of disposability is that a single component within the
+ *    sub-system often lacks a sufficiently large and far sight to conduct the
+ *    disposing process.
+ *    The reasons is that a component is to be reused, but it is hard foretell
+ *    the requirements of the system where the component is to be reused, and
+ *    the components does not know how it is wired with other components.
+ *    <p>
+ *    To allow disposal in a distributed way is not an easy task.
+ *    e.g., when a component is disposed, it may notify all of its user
+ *    components, and these components may dispose successively.
+ *    However, if the programmer just want to replace the disposed component
+ *    with another component, this becomes an over-reaction.
+ *    Therefore, the disposal of components often requires a dictated strategy
+ *    that is executed by other components that are dictated to do such job.
+ *    A component that supports disposal shall be conservative that it only
+ *    releases the resources held by itself.
+ *    <p>
+ *    A disposal strategy often has spatial, temporal and procedural aspects.<br/>
+ *    The spatial aspect determines the boundary of disposal.
+ *    The boundary of disposal is the set of components involved in a disposal.<br/>
+ *    The temporal aspect determines the time span of disposal, permanent or
+ *    temporary.
+ *    e.g., a component is permanently removed from the system; or the system
+ *    is temporarily missing a component, and the disposed component is
+ *    substituted by another component right away, so the functionally dependent
+ *    components are working as usual.<br/>
+ *    The procedural aspect involves the actions performed before, during and
+ *    after the disposal.
+ *    e.g., the reactions performed by a user component when a functionally
+ *    dependent component disconnects from it.
+ *    Usually, they shall do nothing in the reaction.
+ *
+ * ### Batch disposal
+ *     The disposal of components can be performed in batch, i.e., a sub-system
+ *     of components is disposed.
+ *     Usually, the sub-system is a dependency closure, i.e., no other
+ *     components are functionally dependent on the sub-system of components.
+ *     The user components do not have to perform special actions upon the
+ *     disconnection of the provider component, since the user components will
+ *     be disposed along with it.
+ *     <p>
+ *     For a sub-system of components, if all other components only listen to
+ *     the events of the component, the sub-system can be considered as a
+ *     dependency closure.
+ *     <p>
+ *     e.g., a node is disposed from a network.
+ *
+ * ### Substitution
+ *     If a provider component is disposed, and the user components still runs,
+ *     then one should give the user components a substitution.
+ *     The task <b>should</b> be performed by their parent component, who
+ *     allocated and wired them.
+ *
+ * ## Rules of disposal
+ *    A component does:
+ *    * Release all objects it holds.
+ *    * Disconnect from all events.
+ *    <p>
+ *    A component does not:
+ *    * Disconnect all event sinks.
+ *
  * ## Dangling pointer prevention
- *    When one wants to dispose a component that provides an interface,
+ *    When one wants to dispose a component, the
  *    its user components <b>must</b> be notified, and discard the dangling
- *    pointer pointing to the disposed component that provide the interface.
+ *    pointer that points to the interface on the disposed component.
  *    <p>
  *    It is passive when a user component uses a command interface of a
  *    provider component.
@@ -655,44 +718,6 @@
  *     Each user is notified about the event of disconnection.
  *     After the disconnection, when user fires the event, there is natually
  *     no sink to perform the task, and there is not dangling pointer.
- *
- * ## Disposal strategy
- *    The difficulty of disposability is that a single component often lacks a
- *    sufficiently large view of the system, either the disposed components,
- *    or the functionally dependent components.
- *    Therefore, the disposal of components often requires a dictated strategy.
- *    <p>
- *    A disposal strategy often has spatial, temporal and procedural aspects.<br/>
- *    The spatial aspect determines the boundary of disposal.
- *    The boundary of disposal is the set of components involved in a disposal.<br/>
- *    The temporal aspect determines the time span of disposal, permanent or
- *    temporary.
- *    e.g., a component is permanently removed from the system; or the system
- *    is temporarily missing a component, and the disposed component is
- *    substituted by another component right away, so the functionally dependent
- *    components are working as usual.<br/>
- *    The procedural aspect involves the actions performed before, during and
- *    after the disposal.
- *    e.g., the reactions performed by a user component when a functionally
- *    dependent component disconnects from it.
- *    Usually, they shall do nothing in the reaction.
- *
- * ### Batch disposal
- *     Usually, the disposal of components is performed in batch, i.e.,
- *     a sub-hierarchy of components is disposed.
- *     If there are no components that are functionally dependent upon the set
- *     of disposed components, then in general there is no problem.
- *     The user components do not have to perform special actions upon the
- *     disconnection of the provider component, since the user components will
- *     be disposed along with it.
- *     <p>
- *     e.g., a node is disposed from a network.
- *
- * ### Substitution
- *     If a provider component is disposed, and the user components still runs,
- *     then one should give the user components a substitution.
- *     The task <b>should</b> be performed by their parent component, who
- *     allocated and wired them.
  *
  */
 
