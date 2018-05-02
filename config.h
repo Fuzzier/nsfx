@@ -38,9 +38,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <boost/version.hpp>
 // BOOST 1.65.1
-#if (BOOST_VERSION != 106600)
-# error BOOST version 1.66.0 is supported. However, an other version is used.
-#endif // (BOOST_VERSION != 106501)
+#if (BOOST_VERSION != 106700)
+# error BOOST version 1.67.0 is supported. However, an other version is used.
+#endif // (BOOST_VERSION != 106700)
 
 
 ////////////////////////////////////////////////////////////////////////////////
