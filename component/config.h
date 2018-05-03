@@ -64,36 +64,6 @@
 
 /**
  * @ingroup Component
- * @brief The component model
- *
- * # Concept
- *
- * ## Interface navigability
- *    A component can provide serveral interfaces.
- *    Implmenetations are hidden behind interfaces.
- *    From any interfaces on a component, one can navigate any other interfaces
- *    on the same component.
- *
- * ## Component organization
- *    Components are organized in a hierarchical structure.
- *    A component has an local name.
- *    A component can be accessed by given its path.
- *
- * ## Wiring
- *    The parent component is responsible to wire the child components together.
- *
- * ## Lifetime management
- *    The lifetime of a component is managed by their parent component in the
- *    hierarchical structure.
- *    The root component is managed by user.
- *
- * ## Disposability
- *    Disposability means that one can dynamically plug a component into and
- *    unplug the component from the system of inter-connected components.
- */
-
-/**
- * @ingroup Component
  * @brief Interface navigability
  *
  * # Interface navigability
@@ -386,7 +356,7 @@
  *     deferencing is passive.<br/>
  *     i.e., the intent to deallocate an object is not given to all holders of
  *     the object.<br/>
- *     It can be solved by actively/explicitly notify every user of a component
+ *     It can be solved by actively/explicitly notify every client of a component
  *     to release the reference count they hold.<br/>
  *
  * ### 2.4. Transfer of reference counts across functions.<br/>
@@ -450,34 +420,37 @@
  * @brief Wiring
  *
  * # Wiring
- *   TinyOS provides practical methods to wire components together.<br/>
+ *   TinyOS provides practical methods to wire components together.
  *
- *   A component usually depends upon other components to work.<br/>
- *   The former component is called a <b>user</b>, and the latters are called
- *   <b>providers</b>.<br/>
- *   A user <b>uses</b> interfaces on the providers.<br/>
- *   A provider <b>provides</b> interfaces to the users.<br/>
- *   The action to associate a user with its provides is called <b>wiring</b>.<br/>
+ *   A component usually depends upon other components to work.
+ *   A component that provides interfaces is a <b>provider</b> or <b>server</b>.
+ *   A component that uses/requires interfaces is a <b>user</b> or <b>client</b>.
+ *   A client <b>uses</b> interfaces on its providers.
+ *   A provider <b>provides</b> interfaces for the clients.
+ *   The action to associate a client with its provides is called <b>wiring</b>.
  *
- *   An object class can be registered via \c NSFX_REGISTER_CLASS().<br/>
- *   An uninitialized object of the class can be created via \c CreateObject().<br/>
- *   To initialize the object, the class must provide means for wiring.<br/>
+ *   A component class can be registered via \c NSFX_REGISTER_CLASS().
+ *   An uninitialized component of the class can be created via \c CreateObject().
+ *   The component cannot initialize itself, since it does not and can not know
+ *   what components are wired to it.
+ *   The component that does wiring is called a <b>weaver</b>.
  *
- *   However, an object can only be manipulated via its interfaces.<br/>
- *   i.e., it must provide interfaces that allow a wiring component to pass in
- *   the required interfaces on the providers.<br/>
+ *   To initialize the object, the class must provide means for wiring.
+ *   However, such a component can only be manipulated via its interfaces.
+ *   i.e., it must provide interfaces that allow the weaver component to pass
+ *   in the required interfaces on the providers.
  *
  * ## The <i>'User'</i> interfaces.
- *    Each interface should define an associated <i>`User'</i> interface.<br/>
+ *    Each interface should define an associated <i>`User'</i> interface.
  *    e.g., for an interface \c IClock, an associated interface \c IClockUser
  *    should be defined, and it has a single method \c Use(Ptr<IClock>) that
- *    allows a wiring component to provide a clock to its user.<br/>
+ *    allows a weaver component to provide a clock to its user.
  *    If a component uses a clock, it should expose the interface to acquire
- *    a clock.<br/>
+ *    a clock.
  *
- *    A component can expose a combination of <i>`User'</i> interfaces.<br/>
+ *    A component can expose a combination of <i>`User'</i> interfaces.
  *    A wiring component is responsible to query the interfaces that are used by
- *    the components being wired.<br/>
+ *    the components being wired.
  *
  *    @code
  *    provider component        user component
@@ -605,7 +578,7 @@
  * ## Key problem
  *    The key problem of disposability is how to prevent functionally dependent
  *    components from malfunctioning when a component is disposed.
- *    A functionally dependent component is a user component that <b>requires</b>
+ *    A functionally dependent component is a client component that <b>requires</b>
  *    the interfaces of the disposed provider component.
  *    <p>
  *    e.g., a MAC layer component requires a clock and a scheduler to work.
@@ -629,30 +602,30 @@
  *    disposing process.
  *    The reasons is that a component is to be reused, but it is hard foretell
  *    the requirements of the system where the component is to be reused, and
- *    the components does not know how it is wired with other components.
+ *    the component does not know how it is wired with other components.
  *    <p>
  *    To allow disposal in a distributed way is not an easy task.
- *    e.g., when a component is disposed, it may notify all of its user
+ *    e.g., when a component is disposed, it may notify all of its client
  *    components, and these components may dispose successively.
  *    However, if the programmer just want to replace the disposed component
  *    with another component, this becomes an over-reaction.
  *    Therefore, the disposal of components often requires a dictated strategy
- *    that is executed by other components that are dictated to do such job.
+ *    that is executed by a dictated component (usually the weaver component).
  *    A component that supports disposal shall be conservative that it only
  *    releases the resources held by itself.
  *    <p>
- *    A disposal strategy often has spatial, temporal and procedural aspects.<br/>
+ *    A disposal strategy often has spatial, temporal and procedural aspects.
  *    The spatial aspect determines the boundary of disposal.
- *    The boundary of disposal is the set of components involved in a disposal.<br/>
+ *    The boundary of disposal is the set of components involved in a disposal.
  *    The temporal aspect determines the time span of disposal, permanent or
  *    temporary.
  *    e.g., a component is permanently removed from the system; or the system
  *    is temporarily missing a component, and the disposed component is
  *    substituted by another component right away, so the functionally dependent
- *    components are working as usual.<br/>
+ *    components are working as usual.
  *    The procedural aspect involves the actions performed before, during and
  *    after the disposal.
- *    e.g., the reactions performed by a user component when a functionally
+ *    e.g., the reactions performed by a client component when a functionally
  *    dependent component disconnects from it.
  *    Usually, they shall do nothing in the reaction.
  *
@@ -661,9 +634,9 @@
  *     of components is disposed.
  *     Usually, the sub-system is a dependency closure, i.e., no other
  *     components are functionally dependent on the sub-system of components.
- *     The user components do not have to perform special actions upon the
- *     disconnection of the provider component, since the user components will
- *     be disposed along with it.
+ *     The client components within the sub-system do not have to perform
+ *     special actions upon the disconnection of the provider component, since
+ *     the client components will be disposed along with it.
  *     <p>
  *     For a sub-system of components, if all other components only listen to
  *     the events of the component, the sub-system can be considered as a
@@ -672,51 +645,89 @@
  *     e.g., a node is disposed from a network.
  *
  * ### Substitution
- *     If a provider component is disposed, and the user components still runs,
- *     then one should give the user components a substitution.
+ *     If a provider component is disposed, and the client components still
+ *     runs, then one should give the client components a substitution in
+ *     replacement of the disposed component.
  *     The task <b>should</b> be performed by their parent component, who
  *     allocated and wired them.
  *
  * ## Rules of disposal
- *    A component does:
- *    * Release all objects it holds.
+ *    A disposing component does:
  *    * Disconnect from all events.
+ *    * Release all objects it holds.
  *    <p>
- *    A component does not:
- *    * Disconnect all event sinks.
+ *    The component does not:
+ *    * Disconnect the event sinks.
+ *
+ * ### Disconnect from all events
+ *     The disposing component disconnects from all events.
+ *     It also cancels all scheduled events.
+ *
+ * ### Release all objects
+ *     The disposing component releases a reference count of each object, and
+ *     reset the pointer to \c nullptr.
+ *
+ * ### Disconnect no event sinks
+ *     The disposing component does not disconnect any event sinks.
+ *
+ *     The correct approaches include:
+ *     * Dispose the client components.
+ *       The client components disconnect from and release the disposing
+ *       component.
+ *     * Provide the client components with another component in substitution
+ *       of the disposing component.
+ *       The client components disconnect from and release the disposing
+ *       component, and connect to the substitution component.
+ *
+ * ### Notices
+ *     The library does not make every interface an event.
+ *
+ *     In certain software systems, all interfaces are events.
+ *     For exaple, OMNET++ uses such approach.
+ *
+ *     A provider implements a command interface as an event sink, and all
+ *     clients use the interface by sending events that signals the event sink
+ *     to perform certain tasks.
+ *
+ *     The problem still exists that one cannot just dispose the provider by
+ *     disconnect it from all events of its clients.
+ *     Since the clients still hold pointers to the disposed provider, the
+ *     pointer becomes a dangling pointer; or if the pointer holds a reference
+ *     count of the provider, the provider is not deallocated, and there is
+ *     memory/resource leak.
  *
  * ## Dangling pointer prevention
  *    When one wants to dispose a component, the
- *    its user components <b>must</b> be notified, and discard the dangling
+ *    its client components <b>must</b> be notified, and discard the dangling
  *    pointer that points to the interface on the disposed component.
  *    <p>
- *    It is passive when a user component uses a command interface of a
+ *    It is passive when a client component uses a command interface of a
  *    provider component.
- *    Since the provider does not know the set of its users, it cannot be
+ *    Since the provider does not know the set of its client, it cannot be
  *    disposed at will.
  *
  * ### Method 1: IDisposeEvent
  *     One way is to let every component provide an IDisposeEvent interface,
- *     and every user of the component listens to the event.
+ *     and every client of the component listens to the event.
  *     When a component is about to dispose, it fires the event to notify its
- *     users.
+ *     clients.
  *     This method relies upon programmers to remember to connect to and
  *     process the event.
  *
  * ### Method 2: Make every command interface an event sink
  *     Another way is to make every command interface an event sink.
- *     When a user component wants to use a command interface, it provides
+ *     When a client component wants to use a command interface, it provides
  *     an event interface.
- *     Its parent component wires the provider and the user.
- *     i.e., the provider connects its event sink to the event of the user.
- *     When the user wants the provider to perform the command, it fires the
+ *     Its parent component wires the provider and the client.
+ *     i.e., the provider connects its event sink to the event of the client.
+ *     When the client wants the provider to perform the command, it fires the
  *     event to notify the provider.
  *     <p>
- *     This method decouples the provider and user more thoroughly.
+ *     This method decouples the provider and client more thoroughly.
  *     When the provider is disposed, it disconnects the sink interface from
- *     the event of its users.
- *     Each user is notified about the event of disconnection.
- *     After the disconnection, when user fires the event, there is natually
+ *     the event of its clients.
+ *     Each client is notified about the event of disconnection.
+ *     After the disconnection, when client fires the event, there is natually
  *     no sink to perform the task, and there is not dangling pointer.
  *
  */
