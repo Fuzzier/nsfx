@@ -50,8 +50,35 @@
  *
  *
  * # Concept
- * The key function of a logger is to pass runtime information to log sinks.
+ * ## Log record
+ *    A log record carries a set of named values.
  *
+ * ## Log source
+ *    A log source generates log records, and commit them to log sinks.
+ *
+ * ## Log sink
+ *    A log sink processes log records.
+ *
+ * ### Modify
+ *     A log sink may modify a log record by adding or removing values.
+ *
+ * ### Filter
+ *     A log sink may discard a log record according to it values.
+ *
+ * ### Relay
+ *     A log sink may further commit a log record to other log sinks.
+ *
+ * ### Format and output
+ *     A log sink may format the log record, and output to console, file or
+ *     database.
+ *
+ * ## Design
+ *    * The log source generates log records.
+ *    * The log record is committed to the core logger.
+ *    * The core logger commits the log record to log sinks.
+ *    * The log sinks format and output the log records.
+ *
+ * # Details
  * Typical information includes human-readable message, severity level,
  * timestamp, object name, function name, file name and line number, etc.
  *
