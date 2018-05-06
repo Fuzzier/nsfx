@@ -18,12 +18,11 @@
 
 
 #include <nsfx/log/config.h>
-#include <nsfx/component/exception.h>
+#include <boost/type_index.hpp>
 #include <boost/preprocessor/repetition/enum.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_binary_params.hpp>
 #include <boost/preprocessor/iteration/iterate.hpp>
-#include <typeinfo>
 #include <memory>
 #include <utility>
 
@@ -34,27 +33,30 @@ NSFX_LOG_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Log
- * @brief The virtual base class of type-specific attribute value interfaces.
+ * @brief The type-neutral attribute value interface.
  */
-class IAttributeValueBase
+class IAttributeValue
 {
 public:
-    virtual ~IAttributeValueBase(void) BOOST_NOEXCEPT {}
-    virtual const std::type_info& GetTypeId(void) = 0;
+    virtual ~IAttributeValue(void) BOOST_NOEXCEPT {}
+
+    virtual const boost::typeindex::type_index& GetTypeId(void) = 0;
 };
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Log
- * @brief The virtual base class of type-specific attribute value classes.
+ * @brief The type-specific attribute value interfaces.
  */
 template<class T>
-class IAttributeValue : public IAttributeValueBase
+class ITypedAttributeValue :
+    public IAttributeValue
 {
 public:
-    virtual ~IAttributeValue(void) BOOST_NOEXCEPT {}
-    virtual const std::type_info& GetTypeId(void) NSFX_OVERRIDE = 0;
+    virtual ~ITypedAttributeValue(void) BOOST_NOEXCEPT {}
+
+    virtual const boost::typeindex::type_index& GetTypeId(void) NSFX_OVERRIDE = 0;
     virtual const T& Get(void) = 0;
 };
 
@@ -64,13 +66,13 @@ public:
  * @ingroup Log
  * @brief Attribute value is carried by log records.
  *
- * \c AttributeValue object never stores references, it stores concreet values.
+ * An \c AttributeValue stores concrete value.
  */
 class AttributeValue
 {
 public:
     template<class T>
-    AttributeValue(const std::shared_ptr<IAttributeValue<T> >& value) :
+    AttributeValue(const std::shared_ptr<ITypedAttributeValue<T> >& value) :
         value_(value)
     {
         if (!value_)
@@ -80,7 +82,7 @@ public:
     }
 
     template<class T>
-    AttributeValue(std::shared_ptr<IAttributeValue<T> >&& value) :
+    AttributeValue(std::shared_ptr<ITypedAttributeValue<T> >&& value) :
         value_(std::move(value))
     {
         if (!value_)
@@ -91,7 +93,7 @@ public:
 
     // Methods.
 public:
-    const std::type_info& GetTypeId(void) const
+    const boost::typeindex::type_index& GetTypeId(void) const
     {
         BOOST_ASSERT(!!value_);
         return value_->GetTypeId();
@@ -100,19 +102,19 @@ public:
     template<class T>
     const T& Get(void) const
     {
-        if (value_->GetTypeId() != typeid (T))
+        if (value_->GetTypeId() != boost::typeindex::type_id<T>())
         {
             BOOST_THROW_EXCEPTION(
                 IllegalMethodCall() <<
                 ErrorMessage("Cannot access the log attribute value, since "
                              "the requested type mismatches the type of value."));
         }
-        return static_cast<IAttributeValue<T>*>(value_.get())->Get();
+        return static_cast<ITypedAttributeValue<T>*>(value_.get())->Get();
     }
 
     // Properties.
 private:
-    std::shared_ptr<IAttributeValueBase> value_;
+    std::shared_ptr<IAttributeValue> value_;
 };
 
 
