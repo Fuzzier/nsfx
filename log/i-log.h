@@ -28,34 +28,15 @@ NSFX_LOG_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/**
- * @ingroup Log
- *
- * @brief The log interface.
- */
-class ILog :
-    virtual public IObject
-{
-public:
-    virtual ~ILog(void) BOOST_NOEXCEPT {}
-
-    virtual void Commit(const std::shared_ptr<Record>& record) = 0;
-};
-
-
-NSFX_DEFINE_CLASS_UID(ILog, "edu.uestc.nsfx.log.ILog");
-
-
-////////////////////////////////////////////////////////////////////////////////
 // Events.
 NSFX_DEFINE_EVENT_SINK_INTERFACE(
-    ILogEventSink, "edu.uestc..nsfx.log.ILogEventSink",
+    ILog, "edu.uestc..nsfx.log.ILog",
     ( void(const std::shared_ptr<Record>&) ));
 
 
 NSFX_DEFINE_EVENT_INTERFACE(
     ILogEvent, "edu.uestc.nsfx.log.ILogEvent",
-    ILogEventSink);
+    ILog);
 
 
 NSFX_LOG_CLOSE_NAMESPACE
