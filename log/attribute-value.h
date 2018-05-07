@@ -48,6 +48,8 @@ public:
 /**
  * @ingroup Log
  * @brief The type-specific attribute value interfaces.
+ *
+ * Concrete attribute value classes must implement this interface.
  */
 template<class T>
 class ITypedAttributeValue :
@@ -56,7 +58,11 @@ class ITypedAttributeValue :
 public:
     virtual ~ITypedAttributeValue(void) BOOST_NOEXCEPT {}
 
-    virtual const boost::typeindex::type_index& GetTypeId(void) NSFX_OVERRIDE = 0;
+    virtual const boost::typeindex::type_index& GetTypeId(void) NSFX_OVERRIDE NSFX_FINAL
+    {
+        return boost::typeindex::type_id<T>();
+    }
+
     virtual const T& Get(void) = 0;
 };
 
@@ -64,7 +70,7 @@ public:
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Log
- * @brief Attribute value is carried by log records.
+ * @brief Attribute values are carried by log records.
  *
  * An \c AttributeValue stores concrete value.
  */
@@ -107,7 +113,7 @@ public:
             BOOST_THROW_EXCEPTION(
                 IllegalMethodCall() <<
                 ErrorMessage("Cannot access the log attribute value, since "
-                             "the requested type mismatches the type of value."));
+                             "the requested type mismatches the value type."));
         }
         return static_cast<ITypedAttributeValue<T>*>(value_.get())->Get();
     }
@@ -126,7 +132,8 @@ private:
  * @tparam T Type of stored value.
  */
 template<class T>
-class ConstantAttributeValue : public IAttributeValue<T>
+class ConstantAttributeValue :
+    public ITypedAttributeValue<T>
 {
 public:
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
@@ -146,12 +153,7 @@ public:
 
     virtual ~ConstantAttributeValue(void) {}
 
-    virtual const std::type_info& GetTypeId(void) const NSFX_OVERRIDE
-    {
-        return typeid (T);
-    }
-
-    virtual const T& Get(void) const NSFX_OVERRIDE
+    virtual const T& Get(void) NSFX_OVERRIDE
     {
         return value_;
     }

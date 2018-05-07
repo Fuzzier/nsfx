@@ -20,7 +20,6 @@
 #include <nsfx/log/config.h>
 #include <nsfx/log/record.h>
 #include <nsfx/log/attribute.h>
-#include <nsfx/log/i-sink.h>
 
 
 NSFX_LOG_OPEN_NAMESPACE
@@ -38,14 +37,23 @@ class ISource :
 public:
     virtual ~ISource(void) BOOST_NOEXCEPT {}
 
-    virtual bool AddAttribute(const std::string& name,
-                              const Attribute& attribute) = 0;
-    virtual void RemoveAttribute(const std::string& name) = 0;
-    virtual void Commit(Ptr<ISink> sink) = 0;
+    virtual void Commit(const std::shared_ptr<Record> record) = 0;
 };
 
 
 NSFX_DEFINE_CLASS_UID(ISource, "edu.uestc.nsfx.log.ISource");
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Events.
+NSFX_DEFINE_EVENT_SINK_INTERFACE(
+    ISourceEventSink, "edu.uestc..nsfx.log.ISourceEventSink",
+    ( void(const std::shared_ptr<Record>&) ));
+
+
+NSFX_DEFINE_EVENT_INTERFACE(
+    ISourceEvent, "edu.uestc.nsfx.log.ISourceEvent",
+    ISourceEventSink);
 
 
 NSFX_LOG_CLOSE_NAMESPACE
