@@ -20,6 +20,7 @@
 #include <nsfx/log/config.h>
 #include <nsfx/log/attribute-value.h>
 #include <nsfx/log/attribute.h>
+#include <boost/container_hash/hash.hpp>
 
 
 NSFX_LOG_OPEN_NAMESPACE
@@ -39,6 +40,7 @@ NSFX_LOG_OPEN_NAMESPACE
  * 5) the line number
  * 6) the function name
  * 7) a scope name
+ * etc.
  */
 class Record
 {
@@ -50,70 +52,72 @@ private:
     BOOST_DELETED_FUNCTION(Record(const Record&));
     BOOST_DELETED_FUNCTION(Record& operator=(const Record&));
 
-    // Movable.
-public:
-    Record(Record&& rhs) :
-        values_(std::move(rhs.values_))
-    {
-    }
-
-    Record& operator=(Record&& rhs)
-    {
-        if (this != &rhs)
-        {
-            values_ = std::move(rhs.values_);
-        }
-        return *this;
-    }
-
     // Methods.
 public:
     /**
-     * @brief Insert an attribute value.
-     * @return Return \c true if the value is successfully inserted.<br/>
-     *         If there's already an attribute value with the same name,
+     * @brief Add a named value.
+     * @return If there's already an attribute value with the same name,
      *         this function returns \c false.
      */
-    bool Insert(const std::string& name, const AttributeValue& value)
-    {
-        auto result = values_.emplace(name, value);
-        return result.second;
-    }
-
-    bool Insert(const char* name, const AttributeValue& value)
-    {
-        auto result = values_.emplace(name, value);
-        return result.second;
-    }
+    bool Add(const std::string& name, const AttributeValue& value);
 
     /**
-     * @brief Retrieves an attribute value.
+     * @brief Add or replace a named value.
+     *
+     * If named value exists, the value is replaced.
+     */
+    void Update(const std::string& name, const AttributeValue& value);
+
+    /**
+     * @brief Get the named value.
      *
      * @tparam T    The type of the attribute value.
      * @param name  The name of the attribute value.
+     *
+     * @throw \c AttributeNotFound
      */
     template<class T>
-    const T& Get(const std::string& name) const
-    {
-        auto it = values_.find(name);
-        if (it != values_.cend())
-        {
-            const AttributeValue& value = it->second;
-            return value.Get<T>();
-        }
-        else
-        {
-            BOOST_THROW_EXCEPTION(
-                IllegalMethodCall() <<
-                ErrorMessage("Cannot find the log attribute value."));
-        }
-    }
+    const T& Get(const std::string& name) const;
 
     // Properties.
 private:
     unordered_map<std::string, AttributeValue>  values_;
+};
 
-}; // class Record
+
+////////////////////////////////////////////////////////////////////////////////
+inline bool Record::Add(const std::string& name, const AttributeValue& value)
+{
+    auto result = values_.emplace(name, value);
+    return result.second;
+}
+
+inline void Record::Update(const std::string& name, const AttributeValue& value)
+{
+    auto result = values_.emplace(name, value);
+    if (!result.second)
+    {
+        auto& it = result.first;
+        it->second = value;
+    }
+}
+
+template<class T>
+inline const T& Record::Get(const std::string& name) const
+{
+    auto it = values_.find(name);
+    if (it != values_.cend())
+    {
+        const AttributeValue& value = it->second;
+        return value.Get<T>();
+    }
+    else
+    {
+        BOOST_THROW_EXCEPTION(
+            AttributeNotFound() <<
+            ErrorMessage("Cannot find the log attribute value."));
+    }
+}
 
 
 NSFX_LOG_CLOSE_NAMESPACE

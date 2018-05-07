@@ -19,12 +19,10 @@
 
 #include <nsfx/log/config.h>
 #include <nsfx/log/attribute-value.h>
-#include <nsfx/component/exception.h>
 #include <boost/preprocessor/repetition/enum.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_binary_params.hpp>
 #include <boost/preprocessor/iteration/iterate.hpp>
-#include <typeinfo>
 #include <memory>
 #include <utility>
 
@@ -35,22 +33,22 @@ NSFX_LOG_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Log
- * @brief The virtual base class of type-specific attribute classes.
+ * @brief An attribute generates attribute values.
  */
 template<class T>
-class IAttribute : public IAttributeBase
+class IAttribute
 {
 public:
     virtual ~IAttribute(void) BOOST_NOEXCEPT {}
-    virtual const std::type_info& GetTypeId(void) = 0;
-    virtual AttributeValue Get(void) = 0;
+
+    virtual AttributeValue GetValue(void) = 0;
 };
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Log
- * @brief Attribute is used by log sources to genrate attribute values.
+ * @brief Attributes are used by log sources to generate attribute values.
  *
  * \c Attribute object generates \c AttributeValue.
  */
@@ -77,12 +75,6 @@ public:
 
     // Methods.
 public:
-    const std::type_info& GetTypeId(void) const
-    {
-        BOOST_ASSERT(!!value_);
-        return attr_->GetTypeId();
-    }
-
     AttributeValue Get(void) const
     {
         return attr_->Get();
@@ -97,12 +89,13 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Log
- * @brief Constant attribute.
+ * @brief An attribute that stores a constant attribute value.
  *
  * @tparam T Type of value.
  */
 template<class T>
-class ConstantAttribute : public IAttribute
+class ConstantAttribute :
+    public IAttribute
 {
 public:
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
@@ -124,12 +117,7 @@ public:
 
     virtual ~ConstantAttribute(void) {}
 
-    virtual const std::type_info& GetTypeId(void) const NSFX_OVERRIDE
-    {
-        return typeid (T);
-    }
-
-    virtual AttributeValue Get(void) const NSFX_OVERRIDE
+    virtual AttributeValue Get(void) NSFX_OVERRIDE
     {
         return value_;
     }
