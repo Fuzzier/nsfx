@@ -13,8 +13,8 @@
  *            All rights reserved.
  */
 
-#ifndef I_ATTRIBUTE_MANAGER_H__E4F1DEC9_82ED_4A86_89B1_FBB01B36659E
-#define I_ATTRIBUTE_MANAGER_H__E4F1DEC9_82ED_4A86_89B1_FBB01B36659E
+#ifndef I_ATTRIBUTE_COLLECTION_H__1909CBE7_F24A_46D6_AAEB_3319895C4C54
+#define I_ATTRIBUTE_COLLECTION_H__1909CBE7_F24A_46D6_AAEB_3319895C4C54
 
 
 #include <nsfx/log/config.h>
@@ -31,25 +31,25 @@ NSFX_LOG_OPEN_NAMESPACE
 /**
  * @ingroup Log
  *
- * @brief The log source interface.
+ * @brief The attribute collection interface.
  */
-class IAttributeManager :
+class IAttributeCollection :
     virtual public IObject
 {
 public:
-    virtual ~IAttributeManager(void) BOOST_NOEXCEPT {}
+    virtual ~IAttributeCollection(void) BOOST_NOEXCEPT {}
 
-    virtual bool Add(const char* name, const Attribute& attribute) = 0;
-    virtual void Remove(const char* name) = 0;
+    virtual bool Add(const std::string& name, const Attribute& attribute) = 0;
+    virtual void Remove(const std::string& name) = 0;
     virtual void Clear(void) = 0;
 };
 
 
-NSFX_DEFINE_CLASS_UID(IAttributeManager, "edu.uestc.nsfx.log.IAttributeManager");
+NSFX_DEFINE_CLASS_UID(IAttributeCollection, "edu.uestc.nsfx.log.IAttributeCollection");
 
 
 NSFX_LOG_CLOSE_NAMESPACE
 
 
-#endif // I_ATTRIBUTE_MANAGER_H__E4F1DEC9_82ED_4A86_89B1_FBB01B36659E
+#endif // I_ATTRIBUTE_COLLECTION_H__1909CBE7_F24A_46D6_AAEB_3319895C4C54
 
