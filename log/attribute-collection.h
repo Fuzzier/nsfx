@@ -20,6 +20,7 @@
 #include <nsfx/log/config.h>
 #include <nsfx/log/i-attribute-collection.h>
 #include <nsfx/event/event.h>
+#include <boost/type_traits/decay.hpp>
 
 
 NSFX_LOG_OPEN_NAMESPACE
@@ -40,6 +41,29 @@ public:
     virtual bool Add(const std::string& name, const Attribute& attribute) NSFX_OVERRIDE;
     virtual void Remove(const std::string& name) NSFX_OVERRIDE;
     virtual void Clear(void) NSFX_OVERRIDE;
+
+public:
+    template<class Visitor>
+    class AttributeVisitorConcept
+    {
+    public:
+        BOOST_CONCEPT_USAGE(AttributeVisitorConcept)
+        {
+            typename boost::type_traits::decay<Visitor>::type* visitor = nullptr;
+            const std::string* name = nullptr;
+            const Attribute* attribute = nullptr;
+            (*visitor)(*name, *attribute);
+        }
+    };
+
+    /**
+     * @brief Visit the attributes.
+     *
+     * @tparam Visitor A functor class that has the prototype of
+     *                 \c void(const std::string& name, const Attribute& attribute).
+     */
+    template<class Visitor>
+    void Visit(Visitor&& visitor) const;
 
 private:
     unordered_map<std::string, Attribute>  map_;
@@ -62,6 +86,18 @@ inline void AttributeCollection::Remove(const std::string& name)
 inline void AttributeCollection::Clear(void)
 {
     map_.clear()
+}
+
+template<class Visitor>
+inline void Visit(Visitor&& visitor) const
+{
+    BOOST_CONCEPT_ASSERT((AttributeVisitorConcept<Visitor>));
+    for (auto it = map_.cbegin(); it != map_.cend(); ++it)
+    {
+        const std::string& name = it->first;
+        const Attribute& attribute = it->second;
+        visitor(name, attribute);
+    }
 }
 
 
