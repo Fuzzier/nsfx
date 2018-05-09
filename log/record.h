@@ -47,10 +47,10 @@ class Record
 public:
     Record(void) BOOST_NOEXCEPT {}
 
-    // Non-copyable.
-private:
-    BOOST_DELETED_FUNCTION(Record(const Record&));
-    BOOST_DELETED_FUNCTION(Record& operator=(const Record&));
+    // Copyable.
+public:
+    Record(const Record& rhs);
+    Record& operator=(const Record& rhs);
 
     // Methods.
 public:
@@ -86,6 +86,20 @@ private:
 
 
 ////////////////////////////////////////////////////////////////////////////////
+inline Record::Record(const Record& rhs) :
+    values_(rhs.values_)
+{
+}
+
+inline Record& Record::operator=(const Record& rhs)
+{
+    if (this != &rhs)
+    {
+        values_ = rhs.values_;
+    }
+    return *this;
+}
+
 inline bool Record::Add(const std::string& name, const AttributeValue& value)
 {
     auto result = values_.emplace(name, value);
