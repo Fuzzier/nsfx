@@ -75,9 +75,9 @@ public:
 
     // Methods.
 public:
-    AttributeValue Get(void) const
+    AttributeValue GetValue(void) const
     {
-        return attr_->Get();
+        return attr_->GetValue();
     }
 
     // Properties.
@@ -117,7 +117,7 @@ public:
 
     virtual ~ConstantAttribute(void) {}
 
-    virtual AttributeValue Get(void) NSFX_OVERRIDE
+    virtual AttributeValue GetValue(void) NSFX_OVERRIDE
     {
         return value_;
     }

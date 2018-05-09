@@ -21,6 +21,7 @@
 #include <nsfx/log/record.h>
 #include <nsfx/log/attribute.h>
 #include <nsfx/log/attribute-collection.h>
+#include <nsfx/component/class-registry.h>
 
 
 NSFX_LOG_OPEN_NAMESPACE
@@ -53,29 +54,36 @@ public:
 
     NSFX_INTERFACE_MAP_BEGIN(ThisClass)
         NSFX_INTERFACE_ENTRY(ILog)
-        NSFX_INTERFACE_AGGREGATED_ENTRY(ILogEvent, &event_)
-        NSFX_INTERFACE_ENTRY(IAttributeCollection, &attributeCollection_)
+        NSFX_INTERFACE_AGGREGATED_ENTRY(ILogEvent, &logEvent_)
+        NSFX_INTERFACE_AGGREGATED_ENTRY(IAttributeCollection, &attributeCollection_)
     NSFX_INTERFACE_MAP_END()
 
     virtual void Fire(const std::shared_ptr<Record>& record) NSFX_OVERRIDE;
 
 private:
-    MemberAggObject<Event<ILogEvent> >    event_;
+    MemberAggObject<Event<ILogEvent> >    logEvent_;
     MemberAggObject<AttributeCollection>  attributeCollection_;
 };
 
 
+NSFX_REGISTER_CLASS(Source, "edu.uestc.nsfx.log.Source");
+
+
 ////////////////////////////////////////////////////////////////////////////////
 inline Source::Source(void) :
-    event_(/* controller = */this)
+    logEvent_(/* controller = */this)
 {
 }
 
 inline void Source::Fire(const std::shared_ptr<Record>& record)
 {
-    record->Add()
+    attributeCollection_.GetImpl()->Visit(
+        [&] (const std::string& name, const Attribute& attribute) {
+            // The existing named values are not replaced.
+            record->Add(name, attribute->GetValue());
+        });
 
-    event_.GetImpl()->Visit([&] (ILog* log) {
+    logEvent_.GetImpl()->Visit([&] (ILog* log) {
         log->Fire(record);
     });
 }
