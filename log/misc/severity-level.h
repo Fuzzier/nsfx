@@ -90,6 +90,7 @@ enum SeverityLevel
      */
     LOG_TRACE    = 0x00000040,
 
+    LOG_NONE     = 0x00000000,
     LOG_ALL      = 0xFFFFFFFF,
 };
 

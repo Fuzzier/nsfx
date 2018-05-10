@@ -5,123 +5,28 @@
  *
  * @version 1.0
  * @author  Fuzzier Tang <gauchyler@gmail.com>
- * @date    2015-02-16
+ * @date    2018-05-10
  *
- * @copyright Copyright (c) 2015.
+ * @copyright Copyright (c) 2018.
  *            National Key Laboratory of Science and Technology on Communications,
  *            University of Electronic Science and Technology of China.
  *            All rights reserved.
  */
 
-#ifndef ATTRIBUTE_VALUE_H__5D31C8F6_9FF7_4FA8_9DC4_7DDF3716CE1B
-#define ATTRIBUTE_VALUE_H__5D31C8F6_9FF7_4FA8_9DC4_7DDF3716CE1B
+#ifndef CONST_ATTRIBUTE_VALUE_H__0C4005ED_3C86_4457_9AFD_0425E0DC5D93
+#define CONST_ATTRIBUTE_VALUE_H__0C4005ED_3C86_4457_9AFD_0425E0DC5D93
 
 
 #include <nsfx/log/config.h>
-#include <boost/type_index.hpp>
+#include <nsfx/log/attribute-value/attribute-value.h>
 #include <boost/preprocessor/repetition/enum.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_binary_params.hpp>
 #include <boost/preprocessor/iteration/iterate.hpp>
-#include <memory>
-#include <utility>
+#include <utility> // move, forward
 
 
 NSFX_LOG_OPEN_NAMESPACE
-
-
-////////////////////////////////////////////////////////////////////////////////
-/**
- * @ingroup Log
- * @brief The type-neutral attribute value interface.
- */
-class IAttributeValue
-{
-public:
-    virtual ~IAttributeValue(void) BOOST_NOEXCEPT {}
-
-    virtual const boost::typeindex::type_index& GetTypeId(void) = 0;
-};
-
-
-////////////////////////////////////////////////////////////////////////////////
-/**
- * @ingroup Log
- * @brief The type-specific attribute value interfaces.
- *
- * Concrete attribute value classes must implement this interface.
- */
-template<class T>
-class ITypedAttributeValue :
-    public IAttributeValue
-{
-public:
-    virtual ~ITypedAttributeValue(void) BOOST_NOEXCEPT {}
-
-    virtual const boost::typeindex::type_index& GetTypeId(void) NSFX_OVERRIDE NSFX_FINAL
-    {
-        return boost::typeindex::type_id<T>();
-    }
-
-    virtual const T& Get(void) = 0;
-};
-
-
-////////////////////////////////////////////////////////////////////////////////
-/**
- * @ingroup Log
- * @brief Attribute values are carried by log records.
- *
- * An \c AttributeValue stores concrete value.
- */
-class AttributeValue
-{
-public:
-    template<class T>
-    AttributeValue(const std::shared_ptr<ITypedAttributeValue<T> >& value) :
-        value_(value)
-    {
-        if (!value_)
-        {
-            BOOST_THROW_EXCEPTION(InvalidPointer());
-        }
-    }
-
-    template<class T>
-    AttributeValue(std::shared_ptr<ITypedAttributeValue<T> >&& value) :
-        value_(std::move(value))
-    {
-        if (!value_)
-        {
-            BOOST_THROW_EXCEPTION(InvalidPointer());
-        }
-    }
-
-    // Methods.
-public:
-    const boost::typeindex::type_index& GetTypeId(void) const
-    {
-        BOOST_ASSERT(!!value_);
-        return value_->GetTypeId();
-    }
-
-    template<class T>
-    const T& Get(void) const
-    {
-        if (value_->GetTypeId() != boost::typeindex::type_id<T>())
-        {
-            BOOST_THROW_EXCEPTION(
-                IllegalMethodCall() <<
-                ErrorMessage("Cannot access the log attribute value, since "
-                             "the requested type mismatches the value type."));
-        }
-        return static_cast<ITypedAttributeValue<T>*>(value_.get())->Get();
-    }
-
-    // Properties.
-private:
-    std::shared_ptr<IAttributeValue> value_;
-};
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -145,7 +50,7 @@ public:
 
     ConstantAttributeValue(void) {}
 
-#define BOOST_PP_ITERATION_PARAMS_1  (4, (0, NSFX_MAX_ARITY, <nsfx/log/attribute-value.h>, 0))
+#define BOOST_PP_ITERATION_PARAMS_1  (4, (0, NSFX_MAX_ARITY, <nsfx/log/attribute-value/const-attribute-value.h>, 0))
 
 #include BOOST_PP_ITERATE()
 
@@ -184,7 +89,7 @@ inline AttributeValue MakeConstantAttributeValue(Args&&... args)
 
 #else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-#define BOOST_PP_ITERATION_PARAMS_1  (4, (0, NSFX_MAX_ARITY, <nsfx/log/attribute-value.h>, 1))
+#define BOOST_PP_ITERATION_PARAMS_1  (4, (0, NSFX_MAX_ARITY, <nsfx/log/attribute-value/const-attribute-value.h>, 1))
 
 #include BOOST_PP_ITERATE()
 
@@ -194,7 +99,7 @@ inline AttributeValue MakeConstantAttributeValue(Args&&... args)
 NSFX_LOG_CLOSE_NAMESPACE
 
 
-#endif // ATTRIBUTE_VALUE_H__5D31C8F6_9FF7_4FA8_9DC4_7DDF3716CE1B
+#endif // CONST_ATTRIBUTE_VALUE_H__0C4005ED_3C86_4457_9AFD_0425E0DC5D93
 
 
 ////////////////////////////////////////////////////////////////////////////////
