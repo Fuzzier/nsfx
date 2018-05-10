@@ -25,7 +25,13 @@ NSFX_LOG_OPEN_NAMESPACE
 
 /**
  * @ingroup Exception
- * @brief The precondition of calling a method is not satisfied.
+ * @brief The attribute value cannot be found.
+ */
+struct AttributeValueNotFound : Exception {};
+
+/**
+ * @ingroup Exception
+ * @brief The attribute cannot be found.
  */
 struct AttributeNotFound : Exception {};
 

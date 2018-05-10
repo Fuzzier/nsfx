@@ -146,6 +146,8 @@
  *    A log filter examines the named values in a log record, and makes
  *    a decision whether the log record should be discarded.
  *
+ *    A filter implements \c IFilter interface.
+ *
  * ## Formatter
  */
 

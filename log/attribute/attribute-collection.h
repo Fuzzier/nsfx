@@ -18,8 +18,7 @@
 
 
 #include <nsfx/log/config.h>
-#include <nsfx/log/i-attribute-collection.h>
-#include <nsfx/event/event.h>
+#include <nsfx/log/attribute/i-attribute-collection.h>
 #include <boost/type_traits/decay.hpp>
 
 
@@ -33,8 +32,10 @@ NSFX_LOG_OPEN_NAMESPACE
  * @brief A collection of attributes.
  */
 class AttributeCollection :
-    virtual public IObject
+    public IAttributeCollection
 {
+    typedef AttributeCollection  ThisClass;
+
 public:
     virtual ~AttributeCollection(void) {}
 
@@ -60,10 +61,15 @@ public:
      * @brief Visit the attributes.
      *
      * @tparam Visitor A functor class that has the prototype of
-     *                 \c void(const std::string& name, const Attribute& attribute).
+     *                 <code>void(const std::string& name,
+     *                            const Attribute& attribute)</code>.
      */
     template<class Visitor>
     void Visit(Visitor&& visitor) const;
+
+    NSFX_INTERFACE_MAP_BEGIN(ThisClass)
+        NSFX_INTERFACE_ENTRY(IAttributeCollection)
+    NSFX_INTERFACE_MAP_END()
 
 private:
     unordered_map<std::string, Attribute>  map_;

@@ -5,7 +5,7 @@
  *
  * @version 1.0
  * @author  Fuzzier Tang <gauchyler@gmail.com>
- * @date    2018-05-06
+ * @date    2018-05-10
  *
  * @copyright Copyright (c) 2018.
  *            National Key Laboratory of Science and Technology on Communications,
@@ -13,12 +13,12 @@
  *            All rights reserved.
  */
 
-#ifndef I_ATTRIBUTE_COLLECTION_H__1909CBE7_F24A_46D6_AAEB_3319895C4C54
-#define I_ATTRIBUTE_COLLECTION_H__1909CBE7_F24A_46D6_AAEB_3319895C4C54
+#ifndef I_FILTER_CHAIN_H__66E81027_F059_41AB_B079_2EE479D6665F
+#define I_FILTER_CHAIN_H__66E81027_F059_41AB_B079_2EE479D6665F
 
 
 #include <nsfx/log/config.h>
-#include <nsfx/log/attribute.h>
+#include <nsfx/log/i-filter.h>
 #include <nsfx/component/uid.h>
 #include <nsfx/component/i-object.h>
 #include <nsfx/component/ptr.h>
@@ -31,25 +31,23 @@ NSFX_LOG_OPEN_NAMESPACE
 /**
  * @ingroup Log
  *
- * @brief The attribute collection interface.
+ * @brief The log filter chain interface.
  */
-class IAttributeCollection :
+class IFilterChain :
     virtual public IObject
 {
 public:
-    virtual ~IAttributeCollection(void) BOOST_NOEXCEPT {}
+    virtual ~IFilterChain(void) BOOST_NOEXCEPT {}
 
-    virtual bool Add(const std::string& name, const Attribute& attribute) = 0;
-    virtual void Remove(const std::string& name) = 0;
-    virtual void Clear(void) = 0;
+    virtual void Append(const std::shared_ptr<IFilter>& filter) = 0;
 };
 
 
-NSFX_DEFINE_CLASS_UID(IAttributeCollection, "edu.uestc.nsfx.log.IAttributeCollection");
+NSFX_DEFINE_CLASS_UID(IFilterChain, "edu.uestc.nsfx.log.IFilterChain");
 
 
 NSFX_LOG_CLOSE_NAMESPACE
 
 
-#endif // I_ATTRIBUTE_COLLECTION_H__1909CBE7_F24A_46D6_AAEB_3319895C4C54
+#endif // I_FILTER_CHAIN_H__66E81027_F059_41AB_B079_2EE479D6665F
 

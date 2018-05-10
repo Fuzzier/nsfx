@@ -5,9 +5,9 @@
  *
  * @version 1.0
  * @author  Fuzzier Tang <gauchyler@gmail.com>
- * @date    date
+ * @date    2018-05-10
  *
- * @copyright Copyright (c) 2015.
+ * @copyright Copyright (c) 2018.
  *            National Key Laboratory of Science and Technology on Communications,
  *            University of Electronic Science and Technology of China.
  *            All rights reserved.
@@ -18,72 +18,16 @@
 
 
 #include <nsfx/log/config.h>
-#include <nsfx/log/attribute-value.h>
+#include <nsfx/log/attribute/attribute.h>
 #include <boost/preprocessor/repetition/enum.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_binary_params.hpp>
 #include <boost/preprocessor/iteration/iterate.hpp>
-#include <memory>
-#include <utility>
+#include <memory>  // shared_ptr
+#include <utility> // move, forward
 
 
 NSFX_LOG_OPEN_NAMESPACE
-
-
-////////////////////////////////////////////////////////////////////////////////
-/**
- * @ingroup Log
- * @brief An attribute generates attribute values.
- */
-template<class T>
-class IAttribute
-{
-public:
-    virtual ~IAttribute(void) BOOST_NOEXCEPT {}
-
-    virtual AttributeValue GetValue(void) = 0;
-};
-
-
-////////////////////////////////////////////////////////////////////////////////
-/**
- * @ingroup Log
- * @brief Attributes are used by log sources to generate attribute values.
- *
- * \c Attribute object generates \c AttributeValue.
- */
-class Attribute
-{
-public:
-    Attribute(const std::shared_ptr<IAttribute>& attr) :
-        attr_(attr)
-    {
-        if (!attr_)
-        {
-            BOOST_THROW_EXCEPTION(InvalidPointer());
-        }
-    }
-
-    Attribute(std::shared_ptr<IAttribute>&& attr) :
-        attr_(std::move(attr))
-    {
-        if (!attr_)
-        {
-            BOOST_THROW_EXCEPTION(InvalidPointer());
-        }
-    }
-
-    // Methods.
-public:
-    AttributeValue GetValue(void) const
-    {
-        return attr_->GetValue();
-    }
-
-    // Properties.
-private:
-    std::shared_ptr<IAttribute> attr_;
-};
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -109,7 +53,7 @@ public:
         value_(MakeConstantAttributeValue<T>())
     {}
 
-#define BOOST_PP_ITERATION_PARAMS_1  (4, (0, NSFX_MAX_ARITY, <nsfx/log/attribute.h>, 0))
+#define BOOST_PP_ITERATION_PARAMS_1  (4, (0, NSFX_MAX_ARITY, <nsfx/log/attribute/attribute.h>, 0))
 
 #include BOOST_PP_ITERATE()
 
@@ -148,7 +92,7 @@ inline Attribute MakeConstantAttribute(Args&&... args)
 
 #else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-#define BOOST_PP_ITERATION_PARAMS_1  (4, (0, NSFX_MAX_ARITY, <nsfx/log/attribute.h>, 1))
+#define BOOST_PP_ITERATION_PARAMS_1  (4, (0, NSFX_MAX_ARITY, <nsfx/log/attribute/attribute.h>, 1))
 
 #include BOOST_PP_ITERATE()
 

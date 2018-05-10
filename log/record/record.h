@@ -18,9 +18,7 @@
 
 
 #include <nsfx/log/config.h>
-#include <nsfx/log/attribute-value.h>
-#include <nsfx/log/attribute.h>
-#include <boost/container_hash/hash.hpp>
+#include <nsfx/log/attribute/attribute-value.h>
 
 
 NSFX_LOG_OPEN_NAMESPACE
@@ -32,7 +30,7 @@ NSFX_LOG_OPEN_NAMESPACE
  *
  * @brief Log record.
  *
- * A log record carries a set of attributes, such as
+ * A log record carries a set of named values, such as
  * 1) a severity level
  * 2) a message
  * 3) a timestamp
@@ -68,16 +66,21 @@ public:
      */
     void Update(const std::string& name, const AttributeValue& value);
 
+    bool Exists(const std::string& name) const;
+
     /**
      * @brief Get the named value.
      *
      * @tparam T    The type of the attribute value.
      * @param name  The name of the attribute value.
      *
-     * @throw \c AttributeNotFound
+     * @throw \c AttributeValueNotFound
      */
     template<class T>
     const T& Get(const std::string& name) const;
+
+    template<class Visitor>
+    void VisitIfExists(const std::string& name, Visitor&& visitor) const;
 
     // Properties.
 private:
@@ -116,6 +119,11 @@ inline void Record::Update(const std::string& name, const AttributeValue& value)
     }
 }
 
+inline bool Record::Exists(const std::string& name) const
+{
+    return values_.count(name);
+}
+
 template<class T>
 inline const T& Record::Get(const std::string& name) const
 {
@@ -128,8 +136,19 @@ inline const T& Record::Get(const std::string& name) const
     else
     {
         BOOST_THROW_EXCEPTION(
-            AttributeNotFound() <<
+            AttributeValueNotFound() <<
             ErrorMessage("Cannot find the log attribute value."));
+    }
+}
+
+template<class Visitor>
+inline void VisitIfExists(const std::string& name, Visitor&& visitor) const
+{
+    auto it = values_.find(name);
+    if (it != values_.cend())
+    {
+        const AttributeValue& value = it->second;
+        visitor(value);
     }
 }
 
