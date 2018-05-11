@@ -20,6 +20,7 @@
 #include <nsfx/log/config.h>
 #include <nsfx/log/filter/filter.h>
 #include <nsfx/log/filter/severity-level-filter.h>
+#include <nsfx/log/misc/attribute-names.h>
 
 
 NSFX_LOG_OPEN_NAMESPACE
@@ -51,7 +52,7 @@ public:
         acceptedLevels_(acceptedLevels)
     {}
 
-    virtual ~SeverityLevel(void) {}
+    virtual ~SeverityLevelFilter(void) {}
 
     virtual uint32_t Decide(const std::shared_ptr<Record>& record) NSFX_OVERRIDE;
     virtual void ToggleAccept(uint32_t severityLevels) NSFX_OVERRIDE;
@@ -74,7 +75,7 @@ inline uint32_t SeverityLevelFilter::Decide(const std::shared_ptr<Record>& recor
 {
     uint32_t decision = ACCEPT;
     record->VisitIfExists(
-        "SeverityLevel",
+        NSFX_LOG_SEVERITY_LEVEL_ATTRIBUTE_NAME,
         [&] (const AttributeValue& value) {
             if (value->Get<uint32_t>() & acceptedLevels_ == 0)
             {

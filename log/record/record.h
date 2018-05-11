@@ -5,9 +5,9 @@
  *
  * @version 1.0
  * @author  Fuzzier Tang <gauchyler@gmail.com>
- * @date    2015-02-16
+ * @date    2018-05-11
  *
- * @copyright Copyright (c) 2015.
+ * @copyright Copyright (c) 2018.
  *            National Key Laboratory of Science and Technology on Communications,
  *            University of Electronic Science and Technology of China.
  *            All rights reserved.
@@ -57,16 +57,16 @@ public:
      * @return If there's already an attribute value with the same name,
      *         this function returns \c false.
      */
-    bool Add(const std::string& name, const AttributeValue& value);
+    bool Add(const char* name, const AttributeValue& value);
 
     /**
      * @brief Add or replace a named value.
      *
      * If named value exists, the value is replaced.
      */
-    void Update(const std::string& name, const AttributeValue& value);
+    void Update(const char* name, const AttributeValue& value);
 
-    bool Exists(const std::string& name) const;
+    bool Exists(const char* name) const;
 
     /**
      * @brief Get the named value.
@@ -77,14 +77,17 @@ public:
      * @throw \c AttributeValueNotFound
      */
     template<class T>
-    const T& Get(const std::string& name) const;
+    const T& Get(const char* name) const;
 
     template<class Visitor>
-    void VisitIfExists(const std::string& name, Visitor&& visitor) const;
+    void VisitIfExists(const char* name, Visitor&& visitor) const;
 
     // Properties.
 private:
-    unordered_map<std::string, AttributeValue>  values_;
+    struct StringLiteralHash
+    {
+    };
+    unordered_map<char*, AttributeValue>  values_;
 };
 
 
