@@ -26,25 +26,68 @@
  *
  * @brief Log support.
  *
- * To use the default logger, users simply use the following macros:
- * NSFX_LOG(severity)  << "a message";
- * NSFX_LOG_FATAL()    << "a message";
- * NSFX_LOG_ERROR()    << "a message";
- * NSFX_LOG_WARNING()  << "a message";
- * NSFX_LOG_INFO()     << "a message";
- * NSFX_LOG_DEBUG()    << "a message";
- * NSFX_LOG_FUNCTION() << "a message";
- * NSFX_LOG_TRACE()    << "a message";
+ * # Motivation
+ *   The log library is provided to ease the task of tracing a program.
+ *   The program outputs useful runtime information to a log that can be
+ *   examined to analyze the program's behaviors.
  *
- * Users can also use a custom logger, and use the following macros:
- * NSFX_LOG(logger, severity) << "a message";
- * NSFX_LOG_FATAL(logger)     << "a message";
- * NSFX_LOG_ERROR(logger)     << "a message";
- * NSFX_LOG_WARNING(logger)   << "a message";
- * NSFX_LOG_INFO(logger)      << "a message";
- * NSFX_LOG_DEBUG(logger)     << "a message";
- * NSFX_LOG_FUNCTION(logger)  << "a message";
- * NSFX_LOG_TRACE(logger)     << "a message";
+ *   The log library aims to provide a set of log tools that are header-only,
+ *   easy-to-use, flexible, configurable, extensible and fast.
+ *
+ *   The loggers in several existing network simulators are not flexible.
+ *   e.g., in NS3, the granularity of logging is a model/class (precisely,
+ *   a compilation unit).
+ *   i.e., it logs all events from all objects of the class, and it's hard to
+ *   monitor a single object of the class.
+ *   As a result, the log is huge and hard to read, and must be filtered for
+ *   humans to find their focus.
+ *   It is not only efficient for analyzers, but also slows down the program.
+ *
+ * ## Extensibility
+ *    Extensibility and performance are usually contradictory.
+ *    Extensibility means the library has to use interfaces (virtual functions)
+ *    to hide the operation details implemented by users.
+ *    A logging operation can involve tens of virtual function calls, which can
+ *    be more expensive than the operation that generates the log.
+ *
+ * ### Log record
+ *     The information to be logged is carried by log records.
+ *     The log record must be extensible to carry arbitrary set of values.
+ *     The values have to be type-erased.
+ *     The type-erasure can be implemented as union-based or interface-based.
+ *     However, union-based type-erasure can only support a limited set of
+ *     value types, thus cannot provide sufficient extensibility.
+ *     Interface-based type-erasure is more complex, since virtual function
+ *     calls are used, but it is more extensible.
+ *
+ *     There must be a way to identify and obtain a value in the log record.
+ *     The possible approaches include compile-time tag-based dispatch and
+ *     runtime index-based dispatch.
+ *     The compile-time tag-based dispatch makes a log record an instance of
+ *     a concrete type.
+ *     A log record must be transferred with its type.
+ *     The runtime index-based dispatch uses a container to store the values.
+ *     The container can be associative to allow fast lookup.
+ *
+ *   To use the default logger, users simply use the following macros:
+ *   NSFX_LOG(severity)  << "a message";
+ *   NSFX_LOG_FATAL()    << "a message";
+ *   NSFX_LOG_ERROR()    << "a message";
+ *   NSFX_LOG_WARNING()  << "a message";
+ *   NSFX_LOG_INFO()     << "a message";
+ *   NSFX_LOG_DEBUG()    << "a message";
+ *   NSFX_LOG_FUNCTION() << "a message";
+ *   NSFX_LOG_TRACE()    << "a message";
+ *
+ *   Users can also use a custom logger, and use the following macros:
+ *   NSFX_LOG(logger, severity) << "a message";
+ *   NSFX_LOG_FATAL(logger)     << "a message";
+ *   NSFX_LOG_ERROR(logger)     << "a message";
+ *   NSFX_LOG_WARNING(logger)   << "a message";
+ *   NSFX_LOG_INFO(logger)      << "a message";
+ *   NSFX_LOG_DEBUG(logger)     << "a message";
+ *   NSFX_LOG_FUNCTION(logger)  << "a message";
+ *   NSFX_LOG_TRACE(logger)     << "a message";
  *
  *
  * # Concept
