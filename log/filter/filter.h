@@ -57,6 +57,7 @@ public:
 
 private:
     Functor f_;
+    Ptr<IFilter> next_;
 };
 
 

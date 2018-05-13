@@ -75,50 +75,68 @@ class AttributeValue
     // Xtructors.
 public:
     template<class T>
-    AttributeValue(const std::shared_ptr<ITypedAttributeValue<T> >& value) :
-        value_(value)
-    {
-        if (!value_)
-        {
-            BOOST_THROW_EXCEPTION(InvalidPointer());
-        }
-    }
+    AttributeValue(const std::shared_ptr<ITypedAttributeValue<T> >& value);
 
     template<class T>
-    AttributeValue(std::shared_ptr<ITypedAttributeValue<T> >&& value) :
-        value_(std::move(value))
-    {
-        if (!value_)
-        {
-            BOOST_THROW_EXCEPTION(InvalidPointer());
-        }
-    }
+    AttributeValue(std::shared_ptr<ITypedAttributeValue<T> >&& value);
 
     // Methods.
 public:
-    const boost::typeindex::type_index& GetTypeId(void) const
-    {
-        BOOST_ASSERT(!!value_);
-        return value_->GetTypeId();
-    }
+    const boost::typeindex::type_index& GetTypeId(void) const;
 
     template<class T>
-    const T& Get(void) const
-    {
-        if (value_->GetTypeId() != boost::typeindex::type_id<T>())
-        {
-            BOOST_THROW_EXCEPTION(
-                IllegalMethodCall() <<
-                ErrorMessage("Cannot access the log attribute value, since "
-                             "the requested type mismatches the value type."));
-        }
-        return static_cast<ITypedAttributeValue<T>*>(value_.get())->Get();
-    }
+    const T& Get(void) const;
 
     // Properties.
 private:
     std::shared_ptr<IAttributeValue> value_;
 };
+
+
+////////////////////////////////////////////////////////////////////////////////
+// AttributeValue
+template<class T>
+inline AttributeValue::AttributeValue(
+    const std::shared_ptr<ITypedAttributeValue<T> >& value) :
+        value_(value)
+{
+    if (!value_)
+    {
+        BOOST_THROW_EXCEPTION(InvalidPointer());
+    }
+}
+
+template<class T>
+inline AttributeValue::AttributeValue(
+    std::shared_ptr<ITypedAttributeValue<T> >&& value) :
+        value_(std::move(value))
+{
+    if (!value_)
+    {
+        BOOST_THROW_EXCEPTION(InvalidPointer());
+    }
+}
+
+inline const boost::typeindex::type_index&
+AttributeValue::GetTypeId(void) const
+{
+    BOOST_ASSERT(!!value_);
+    return value_->GetTypeId();
+}
+
+template<class T>
+inline const T& AttributeValue::Get(void) const
+{
+    if (value_->GetTypeId() != boost::typeindex::type_id<T>())
+    {
+        BOOST_THROW_EXCEPTION(
+            IllegalMethodCall() <<
+            ErrorMessage("Cannot access the log attribute value, since "
+                         "the requested type mismatches the value type."));
+    }
+    return static_cast<ITypedAttributeValue<T>*>(value_.get())->Get();
+}
+
 
 
 NSFX_LOG_CLOSE_NAMESPACE
