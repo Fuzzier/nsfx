@@ -13,8 +13,8 @@
  *            All rights reserved.
  */
 
-#ifndef ATTRIBUTE_COLLECTION_H__BEAC510C_4B86_4607_AB3C_333C035B895E
-#define ATTRIBUTE_COLLECTION_H__BEAC510C_4B86_4607_AB3C_333C035B895E
+#ifndef ATTRIBUTE_SET_H__344E3C60_8A9F_4F1C_8853_B646AB59958C
+#define ATTRIBUTE_SET_H__344E3C60_8A9F_4F1C_8853_B646AB59958C
 
 
 #include <nsfx/log/config.h>
@@ -29,15 +29,15 @@ NSFX_LOG_OPEN_NAMESPACE
 /**
  * @ingroup Log
  *
- * @brief A collection of attributes.
+ * @brief A set of attributes.
  */
-class AttributeCollection :
-    public IAttributeCollection
+class AttributeSet :
+    public IAttributeSet
 {
-    typedef AttributeCollection  ThisClass;
+    typedef AttributeSet  ThisClass;
 
 public:
-    virtual ~AttributeCollection(void) {}
+    virtual ~AttributeSet(void) {}
 
     virtual bool Add(const std::string& name, const Attribute& attribute) NSFX_OVERRIDE;
     virtual void Remove(const std::string& name) NSFX_OVERRIDE;
@@ -68,7 +68,7 @@ public:
     void Visit(Visitor&& visitor) const;
 
     NSFX_INTERFACE_MAP_BEGIN(ThisClass)
-        NSFX_INTERFACE_ENTRY(IAttributeCollection)
+        NSFX_INTERFACE_ENTRY(IAttributeSet)
     NSFX_INTERFACE_MAP_END()
 
 private:
@@ -77,19 +77,18 @@ private:
 
 
 ////////////////////////////////////////////////////////////////////////////////
-inline bool AttributeCollection::Add(const std::string& name,
-                                     const Attribute& attribute)
+inline bool AttributeSet::Add(const std::string& name, const Attribute& attribute)
 {
     auto result = map_.emplace(name, attribute);
     return result.second;
 }
 
-inline void AttributeCollection::Remove(const std::string& name)
+inline void AttributeSet::Remove(const std::string& name)
 {
     map_.erase(name);
 }
 
-inline void AttributeCollection::Clear(void)
+inline void AttributeSet::Clear(void)
 {
     map_.clear()
 }
@@ -110,5 +109,5 @@ inline void Visit(Visitor&& visitor) const
 NSFX_LOG_CLOSE_NAMESPACE
 
 
-#endif // ATTRIBUTE_COLLECTION_H__BEAC510C_4B86_4607_AB3C_333C035B895E
+#endif // ATTRIBUTE_SET_H__344E3C60_8A9F_4F1C_8853_B646AB59958C
 

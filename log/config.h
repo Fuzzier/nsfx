@@ -63,32 +63,35 @@
  *     There must be a way to identify and obtain a value in the log record.
  *     The possible approaches include compile-time tag-based dispatch and
  *     runtime index-based dispatch.
- *     The compile-time tag-based dispatch makes a log record an instance of
- *     a concrete type.
- *     A log record must be transferred with its type.
+ *     The compile-time tag-based dispatch means that the contents of log
+ *     records are determined at compile-time.
+ *     This approach is not easy-to-use.
  *     The runtime index-based dispatch uses a container to store the values.
- *     The container can be associative to allow fast lookup.
+ *     The container can be associative to speed up lookup.
+ *     The index is usually a human-readible string.
  *
- *   To use the default logger, users simply use the following macros:
- *   NSFX_LOG(severity)  << "a message";
- *   NSFX_LOG_FATAL()    << "a message";
- *   NSFX_LOG_ERROR()    << "a message";
- *   NSFX_LOG_WARNING()  << "a message";
- *   NSFX_LOG_INFO()     << "a message";
- *   NSFX_LOG_DEBUG()    << "a message";
- *   NSFX_LOG_FUNCTION() << "a message";
- *   NSFX_LOG_TRACE()    << "a message";
+ * ### Configurability
+ *     BOOST provides a log library.
+ *     In the library, compile-time functionals are adopted to make log filters.
+ *     It can be fast, but it does not provide runtime configurability directly.
  *
- *   Users can also use a custom logger, and use the following macros:
- *   NSFX_LOG(logger, severity) << "a message";
- *   NSFX_LOG_FATAL(logger)     << "a message";
- *   NSFX_LOG_ERROR(logger)     << "a message";
- *   NSFX_LOG_WARNING(logger)   << "a message";
- *   NSFX_LOG_INFO(logger)      << "a message";
- *   NSFX_LOG_DEBUG(logger)     << "a message";
- *   NSFX_LOG_FUNCTION(logger)  << "a message";
- *   NSFX_LOG_TRACE(logger)     << "a message";
+ *     The log library in NSFX provides log filters in a modular way.
+ *     Each log filter is provided as a component that provides interface for
+ *     configurability.
+ *     Users can combine log filters to suit their specific needs.
  *
+ * ### Logger usage
+ *     Users can use the following macros to use a logger.
+ *     @code
+ *     NSFX_LOG(logger, severity) << "a message";
+ *     NSFX_LOG_FATAL(logger)     << "a message";
+ *     NSFX_LOG_ERROR(logger)     << "a message";
+ *     NSFX_LOG_WARNING(logger)   << "a message";
+ *     NSFX_LOG_INFO(logger)      << "a message";
+ *     NSFX_LOG_DEBUG(logger)     << "a message";
+ *     NSFX_LOG_FUNCTION(logger)  << "a message";
+ *     NSFX_LOG_TRACE(logger)     << "a message";
+ *     @endcode
  *
  * # Concept
  *   A <i>log source</i> generates runtime information, and feed them into

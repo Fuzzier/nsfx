@@ -39,7 +39,8 @@ class IFilterChain :
 public:
     virtual ~IFilterChain(void) BOOST_NOEXCEPT {}
 
-    virtual void Append(const std::shared_ptr<IFilter>& filter) = 0;
+    virtual void PushBack(const std::shared_ptr<IFilter>& filter) = 0;
+    virtual void PopBack(void) = 0;
 };
 
 
