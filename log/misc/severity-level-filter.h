@@ -75,7 +75,7 @@ inline uint32_t SeverityLevelFilter::Decide(const std::shared_ptr<Record>& recor
 {
     uint32_t decision = ACCEPT;
     record->VisitIfExists(
-        NSFX_LOG_SEVERITY_LEVEL_ATTRIBUTE_NAME,
+        SeverityLevelInfo::GetName(),
         [&] (const AttributeValue& value) {
             if (value->Get<uint32_t>() & acceptedLevels_ == 0)
             {

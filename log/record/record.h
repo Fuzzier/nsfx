@@ -18,7 +18,9 @@
 
 
 #include <nsfx/log/config.h>
-#include <nsfx/log/attribute/attribute-value.h>
+#include <nsfx/log/attribute-value/attribute-value.h>
+#include <nsfx/log/exception.h>
+#include <boost/type_traits/decay.hpp>
 
 
 NSFX_LOG_OPEN_NAMESPACE
@@ -31,13 +33,13 @@ NSFX_LOG_OPEN_NAMESPACE
  * @brief Log record.
  *
  * A log record carries a set of named values, such as
- * 1) a severity level
- * 2) a message
- * 3) a timestamp
- * 4) the file name
- * 5) the line number
- * 6) the function name
- * 7) a scope name
+ * 1) severity level
+ * 2) timestamp
+ * 3) message
+ * 4) function name
+ * 5) scope name
+ * 6) file name
+ * 7) line number
  * etc.
  */
 class Record
@@ -79,12 +81,32 @@ public:
     template<class T>
     const T& Get(const std::string& name) const;
 
+public:
+    template<class Visitor>
+    class AttributeValueVisitorConcept
+    {
+    public:
+        BOOST_CONCEPT_USAGE(AttributeValueVisitorConcept)
+        {
+            typename boost::decay<Visitor>::type* visitor = nullptr;
+            const AttributeValue* value = nullptr;
+            (*visitor)(*value);
+        }
+    };
+
+    /**
+     * @brief Visit an attribute value.
+     *
+     * @tparam Visitor It must conforms to \c AttributeValueVisitorConcept.
+     *                 i.e., it is a functor class that has the prototype of
+     *                 <code>void(const AttributeValue& value)</code>.
+     */
     template<class Visitor>
     void VisitIfExists(const std::string& name, Visitor&& visitor) const;
 
     // Properties.
 private:
-    unordered_map<std::string&, AttributeValue>  values_;
+    unordered_map<std::string, AttributeValue>  values_;
 };
 
 
@@ -142,8 +164,9 @@ inline const T& Record::Get(const std::string& name) const
 }
 
 template<class Visitor>
-inline void VisitIfExists(const std::string& name, Visitor&& visitor) const
+inline void Record::VisitIfExists(const std::string& name, Visitor&& visitor) const
 {
+    BOOST_CONCEPT_ASSERT((AttributeValueVisitorConcept<Visitor>));
     auto it = values_.find(name);
     if (it != values_.cend())
     {

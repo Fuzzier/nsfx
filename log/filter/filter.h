@@ -19,6 +19,7 @@
 
 #include <nsfx/log/config.h>
 #include <nsfx/log/filter/i-filter.h>
+#include <nsfx/component/object.h>
 
 
 NSFX_LOG_OPEN_NAMESPACE
@@ -46,7 +47,7 @@ public:
 
     virtual ~FunctorBasedFilter(void) {}
 
-    virtual FilterDecision Decide(const std::shared_ptr<Record>& record) NSFX_OVERRIDE
+    virtual uint32_t Decide(const std::shared_ptr<Record>& record) NSFX_OVERRIDE
     {
         return f_(record);
     }

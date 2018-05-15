@@ -13,15 +13,16 @@
  *            All rights reserved.
  */
 
-#ifndef I_LOG_H__D7007569_C140_4E3C_800F_52AD0ACFC645
-#define I_LOG_H__D7007569_C140_4E3C_800F_52AD0ACFC645
+#ifndef I_LOGGER_H__DC3EE0B0_113A_4CD3_970A_5AF55437A377
+#define I_LOGGER_H__DC3EE0B0_113A_4CD3_970A_5AF55437A377
 
 
 #include <nsfx/log/config.h>
-#include <nsfx/log/record.h>
+#include <nsfx/log/record/record.h>
 #include <nsfx/component/uid.h>
 #include <nsfx/component/i-object.h>
 #include <nsfx/component/ptr.h>
+#include <nsfx/event/i-event.h>
 
 
 NSFX_LOG_OPEN_NAMESPACE
@@ -30,17 +31,17 @@ NSFX_LOG_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 // Events.
 NSFX_DEFINE_EVENT_SINK_INTERFACE(
-    ILog, "edu.uestc..nsfx.log.ILog",
+    ILogger, "edu.uestc.nsfx.log.ILogger",
     ( void(const std::shared_ptr<Record>&) ));
 
 
 NSFX_DEFINE_EVENT_INTERFACE(
-    ILogEvent, "edu.uestc.nsfx.log.ILogEvent",
-    ILog);
+    ILoggerEvent, "edu.uestc.nsfx.log.ILoggerEvent",
+    ILogger);
 
 
 NSFX_LOG_CLOSE_NAMESPACE
 
 
-#endif // I_LOG_H__D7007569_C140_4E3C_800F_52AD0ACFC645
+#endif // I_LOGGER_H__DC3EE0B0_113A_4CD3_970A_5AF55437A377
 

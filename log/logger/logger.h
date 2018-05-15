@@ -18,11 +18,11 @@
 
 
 #include <nsfx/log/config.h>
-#include <nsfx/log/record.h>
-#include <nsfx/log/attribute.h>
-#include <nsfx/log/attribute-collection.h>
-#include <nsfx/log/i-filter.h>
+#include <nsfx/log/logger/i-logger.h>
+#include <nsfx/log/attribute/attribute-set.h>
+#include <nsfx/log/filter/filter-chain.h>
 #include <nsfx/component/class-registry.h>
+#include <nsfx/event/event.h>
 
 
 NSFX_LOG_OPEN_NAMESPACE
@@ -40,14 +40,14 @@ NSFX_LOG_OPEN_NAMESPACE
  * ### Uses
  * * IFilter
  * ### Provides
- * * ILog
- * * IAttributeCollection
+ * * ILogger
+ * * IAttributeSet
+ * * IFilterChain
  * ### Events
  * * ILogEvent
  */
 class Logger :
-    public ILog,
-    public IFilterUser
+    public ILogger
 {
     typedef Logger  ThisClass;
 
@@ -57,23 +57,22 @@ public:
     virtual ~Logger(void) {}
 
     NSFX_INTERFACE_MAP_BEGIN(ThisClass)
-        NSFX_INTERFACE_ENTRY(ILog)
-        NSFX_INTERFACE_ENTRY(IFilterUser)
-        NSFX_INTERFACE_AGGREGATED_ENTRY(ILogEvent, &logEvent_)
-        NSFX_INTERFACE_AGGREGATED_ENTRY(IAttributeCollection, &attributeCollection_)
+        NSFX_INTERFACE_ENTRY(ILogger)
+        NSFX_INTERFACE_AGGREGATED_ENTRY(IAttributeSet, &attributeSet_)
+        NSFX_INTERFACE_AGGREGATED_ENTRY(IFilterChain,  &filterChain_)
+        NSFX_INTERFACE_AGGREGATED_ENTRY(ILoggerEvent,  &loggerEvent_)
     NSFX_INTERFACE_MAP_END()
 
     virtual void Fire(const std::shared_ptr<Record>& record) NSFX_OVERRIDE;
-    virtual void Use(const std::shared_ptr<IFilter>& filter) NSFX_OVERRIDE;
 
 private:
     void ApplyAttributes(const std::shared_ptr<Record>& record);
     void FilterAndFire(const std::shared_ptr<Record>& record);
 
 private:
-    MemberAggObject<Event<ILogEvent> >    logEvent_;
-    MemberAggObject<AttributeCollection>  attributeCollection_;
-    std::shared_ptr<IFilter> filter_;
+    MemberAggObject<AttributeSet>  attributeSet_;
+    MemberAggObject<FilterChain>   filterChain_;
+    MemberAggObject<Event<ILoggerEvent> >  loggerEvent_;
 };
 
 
@@ -82,13 +81,10 @@ NSFX_REGISTER_CLASS(Logger, "edu.uestc.nsfx.log.Logger");
 
 ////////////////////////////////////////////////////////////////////////////////
 inline Logger::Logger(void) :
-    logEvent_(/* controller = */this)
+    attributeSet_(/* constroller = */this),
+    filterChain_(/* constroller = */this),
+    loggerEvent_(/* controller = */this)
 {
-}
-
-inline void Use(const std::shared_ptr<IFilter>& filter)
-{
-    filter_ = filter;
 }
 
 inline void Logger::Fire(const std::shared_ptr<Record>& record)
@@ -99,23 +95,20 @@ inline void Logger::Fire(const std::shared_ptr<Record>& record)
 
 inline void Logger::ApplyAttributes(const std::shared_ptr<Record>& record)
 {
-    attributeCollection_.GetImpl()->Visit(
+    attributeSet_.GetImpl()->Visit(
         [&] (const std::string& name, const Attribute& attribute) {
             // The existing named values are not replaced.
-            record->Add(name, attribute->GetValue());
+            record->Add(name, attribute.GetValue());
         });
 }
 
 inline void Logger::FilterAndFire(const std::shared_ptr<Record>& record)
 {
-    if (!!filter_)
+    if (filterChain_.GetImpl()->Decide(record) == ACCEPT)
     {
-        if (filter_->Decide(record) == ACCEPT)
-        {
-            logEvent_.GetImpl()->Visit([&] (ILog* log) {
-                log->Fire(record);
-            });
-        }
+        loggerEvent_.GetImpl()->Visit([&] (ILogger* logger) {
+            logger->Fire(record);
+        });
     }
 }
 

@@ -22,7 +22,6 @@
 #include <nsfx/component/exception.h>
 #include <boost/type_index.hpp>
 #include <boost/type_traits/is_base_of.hpp>
-#include <boost/type_traits/decay.hpp>
 #include <boost/preprocessor/iterate.hpp>
 #include <functional>
 

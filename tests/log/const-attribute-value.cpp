@@ -14,11 +14,11 @@
  */
 
 #include <nsfx/test.h>
-#include <nsfx/log/attribute-value.h>
+#include <nsfx/log/attribute-value/const-attribute-value.h>
 #include <iostream>
 
 
-NSFX_TEST_SUITE(AttributeValue)
+NSFX_TEST_SUITE(ConstAttributeValue)
 {
     NSFX_TEST_CASE(Test)
     {
@@ -27,35 +27,35 @@ NSFX_TEST_SUITE(AttributeValue)
             {
                 nsfx::log::AttributeValue v =
                     nsfx::log::MakeConstantAttributeValue<int>();
-                NSFX_TEST_EXPECT(v.GetTypeId() == typeid (int));
+                NSFX_TEST_EXPECT(v.GetTypeId() == boost::typeindex::type_id<int>());
             }
 
             {
                 nsfx::log::AttributeValue v =
                     nsfx::log::MakeConstantAttributeValue<int>(10);
-                NSFX_TEST_EXPECT(v.GetTypeId() == typeid (int));
+                NSFX_TEST_EXPECT(v.GetTypeId() == boost::typeindex::type_id<int>());
                 NSFX_TEST_EXPECT_EQ(v.Get<int>(), 10);
             }
 
-            struct A
+            struct Test
             {
-                A(int i): i_(i) {}
+                Test(int i): i_(i) {}
                 int i_;
             };
 
             {
                 nsfx::log::AttributeValue v =
-                    nsfx::log::MakeConstantAttributeValue<A>(10);
-                NSFX_TEST_EXPECT(v.GetTypeId() == typeid (A));
-                NSFX_TEST_EXPECT_EQ(v.Get<A>().i_, 10);
+                    nsfx::log::MakeConstantAttributeValue<Test>(10);
+                NSFX_TEST_EXPECT(v.GetTypeId() == boost::typeindex::type_id<Test>());
+                NSFX_TEST_EXPECT_EQ(v.Get<Test>().i_, 10);
             }
 
             {
-                A a(10);
+                Test t(10);
                 nsfx::log::AttributeValue v =
-                    nsfx::log::MakeConstantAttributeValue<A*>(&a);
-                NSFX_TEST_EXPECT(v.GetTypeId() == typeid (A*));
-                NSFX_TEST_EXPECT_EQ(v.Get<A*>()->i_, 10);
+                    nsfx::log::MakeConstantAttributeValue<Test*>(&t);
+                NSFX_TEST_EXPECT(v.GetTypeId() == boost::typeindex::type_id<Test*>());
+                NSFX_TEST_EXPECT_EQ(v.Get<Test*>()->i_, 10);
             }
 
         }

@@ -18,7 +18,8 @@
 
 
 #include <nsfx/log/config.h>
-#include <nsfx/log/attribute/i-attribute-collection.h>
+#include <nsfx/log/attribute/i-attribute-set.h>
+#include <nsfx/component/object.h>
 #include <boost/type_traits/decay.hpp>
 
 
@@ -45,12 +46,12 @@ public:
 
 public:
     template<class Visitor>
-    class AttributeVisitorConcept
+    class NamedAttributeVisitorConcept
     {
     public:
-        BOOST_CONCEPT_USAGE(AttributeVisitorConcept)
+        BOOST_CONCEPT_USAGE(NamedAttributeVisitorConcept)
         {
-            typename boost::type_traits::decay<Visitor>::type* visitor = nullptr;
+            typename boost::decay<Visitor>::type* visitor = nullptr;
             const std::string* name = nullptr;
             const Attribute* attribute = nullptr;
             (*visitor)(*name, *attribute);
@@ -60,7 +61,8 @@ public:
     /**
      * @brief Visit the attributes.
      *
-     * @tparam Visitor A functor class that has the prototype of
+     * @tparam Visitor It must conforms to \c NamedAttributeVisitorConcept.
+     *                 i.e., it is a functor class that has the prototype of
      *                 <code>void(const std::string& name,
      *                            const Attribute& attribute)</code>.
      */
@@ -90,13 +92,13 @@ inline void AttributeSet::Remove(const std::string& name)
 
 inline void AttributeSet::Clear(void)
 {
-    map_.clear()
+    map_.clear();
 }
 
 template<class Visitor>
-inline void Visit(Visitor&& visitor) const
+inline void AttributeSet::Visit(Visitor&& visitor) const
 {
-    BOOST_CONCEPT_ASSERT((AttributeVisitorConcept<Visitor>));
+    BOOST_CONCEPT_ASSERT((NamedAttributeVisitorConcept<Visitor>));
     for (auto it = map_.cbegin(); it != map_.cend(); ++it)
     {
         const std::string& name = it->first;

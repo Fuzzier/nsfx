@@ -25,6 +25,12 @@ NSFX_LOG_OPEN_NAMESPACE
 
 /**
  * @ingroup Exception
+ * @brief Access an attribute value with a wroing value type.
+ */
+struct AttributeValueTypeMismatch : Exception {};
+
+/**
+ * @ingroup Exception
  * @brief The attribute value cannot be found.
  */
 struct AttributeValueNotFound : Exception {};
