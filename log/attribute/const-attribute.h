@@ -13,12 +13,13 @@
  *            All rights reserved.
  */
 
-#ifndef ATTRIBUTE_H__015B46E7_7444_4BDD_A1DE_4F70E1D8BBCE
-#define ATTRIBUTE_H__015B46E7_7444_4BDD_A1DE_4F70E1D8BBCE
+#ifndef CONST_ATTRIBUTE_H__826F8621_57E1_4FCB_8779_88E23409377D
+#define CONST_ATTRIBUTE_H__826F8621_57E1_4FCB_8779_88E23409377D
 
 
 #include <nsfx/log/config.h>
 #include <nsfx/log/attribute/attribute.h>
+#include <nsfx/log/attribute-value/const-attribute-value.h>
 #include <boost/preprocessor/repetition/enum.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_binary_params.hpp>
@@ -53,7 +54,7 @@ public:
         value_(MakeConstantAttributeValue<T>())
     {}
 
-#define BOOST_PP_ITERATION_PARAMS_1  (4, (0, NSFX_MAX_ARITY, <nsfx/log/attribute/attribute.h>, 0))
+#define BOOST_PP_ITERATION_PARAMS_1  (4, (0, NSFX_MAX_ARITY, <nsfx/log/attribute/const-attribute.h>, 0))
 
 #include BOOST_PP_ITERATE()
 
@@ -92,7 +93,7 @@ inline Attribute MakeConstantAttribute(Args&&... args)
 
 #else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-#define BOOST_PP_ITERATION_PARAMS_1  (4, (0, NSFX_MAX_ARITY, <nsfx/log/attribute/attribute.h>, 1))
+#define BOOST_PP_ITERATION_PARAMS_1  (4, (0, NSFX_MAX_ARITY, <nsfx/log/attribute/const-attribute.h>, 1))
 
 #include BOOST_PP_ITERATE()
 
@@ -102,7 +103,7 @@ inline Attribute MakeConstantAttribute(Args&&... args)
 NSFX_LOG_CLOSE_NAMESPACE
 
 
-#endif // ATTRIBUTE_H__015B46E7_7444_4BDD_A1DE_4F70E1D8BBCE
+#endif // CONST_ATTRIBUTE_H__826F8621_57E1_4FCB_8779_88E23409377D
 
 
 ////////////////////////////////////////////////////////////////////////////////

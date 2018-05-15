@@ -18,10 +18,7 @@
 
 
 #include <nsfx/log/config.h>
-#include <nsfx/log/i-filter.h>
-#include <nsfx/component/uid.h>
-#include <nsfx/component/i-object.h>
-#include <nsfx/component/ptr.h>
+#include <nsfx/log/filter/i-filter.h>
 
 
 NSFX_LOG_OPEN_NAMESPACE
@@ -39,7 +36,8 @@ class IFilterChain :
 public:
     virtual ~IFilterChain(void) BOOST_NOEXCEPT {}
 
-    virtual void PushBack(const std::shared_ptr<IFilter>& filter) = 0;
+    virtual size_t GetNumFilters(void) = 0;
+    virtual void PushBack(Ptr<IFilter> filter) = 0;
     virtual void PopBack(void) = 0;
 };
 

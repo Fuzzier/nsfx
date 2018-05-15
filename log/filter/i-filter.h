@@ -19,6 +19,9 @@
 
 #include <nsfx/log/config.h>
 #include <nsfx/log/record/record.h>
+#include <nsfx/component/uid.h>
+#include <nsfx/component/i-object.h>
+#include <nsfx/component/ptr.h>
 #include <memory> // shared_ptr
 
 

@@ -133,7 +133,7 @@ inline AttributeValue MakeConstantAttributeValue(
     //         std::make_shared<ConstantAttributeValue<T> >(
     //             std::forward<A0>(a0), std::forward<A1>(a1), ...)));
     return AttributeValue(
-        std::shared_ptr<IAttributeValue<T> >(
+        std::shared_ptr<ITypedAttributeValue<T> >(
             std::make_shared<ConstantAttributeValue<T> >(
                 BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, ))));
 }

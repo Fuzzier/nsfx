@@ -18,6 +18,7 @@
 
 
 #include <nsfx/log/config.h>
+#include <nsfx/log/exception.h>
 #include <boost/type_index.hpp>
 #include <memory>  // shared_ptr
 #include <utility> // move, forward
@@ -36,7 +37,7 @@ class IAttributeValue
 public:
     virtual ~IAttributeValue(void) BOOST_NOEXCEPT {}
 
-    virtual const boost::typeindex::type_index& GetTypeId(void) = 0;
+    virtual const boost::typeindex::type_info& GetTypeId(void) = 0;
 };
 
 
@@ -54,9 +55,9 @@ class ITypedAttributeValue :
 public:
     virtual ~ITypedAttributeValue(void) BOOST_NOEXCEPT {}
 
-    virtual const boost::typeindex::type_index& GetTypeId(void) NSFX_OVERRIDE NSFX_FINAL
+    virtual const boost::typeindex::type_info& GetTypeId(void) NSFX_OVERRIDE NSFX_FINAL
     {
-        return boost::typeindex::type_id<T>();
+        return boost::typeindex::type_id<T>().type_info();
     }
 
     virtual const T& Get(void) = 0;
@@ -82,7 +83,7 @@ public:
 
     // Methods.
 public:
-    const boost::typeindex::type_index& GetTypeId(void) const;
+    const boost::typeindex::type_info& GetTypeId(void) const;
 
     template<class T>
     const T& Get(void) const;
@@ -117,7 +118,7 @@ inline AttributeValue::AttributeValue(
     }
 }
 
-inline const boost::typeindex::type_index&
+inline const boost::typeindex::type_info&
 AttributeValue::GetTypeId(void) const
 {
     BOOST_ASSERT(!!value_);
@@ -130,7 +131,7 @@ inline const T& AttributeValue::Get(void) const
     if (value_->GetTypeId() != boost::typeindex::type_id<T>())
     {
         BOOST_THROW_EXCEPTION(
-            IllegalMethodCall() <<
+            AttributeValueTypeMismatch() <<
             ErrorMessage("Cannot access the log attribute value, since "
                          "the requested type mismatches the value type."));
     }

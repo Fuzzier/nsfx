@@ -31,7 +31,6 @@ NSFX_LOG_OPEN_NAMESPACE
  * @ingroup Log
  * @brief An attribute generates attribute values.
  */
-template<class T>
 class IAttribute
 {
 public:
