@@ -31,6 +31,7 @@ NSFX_TEST_SUITE(Logger)
         virtual void Fire(const std::shared_ptr<nsfx::log::Record>& record) NSFX_OVERRIDE
         {
             std::cout << record->Get<nsfx::log::FileNameInfo>() << std::endl;
+            std::cout << record->Get<nsfx::log::SeverityLevelInfo>() << std::endl;
         }
 
         NSFX_INTERFACE_MAP_BEGIN(Sink)
@@ -46,8 +47,8 @@ NSFX_TEST_SUITE(Logger)
                 ::nsfx::CreateObject<nsfx::log::ILogger>(
                     "edu.uestc.nsfx.log.Logger");
 
-            nsfx::StaticObject<Sink> sink;
-            nsfx::Ptr<nsfx::log::ILoggerEvent>(logger)->Connect(&sink);
+            nsfx::Ptr<nsfx::Object<Sink> > sink(new nsfx::Object<Sink>);
+            nsfx::Ptr<nsfx::log::ILoggerEvent>(logger)->Connect(sink);
 
             NSFX_LOG(logger, nsfx::log::LOG_FATAL) << "fatal";
 
