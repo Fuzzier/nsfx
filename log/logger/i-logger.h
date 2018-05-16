@@ -30,11 +30,21 @@ NSFX_LOG_OPEN_NAMESPACE
 
 ////////////////////////////////////////////////////////////////////////////////
 // Events.
+/**
+ * @ingroup Log
+ * @brief The logger interface.
+ *
+ * The logger interface is an event sink interface.
+ * It has a single method <code>void Fire(const std::shared_ptr<Record>&)</code>.
+ */
 NSFX_DEFINE_EVENT_SINK_INTERFACE(
     ILogger, "edu.uestc.nsfx.log.ILogger",
     ( void(const std::shared_ptr<Record>&) ));
 
-
+/**
+ * @ingroup Log
+ * @brief The logger event interface.
+ */
 NSFX_DEFINE_EVENT_INTERFACE(
     ILoggerEvent, "edu.uestc.nsfx.log.ILoggerEvent",
     ILogger);

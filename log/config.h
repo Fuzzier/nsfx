@@ -53,13 +53,14 @@
  *
  * ### Log record
  *     The information to be logged is carried by log records.
- *     The log record must be extensible to carry arbitrary set of values.
- *     The values have to be type-erased.
+ *     The log record must be extensible to be able to carry arbitrary types of
+ *     values.
+ *     i.e., the values have to be type-erased.
  *     The type-erasure can be implemented as union-based or interface-based.
- *     However, union-based type-erasure can only support a limited set of
- *     value types, thus cannot provide sufficient extensibility.
- *     Interface-based type-erasure is more complex, since virtual function
- *     calls are used, but it is more extensible.
+ *     However, union-based type-erasure only supports a limited set of value
+ *     types, thus cannot provide sufficient extensibility.
+ *     Interface-based type-erasure has more overhead, since virtual function
+ *     are used, but it is more extensible.
  *
  *     There must be a way to identify and obtain a value in the log record.
  *     The possible approaches include compile-time tag-based dispatch and
