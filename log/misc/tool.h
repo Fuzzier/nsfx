@@ -42,13 +42,13 @@ inline std::shared_ptr<Record> MakeRecord(
         MakeConstantAttributeValue<typename SeverityLevelInfo::Type>(severityLevel));
     record->Add(
         FunctionNameInfo::GetName(),
-        MakeConstantAttributeValue<typename FunctionNameInfo::Type>(__FUNCTION__));
+        MakeConstantAttributeValue<typename FunctionNameInfo::Type>(functionName));
     record->Add(
         FileNameInfo::GetName(),
-        MakeConstantAttributeValue<typename FileNameInfo::Type>(__FILE__));
+        MakeConstantAttributeValue<typename FileNameInfo::Type>(fileName));
     record->Add(
         LineNumberInfo::GetName(),
-        MakeConstantAttributeValue<typename LineNumberInfo::Type>(__LINE__));
+        MakeConstantAttributeValue<typename LineNumberInfo::Type>(lineNumber));
     record->Add(
         MessageInfo::GetName(),
         MakeConstantAttributeValue<typename MessageInfo::Type>(std::move(message)));
