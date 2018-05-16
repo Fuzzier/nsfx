@@ -28,10 +28,15 @@ NSFX_TEST_SUITE(Record)
             auto record = std::make_shared<nsfx::log::Record>();
             record->Add("Name", nsfx::log::MakeConstantAttributeValue<std::string>("Test"));
             record->Add("Level", nsfx::log::MakeConstantAttributeValue<int>(0));
+            record->Add(nsfx::log::SeverityLevelInfo::GetName(),
+                        nsfx::log::MakeConstantAttributeValue<
+                        typename nsfx::log::SeverityLevelInfo::Type>(nsfx::log::LOG_INFO));
             NSFX_TEST_EXPECT(record->Exists("Name"));
             NSFX_TEST_EXPECT(record->Exists("Level"));
+            NSFX_TEST_EXPECT(record->Exists(nsfx::log::SeverityLevelInfo::GetName()));
             NSFX_TEST_EXPECT_EQ(record->Get<std::string>("Name"), "Test");
             NSFX_TEST_EXPECT_EQ(record->Get<int>("Level"), 0);
+            NSFX_TEST_EXPECT_EQ(record->Get<nsfx::log::SeverityLevelInfo>(), nsfx::log::LOG_INFO);
 
             record->Update("Level", nsfx::log::MakeConstantAttributeValue<int>(1));
             NSFX_TEST_EXPECT(record->Exists("Name"));

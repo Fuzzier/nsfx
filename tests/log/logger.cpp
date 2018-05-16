@@ -16,38 +16,41 @@
 #include <nsfx/test.h>
 #include <nsfx/log/logger/logger.h>
 #include <nsfx/log/record/record.h>
-#include <nsfx/log/attribute-value/const-attribute-value.h>
-#include <nsfx/log/misc/attribute-value-info.h>
+#include <nsfx/log/misc/tool.h>
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 
 
 NSFX_TEST_SUITE(Logger)
 {
+    class Sink : public nsfx::log::ILogger
+    {
+    public:
+        virtual ~Sink(void) {}
+        virtual void Fire(const std::shared_ptr<nsfx::log::Record>& record) NSFX_OVERRIDE
+        {
+            std::cout << record->Get<nsfx::log::FileNameInfo>() << std::endl;
+        }
+
+        NSFX_INTERFACE_MAP_BEGIN(Sink)
+            NSFX_INTERFACE_ENTRY(nsfx::log::ILogger)
+        NSFX_INTERFACE_MAP_END()
+    };
+
     NSFX_TEST_CASE(Test)
     {
         try
         {
-            // for (bool go = true; go; go = false)
-            // for (auto record = std::make_shared<nsfx::log::Record>(); go; go = false)
-            // for ([&record] {
-            //     record->Add(nsfx::log::FileNameInfo::GetName(),
-            //                 nsfx::log::MakeConstantAttributeValue<
-            //                     typename nsfx::log::FileNameInfo::Type>(__FILE__));
-            //     record->Add(nsfx::log::LineNumberInfo::GetName(),
-            //                 nsfx::log::MakeConstantAttributeValue<
-            //                     typename nsfx::log::LineNumberInfo::Type>(__LINE__));
-            // }(); go; go = false);
+            nsfx::Ptr<nsfx::log::ILogger> logger =
+                ::nsfx::CreateObject<nsfx::log::ILogger>(
+                    "edu.uestc.nsfx.log.Logger");
 
-            for (auto record = std::make_shared<nsfx::log::Record>();
-                 [&record] () -> bool {
-                     record->Add(nsfx::log::FileNameInfo::GetName(),
-                                 nsfx::log::MakeConstantAttributeValue<
-                                 typename nsfx::log::FileNameInfo::Type>(__FILE__));
-                     record->Add(nsfx::log::LineNumberInfo::GetName(),
-                                 nsfx::log::MakeConstantAttributeValue<
-                                 typename nsfx::log::LineNumberInfo::Type>(__LINE__));
-                     return false;
-                 }(); );
+            nsfx::StaticObject<Sink> sink;
+            nsfx::Ptr<nsfx::log::ILoggerEvent>(logger)->Connect(&sink);
+
+            NSFX_LOG(logger, nsfx::log::LOG_FATAL) << "fatal";
+
         }
         catch (boost::exception& e)
         {

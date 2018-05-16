@@ -18,6 +18,7 @@
 
 
 #include <nsfx/log/config.h>
+#include <nsfx/log/record/attribute-value-info.h>
 #include <nsfx/log/attribute-value/attribute-value.h>
 #include <nsfx/log/exception.h>
 #include <boost/type_traits/decay.hpp>
@@ -32,15 +33,17 @@ NSFX_LOG_OPEN_NAMESPACE
  *
  * @brief Log record.
  *
- * A log record carries a set of named values, such as
- * 1) severity level
- * 2) timestamp
- * 3) message
- * 4) function name
- * 5) scope name
- * 6) file name
- * 7) line number
- * etc.
+ * A log record carries a set of named values.
+ *
+ * The default logger provides the following named values by default.
+ * * severity level
+ * * message
+ * * function name
+ * * file name
+ * * line number
+ *
+ * To support <i>timestamp</i>, users shall add a \c TimestampAttribute to the
+ * logger via the \c IAttributeSet interface.
  */
 class Record
 {
@@ -80,6 +83,15 @@ public:
      */
     template<class T>
     const T& Get(const std::string& name) const;
+
+    /**
+     * @brief Get the named value via an info class.
+     *
+     * @tparam AttributeValueInfo An info class that is defined by
+     *                            \c NSFX_DEFINE_ATTRIBUTE_VALUE_INFO().
+     */
+    template<class AttributeValueInfo>
+    const typename AttributeValueInfo::Type& Get(void) const;
 
 public:
     template<class Visitor>
@@ -161,6 +173,15 @@ inline const T& Record::Get(const std::string& name) const
             AttributeValueNotFound() <<
             ErrorMessage("Cannot find the log attribute value."));
     }
+}
+
+template<class AttributeValueInfo>
+inline const typename AttributeValueInfo::Type& Record::Get(void) const
+{
+    static_assert(NsfxIsAttributeValueInfo<AttributeValueInfo>::value,
+                  "Invalid AttributeValueInfo class.");
+    return Get<typename AttributeValueInfo::Type>(
+                AttributeValueInfo::GetName());
 }
 
 template<class Visitor>

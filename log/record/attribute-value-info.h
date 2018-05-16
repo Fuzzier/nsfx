@@ -19,29 +19,34 @@
 
 #include <nsfx/log/config.h>
 #include <nsfx/log/misc/severity-level.h>
-#include <nsfx/simulation/i-clock.h> // TimePoint
+#include <boost/type_traits/integral_constant.hpp>
+
+
+template<class T>
+class NsfxIsAttributeValueInfo : public ::boost::false_type {};
 
 
 NSFX_LOG_OPEN_NAMESPACE
 
 
-#define NSFX_DEFINE_ATTRIBUTE_VALUE_INFO(info, name, type)  \
-    class info                                              \
-    {                                                       \
-    public:                                                 \
-        static const char* GetName(void)                    \
-        {                                                   \
-            return name;                                    \
-        }                                                   \
-        typedef type Type;                                  \
-    }
+#define NSFX_DEFINE_ATTRIBUTE_VALUE_INFO(Class, name, type)  \
+    class Class                                              \
+    {                                                        \
+    public:                                                  \
+        static const char* GetName(void)                     \
+        {                                                    \
+            return name;                                     \
+        }                                                    \
+        typedef type Type;                                   \
+    };                                                       \
+    template<>                                               \
+    class ::NsfxIsAttributeValueInfo<Class> :                \
+        public ::boost::true_type {}
 
 
-NSFX_DEFINE_ATTRIBUTE_VALUE_INFO(SeverityLevelInfo, "SeverityLevel", SeverityLevel);
-NSFX_DEFINE_ATTRIBUTE_VALUE_INFO(TimestampInfo,     "Timestamp",     TimePoint);
+NSFX_DEFINE_ATTRIBUTE_VALUE_INFO(SeverityLevelInfo, "SeverityLevel", uint32_t);
 NSFX_DEFINE_ATTRIBUTE_VALUE_INFO(MessageInfo,       "Message",       std::string);
 NSFX_DEFINE_ATTRIBUTE_VALUE_INFO(FunctionNameInfo,  "FunctionName",  std::string);
-NSFX_DEFINE_ATTRIBUTE_VALUE_INFO(ScopeNameInfo,     "ScopeName",     std::string);
 NSFX_DEFINE_ATTRIBUTE_VALUE_INFO(FileNameInfo,      "FileName",      std::string);
 NSFX_DEFINE_ATTRIBUTE_VALUE_INFO(LineNumberInfo,    "LineNumber",    size_t);
 

@@ -168,6 +168,7 @@
  *    A gray-box reusable component class <b>can</b> have non-default
  *    constructors.
  *    Gray-box reuse is used to implement a component.
+ *    Many components provided by the library are gray-box reusable.
  *
  * ## Black-box reuse
  *    In black-box reuse scheme, users do not know the type of the component

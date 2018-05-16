@@ -44,7 +44,7 @@ NSFX_LOG_OPEN_NAMESPACE
  * * IAttributeSet
  * * IFilterChain
  * ### Events
- * * ILogEvent
+ * * ILoggerEvent
  */
 class Logger :
     public ILogger
