@@ -19,22 +19,31 @@
 
 #include <nsfx/log/config.h>
 #include <nsfx/log/logger/i-logger.h>
+#include <nsx/log/formatter/i-stream-formatter.h>
 
 
 NSFX_LOG_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
-class IStreamSink :
+class StdCoutSink :
     public ILogger
 {
-public:
-    virtual ~IStreamLogger(void) NSFX_NOEXCEPT {}
+    typedef StdCoutSink  ThisClass;
 
 public:
-    virtual void Fire(const std:shared_ptr<Record>& record) NSFX_OVERRIDE = 0;
+    virtual ~StdCoutSink(void) NSFX_NOEXCEPT {}
 
-    virtual void Use(std::ostream* os) = 0;
+public:
+    virtual void Fire(const std:shared_ptr<Record>& record) NSFX_OVERRIDE;
+
+    NSFX_INTERFACE_MAP_BEGIN(ThisClass)
+        NSFX_INTERFACE_ENTRY(ILogger)
+        NSFX_INTERFACE_ENTRY(IStreamFormatter)
+    NSFX_INTERFACE_MAP_END()
+
+private:
+    Ptr<IStreamFormatter>  formatter_;
 };
 
 

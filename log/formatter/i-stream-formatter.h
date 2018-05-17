@@ -33,7 +33,7 @@ NSFX_LOG_OPEN_NAMESPACE
 /**
  * @ingroup Log
  *
- * @brief The text log formatter interface.
+ * @brief The stream formatter interface.
  */
 class IStreamFormatter :
     virtual public IObject
