@@ -21,6 +21,7 @@
 #include <nsfx/log/record/attribute-value-info.h>
 #include <nsfx/log/attribute-value/attribute-value.h>
 #include <nsfx/log/exception.h>
+#include <string>
 #include <boost/type_traits/decay.hpp>
 
 

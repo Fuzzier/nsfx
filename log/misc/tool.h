@@ -29,12 +29,13 @@ NSFX_LOG_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
-inline std::shared_ptr<Record> MakeRecord(
-    uint32_t      severityLevel,
-    const char*   functionName,
-    const char*   fileName,
-    size_t        lineNumber,
-    std::string&& message)
+inline void CommitRecord(
+    const Ptr<ILogger>& logger,
+    uint32_t            severityLevel,
+    const char*         functionName,
+    const char*         fileName,
+    size_t              lineNumber,
+    std::string&&       message)
 {
     std::shared_ptr<Record> record(std::make_shared<::nsfx::log::Record>());
     record->Add(
@@ -52,25 +53,24 @@ inline std::shared_ptr<Record> MakeRecord(
     record->Add(
         MessageInfo::GetName(),
         MakeConstantAttributeValue<typename MessageInfo::Type>(std::move(message)));
-    return std::move(record);
+    logger->Fire(record);
 }
 
 
 NSFX_LOG_CLOSE_NAMESPACE
 
 
-#define NSFX_LOG(logger, severityLevel)                                \
-    for (bool go = true; go; go = false)                               \
-    for (::std::ostringstream oss; go; go = false)                     \
-    for (auto record = ::std::make_shared<::nsfx::log::Record>(); go;  \
-         (logger)->Fire(::nsfx::log::MakeRecord(                       \
-                            (severityLevel),                           \
-                            __FUNCTION__,                              \
-                            __FILE__,                                  \
-                            __LINE__,                                  \
-                            oss.str())),                               \
-         go = false                                                    \
-        )                                                              \
+#define NSFX_LOG(logger, severityLevel)              \
+    for (bool go = true; go; go = false)             \
+    for (::std::ostringstream oss; go;               \
+         ::nsfx::log::CommitRecord((logger),         \
+                                   (severityLevel),  \
+                                   __FUNCTION__,     \
+                                   __FILE__,         \
+                                   __LINE__,         \
+                                   oss.str()),       \
+         go = false                                  \
+        )                                            \
         oss
 
 

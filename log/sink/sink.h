@@ -5,9 +5,9 @@
  *
  * @version 1.0
  * @author  Fuzzier Tang <gauchyler@gmail.com>
- * @date    2015-02-16
+ * @date    2018-05-17
  *
- * @copyright Copyright (c) 2015.
+ * @copyright Copyright (c) 2018.
  *            National Key Laboratory of Science and Technology on Communications,
  *            University of Electronic Science and Technology of China.
  *            All rights reserved.
@@ -18,26 +18,27 @@
 
 
 #include <nsfx/log/config.h>
-#include <nsfx/log/record.h>
+#include <nsfx/log/logger/i-logger.h>
 
 
-NSFX_LOG_OPEN_NAMESPACE /*{{{*/
+NSFX_LOG_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
-class Sink /*{{{*/
+class IStreamLogger :
+    public ILogger
 {
 public:
-    virtual ~Sink(void) NSFX_NOEXCEPT {}
+    virtual ~IStreamLogger(void) NSFX_NOEXCEPT {}
 
-    // Sink operations./*{{{*/
 public:
-    virtual void CommitRecord(const Record& record) = 0;
-    /*}}}*/
-}; // class Sink /*}}}*/
+    virtual void Fire(const std:shared_ptr<Record>& record) NSFX_OVERRIDE = 0;
+
+    virtual void Use(std::ostream* os) = 0;
+};
 
 
-NSFX_LOG_CLOSE_NAMESPACE /*}}}*/
+NSFX_LOG_CLOSE_NAMESPACE
 
 
 #endif // SINK_H__72BA2E38_8BE7_472F_B664_A0BD5D2A6A49

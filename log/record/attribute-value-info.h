@@ -19,6 +19,7 @@
 
 #include <nsfx/log/config.h>
 #include <nsfx/log/misc/severity-level.h>
+#include <string>
 #include <boost/type_traits/integral_constant.hpp>
 
 
