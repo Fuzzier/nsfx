@@ -14,8 +14,8 @@
  */
 
 #include <nsfx/test.h>
-#include <nsfx/log/filter/filter.h>
-#include <nsfx/log/attribute-value/const-attribute-value.h>
+#include <nsfx/log/core/filter/filter.h>
+#include <nsfx/log/core/attribute-value/const-attribute-value.h>
 #include <nsfx/component/object.h>
 #include <iostream>
 
@@ -28,8 +28,8 @@ NSFX_TEST_SUITE(Filter)
         {
             nsfx::Ptr<nsfx::log::IFilter> filter =
                 nsfx::log::CreateFilter(
-                    [] (const std::shared_ptr<nsfx::log::Record>& record) -> uint32_t {
-                        uint32_t decision = nsfx::log::DECLINE;
+                    [] (const std::shared_ptr<nsfx::log::Record>& record) -> nsfx::log::FilterDecision {
+                        nsfx::log::FilterDecision decision = nsfx::log::DECLINE;
                         if (record->Exists("Level"))
                         {
                             if (record->Get<int>("Level") > 0)

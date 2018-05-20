@@ -14,13 +14,14 @@
  */
 
 #include <nsfx/test.h>
-#include <nsfx/log/logger/logger.h>
-#include <nsfx/log/record/record.h>
-#include <nsfx/log/formatter/stream-formatter.h>
-#include <nsfx/log/misc/tool.h>
-#include <nsfx/log/misc/severity-level-filter.h>
-#include <nsfx/log/misc/timestamp-attribute.h>
-#include <nsfx/log/sink/stream-sink.h>
+#include <nsfx/log/core/logger/logger.h>
+#include <nsfx/log/core/record/record.h>
+#include <nsfx/log/core/formatter/stream-formatter.h>
+#include <nsfx/log/core/sink/stream-sink.h>
+#include <nsfx/log/core/sink/file-sink.h>
+#include <nsfx/log/default/severity-level-filter.h>
+#include <nsfx/log/default/timestamp-attribute.h>
+#include <nsfx/log/default/tool.h>
 #include <nsfx/simulation/i-clock.h>
 #include <iostream>
 #include <sstream>
@@ -73,11 +74,7 @@ NSFX_TEST_SUITE(Logger)
                 filters->PushBack(filter);
             }
 
-            nsfx::Ptr<nsfx::log::IStreamSink> sink =
-                nsfx::CreateObject<nsfx::log::IStreamSink>(
-                    "edu.uestc.nsfx.log.StreamSink");
-            sink->SetStream(&std::cout);
-
+            // Stream formatter
             nsfx::Ptr<nsfx::log::IStreamFormatter> formatter =
                 nsfx::log::CreateStreamFormatter(
                     [] (std::ostream& os, const std::shared_ptr<nsfx::log::Record>& record) {
@@ -89,10 +86,24 @@ NSFX_TEST_SUITE(Logger)
                            << record->Get<nsfx::log::MessageInfo>()
                            << std::endl;
                     });
-            nsfx::Ptr<nsfx::log::IStreamFormatterUser>(sink)->Use(formatter);
 
-            nsfx::Ptr<nsfx::log::ILoggerEvent>(logger)->Connect(sink);
+            // Stream sink
+            nsfx::Ptr<nsfx::log::IStreamSink> strmSink =
+                nsfx::CreateObject<nsfx::log::IStreamSink>(
+                    "edu.uestc.nsfx.log.StreamSink");
+            strmSink->SetStream(&std::cout);
+            nsfx::Ptr<nsfx::log::IStreamFormatterUser>(strmSink)->Use(formatter);
+            nsfx::Ptr<nsfx::log::ILoggerEvent>(logger)->Connect(strmSink);
 
+            // File sink
+            nsfx::Ptr<nsfx::log::IFileSink> fileSink =
+                nsfx::CreateObject<nsfx::log::IFileSink>(
+                    "edu.uestc.nsfx.log.FileSink");
+            fileSink->Open("log.txt");
+            nsfx::Ptr<nsfx::log::IStreamFormatterUser>(fileSink)->Use(formatter);
+            nsfx::Ptr<nsfx::log::ILoggerEvent>(logger)->Connect(fileSink);
+
+            // Log
             NSFX_LOG(logger, nsfx::log::LOG_FATAL)    << "fatal";
             NSFX_LOG(logger, nsfx::log::LOG_ERROR)    << "error";
             NSFX_LOG(logger, nsfx::log::LOG_WARNING)  << "warning";
