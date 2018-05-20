@@ -5,7 +5,7 @@
  *
  * @version 1.0
  * @author  Fuzzier Tang <gauchyler@gmail.com>
- * @date    2018-05-17
+ * @date    2018-05-19
  *
  * @copyright Copyright (c) 2018.
  *            National Key Laboratory of Science and Technology on Communications,
@@ -13,42 +13,34 @@
  *            All rights reserved.
  */
 
-#ifndef I_STREAM_SINK_H__A801C5A3_45EE_4466_A866_ECEDF358C071
-#define I_STREAM_SINK_H__A801C5A3_45EE_4466_A866_ECEDF358C071
+#ifndef I_FILE_SINK_H__D721CA0E_E7DE_488A_82EA_ED7EC70FE1D3
+#define I_FILE_SINK_H__D721CA0E_E7DE_488A_82EA_ED7EC70FE1D3
 
 
 #include <nsfx/log/config.h>
 #include <nsfx/log/logger/i-logger.h>
-#include <ostream>
-#include <memory> // shared_ptr
 
 
 NSFX_LOG_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/**
- * @ingroup Log
- * @brief The stream sink interface.
- */
-class IStreamSink :
+class IFileSink :
     public ILogger
 {
 public:
-    virtual ~IStreamSink(void) BOOST_NOEXCEPT {}
+    virtual ~IFileSink(void) NSFX_NOEXCEPT {}
 
-public:
-    virtual void Fire(const std::shared_ptr<Record>& record) NSFX_OVERRIDE = 0;
+    virtual void Fire(const std:shared_ptr<Record>& record) NSFX_OVERRIDE = 0;
 
-    virtual void SetStream(std::ostream* os) = 0;
+    virtual void Open(const std::string& fileName) = 0;
 };
 
-
-NSFX_DEFINE_CLASS_UID(IStreamSink, "edu.uestc.nsfx.log.IStreamSink");
+NSFX_DEFINE_CLASS_UID(IFileSink, "edu.uestc.nsfx.log.IFileSink");
 
 
 NSFX_LOG_CLOSE_NAMESPACE
 
 
-#endif // I_STREAM_SINK_H__A801C5A3_45EE_4466_A866_ECEDF358C071
+#endif // I_FILE_SINK_H__D721CA0E_E7DE_488A_82EA_ED7EC70FE1D3
 

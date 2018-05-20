@@ -45,7 +45,7 @@ NSFX_LOG_OPEN_NAMESPACE
         public ::boost::true_type {}
 
 
-NSFX_DEFINE_ATTRIBUTE_VALUE_INFO(SeverityLevelInfo, "SeverityLevel", uint32_t);
+NSFX_DEFINE_ATTRIBUTE_VALUE_INFO(SeverityLevelInfo, "SeverityLevel", SeverityLevel);
 NSFX_DEFINE_ATTRIBUTE_VALUE_INFO(MessageInfo,       "Message",       std::string);
 NSFX_DEFINE_ATTRIBUTE_VALUE_INFO(FunctionNameInfo,  "FunctionName",  std::string);
 NSFX_DEFINE_ATTRIBUTE_VALUE_INFO(FileNameInfo,      "FileName",      std::string);
