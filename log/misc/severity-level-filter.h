@@ -18,16 +18,13 @@
 
 
 #include <nsfx/log/config.h>
-#include <nsfx/log/filter/filter.h>
-#include <nsfx/log/filter/severity-level-filter.h>
-#include <nsfx/log/misc/attribute-names.h>
+#include <nsfx/log/filter/i-filter.h>
+#include <nsfx/log/misc/i-severity-level-filter.h>
+#include <nsfx/log/record/attribute-value-info.h>
+#include <nsfx/component/class-registry.h>
 
 
 NSFX_LOG_OPEN_NAMESPACE
-
-
-////////////////////////////////////////////////////////////////////////////////
-Ptr<ISeverityLevelFilter> CreateSeverityLevelFilter(uint32_t acceptedLevels);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -43,12 +40,14 @@ Ptr<ISeverityLevelFilter> CreateSeverityLevelFilter(uint32_t acceptedLevels);
 class SeverityLevelFilter :
     public ISeverityLevelFilter
 {
+    typedef SeverityLevelFilter  ThisClass;
+
 public:
     SeverityLevelFilter(void) :
         acceptedLevels_(LOG_ALL)
     {}
 
-    SeverityLevelFilter(acceptedLevels) :
+    SeverityLevelFilter(uint32_t acceptedLevels) :
         acceptedLevels_(acceptedLevels)
     {}
 
@@ -70,6 +69,9 @@ private:
 };
 
 
+NSFX_REGISTER_CLASS(SeverityLevelFilter, "edu.uestc.nsfx.log.SeverityLevelFilter");
+
+
 ////////////////////////////////////////////////////////////////////////////////
 inline uint32_t SeverityLevelFilter::Decide(const std::shared_ptr<Record>& record)
 {
@@ -77,11 +79,12 @@ inline uint32_t SeverityLevelFilter::Decide(const std::shared_ptr<Record>& recor
     record->VisitIfExists(
         SeverityLevelInfo::GetName(),
         [&] (const AttributeValue& value) {
-            if (value->Get<uint32_t>() & acceptedLevels_ == 0)
+            if ((value.Get<typename SeverityLevelInfo::Type>() & acceptedLevels_) == 0)
             {
                 decision = DECLINE;
             }
     });
+    return decision;
 }
 
 inline void SeverityLevelFilter::ToggleAccept(uint32_t severityLevels)
@@ -102,15 +105,6 @@ inline void SeverityLevelFilter::SetAcceptedLevels(uint32_t severityLevels)
 inline uint32_t SeverityLevelFilter::GetAcceptedLevels(void)
 {
     return acceptedLevels_;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-inline Ptr<ISeverityLevelFilter>
-CreateSeverityLevelFilter(uint32_t acceptedLevels)
-{
-    return Ptr<ISeverityLevelFilter>(
-        new Object<SeverityLevelFilter>(acceptedLevels));
 }
 
 

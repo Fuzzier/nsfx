@@ -22,6 +22,7 @@
 #include <nsfx/component/uid.h>
 #include <nsfx/component/i-object.h>
 #include <nsfx/component/ptr.h>
+#include <nsfx/component/i-user.h>
 #include <ostream>
 #include <memory> // shared_ptr
 
@@ -32,7 +33,6 @@ NSFX_LOG_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Log
- *
  * @brief The stream formatter interface.
  */
 class IStreamFormatter :
@@ -50,6 +50,12 @@ public:
 
 
 NSFX_DEFINE_CLASS_UID(IStreamFormatter, "edu.uestc.nsfx.log.IStreamFormatter");
+
+
+////////////////////////////////////////////////////////////////////////////////
+NSFX_DEFINE_USER_INTERFACE(
+    IStreamFormatterUser, "edu.uestc.nsfx.log.IStreamFormatterUser",
+    IStreamFormatter);
 
 
 NSFX_LOG_CLOSE_NAMESPACE

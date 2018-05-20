@@ -72,13 +72,22 @@ class StreamFormatter :
     typedef StreamFormatter  ThisClass;
 
 public:
-    StreamFormatter(Functor&& functor);
+    StreamFormatter(Functor&& functor) :
+        functor_(std::move(functor))
+    {}
 
     virtual ~StreamFormatter(void) {}
 
     virtual void Format(std::ostream& os,
                         const std::shared_ptr<Record>& record) NSFX_OVERRIDE
     {
+        if (!os)
+        {
+            BOOST_THROW_EXCEPTION(
+                InvalidArgument() <<
+                ErrorMessage("The log stream formatter cannot "
+                             "use an invalid stream."));
+        }
         functor_(os, record);
     }
 
@@ -95,7 +104,8 @@ private:
 template<class Functor>
 inline Ptr<IStreamFormatter> CreateStreamFormatter(Functor&& functor)
 {
-    return Ptr<IStreamFormatter>(new StreamFormatter(std::move(functor)));
+    typedef Object<StreamFormatter<Functor> >  StreamFormatterClass;
+    return Ptr<IStreamFormatter>(new StreamFormatterClass(std::move(functor)));
 }
 
 

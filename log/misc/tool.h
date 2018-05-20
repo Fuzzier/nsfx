@@ -31,7 +31,7 @@ NSFX_LOG_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 inline void CommitRecord(
     const Ptr<ILogger>& logger,
-    uint32_t            severityLevel,
+    SeverityLevel       severityLevel,
     const char*         functionName,
     const char*         fileName,
     size_t              lineNumber,

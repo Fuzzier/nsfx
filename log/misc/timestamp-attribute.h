@@ -20,12 +20,25 @@
 #include <nsfx/log/config.h>
 #include <nsfx/log/attribute/attribute.h>
 #include <nsfx/log/attribute-value/const-attribute-value.h>
+#include <nsfx/log/record/attribute-value-info.h>
 #include <nsfx/simulation/i-clock.h>
 #include <memory>  // shared_ptr
 #include <utility> // move, forward
 
 
 NSFX_LOG_OPEN_NAMESPACE
+
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+ * @ingroup Log
+ * @brief Make a timestamp attribute.
+ */
+Attribute MakeTimestampAttribute(Ptr<IClock> clock);
+
+
+////////////////////////////////////////////////////////////////////////////////
+NSFX_DEFINE_ATTRIBUTE_VALUE_INFO(TimestampInfo, "Timestamp", TimePoint);
 
 
 ////////////////////////////////////////////////////////////////////////////////
