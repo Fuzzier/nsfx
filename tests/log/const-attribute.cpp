@@ -14,7 +14,7 @@
  */
 
 #include <nsfx/test.h>
-#include <nsfx/log/attribute/const-attribute.h>
+#include <nsfx/log/core/attribute/const-attribute.h>
 #include <iostream>
 
 

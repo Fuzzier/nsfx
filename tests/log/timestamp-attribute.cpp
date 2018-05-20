@@ -14,7 +14,7 @@
  */
 
 #include <nsfx/test.h>
-#include <nsfx/log/misc/timestamp-attribute.h>
+#include <nsfx/log/default/timestamp-attribute.h>
 #include <nsfx/component/object.h>
 #include <iostream>
 

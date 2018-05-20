@@ -14,8 +14,9 @@
  */
 
 #include <nsfx/test.h>
-#include <nsfx/log/record/record.h>
-#include <nsfx/log/attribute-value/const-attribute-value.h>
+#include <nsfx/log/core/record/record.h>
+#include <nsfx/log/core/attribute-value/const-attribute-value.h>
+#include <nsfx/log/default/severity-level.h>
 #include <iostream>
 
 
