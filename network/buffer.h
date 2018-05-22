@@ -39,9 +39,9 @@ NSFX_OPEN_NAMESPACE
 struct BufferStorage
 {
     /**
-     * @brief The size of \c bytes_ in bytes.
+     * @brief The capacity of \c bytes_ in bytes.
      */
-    size_t size_;
+    size_t capacity_;
 
     /**
      * @brief The reference count.
@@ -49,10 +49,10 @@ struct BufferStorage
      * A reference count is held by each buffer and buffer iterator.
      *
      * A reference count is provided so the storage can be shared without a
-     * deep copy.<br/>
+     * deep copy.
      * e.g., to extract the a chunk from the buffer, a new buffer is created
      * with a different data position, and shares the same storage with the
-     * original buffer to avoid a deep copy.<br/>
+     * original buffer to avoid a deep copy.
      */
     ptrdiff_t refCount_;
 
@@ -61,13 +61,13 @@ struct BufferStorage
      *
      * A data lock is held by each buffer iterator.
      *
-     * When the data area is locked, the data area cannot be moved or reduced.<br/>
+     * When the data area is locked, the data area cannot be moved or reduced.
      * e.g., each buffer iterator holds a lock, while an iterator is accessing
      * the data area, the data area cannot be moved or reduced as the iterator
      * would become <i>semantically</i> invalidated and cause unexpected errors
-     * that are hard to detect.<br/>
+     * that are hard to detect.
      * Runtime check is performed by \c Buffer objects to prevent such errors,
-     * which encourages <b>scoped</b> usage of buffer iterators.<br/>
+     * which encourages <b>scoped</b> usage of buffer iterators.
      * i.e., users shall always use buffer iterators in a local scope, where
      * users shall not invoke methods that <i>potentially</i> move or reduce
      * the data area.
@@ -85,18 +85,18 @@ struct BufferStorage
     uint8_t bytes_[1];
 
     // Static methods.
-    static BufferStorage* Create(size_t size)
+    static BufferStorage* Create(size_t capacity)
     {
-        if (size == 0)
+        if (capacity == 0)
         {
             BOOST_THROW_EXCEPTION(
                 InvalidArgument() <<
                 ErrorMessage("Cannot allocation 0-sized buffer."));
         }
-        size_t storageSize = sizeof (BufferStorage) - 1 + size;
+        size_t storageSize = sizeof (BufferStorage) - 1 + capacity;
         uint8_t* bytes = new uint8_t[storageSize];
         BufferStorage* storage = reinterpret_cast<BufferStorage*>(bytes);
-        storage->size_ = size;
+        storage->capacity_ = capacity;
         storage->dataLockCount_ = 0;
         storage->refCount_ = 0;
         return storage;
@@ -166,14 +166,14 @@ struct BufferStorage
  * @ingroup Network
  * @brief The iterator for accessing the data.
  *
- * The iterator is limited to move alone the data area in the buffer.<br/>
+ * The iterator is limited to move alone the data area in the buffer.
  * An attempt to move outside of the data area would result in throwing
- * \c OutOfBounds.<br/>
+ * \c OutOfBounds.
  *
  * A buffer iterator is not associated with a buffer, but associated with the
- * underlying storage that is shared among buffers and iterators.<br/>
+ * underlying storage that is shared among buffers and iterators.
  *
- * ### Supported methods:<br/>
+ * ### Supported methods:
  * * copyable
  * * operator ++, --
  * * operator +, +=, -, -=
@@ -192,7 +192,7 @@ class BufferIterator
 {
     // Function template dispatchers./*{{{*/
 private:
-    template<size_t byte_size, bool reverseEndian>
+    template<size_t numBytes, bool reverseEndian>
     struct Dispatcher {};
 
     template<class T, endian::Order order>
@@ -886,12 +886,12 @@ operator-(const BufferIterator& lhs, const BufferIterator& rhs) BOOST_NOEXCEPT
  * @brief Buffer copy policy.
  *
  * A buffer holds a memory space, and may have a sequence of meaningful bytes
- * within the space.<br/>
- * The area before the meaningful bytes is called the pre-data area.<br/>
- * The area after the meaningful bytes is call the post-data area.<br/>
- * The area occupied by the meaningful bytes is call the data area.<br/>
+ * within the space.
+ * The area before the meaningful bytes is called the pre-data area.
+ * The area after the meaningful bytes is call the post-data area.
+ * The area occupied by the meaningful bytes is call the data area.
  * When cloning from a source buffer, the destination buffer may have some
- * memory space already.<br/>
+ * memory space already.
  * Copy policies specify whether the destination buffer should be reallocated.
  */
 struct BufferCopyPolicy {};
@@ -902,11 +902,11 @@ struct BufferCopyPolicy {};
  *
  * This policy ensures that the destination buffer must have enough space to
  * accommodate the data in the source buffer, even if the destination has
- * a smaller space than the source buffer.<br/>
+ * a smaller space than the source buffer.
  * If possible, the destination buffer reserves the same post-data area as the
- * source buffer, leaving a smaller pre-data size than the source buffer.<br/>
+ * source buffer, leaving a smaller pre-data size than the source buffer.
  * Otherwise, the pre-data area becomes empty, and the post-data area is also
- * compressed.<br/>
+ * compressed.
  *
  * This is the policy currently in use.
  */
@@ -918,7 +918,7 @@ struct BufferCopyPolicyAccommodateData : BufferCopyPolicy {};
  *
  * This policy ensures that the destination buffer must have no less space than
  * the source buffer, even if the destination buffer is large enough to
- * accommodate the data in the source buffer.<br/>
+ * accommodate the data in the source buffer.
  * The destination buffer reserves the same post-data size is the source buffer.
  */
 struct BufferCopyPolicyAccommodateSize : BufferCopyPolicy {};
@@ -932,13 +932,13 @@ struct BufferCopyPolicyAccommodateSize : BufferCopyPolicy {};
  * @ingroup Network
  * @brief A resizeable buffer.
  *
- * The buffer holds a storage that provides a memory space for the buffer.<br/>
- * The storage is logically divided into three areas.<br/>
+ * The buffer holds a storage that provides a memory space for the buffer.
+ * The storage is logically divided into three areas.
  * The data area is located in middle of the storage, and the remaining space
- * is naturally divied in to the pre-data area and the post-data area.<br/>
+ * is naturally divied in to the pre-data area and the post-data area.
  *
  * ### Basic exception safety for 'Copy' methods.
- * The source buffer retains its original state.<br/>
+ * The source buffer retains its original state.
  * The destination buffer is put in an empty state.
  *
  * ### Strong exception safety for all other methods.
@@ -961,15 +961,15 @@ public:
     /**
      * @brief Create a buffer.
      *
-     * @param[in] size  The size of the storage.
+     * @param[in] capacity  The capacity of the storage.
      *
      * The data area is positioned at the end of the storage, optimizing for
      * adding data at the head of the storage.
      */
-    explicit Buffer(size_t size) :
-        storage_(BufferStorage::Create(size)),
-        start_(size),
-        end_(size)
+    explicit Buffer(size_t capacity) :
+        storage_(BufferStorage::Create(capacity)),
+        start_(capacity),
+        end_(capacity)
     {
         Acquire();
     }
@@ -977,18 +977,18 @@ public:
     /**
      * @brief Create a buffer.
      *
-     * @param[in] size  The size of the storage.
-     * @param[in] start The start position of the data area.
+     * @param[in] capacity  The capacity of the storage.
+     * @param[in] start     The start position of the data area.
      *
-     * @throw InvalidArgument Thrown if \c start is beyond \c size.
+     * @throw InvalidArgument Thrown if \c start is beyond \c capacity.
      */
-    Buffer(size_t size, size_t start) :
-        storage_(BufferStorage::Create(size)),
+    Buffer(size_t capacity, size_t start) :
+        storage_(BufferStorage::Create(capacity)),
         start_(0),
         end_(0)
     {
         Acquire();
-        if (start > size)
+        if (start > capacity)
         {
             BOOST_THROW_EXCEPTION(
                 InvalidArgument() <<
@@ -1110,14 +1110,14 @@ private:
     // Methods./*{{{*/
 public:
     /**
-     * @brief Get the size of storage.
+     * @brief Get the capacity of storage.
      */
     size_t GetCapacity(void) const BOOST_NOEXCEPT
     {
         size_t result = 0;
         if (storage_)
         {
-            result = storage_->size_;
+            result = storage_->capacity_;
         }
         return result;
     }
@@ -1157,10 +1157,10 @@ public:
     /**
      * @brief Expand the data area toward the start of the buffer.
      *
-     * Compress the pre-data area to accommodate the requested size.<br/>
+     * Compress the pre-data area to accommodate the requested size.
      * If the pre-data area is not enough, the data is moved toward the end of
-     * the storage, and the post-data area is compressed.<br/>
-     * If the post-data area is still not enough, reallocate the buffer.<br/>
+     * the storage, and the post-data area is compressed.
+     * If the post-data area is still not enough, reallocate the buffer.
      *
      * ### Strong exception safety.
      * The buffer is kept intact if an exception is thrown.
@@ -1186,7 +1186,7 @@ public:
         else
         {
             size_t dataSize = GetSize();
-            if (storage_ && storage_->size_ >= numBytes + dataSize)
+            if (storage_ && storage_->capacity_ >= numBytes + dataSize)
             {
                 std::memmove(storage_->bytes_ + numBytes,
                              storage_->bytes_ + start_,
@@ -1211,10 +1211,10 @@ public:
     /**
      * @brief Expand the data area toward the end of the buffer.
      *
-     * Compress the post-data area to accommodate the requested size.<br/>
+     * Compress the post-data area to accommodate the requested size.
      * If the post-data area is not enough, the data is moved toward the start
-     * of the storage, and the pre-data area is compressed.<br/>
-     * If the pre-data area is still not enough, reallocate the buffer.<br/>
+     * of the storage, and the pre-data area is compressed.
+     * If the pre-data area is still not enough, reallocate the buffer.
      *
      * ### Strong exception safety.
      * The buffer is kept intact if an exception is thrown.
@@ -1233,16 +1233,16 @@ public:
                 ErrorMessage("There are dangling buffer iterators while "
                              "trying to resize the data area."));
         }
-        if (storage_ && storage_->size_ >= end_ + numBytes)
+        if (storage_ && storage_->capacity_ >= end_ + numBytes)
         {
             end_ += numBytes;
         }
         else
         {
             size_t dataSize = GetSize();
-            if (storage_ && storage_->size_ >= dataSize + numBytes)
+            if (storage_ && storage_->capacity_ >= dataSize + numBytes)
             {
-                size_t delta = numBytes - (storage_->size_ - end_);
+                size_t delta = numBytes - (storage_->capacity_ - end_);
                 std::memmove(storage_->bytes_ + start_ - delta,
                              storage_->bytes_ + start_,
                              dataSize);
@@ -1373,24 +1373,26 @@ public:
                 // If existing storage doesn't have enough space to accommodate the
                 // data in the source buffer, reallocate a storage as large as the
                 // source buffer.
-                if (!storage_ || (storage_->size_ < src.end_ - src.start_))
+                if (!storage_ || (storage_->capacity_ < src.end_ - src.start_))
                 {
                     Release();
                     // Allocate enough space.
                     // If exception is thrown, the buffer is in a safe state, since
                     // it's been released already.
-                    storage_ = BufferStorage::Create(src.storage_->size_);
+                    storage_ = BufferStorage::Create(src.storage_->capacity_);
                     Acquire();
                 }
                 // If existing storage has a smaller space.
-                if (storage_->size_ < src.storage_->size_)
+                if (storage_->capacity_ < src.storage_->capacity_)
                 {
                     // Reserve the same post-data area as the source buffer
                     // if possible.
-                    if (storage_->size_ >= src.storage_->size_ - src.start_)
+                    if (storage_->capacity_ >= src.storage_->capacity_ - src.start_)
                     {
-                        start_ = src.start_ - (src.storage_->size_ - storage_->size_);
-                        end_   = src.end_   - (src.storage_->size_ - storage_->size_);
+                        start_ = src.start_
+                               - (src.storage_->capacity_ - storage_->capacity_);
+                        end_   = src.end_
+                               - (src.storage_->capacity_ - storage_->capacity_);
                     }
                     else
                     {
@@ -1399,16 +1401,18 @@ public:
                     }
                 }
                 // If existing storage has a space no smaller than the source buffer.
-                else // if (storage_->size_ >= src.storage_->size_)
+                else // if (storage_->capacity_ >= src.storage_->capacity_)
                 {
                     // Reserve the same post-data area as the source buffer.
-                    start_ = src.start_ + (storage_->size_ - src.storage_->size_);
-                    end_   = src.end_   + (storage_->size_ - src.storage_->size_);
+                    start_ = src.start_
+                           + (storage_->capacity_ - src.storage_->capacity_);
+                    end_   = src.end_
+                           + (storage_->capacity_ - src.storage_->capacity_);
                 }
                 // Copy data.
                 std::memcpy(    storage_->bytes_ +     start_,
-                                src.storage_->bytes_ + src.start_,
-                                src.end_ - src.start_);
+                            src.storage_->bytes_ + src.start_,
+                            src.end_ - src.start_);
             }
         }
     }
@@ -1440,22 +1444,24 @@ public:
             {
                 // If existing storage doesn't have a space as large as the source
                 // buffer, reallocate a storage as large as the source buffer.
-                if (!storage_ || (storage_->size_ < src.storage_->size_))
+                if (!storage_ || (storage_->capacity_ < src.storage_->capacity_))
                 {
                     Release();
                     // Allocate enough space.
                     // If exception is thrown, the buffer is in a safe state, since
                     // it's been reset already.
-                    storage_ = BufferStorage::Create(src.storage_->size_);
+                    storage_ = BufferStorage::Create(src.storage_->capacity_);
                     Acquire();
                 }
                 // Reserve the same post-data area as the source buffer.
-                start_ = src.start_ + (storage_->size_ - src.storage_->size_);
-                end_   = src.end_   + (storage_->size_ - src.storage_->size_);
+                start_ = src.start_
+                       + (storage_->capacity_ - src.storage_->capacity_);
+                end_   = src.end_
+                       + (storage_->capacity_ - src.storage_->capacity_);
                 // Copy data.
                 std::memcpy(    storage_->bytes_ +     start_,
-                                src.storage_->bytes_ + src.start_,
-                                src.end_ - src.start_);
+                            src.storage_->bytes_ + src.start_,
+                            src.end_ - src.start_);
             }
         }
     }
@@ -1511,7 +1517,7 @@ public:
     }
 
     /**
-     * @brief Make a shallow copy of a portion of data area.
+     * @brief Make a shallow copy of a portion of the data area.
      *
      * @param[in] start Relative to the start of <b>data area</b>.
      * @param[in] size  The size of the chunk.
