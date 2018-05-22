@@ -4,7 +4,7 @@
  * @brief Log support for network simulation frameworks.
  *
  * @version 1.0
- * @author  Fuzzier Tang <gauchyler@gmail.com>
+ * @author  Fuzzier Tang <gauchyler@uestc.edu.cn>
  * @date    2018-05-15
  *
  * @copyright Copyright (c) 2018.
