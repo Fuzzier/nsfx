@@ -57,7 +57,7 @@ NSFX_TEST_SUITE(Buffer)
                 NSFX_TEST_EXPECT_EQ(b0.GetDataStart(), 1024);
                 NSFX_TEST_EXPECT_EQ(b0.GetDataEnd(), 1024);
                 NSFX_TEST_ASSERT(b0.GetStorage());
-                NSFX_TEST_EXPECT_EQ(b0.GetStorage()->size_, 1024);
+                NSFX_TEST_EXPECT_EQ(b0.GetStorage()->capacity_, 1024);
                 NSFX_TEST_EXPECT_EQ(b0.GetStorage()->refCount_, 1);
                 NSFX_TEST_EXPECT_EQ(b0.GetStorage()->dataLockCount_, 0);
             }
@@ -68,7 +68,7 @@ NSFX_TEST_SUITE(Buffer)
                 NSFX_TEST_EXPECT_EQ(b0.GetDataStart(), 512);
                 NSFX_TEST_EXPECT_EQ(b0.GetDataEnd(), 512);
                 NSFX_TEST_ASSERT(b0.GetStorage());
-                NSFX_TEST_EXPECT_EQ(b0.GetStorage()->size_, 1024);
+                NSFX_TEST_EXPECT_EQ(b0.GetStorage()->capacity_, 1024);
                 NSFX_TEST_EXPECT_EQ(b0.GetStorage()->refCount_, 1);
                 NSFX_TEST_EXPECT_EQ(b0.GetStorage()->dataLockCount_, 0);
             }
@@ -92,7 +92,7 @@ NSFX_TEST_SUITE(Buffer)
             NSFX_TEST_EXPECT_EQ(b0.GetDataStart(), 0);
             NSFX_TEST_EXPECT_EQ(b0.GetDataEnd(), 512);
             NSFX_TEST_ASSERT(b0.GetStorage());
-            NSFX_TEST_EXPECT_EQ(b0.GetStorage()->size_, 1024);
+            NSFX_TEST_EXPECT_EQ(b0.GetStorage()->capacity_, 1024);
             NSFX_TEST_EXPECT_EQ(b0.GetStorage()->refCount_, 1);
             NSFX_TEST_EXPECT_EQ(b0.GetStorage()->dataLockCount_, 0);
 
@@ -102,7 +102,7 @@ NSFX_TEST_SUITE(Buffer)
             NSFX_TEST_EXPECT_EQ(b0.GetDataStart(), 0);
             NSFX_TEST_EXPECT_EQ(b0.GetDataEnd(), 1024);
             NSFX_TEST_ASSERT(b0.GetStorage());
-            NSFX_TEST_EXPECT_EQ(b0.GetStorage()->size_, 1024);
+            NSFX_TEST_EXPECT_EQ(b0.GetStorage()->capacity_, 1024);
             NSFX_TEST_EXPECT_EQ(b0.GetStorage()->refCount_, 1);
             NSFX_TEST_EXPECT_EQ(b0.GetStorage()->dataLockCount_, 0);
 
@@ -113,7 +113,7 @@ NSFX_TEST_SUITE(Buffer)
             NSFX_TEST_EXPECT_EQ(b0.GetDataStart(), 0);
             NSFX_TEST_EXPECT_EQ(b0.GetDataEnd(), 1025);
             NSFX_TEST_ASSERT(b0.GetStorage());
-            NSFX_TEST_EXPECT_EQ(b0.GetStorage()->size_, 1025);
+            NSFX_TEST_EXPECT_EQ(b0.GetStorage()->capacity_, 1025);
             NSFX_TEST_EXPECT_EQ(b0.GetStorage()->refCount_, 1);
             NSFX_TEST_EXPECT_EQ(b0.GetStorage()->dataLockCount_, 0);
 
@@ -136,7 +136,7 @@ NSFX_TEST_SUITE(Buffer)
             NSFX_TEST_EXPECT_EQ(b0.GetDataStart(), 512);
             NSFX_TEST_EXPECT_EQ(b0.GetDataEnd(), 1024);
             NSFX_TEST_ASSERT(b0.GetStorage());
-            NSFX_TEST_EXPECT_EQ(b0.GetStorage()->size_, 1024);
+            NSFX_TEST_EXPECT_EQ(b0.GetStorage()->capacity_, 1024);
             NSFX_TEST_EXPECT_EQ(b0.GetStorage()->refCount_, 1);
             NSFX_TEST_EXPECT_EQ(b0.GetStorage()->dataLockCount_, 0);
 
@@ -146,7 +146,7 @@ NSFX_TEST_SUITE(Buffer)
             NSFX_TEST_EXPECT_EQ(b0.GetDataStart(), 0);
             NSFX_TEST_EXPECT_EQ(b0.GetDataEnd(), 1024);
             NSFX_TEST_ASSERT(b0.GetStorage());
-            NSFX_TEST_EXPECT_EQ(b0.GetStorage()->size_, 1024);
+            NSFX_TEST_EXPECT_EQ(b0.GetStorage()->capacity_, 1024);
             NSFX_TEST_EXPECT_EQ(b0.GetStorage()->refCount_, 1);
             NSFX_TEST_EXPECT_EQ(b0.GetStorage()->dataLockCount_, 0);
 
@@ -156,7 +156,7 @@ NSFX_TEST_SUITE(Buffer)
             NSFX_TEST_EXPECT_EQ(b0.GetDataStart(), 0);
             NSFX_TEST_EXPECT_EQ(b0.GetDataEnd(), 1025);
             NSFX_TEST_ASSERT(b0.GetStorage());
-            NSFX_TEST_EXPECT_EQ(b0.GetStorage()->size_, 1025);
+            NSFX_TEST_EXPECT_EQ(b0.GetStorage()->capacity_, 1025);
             NSFX_TEST_EXPECT_EQ(b0.GetStorage()->refCount_, 1);
             NSFX_TEST_EXPECT_EQ(b0.GetStorage()->dataLockCount_, 0);
 
@@ -180,7 +180,7 @@ NSFX_TEST_SUITE(Buffer)
             NSFX_TEST_EXPECT_EQ(b0.GetDataStart(), 508);
             NSFX_TEST_EXPECT_EQ(b0.GetDataEnd(), 512);
             NSFX_TEST_ASSERT(b0.GetStorage());
-            NSFX_TEST_EXPECT_EQ(b0.GetStorage()->size_, 1024);
+            NSFX_TEST_EXPECT_EQ(b0.GetStorage()->capacity_, 1024);
             NSFX_TEST_EXPECT_EQ(b0.GetStorage()->refCount_, 1);
             NSFX_TEST_EXPECT_EQ(b0.GetStorage()->dataLockCount_, 0);
 
@@ -190,7 +190,7 @@ NSFX_TEST_SUITE(Buffer)
             NSFX_TEST_EXPECT_EQ(b0.GetDataStart(), 512);
             NSFX_TEST_EXPECT_EQ(b0.GetDataEnd(), 512);
             NSFX_TEST_ASSERT(b0.GetStorage());
-            NSFX_TEST_EXPECT_EQ(b0.GetStorage()->size_, 1024);
+            NSFX_TEST_EXPECT_EQ(b0.GetStorage()->capacity_, 1024);
             NSFX_TEST_EXPECT_EQ(b0.GetStorage()->refCount_, 1);
             NSFX_TEST_EXPECT_EQ(b0.GetStorage()->dataLockCount_, 0);
 
@@ -214,7 +214,7 @@ NSFX_TEST_SUITE(Buffer)
             NSFX_TEST_EXPECT_EQ(b0.GetDataStart(), 512);
             NSFX_TEST_EXPECT_EQ(b0.GetDataEnd(), 516);
             NSFX_TEST_ASSERT(b0.GetStorage());
-            NSFX_TEST_EXPECT_EQ(b0.GetStorage()->size_, 1024);
+            NSFX_TEST_EXPECT_EQ(b0.GetStorage()->capacity_, 1024);
             NSFX_TEST_EXPECT_EQ(b0.GetStorage()->refCount_, 1);
             NSFX_TEST_EXPECT_EQ(b0.GetStorage()->dataLockCount_, 0);
 
@@ -224,7 +224,7 @@ NSFX_TEST_SUITE(Buffer)
             NSFX_TEST_EXPECT_EQ(b0.GetDataStart(), 512);
             NSFX_TEST_EXPECT_EQ(b0.GetDataEnd(), 512);
             NSFX_TEST_ASSERT(b0.GetStorage());
-            NSFX_TEST_EXPECT_EQ(b0.GetStorage()->size_, 1024);
+            NSFX_TEST_EXPECT_EQ(b0.GetStorage()->capacity_, 1024);
             NSFX_TEST_EXPECT_EQ(b0.GetStorage()->refCount_, 1);
             NSFX_TEST_EXPECT_EQ(b0.GetStorage()->dataLockCount_, 0);
 
@@ -249,7 +249,7 @@ NSFX_TEST_SUITE(Buffer)
                 NSFX_TEST_EXPECT_EQ(b0.GetDataStart(), 512);
                 NSFX_TEST_EXPECT_EQ(b0.GetDataEnd(), 512);
                 NSFX_TEST_ASSERT(b0.GetStorage());
-                NSFX_TEST_EXPECT_EQ(b0.GetStorage()->size_, 1024);
+                NSFX_TEST_EXPECT_EQ(b0.GetStorage()->capacity_, 1024);
                 NSFX_TEST_EXPECT_EQ(b0.GetStorage()->refCount_, 2);
                 NSFX_TEST_EXPECT_EQ(b0.GetStorage()->dataLockCount_, 0);
 
@@ -266,7 +266,7 @@ NSFX_TEST_SUITE(Buffer)
                 NSFX_TEST_EXPECT_EQ(b0.GetDataStart(), 512);
                 NSFX_TEST_EXPECT_EQ(b0.GetDataEnd(), 512);
                 NSFX_TEST_ASSERT(b0.GetStorage());
-                NSFX_TEST_EXPECT_EQ(b0.GetStorage()->size_, 1024);
+                NSFX_TEST_EXPECT_EQ(b0.GetStorage()->capacity_, 1024);
                 NSFX_TEST_EXPECT_EQ(b0.GetStorage()->refCount_, 1);
                 NSFX_TEST_EXPECT_EQ(b0.GetStorage()->dataLockCount_, 0);
 
@@ -275,7 +275,7 @@ NSFX_TEST_SUITE(Buffer)
                 NSFX_TEST_EXPECT_EQ(b1.GetDataStart(), 123);
                 NSFX_TEST_EXPECT_EQ(b1.GetDataEnd(), 123);
                 NSFX_TEST_ASSERT(b1.GetStorage());
-                NSFX_TEST_EXPECT_EQ(b1.GetStorage()->size_, 456);
+                NSFX_TEST_EXPECT_EQ(b1.GetStorage()->capacity_, 456);
                 NSFX_TEST_EXPECT_EQ(b1.GetStorage()->refCount_, 1);
                 NSFX_TEST_EXPECT_EQ(b1.GetStorage()->dataLockCount_, 0);
 
@@ -284,7 +284,7 @@ NSFX_TEST_SUITE(Buffer)
                 NSFX_TEST_EXPECT_EQ(b0.GetDataStart(), 512);
                 NSFX_TEST_EXPECT_EQ(b0.GetDataEnd(), 512);
                 NSFX_TEST_ASSERT(b0.GetStorage());
-                NSFX_TEST_EXPECT_EQ(b0.GetStorage()->size_, 1024);
+                NSFX_TEST_EXPECT_EQ(b0.GetStorage()->capacity_, 1024);
                 NSFX_TEST_EXPECT_EQ(b0.GetStorage()->refCount_, 2);
                 NSFX_TEST_EXPECT_EQ(b0.GetStorage()->dataLockCount_, 0);
                 NSFX_TEST_EXPECT(b0.GetStorage() == b1.GetStorage());
@@ -298,7 +298,7 @@ NSFX_TEST_SUITE(Buffer)
                 NSFX_TEST_EXPECT_EQ(b0.GetDataStart(), 512);
                 NSFX_TEST_EXPECT_EQ(b0.GetDataEnd(), 512);
                 NSFX_TEST_ASSERT(b0.GetStorage());
-                NSFX_TEST_EXPECT_EQ(b0.GetStorage()->size_, 1024);
+                NSFX_TEST_EXPECT_EQ(b0.GetStorage()->capacity_, 1024);
                 NSFX_TEST_EXPECT_EQ(b0.GetStorage()->refCount_, 1);
                 NSFX_TEST_EXPECT_EQ(b0.GetStorage()->dataLockCount_, 0);
 
@@ -312,7 +312,7 @@ NSFX_TEST_SUITE(Buffer)
                 NSFX_TEST_EXPECT_EQ(b1.GetDataStart(), 512);
                 NSFX_TEST_EXPECT_EQ(b1.GetDataEnd(), 512);
                 NSFX_TEST_ASSERT(b1.GetStorage());
-                NSFX_TEST_EXPECT_EQ(b1.GetStorage()->size_, 1024);
+                NSFX_TEST_EXPECT_EQ(b1.GetStorage()->capacity_, 1024);
                 NSFX_TEST_EXPECT_EQ(b1.GetStorage()->refCount_, 1);
                 NSFX_TEST_EXPECT_EQ(b1.GetStorage()->dataLockCount_, 0);
 
@@ -325,7 +325,7 @@ NSFX_TEST_SUITE(Buffer)
                 NSFX_TEST_EXPECT_EQ(b0.GetDataStart(), 512);
                 NSFX_TEST_EXPECT_EQ(b0.GetDataEnd(), 512);
                 NSFX_TEST_ASSERT(b0.GetStorage());
-                NSFX_TEST_EXPECT_EQ(b0.GetStorage()->size_, 1024);
+                NSFX_TEST_EXPECT_EQ(b0.GetStorage()->capacity_, 1024);
                 NSFX_TEST_EXPECT_EQ(b0.GetStorage()->refCount_, 1);
                 NSFX_TEST_EXPECT_EQ(b0.GetStorage()->dataLockCount_, 0);
 
@@ -334,7 +334,7 @@ NSFX_TEST_SUITE(Buffer)
                 NSFX_TEST_EXPECT_EQ(b1.GetDataStart(), 123);
                 NSFX_TEST_EXPECT_EQ(b1.GetDataEnd(), 123);
                 NSFX_TEST_ASSERT(b1.GetStorage());
-                NSFX_TEST_EXPECT_EQ(b1.GetStorage()->size_, 456);
+                NSFX_TEST_EXPECT_EQ(b1.GetStorage()->capacity_, 456);
                 NSFX_TEST_EXPECT_EQ(b1.GetStorage()->refCount_, 1);
                 NSFX_TEST_EXPECT_EQ(b1.GetStorage()->dataLockCount_, 0);
 
@@ -348,7 +348,7 @@ NSFX_TEST_SUITE(Buffer)
                 NSFX_TEST_EXPECT_EQ(b1.GetDataStart(), 512);
                 NSFX_TEST_EXPECT_EQ(b1.GetDataEnd(), 512);
                 NSFX_TEST_ASSERT(b1.GetStorage());
-                NSFX_TEST_EXPECT_EQ(b1.GetStorage()->size_, 1024);
+                NSFX_TEST_EXPECT_EQ(b1.GetStorage()->capacity_, 1024);
                 NSFX_TEST_EXPECT_EQ(b1.GetStorage()->refCount_, 1);
                 NSFX_TEST_EXPECT_EQ(b1.GetStorage()->dataLockCount_, 0);
 
@@ -361,7 +361,7 @@ NSFX_TEST_SUITE(Buffer)
                 NSFX_TEST_EXPECT_EQ(b0.GetDataStart(), 512);
                 NSFX_TEST_EXPECT_EQ(b0.GetDataEnd(), 512);
                 NSFX_TEST_ASSERT(b0.GetStorage());
-                NSFX_TEST_EXPECT_EQ(b0.GetStorage()->size_, 1024);
+                NSFX_TEST_EXPECT_EQ(b0.GetStorage()->capacity_, 1024);
                 NSFX_TEST_EXPECT_EQ(b0.GetStorage()->refCount_, 1);
                 NSFX_TEST_EXPECT_EQ(b0.GetStorage()->dataLockCount_, 0);
 
@@ -370,7 +370,7 @@ NSFX_TEST_SUITE(Buffer)
                 NSFX_TEST_EXPECT_EQ(b1.GetDataStart(), 123);
                 NSFX_TEST_EXPECT_EQ(b1.GetDataEnd(), 123);
                 NSFX_TEST_ASSERT(b1.GetStorage());
-                NSFX_TEST_EXPECT_EQ(b1.GetStorage()->size_, 456);
+                NSFX_TEST_EXPECT_EQ(b1.GetStorage()->capacity_, 456);
                 NSFX_TEST_EXPECT_EQ(b1.GetStorage()->refCount_, 1);
                 NSFX_TEST_EXPECT_EQ(b1.GetStorage()->dataLockCount_, 0);
 
@@ -379,7 +379,7 @@ NSFX_TEST_SUITE(Buffer)
                 NSFX_TEST_EXPECT_EQ(b0.GetDataStart(), 123);
                 NSFX_TEST_EXPECT_EQ(b0.GetDataEnd(), 123);
                 NSFX_TEST_ASSERT(b0.GetStorage());
-                NSFX_TEST_EXPECT_EQ(b0.GetStorage()->size_, 456);
+                NSFX_TEST_EXPECT_EQ(b0.GetStorage()->capacity_, 456);
                 NSFX_TEST_EXPECT_EQ(b0.GetStorage()->refCount_, 1);
                 NSFX_TEST_EXPECT_EQ(b0.GetStorage()->dataLockCount_, 0);
 
@@ -387,7 +387,7 @@ NSFX_TEST_SUITE(Buffer)
                 NSFX_TEST_EXPECT_EQ(b1.GetDataStart(), 512);
                 NSFX_TEST_EXPECT_EQ(b1.GetDataEnd(), 512);
                 NSFX_TEST_ASSERT(b1.GetStorage());
-                NSFX_TEST_EXPECT_EQ(b1.GetStorage()->size_, 1024);
+                NSFX_TEST_EXPECT_EQ(b1.GetStorage()->capacity_, 1024);
                 NSFX_TEST_EXPECT_EQ(b1.GetStorage()->refCount_, 1);
                 NSFX_TEST_EXPECT_EQ(b1.GetStorage()->dataLockCount_, 0);
 
