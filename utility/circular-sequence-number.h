@@ -18,6 +18,7 @@
 
 
 #include <nsfx/utility/config.h>
+#include <nsfx/utility/least-int.h>
 #include <nsfx/exception/exception.h>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/conditional.hpp>
@@ -28,33 +29,6 @@
 
 
 NSFX_OPEN_NAMESPACE
-
-
-/////////////////////////////////////////////////////////////////////////////////
-/**
- * @ingroup Utility
- * @brief The smallest integer that accomandates the specified number of bits.
- *
- * @tparam bits The number of bits. Must be within <code>[0, 64]</code>.
- */
-template<size_t bits>
-struct LeastInt /*{{{*/
-{
-    typedef typename boost::conditional<
-        bits >= 0 && bits <= 8, uint8_t,
-        typename boost::conditional<
-            bits >= 9 && bits <= 16, uint16_t,
-            typename boost::conditional<
-                bits >= 17 && bits <= 32, uint32_t,
-                typename boost::conditional<
-                    bits >= 33 && bits <= 64, uint64_t, void>::type
-                >::type
-            >::type
-        >::type Type;
-
-    static_assert(!boost::is_same<Type, void>::value,
-                  "The number of bits is too large.");
-};/*}}}*/
 
 
 /////////////////////////////////////////////////////////////////////////////////
