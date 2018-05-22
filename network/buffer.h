@@ -18,12 +18,13 @@
 
 
 #include <nsfx/network/config.h>
+#include <nsfx/network/exception.h>
 #include <nsfx/utility/endian.h>
 #include <boost/type_traits/is_integral.hpp>
 #include <boost/type_traits/make_unsigned.hpp>
 #include <boost/type_traits/type_identity.hpp>
 #include <boost/core/swap.hpp>
-#include <cstring>
+#include <cstring> // memcpy, memmove
 #include <memory>
 
 
@@ -880,53 +881,6 @@ operator-(const BufferIterator& lhs, const BufferIterator& rhs) BOOST_NOEXCEPT
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// BufferCopyPolicy /*{{{*/
-/**
- * @ingroup Network
- * @brief Buffer copy policy.
- *
- * A buffer holds a memory space, and may have a sequence of meaningful bytes
- * within the space.
- * The area before the meaningful bytes is called the pre-data area.
- * The area after the meaningful bytes is call the post-data area.
- * The area occupied by the meaningful bytes is call the data area.
- * When cloning from a source buffer, the destination buffer may have some
- * memory space already.
- * Copy policies specify whether the destination buffer should be reallocated.
- */
-struct BufferCopyPolicy {};
-
-/**
- * @ingroup Network
- * @brief Buffer copy policy.
- *
- * This policy ensures that the destination buffer must have enough space to
- * accommodate the data in the source buffer, even if the destination has
- * a smaller space than the source buffer.
- * If possible, the destination buffer reserves the same post-data area as the
- * source buffer, leaving a smaller pre-data size than the source buffer.
- * Otherwise, the pre-data area becomes empty, and the post-data area is also
- * compressed.
- *
- * This is the policy currently in use.
- */
-struct BufferCopyPolicyAccommodateData : BufferCopyPolicy {};
-
-/**
- * @ingroup Network
- * @brief Buffer copy policy.
- *
- * This policy ensures that the destination buffer must have no less space than
- * the source buffer, even if the destination buffer is large enough to
- * accommodate the data in the source buffer.
- * The destination buffer reserves the same post-data size is the source buffer.
- */
-struct BufferCopyPolicyAccommodateSize : BufferCopyPolicy {};
-
-// BufferCopyPolicy /*}}}*/
-
-
-////////////////////////////////////////////////////////////////////////////////
 // Buffer./*{{{*/
 /**
  * @ingroup Network
@@ -937,11 +891,36 @@ struct BufferCopyPolicyAccommodateSize : BufferCopyPolicy {};
  * The data area is located in middle of the storage, and the remaining space
  * is naturally divied in to the pre-data area and the post-data area.
  *
- * ### Basic exception safety for 'Copy' methods.
- * The source buffer retains its original state.
- * The destination buffer is put in an empty state.
+ * A \c Buffer is linked to a \c BufferStorage, and has its own view of the
+ * start and end positions of the data area.
  *
- * ### Strong exception safety for all other methods.
+ * The \c Buffer is copy-construtible and copy-assignable, and the copy
+ * semantic is <i>shallow copy</i>.
+ * i.e., several buffers link to the same underlying \c BufferStorage, which
+ * is reference counted.
+ * The \c Buffer::GetChunk() also makes a shallow copy.
+ *
+ * Resizing a buffer only changes the start and end positions of its own view
+ * of data area, and does not affect the content of the underlying storage.
+ * However, writing to the storage is visible to all linked buffers.
+ *
+ * To make <i>deep copy</i>, use \c Buffer::Clone().
+ *
+ * To copy the data of a buffer, use \c Buffer::CopyFrom() or \c Buffer::CopyTo().
+ *
+ * When \c Buffer::AddAtStart() or \c Buffer::AddAtEnd() is invoked, but there
+ * are not enough space to hold the requested extra bytes, a new storage is
+ * created and linked the buffer, and the contents are copied.
+ *
+ * To modify the buffer, uses <b>shall</b> query a \c BufferIterator via
+ * \c Buffer::begin() or \c Buffer::end().
+ * To keep an iterator valid (lie within the data area of the buffer), an
+ * iterator locks the buffer storage until destructed, and prevents all linked
+ * buffers from moving or reducing their data areas.
+ * Therefore, users <b>shall</b> not keep buffer iterators.
+ * TODO: Only lock the buffer that offers the iterator.
+ *
+ * ### Strong exception safety
  * The buffer retains its original state.
  */
 class Buffer /*{{{*/
@@ -996,6 +975,31 @@ public:
         }
         start_ = start;
         end_ = start;
+    }
+
+    /**
+     * @brief Create a buffer.
+     *
+     * @param[in] capacity  The capacity of the storage.
+     * @param[in] start     The start position of the data area.
+     * @param[in] size      The size of the data area.
+     *
+     * @throw InvalidArgument Thrown if the data area is not within the storage.
+     */
+    Buffer(size_t capacity, size_t start, size_t size) :
+        storage_(BufferStorage::Create(capacity)),
+        start_(0),
+        end_(0)
+    {
+        Acquire();
+        if (start > capacity || start + size > capacity)
+        {
+            BOOST_THROW_EXCEPTION(
+                InvalidArgument() <<
+                ErrorMessage("The data area is outside of the storage space."));
+        }
+        start_ = start;
+        end_ = start + size;
     }
 
 private:
@@ -1168,14 +1172,14 @@ public:
      * @pre There are no dangling buffer iterators holding the underlying
      *      storage.
      *
-     * @throw Unexpected  There are dangling buffer iterators.
+     * @throw BufferLocked  There are dangling buffer iterators.
      */
     void AddAtStart(size_t numBytes)
     {
         if (storage_ && BufferStorage::IsDataLocked(storage_))
         {
             BOOST_THROW_EXCEPTION(
-                Unexpected() <<
+                BufferLocked() <<
                 ErrorMessage("There are dangling buffer iterators while "
                              "trying to resize the data area."));
         }
@@ -1222,14 +1226,14 @@ public:
      * @pre There are no dangling buffer iterators holding the underlying
      *      storage.
      *
-     * @throw Unexpected  There are dangling buffer iterators.
+     * @throw BufferLocked  There are dangling buffer iterators.
      */
     void AddAtEnd(size_t numBytes)
     {
         if (storage_ && BufferStorage::IsDataLocked(storage_))
         {
             BOOST_THROW_EXCEPTION(
-                Unexpected() <<
+                BufferLocked() <<
                 ErrorMessage("There are dangling buffer iterators while "
                              "trying to resize the data area."));
         }
@@ -1274,14 +1278,14 @@ public:
      * @param[in] numBytes If the number of bytes is too large, the data area
      *                     becomes empty.
      *
-     * @throw Unexpected  There are dangling buffer iterators.
+     * @throw BufferLocked  There are dangling buffer iterators.
      */
     void RemoveAtStart(size_t numBytes)
     {
         if (storage_ && BufferStorage::IsDataLocked(storage_))
         {
             BOOST_THROW_EXCEPTION(
-                Unexpected() <<
+                BufferLocked() <<
                 ErrorMessage("There are dangling buffer iterators while "
                              "trying to resize the data area."));
         }
@@ -1307,14 +1311,14 @@ public:
      * @pre There are no dangling buffer iterators holding the underlying
      *      storage.
      *
-     * @throw Unexpected  There are dangling buffer iterators.
+     * @throw BufferLocked  There are dangling buffer iterators.
      */
     void RemoveAtEnd(size_t numBytes)
     {
         if (storage_ && BufferStorage::IsDataLocked(storage_))
         {
             BOOST_THROW_EXCEPTION(
-                Unexpected() <<
+                BufferLocked() <<
                 ErrorMessage("There are dangling buffer iterators while "
                              "trying to resize the data area."));
         }
@@ -1331,148 +1335,42 @@ public:
     }
 
     /**
-     * @brief Deep copy the data area from a buffer.
+     * @brief Copy data from a buffer.
      *
-     * The copy policy is \c BufferCopyPolicyAccommodateData.
+     * @pre The buffer has a no smaller data area than the source buffer.
      *
-     * @pre There are no dangling buffer iterators holding the underlying
-     *      storage.
+     * The data is copied to the start of the data area of the buffer.
      *
-     * @throw Unexpected  There are dangling buffer iterators.
+     * @throw BufferTooSmall  The buffer does not have a large enough data area.
      */
     void CopyFrom(const Buffer& src)
     {
-        CopyFrom(src, BufferCopyPolicyAccommodateData());
-    }
-
-    /**
-     * @brief Deep copy data area from a buffer.
-     *
-     * @pre There are no dangling buffer iterators holding the underlying
-     *      storage.
-     *
-     * @throw Unexpected  There are dangling buffer iterators.
-     */
-    void CopyFrom(const Buffer& src, BufferCopyPolicyAccommodateData)
-    {
-        if (storage_ && BufferStorage::IsDataLocked(storage_))
-        {
-            BOOST_THROW_EXCEPTION(
-                Unexpected() <<
-                ErrorMessage("There are dangling buffer iterators while "
-                             "trying to resize the data area."));
-        }
         if (this != &src)
         {
-            if (!src.storage_)
+            if (end_ - start_ < src.end_ - src.start_)
             {
-                Release();
+                BOOST_THROW_EXCEPTION(
+                    BufferTooSmall() <<
+                    ErrorMessage("Cannot copy data since the destination buffer "
+                                 "does not have enough space in the data area."));
             }
-            else
-            {
-                // If existing storage doesn't have enough space to accommodate the
-                // data in the source buffer, reallocate a storage as large as the
-                // source buffer.
-                if (!storage_ || (storage_->capacity_ < src.end_ - src.start_))
-                {
-                    Release();
-                    // Allocate enough space.
-                    // If exception is thrown, the buffer is in a safe state, since
-                    // it's been released already.
-                    storage_ = BufferStorage::Create(src.storage_->capacity_);
-                    Acquire();
-                }
-                // If existing storage has a smaller space.
-                if (storage_->capacity_ < src.storage_->capacity_)
-                {
-                    // Reserve the same post-data area as the source buffer
-                    // if possible.
-                    if (storage_->capacity_ >= src.storage_->capacity_ - src.start_)
-                    {
-                        start_ = src.start_
-                               - (src.storage_->capacity_ - storage_->capacity_);
-                        end_   = src.end_
-                               - (src.storage_->capacity_ - storage_->capacity_);
-                    }
-                    else
-                    {
-                        start_ = 0;
-                        end_   = src.end_ - src.start_;
-                    }
-                }
-                // If existing storage has a space no smaller than the source buffer.
-                else // if (storage_->capacity_ >= src.storage_->capacity_)
-                {
-                    // Reserve the same post-data area as the source buffer.
-                    start_ = src.start_
-                           + (storage_->capacity_ - src.storage_->capacity_);
-                    end_   = src.end_
-                           + (storage_->capacity_ - src.storage_->capacity_);
-                }
-                // Copy data.
-                std::memcpy(    storage_->bytes_ +     start_,
-                            src.storage_->bytes_ + src.start_,
-                            src.end_ - src.start_);
-            }
+            // Use memmove in case of overlapping data area.
+            std::memmove(    storage_->bytes_ +     start_,
+                         src.storage_->bytes_ + src.start_,
+                                     src.end_ - src.start_);
         }
     }
 
     /**
-     * @brief Deep copy data area from a buffer.
+     * @brief Copy data to a buffer.
      *
-     * @pre There are no dangling buffer iterators holding the underlying
-     *      storage.
+     * @pre The destiantion buffer has a no smaller data area than this buffer.
      *
-     * @throw Unexpected  There are dangling buffer iterators.
-     */
-    void CopyFrom(const Buffer& src, BufferCopyPolicyAccommodateSize)
-    {
-        if (storage_ && BufferStorage::IsDataLocked(storage_))
-        {
-            BOOST_THROW_EXCEPTION(
-                Unexpected() <<
-                ErrorMessage("There are dangling buffer iterators while "
-                             "trying to resize the data area."));
-        }
-        if (this != &src)
-        {
-            if (!src.storage_)
-            {
-                Release();
-            }
-            else
-            {
-                // If existing storage doesn't have a space as large as the source
-                // buffer, reallocate a storage as large as the source buffer.
-                if (!storage_ || (storage_->capacity_ < src.storage_->capacity_))
-                {
-                    Release();
-                    // Allocate enough space.
-                    // If exception is thrown, the buffer is in a safe state, since
-                    // it's been reset already.
-                    storage_ = BufferStorage::Create(src.storage_->capacity_);
-                    Acquire();
-                }
-                // Reserve the same post-data area as the source buffer.
-                start_ = src.start_
-                       + (storage_->capacity_ - src.storage_->capacity_);
-                end_   = src.end_
-                       + (storage_->capacity_ - src.storage_->capacity_);
-                // Copy data.
-                std::memcpy(    storage_->bytes_ +     start_,
-                            src.storage_->bytes_ + src.start_,
-                            src.end_ - src.start_);
-            }
-        }
-    }
-
-    /**
-     * @brief Make a deep copy of the buffer.
+     * The data is copied to the start of the data area of the destination
+     * buffer.
      *
-     * @pre There are no dangling buffer iterators holding the underlying
-     *      storage of the destination buffer.
-     *
-     * @throw Unexpected  There are dangling buffer iterators.
+     * @throw BufferTooSmall  The destination buffer does not have a large
+     *                        enough data area.
      */
     void CopyTo(Buffer& dest) const
     {
@@ -1480,39 +1378,18 @@ public:
     }
 
     /**
-     * @brief Make a deep copy of the buffer.
-     *
-     * @pre There are no dangling buffer iterators holding the underlying
-     *      storage of the destination buffer.
-     *
-     * @throw Unexpected  There are dangling buffer iterators.
-     */
-    void CopyTo(Buffer& dest, BufferCopyPolicyAccommodateData) const
-    {
-        dest.CopyFrom(*this, BufferCopyPolicyAccommodateData());
-    }
-
-    /**
-     * @brief Make a deep copy of the buffer.
-     *
-     * @pre There are no dangling buffer iterators holding the underlying
-     *      storage of the destination buffer.
-     *
-     * @throw Unexpected  There are dangling buffer iterators.
-     */
-    void CopyTo(Buffer& dest, BufferCopyPolicyAccommodateSize) const
-    {
-        dest.CopyFrom(*this, BufferCopyPolicyAccommodateSize());
-    }
-
-    /**
      * @brief Make a deap copy (clone) of the buffer.
-     *
      */
-    Buffer Copy(void) const
+    Buffer Clone(void) const
     {
         Buffer result;
-        CopyTo(result);
+        if (storage_)
+        {
+            result = Buffer(storage_->capacity_, start_, end_ - start_);
+            std::memcpy(result.storage_->bytes_,
+                               storage_->bytes_,
+                               end_ - start_);
+        }
         return result;
     }
 
@@ -1589,6 +1466,29 @@ private:
      * @brief End position of the data space (exclusive).
      */
     size_t end_;
+
+    /**
+     * @brief The number of locks on the data area.
+     *
+     * A data lock is held by each buffer iterator.
+     *
+     * When the data area is locked, the data area cannot be moved or reduced.
+     * e.g., each buffer iterator holds a lock, while an iterator is accessing
+     * the data area, the data area cannot be moved or reduced as the iterator
+     * would become <i>semantically</i> invalidated and cause unexpected errors
+     * that are hard to detect.
+     * Runtime check is performed by to prevent such errors, which encourages
+     * <b>scoped</b> usage of buffer iterators.
+     * i.e., users shall always use buffer iterators in a local scope, where
+     * users shall not invoke methods that <i>potentially</i> move or reduce
+     * the data area.
+     *
+     * @see \c Buffer::AddAtStart(),
+     *      \c Buffer::AddAtEnd(),
+     *      \c Buffer::RemoveAtStart(),
+     *      \c Buffer::RemoveAtEnd().
+     */
+    ptrdiff_t dataLockCount_;
 
     /*}}}*/
 

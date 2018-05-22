@@ -75,7 +75,11 @@ NSFX_TEST_SUITE(Buffer)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            std::cerr << diagnostic_information(e) << std::endl;
+        }
+        catch (std::exception& e)
+        {
+            std::cerr << e.what() << std::endl;
         }
 
     }/*}}}*/
@@ -120,7 +124,11 @@ NSFX_TEST_SUITE(Buffer)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            std::cerr << diagnostic_information(e) << std::endl;
+        }
+        catch (std::exception& e)
+        {
+            std::cerr << e.what() << std::endl;
         }
 
     }/*}}}*/
@@ -161,11 +169,15 @@ NSFX_TEST_SUITE(Buffer)
             NSFX_TEST_EXPECT_EQ(b0.GetStorage()->dataLockCount_, 0);
 
         }
+
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            std::cerr << diagnostic_information(e) << std::endl;
         }
-
+        catch (std::exception& e)
+        {
+            std::cerr << e.what() << std::endl;
+        }
     }/*}}}*/
 
     NSFX_TEST_CASE(RemoveAtStart)/*{{{*/
@@ -195,11 +207,15 @@ NSFX_TEST_SUITE(Buffer)
             NSFX_TEST_EXPECT_EQ(b0.GetStorage()->dataLockCount_, 0);
 
         }
+
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            std::cerr << diagnostic_information(e) << std::endl;
         }
-
+        catch (std::exception& e)
+        {
+            std::cerr << e.what() << std::endl;
+        }
     }/*}}}*/
 
     NSFX_TEST_CASE(RemoveAtEnd)/*{{{*/
@@ -231,7 +247,11 @@ NSFX_TEST_SUITE(Buffer)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            std::cerr << diagnostic_information(e) << std::endl;
+        }
+        catch (std::exception& e)
+        {
+            std::cerr << e.what() << std::endl;
         }
 
     }/*}}}*/
@@ -396,7 +416,11 @@ NSFX_TEST_SUITE(Buffer)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            std::cerr << diagnostic_information(e) << std::endl;
+        }
+        catch (std::exception& e)
+        {
+            std::cerr << e.what() << std::endl;
         }
 
     }/*}}}*/
@@ -435,7 +459,11 @@ NSFX_TEST_SUITE(BufferIterator)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            std::cerr << diagnostic_information(e) << std::endl;
+        }
+        catch (std::exception& e)
+        {
+            std::cerr << e.what() << std::endl;
         }
 
     }/*}}}*/
@@ -483,7 +511,11 @@ NSFX_TEST_SUITE(BufferIterator)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            std::cerr << diagnostic_information(e) << std::endl;
+        }
+        catch (std::exception& e)
+        {
+            std::cerr << e.what() << std::endl;
         }
 
     }/*}}}*/
@@ -680,7 +712,11 @@ NSFX_TEST_SUITE(BufferIterator)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            std::cerr << diagnostic_information(e) << std::endl;
+        }
+        catch (std::exception& e)
+        {
+            std::cerr << e.what() << std::endl;
         }
 
     }/*}}}*/
@@ -689,80 +725,44 @@ NSFX_TEST_SUITE(BufferIterator)
     {
         try
         {
-            // destination buffer has enough space for data and post-data area,
-            // leave same post-data space
+            // destination buffer has enough space in data area
             {
-                nsfx::Buffer b0(100, 50);
-                b0.AddAtStart(30); // data = 30, post-data = 50
-                nsfx::Buffer b1(1000, 500);
-                b1.AddAtStart(50);
-                b1.CopyFrom(b0, nsfx::BufferCopyPolicyAccommodateData());
-                NSFX_TEST_EXPECT_EQ(b1.GetSize(), 30); // data = 30
-                NSFX_TEST_EXPECT_EQ(b1.GetDataStart(), 920); // post-data = 50
-                NSFX_TEST_EXPECT_EQ(b1.GetDataEnd(), 950);
-            }
+                nsfx::Buffer b0(100, 20, 30);
+                nsfx::Buffer b1(1000, 450, 50);
 
-            // destination buffer has enough space for data area,
-            // but not enough space for the extra post-data area,
-            // leave no pre-data space and smaller post-data space
-            {
-                nsfx::Buffer b0(100, 50);
-                b0.AddAtStart(30); // data = 30, post-data = 50
-                nsfx::Buffer b1(70, 40);
-                b1.AddAtStart(50);
-                b1.CopyFrom(b0, nsfx::BufferCopyPolicyAccommodateData());
-                NSFX_TEST_EXPECT_EQ(b1.GetSize(), 30); // data = 30
-                NSFX_TEST_EXPECT_EQ(b1.GetDataStart(), 0); // post-data = 40
-                NSFX_TEST_EXPECT_EQ(b1.GetDataEnd(), 30);
-            }
+                for (auto it = b0.begin(); it != b0.end(); ++it)
+                {
+                    it.Write<uint8_t>(0xcf);
+                }
 
-            // destination buffer has not enough space for data area,
-            // clone the source buffer
-            {
-                nsfx::Buffer b0(100, 50);
-                b0.AddAtStart(30); // data = 30, post-data = 50
-                nsfx::Buffer b1(20, 10);
-                b1.AddAtStart(10);
-                b1.CopyFrom(b0, nsfx::BufferCopyPolicyAccommodateData());
-                NSFX_TEST_EXPECT_EQ(b1.GetSize(), 30); // data = 30
-                NSFX_TEST_EXPECT_EQ(b1.GetDataStart(), 20); // post-data = 50
-                NSFX_TEST_EXPECT_EQ(b1.GetDataEnd(), 50);
-                nsfx::Buffer b2;
-                b2.CopyFrom(b0, nsfx::BufferCopyPolicyAccommodateData());
-                NSFX_TEST_EXPECT_EQ(b2.GetSize(), 30); // data = 30
-                NSFX_TEST_EXPECT_EQ(b2.GetDataStart(), 20); // post-data = 50
-                NSFX_TEST_EXPECT_EQ(b2.GetDataEnd(), 50);
-            }
+                // the destination buffer is unchanged
+                b1.CopyFrom(b0);
+                NSFX_TEST_EXPECT_EQ(b0.GetSize(), 30);
+                NSFX_TEST_EXPECT_EQ(b0.GetDataStart(), 20);
+                NSFX_TEST_EXPECT_EQ(b0.GetDataEnd(), 50);
+                NSFX_TEST_EXPECT_EQ(b1.GetSize(), 50);
+                NSFX_TEST_EXPECT_EQ(b1.GetDataStart(), 450);
+                NSFX_TEST_EXPECT_EQ(b1.GetDataEnd(), 500);
+                {
+                    auto it0 = b0.begin();
+                    auto it1 = b1.begin();
+                    while (it0 != b0.end())
+                    {
+                        NSFX_TEST_EXPECT_EQ(it0.Read<uint8_t>(),
+                                            it1.Read<uint8_t>());
+                        ++it0;
+                        ++it1;
+                    }
+                }
 
-            // destination buffer has equal or larger space than source,
-            // leave same post-data space
-            {
-                nsfx::Buffer b0(100, 50);
-                b0.AddAtStart(30); // data = 30, post-data = 50
-                nsfx::Buffer b1(1000, 500);
-                b1.AddAtStart(50);
-                b1.CopyFrom(b0, nsfx::BufferCopyPolicyAccommodateSize());
-                NSFX_TEST_EXPECT_EQ(b1.GetSize(), 30); // data = 30
-                NSFX_TEST_EXPECT_EQ(b1.GetDataStart(), 920); // post-data = 50
-                NSFX_TEST_EXPECT_EQ(b1.GetDataEnd(), 950);
-            }
+                b1.CopyTo(b1);
+                NSFX_TEST_EXPECT_EQ(b1.GetSize(), 50);
+                NSFX_TEST_EXPECT_EQ(b1.GetDataStart(), 450);
+                NSFX_TEST_EXPECT_EQ(b1.GetDataEnd(), 500);
 
-            // destination buffer has smaller space than source,
-            // clone the source buffer
-            {
-                nsfx::Buffer b0(100, 50);
-                b0.AddAtStart(30); // data = 30, post-data = 50
-                nsfx::Buffer b1(20, 10);
-                b1.AddAtStart(10);
-                b1.CopyFrom(b0, nsfx::BufferCopyPolicyAccommodateSize());
-                NSFX_TEST_EXPECT_EQ(b1.GetSize(), 30); // data = 30
-                NSFX_TEST_EXPECT_EQ(b1.GetDataStart(), 20); // post-data = 50
-                NSFX_TEST_EXPECT_EQ(b1.GetDataEnd(), 50);
-                nsfx::Buffer b2;
-                b2.CopyFrom(b0, nsfx::BufferCopyPolicyAccommodateData());
-                NSFX_TEST_EXPECT_EQ(b2.GetSize(), 30); // data = 30
-                NSFX_TEST_EXPECT_EQ(b2.GetDataStart(), 20); // post-data = 50
-                NSFX_TEST_EXPECT_EQ(b2.GetDataEnd(), 50);
+                // throw since the destination is not large enough
+                TEST_THROW(nsfx::BufferTooSmall, b0.CopyFrom(b1));
+
             }
 
             // clone
@@ -771,7 +771,7 @@ NSFX_TEST_SUITE(BufferIterator)
                 b0.AddAtStart(30); // data = 30, post-data = 50
                 nsfx::Buffer b1(20, 10);
                 b1.AddAtStart(10);
-                b1 = b0.Copy();
+                b1 = b0.Clone();
                 NSFX_TEST_EXPECT_EQ(b1.GetSize(), 30); // data = 30
                 NSFX_TEST_EXPECT_EQ(b1.GetDataStart(), 20); // post-data = 50
                 NSFX_TEST_EXPECT_EQ(b1.GetDataEnd(), 50);
@@ -780,11 +780,11 @@ NSFX_TEST_SUITE(BufferIterator)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            std::cerr << diagnostic_information(e) << std::endl;
         }
         catch (std::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << e.what();
+            std::cerr << e.what() << std::endl;
         }
 
     }/*}}}*/
@@ -812,36 +812,20 @@ NSFX_TEST_SUITE(BufferIterator)
             }
 
             // add
-            TEST_THROW(nsfx::Unexpected, b0.AddAtStart(1));
-            TEST_THROW(nsfx::Unexpected, b0.AddAtEnd(1));
+            TEST_THROW(nsfx::BufferLocked, b0.AddAtStart(1));
+            TEST_THROW(nsfx::BufferLocked, b0.AddAtEnd(1));
             // remove
-            TEST_THROW(nsfx::Unexpected, b0.RemoveAtStart(1));
-            TEST_THROW(nsfx::Unexpected, b0.RemoveAtEnd(1));
+            TEST_THROW(nsfx::BufferLocked, b0.RemoveAtStart(1));
+            TEST_THROW(nsfx::BufferLocked, b0.RemoveAtEnd(1));
             // copy from
-            TEST_THROW(nsfx::Unexpected, {
-                nsfx::Buffer b1;
+            TEST_NOTHROW({
+                nsfx::Buffer b1(1000, 30, 50);
                 b0.CopyFrom(b1);
             });
-            TEST_THROW(nsfx::Unexpected, {
-                    nsfx::Buffer b1;
-                    b0.CopyFrom(b1, nsfx::BufferCopyPolicyAccommodateData());
-            });
-            TEST_THROW(nsfx::Unexpected, {
-                    nsfx::Buffer b1;
-                    b0.CopyFrom(b1, nsfx::BufferCopyPolicyAccommodateSize());
-            });
             // copy to
-            TEST_THROW(nsfx::Unexpected, {
-                nsfx::Buffer b1;
+            TEST_NOTHROW({
+                nsfx::Buffer b1(1000, 30, 50);
                 b1.CopyTo(b0);
-            });
-            TEST_THROW(nsfx::Unexpected, {
-                    nsfx::Buffer b1;
-                    b0.CopyFrom(b1, nsfx::BufferCopyPolicyAccommodateData());
-            });
-            TEST_THROW(nsfx::Unexpected, {
-                    nsfx::Buffer b1;
-                    b0.CopyFrom(b1, nsfx::BufferCopyPolicyAccommodateSize());
             });
 
             nsfx::Buffer b1(123, 45);
@@ -852,32 +836,6 @@ NSFX_TEST_SUITE(BufferIterator)
             // remove
             TEST_NOTHROW(b0.RemoveAtStart(1));
             TEST_NOTHROW(b0.RemoveAtEnd(1));
-            // copy from
-            TEST_NOTHROW({
-                nsfx::Buffer b2(678, 90);
-                b0.CopyFrom(b2);
-            });
-            TEST_NOTHROW({
-                nsfx::Buffer b2(678, 90);
-                b0.CopyFrom(b2, nsfx::BufferCopyPolicyAccommodateData());
-            });
-            TEST_NOTHROW({
-                nsfx::Buffer b2(678, 90);
-                b0.CopyFrom(b2, nsfx::BufferCopyPolicyAccommodateSize());
-            });
-            // copy to
-            TEST_NOTHROW({
-                nsfx::Buffer b2(678, 90);
-                b2.CopyTo(b0);
-            });
-            TEST_NOTHROW({
-                nsfx::Buffer b2(678, 90);
-                b2.CopyTo(b0, nsfx::BufferCopyPolicyAccommodateData());
-            });
-            TEST_NOTHROW({
-                nsfx::Buffer b2(678, 90);
-                b2.CopyTo(b0, nsfx::BufferCopyPolicyAccommodateSize());
-            });
 
             // data lock count
             {
@@ -897,7 +855,11 @@ NSFX_TEST_SUITE(BufferIterator)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            std::cerr << diagnostic_information(e) << std::endl;
+        }
+        catch (std::exception& e)
+        {
+            std::cerr << e.what() << std::endl;
         }
 
     }/*}}}*/
@@ -921,11 +883,11 @@ NSFX_TEST_SUITE(BufferIterator)
         }
         catch (boost::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << diagnostic_information(e);
+            std::cerr << diagnostic_information(e) << std::endl;
         }
         catch (std::exception& e)
         {
-            NSFX_TEST_EXPECT(false) << e.what();
+            std::cerr << e.what() << std::endl;
         }
 
     }/*}}}*/
