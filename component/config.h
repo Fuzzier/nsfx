@@ -18,7 +18,6 @@
 
 
 #include <nsfx/config.h>
-#include <nsfx/exception/exception.h>
 
 
 /**

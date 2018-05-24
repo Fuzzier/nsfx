@@ -18,6 +18,7 @@
 
 
 #include <nsfx/event/config.h>
+#include <nsfx/component/exception.h>
 
 
 NSFX_OPEN_NAMESPACE

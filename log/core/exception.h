@@ -18,6 +18,7 @@
 
 
 #include <nsfx/log/config.h>
+#include <nsfx/component/exception.h>
 
 
 NSFX_LOG_OPEN_NAMESPACE
