@@ -17,6 +17,7 @@
 #define EXCEPTION_H__F9A5033F_DC55_45C8_B9C2_74C8450F93FF
 
 
+#include <nsfx/network/config.h>
 #include <nsfx/component/exception.h>
 
 

@@ -18,7 +18,6 @@
 
 
 #include <nsfx/config.h>
-#include <nsfx/exception/exception.h>
 #include <nsfx/chrono/duration.h>
 #include <nsfx/chrono/virtual-time-point.h>
 
