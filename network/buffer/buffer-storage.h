@@ -18,7 +18,6 @@
 
 
 #include <nsfx/network/config.h>
-#include <nsfx/network/exception.h>
 
 
 NSFX_OPEN_NAMESPACE
@@ -82,7 +81,7 @@ struct BufferStorage
 
     static void Release(BufferStorage* storage) BOOST_NOEXCEPT;
 
-}; // struct BufferStorage
+};
 
 
 ////////////////////////////////////////////////////////////////////////////////
