@@ -25,18 +25,6 @@ NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Buffer.
-/**
- * @ingroup Exception
- * @brief The buffer is lock.
- */
-struct BufferLocked : Exception {};
-
-/**
- * @ingroup Exception
- * @brief The buffer does not have enough space.
- */
-struct BufferTooSmall : Exception {};
 
 
 NSFX_CLOSE_NAMESPACE
