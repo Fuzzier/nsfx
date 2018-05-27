@@ -197,6 +197,7 @@ NSFX_CLOSE_NAMESPACE
 NSFX_OPEN_NAMESPACE
 using std::size_t;
 using std::ptrdiff_t;
+typedef ptrdiff_t  refcount_t;
 NSFX_CLOSE_NAMESPACE
 
 
