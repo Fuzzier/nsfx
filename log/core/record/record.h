@@ -21,8 +21,8 @@
 #include <nsfx/log/core/record/attribute-value-info.h>
 #include <nsfx/log/core/attribute-value/attribute-value.h>
 #include <nsfx/log/core/exception.h>
-#include <string>
 #include <boost/type_traits/decay.hpp>
+#include <string>
 
 
 NSFX_LOG_OPEN_NAMESPACE

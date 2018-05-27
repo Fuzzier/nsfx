@@ -737,13 +737,6 @@ NSFX_OPEN_NAMESPACE
 
 /**
  * @ingroup Component
- * @brief The type of reference count.
- */
-typedef ptrdiff_t  refcount_t;
-
-
-/**
- * @ingroup Component
  * @brief The type of cookie.
  *
  * A cookie is obtained when connecting a event sink to an event source, and
