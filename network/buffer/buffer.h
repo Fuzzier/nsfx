@@ -171,6 +171,12 @@ public:
     size_t GetEnd(void) const BOOST_NOEXCEPT;
     const BufferStorage* GetStorage(void) const BOOST_NOEXCEPT;
 
+    /**
+     * @brief Copy data to buffer.
+     * @return The number of bytes copied.
+     */
+    size_t CopyTo(uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+
     // Add/remove.
 private:
     struct AdjustOffsetTag {};
@@ -494,6 +500,54 @@ inline size_t Buffer::GetEnd(void) const BOOST_NOEXCEPT
 inline const BufferStorage* Buffer::GetStorage(void) const BOOST_NOEXCEPT
 {
     return storage_;
+}
+
+size_t Buffer::CopyTo(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+{
+    size_t copyied = 0;
+    if (storage_ && bytes)
+    {
+        do
+        {
+            size_t headerSize = zeroStart_ - start_;
+            if (size <= headerSize)
+            {
+                std::memmove(bytes_, storage_->bytes_ + start_, size);
+                copied += size;
+                break;
+            }
+            std::memmove(bytes_, storage_->bytes_ + start_, headerSize);
+            size   -= headerSize;
+            copied += headerSize;
+
+            size_t zeroSize = zeroEnd_ - zeroStart_;
+            if (size <= zeroSize)
+            {
+                std::memset(bytes + copied, 0, size);
+                copied += size;
+                break;
+            }
+            std::memset(bytes + copied, 0, zeroSize);
+            size   -= zeroSize;
+            copied += zeroSize;
+
+            size_t trailerSize = end_ - zeroEnd_;
+            if (size <= trailerSize)
+            {
+                std::memmove(bytes + copied,
+                             storage_->bytes_ + zeroStart_,
+                             size);
+                copied += size;
+                break;
+            }
+            std::memmove(bytes + copied,
+                         storage_->bytes_ + zeroStart_,
+                         trailerSize);
+            copied += trailerSize;
+        }
+        while (false);
+    }
+    return copied;
 }
 
 inline void Buffer::AddAtStart(size_t numBytes)
