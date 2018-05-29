@@ -172,7 +172,7 @@ public:
     const BufferStorage* GetStorage(void) const BOOST_NOEXCEPT;
 
     /**
-     * @brief Copy data to buffer.
+     * @brief Copy data to a memory block.
      * @return The number of bytes copied.
      */
     size_t CopyTo(uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
@@ -266,12 +266,22 @@ public:
     /**
      * @brief Get an iterator that points to the first byte of the data.
      */
-    BufferIterator begin(void) const BOOST_NOEXCEPT;
+    BufferIterator begin(void) BOOST_NOEXCEPT;
 
     /**
      * @brief Get an iterator that points one byte after the last byte of the data area.
      */
-    BufferIterator end(void) const BOOST_NOEXCEPT;
+    BufferIterator end(void) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Get a const iterator that points to the first byte of the data.
+     */
+    ConstBufferIterator cbegin(void) const BOOST_NOEXCEPT;
+
+    /**
+     * @brief Get a const iterator that points one byte after the last byte of the data area.
+     */
+    ConstBufferIterator cend(void) const BOOST_NOEXCEPT;
 
     // Swappable.
 public:
@@ -504,7 +514,7 @@ inline const BufferStorage* Buffer::GetStorage(void) const BOOST_NOEXCEPT
 
 size_t Buffer::CopyTo(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
 {
-    size_t copyied = 0;
+    size_t copied = 0;
     if (storage_ && bytes)
     {
         do
@@ -512,11 +522,11 @@ size_t Buffer::CopyTo(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
             size_t headerSize = zeroStart_ - start_;
             if (size <= headerSize)
             {
-                std::memmove(bytes_, storage_->bytes_ + start_, size);
+                std::memmove(bytes, storage_->bytes_ + start_, size);
                 copied += size;
                 break;
             }
-            std::memmove(bytes_, storage_->bytes_ + start_, headerSize);
+            std::memmove(bytes, storage_->bytes_ + start_, headerSize);
             size   -= headerSize;
             copied += headerSize;
 
@@ -948,16 +958,28 @@ inline void Buffer::swap(Buffer& rhs) BOOST_NOEXCEPT
     }
 }
 
-inline BufferIterator Buffer::begin(void) const BOOST_NOEXCEPT
+inline BufferIterator Buffer::begin(void) BOOST_NOEXCEPT
 {
     size_t cursor = start_;
     return BufferIterator(storage_, start_, zeroStart_, zeroEnd_, end_, cursor);
 }
 
-inline BufferIterator Buffer::end(void) const BOOST_NOEXCEPT
+inline BufferIterator Buffer::end(void) BOOST_NOEXCEPT
 {
     size_t cursor = end_;
     return BufferIterator(storage_, start_, zeroStart_, zeroEnd_, end_, cursor);
+}
+
+inline ConstBufferIterator Buffer::cbegin(void) const BOOST_NOEXCEPT
+{
+    size_t cursor = start_;
+    return ConstBufferIterator(storage_, start_, zeroStart_, zeroEnd_, end_, cursor);
+}
+
+inline ConstBufferIterator Buffer::cend(void) const BOOST_NOEXCEPT
+{
+    size_t cursor = end_;
+    return ConstBufferIterator(storage_, start_, zeroStart_, zeroEnd_, end_, cursor);
 }
 
 

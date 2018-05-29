@@ -29,18 +29,11 @@
 NSFX_OPEN_NAMESPACE
 
 
-class Buffer;
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // BufferIterator.
 /**
  * @ingroup Network
  * @brief The iterator for accessing the buffer data.
- *
- * The iterator is limited to move alone the data area in the buffer.
- * An attempt to move outside of the data area would result in throwing
- * \c OutOfBounds.
  *
  * A buffer iterator is not associated with a buffer, but associated with the
  * underlying storage that is shared among buffers and iterators.
@@ -56,15 +49,14 @@ class Buffer;
  * * T Read<T>()
  * * T ReadL<T>()
  * * T ReadB<T>()
- *
- * ### Strong exception safety.
- * If a method throws an exception, the iterator retains its original state.
  */
 class BufferIterator
 {
 private:
     friend class Buffer;
+    friend class ConstBufferIterator;
 
+private:
     // Endian tag.
     struct ReverseEndianTag {};
     struct KeepEndianTag {};
@@ -100,8 +92,8 @@ private:
 private:
     BufferIterator(BufferStorage* storage,
                    size_t start,
-                   size_t zeroStart_,
-                   size_t zeroEnd_,
+                   size_t zeroStart,
+                   size_t zeroEnd,
                    size_t end,
                    size_t cursor) BOOST_NOEXCEPT;
 
@@ -1010,6 +1002,273 @@ operator-(const BufferIterator& lhs, const BufferIterator& rhs) BOOST_NOEXCEPT
     BOOST_ASSERT_MSG(lhs.storage_ == rhs.storage_,
                      "Cannot compare unrelated buffer iterators.");
     return lhs.cursor_ - rhs.cursor_;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+ * @ingroup Network
+ * @brief Read-only buffer iterator.
+ */
+class ConstBufferIterator
+{
+private:
+    friend class Buffer;
+
+    // Xtructors.
+private:
+    ConstBufferIterator(BufferStorage* storage,
+                        size_t start,
+                        size_t zeroStart_,
+                        size_t zeroEnd_,
+                        size_t end,
+                        size_t cursor) BOOST_NOEXCEPT;
+
+    // Copyable.
+public:
+    ConstBufferIterator(const ConstBufferIterator& rhs) BOOST_NOEXCEPT;
+    ConstBufferIterator& operator=(const ConstBufferIterator& rhs) BOOST_NOEXCEPT;
+
+    // Emplicit conversion from BufferIterator.
+public:
+    ConstBufferIterator(const BufferIterator& rhs) BOOST_NOEXCEPT;
+    ConstBufferIterator& operator=(const BufferIterator& rhs) BOOST_NOEXCEPT;
+
+public:
+    size_t GetStart(void) const BOOST_NOEXCEPT;
+    size_t GetEnd(void) const BOOST_NOEXCEPT;
+    size_t GetCursor(void) const BOOST_NOEXCEPT;
+
+    // Move cursor.
+public:
+    /**
+     * @brief Move the iterator toward the end of the data area.
+     */
+    void MoveForward(size_t numBytes) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Move the iterator toward the end of the data area.
+     */
+    void MoveBackward(size_t numBytes) BOOST_NOEXCEPT;
+
+    // Read data.
+public:
+    /**
+     * @brief Read data in native endian order.
+     *
+     * @tparam T Must be an integral type.
+     */
+    template<class T>
+    T Read(void) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Read data in little endian order.
+     *
+     * @tparam T Must be an integral type.
+     */
+    template<class T>
+    T ReadL(void) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Read data in big endian order.
+     *
+     * @tparam T Must be an integral type.
+     */
+    template<class T>
+    T ReadB(void) BOOST_NOEXCEPT;
+
+    // Operators.
+public:
+    ConstBufferIterator& operator++(void) BOOST_NOEXCEPT;
+    ConstBufferIterator  operator++(int) BOOST_NOEXCEPT;
+    ConstBufferIterator& operator--(void) BOOST_NOEXCEPT;
+    ConstBufferIterator  operator--(int) BOOST_NOEXCEPT;
+    ConstBufferIterator& operator+=(size_t numBytes) BOOST_NOEXCEPT;
+    ConstBufferIterator& operator-=(size_t numBytes) BOOST_NOEXCEPT;
+
+    friend bool operator> (const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT;
+    friend bool operator>=(const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT;
+    friend bool operator==(const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT;
+    friend bool operator!=(const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT;
+    friend bool operator< (const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT;
+    friend bool operator<=(const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT;
+
+    friend ConstBufferIterator operator+(const ConstBufferIterator& lhs, size_t numBytes) BOOST_NOEXCEPT;
+    friend ConstBufferIterator operator-(const ConstBufferIterator& lhs, size_t numBytes) BOOST_NOEXCEPT;
+    friend ptrdiff_t operator-(const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT;
+
+    // Properties.
+private:
+    BufferIterator it_;
+
+};
+
+////////////////////////////////////////////////////////////////////////////////
+inline ConstBufferIterator::ConstBufferIterator(
+    BufferStorage* storage, size_t start, size_t zeroStart,
+    size_t zeroEnd, size_t end, size_t cursor) BOOST_NOEXCEPT :
+    it_(storage, start, zeroStart, zeroEnd, end, cursor)
+{
+}
+
+inline ConstBufferIterator::ConstBufferIterator(const ConstBufferIterator& rhs) BOOST_NOEXCEPT :
+    it_(rhs.it_)
+{
+}
+
+inline ConstBufferIterator&
+ConstBufferIterator::operator=(const ConstBufferIterator& rhs) BOOST_NOEXCEPT
+{
+    if (this != &rhs)
+    {
+        it_ = rhs.it_;
+    }
+    return *this;
+}
+
+inline ConstBufferIterator::ConstBufferIterator(const BufferIterator& rhs) BOOST_NOEXCEPT :
+    it_(rhs)
+{
+}
+
+inline ConstBufferIterator&
+ConstBufferIterator::operator=(const BufferIterator& rhs) BOOST_NOEXCEPT
+{
+    it_ = rhs;
+    return *this;
+}
+
+inline size_t ConstBufferIterator::GetStart(void) const BOOST_NOEXCEPT
+{
+    return it_.GetStart();
+}
+
+inline size_t ConstBufferIterator::GetEnd(void) const BOOST_NOEXCEPT
+{
+    return it_.GetEnd();
+}
+
+inline size_t ConstBufferIterator::GetCursor(void) const BOOST_NOEXCEPT
+{
+    return it_.GetCursor();
+}
+
+inline void ConstBufferIterator::MoveForward(size_t numBytes) BOOST_NOEXCEPT
+{
+    it_.MoveForward(numBytes);
+}
+
+inline void ConstBufferIterator::MoveBackward(size_t numBytes) BOOST_NOEXCEPT
+{
+    it_.MoveBackward(numBytes);
+}
+
+template<class T>
+inline T ConstBufferIterator::Read(void) BOOST_NOEXCEPT
+{
+    return it_.Read<T>();
+}
+
+template<class T>
+inline T ConstBufferIterator::ReadL(void) BOOST_NOEXCEPT
+{
+    return it_.ReadL<T>();
+}
+
+template<class T>
+inline T ConstBufferIterator::ReadB(void) BOOST_NOEXCEPT
+{
+    return it_.ReadB<T>();
+}
+
+inline ConstBufferIterator& ConstBufferIterator::operator++(void) BOOST_NOEXCEPT
+{
+    ++it_;
+    return *this;
+}
+
+inline ConstBufferIterator ConstBufferIterator::operator++(int) BOOST_NOEXCEPT
+{
+    return ConstBufferIterator(it_++);
+}
+
+inline ConstBufferIterator& ConstBufferIterator::operator--(void) BOOST_NOEXCEPT
+{
+    --it_;
+    return *this;
+}
+
+inline ConstBufferIterator ConstBufferIterator::operator--(int) BOOST_NOEXCEPT
+{
+    return ConstBufferIterator(it_--);
+}
+
+inline ConstBufferIterator& ConstBufferIterator::operator+=(size_t numBytes) BOOST_NOEXCEPT
+{
+    it_ += numBytes;
+    return *this;
+}
+
+inline ConstBufferIterator& ConstBufferIterator::operator-=(size_t numBytes) BOOST_NOEXCEPT
+{
+    it_ -= numBytes;
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+inline bool
+operator> (const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT
+{
+    return lhs.it_ > rhs.it_;
+}
+
+inline bool
+operator>=(const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT
+{
+    return lhs.it_ >= rhs.it_;
+}
+
+inline bool
+operator==(const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT
+{
+    return lhs.it_ == rhs.it_;
+}
+
+inline bool
+operator!=(const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT
+{
+    return lhs.it_ != rhs.it_;
+}
+
+inline bool
+operator< (const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT
+{
+    return lhs.it_ < rhs.it_;
+}
+
+inline bool
+operator<=(const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT
+{
+    return lhs.it_ <= rhs.it_;
+}
+
+inline ConstBufferIterator
+operator+(const ConstBufferIterator& lhs, size_t numBytes) BOOST_NOEXCEPT
+{
+    return ConstBufferIterator(lhs.it_ + numBytes);
+}
+
+inline ConstBufferIterator
+operator-(const ConstBufferIterator& lhs, size_t numBytes) BOOST_NOEXCEPT
+{
+    return ConstBufferIterator(lhs.it_ - numBytes);
+}
+
+inline ptrdiff_t
+operator-(const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT
+{
+    return lhs.it_ - rhs.it_;
 }
 
 
