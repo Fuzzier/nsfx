@@ -64,6 +64,10 @@ NSFX_OPEN_NAMESPACE
  */
 class Buffer
 {
+public:
+    typedef BufferIterator      iterator;
+    typedef ConstBufferIterator const_iterator;
+
     // Xstructors.
 public:
     /**
@@ -175,14 +179,14 @@ public:
      * @brief Copy data to a memory block.
      * @return The number of bytes copied.
      */
-    size_t CopyTo(uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+    size_t CopyTo(uint8_t* dst, size_t size) const BOOST_NOEXCEPT;
 
 private:
     struct ContinuousTag {};
     struct SegmentedTag {};
 
-    size_t InternalCopyTo(uint8_t* bytes, size_t size, ContinuousTag) BOOST_NOEXCEPT;
-    size_t InternalCopyTo(uint8_t* bytes, size_t size, SegmentedTag) BOOST_NOEXCEPT;
+    size_t InternalCopyTo(uint8_t* dst, size_t size, ContinuousTag) const BOOST_NOEXCEPT;
+    size_t InternalCopyTo(uint8_t* dst, size_t size, SegmentedTag) const BOOST_NOEXCEPT;
 
     // Add/remove.
 private:
@@ -197,13 +201,29 @@ public:
      * @pre There are no dangling buffer iterators holding the underlying
      *      storage.
      */
-    void AddAtStart(size_t numBytes);
+    void AddAtStart(size_t size);
+
+    /**
+     * @brief Extend the buffer and copy the specified contents.
+     *
+     * @pre There are no dangling buffer iterators holding the underlying
+     *      storage.
+     */
+    void AddAtStart(const uint8_t* src, size_t size);
+
+    /**
+     * @brief Extend the buffer and copy the contents from the specified buffer.
+     *
+     * @pre There are no dangling buffer iterators holding the underlying
+     *      storage.
+     */
+    void AddAtStart(const Buffer& src);
 
 private:
-    void InternalAddAtStart(size_t numBytes, AdjustOffsetTag);
-    void InternalAddAtStart(size_t numBytes, size_t newCapacity,
+    void InternalAddAtStart(size_t size, AdjustOffsetTag);
+    void InternalAddAtStart(size_t size, size_t newCapacity,
                             size_t newStart, size_t dataSize, ReallocateTag);
-    void InternalAddAtStart(size_t numBytes, size_t dataSize, MoveMemoryTag);
+    void InternalAddAtStart(size_t size, size_t dataSize, MoveMemoryTag);
 
 public:
     /**
@@ -212,36 +232,52 @@ public:
      * @pre There are no dangling buffer iterators holding the underlying
      *      storage.
      */
-    void AddAtEnd(size_t numBytes);
+    void AddAtEnd(size_t size);
+
+    /**
+     * @brief Extend the buffer and copy the specified contents.
+     *
+     * @pre There are no dangling buffer iterators holding the underlying
+     *      storage.
+     */
+    void AddAtEnd(const uint8_t* src, size_t size);
+
+    /**
+     * @brief Extend the buffer and copy the contents from the specified buffer.
+     *
+     * @pre There are no dangling buffer iterators holding the underlying
+     *      storage.
+     */
+    void AddAtEnd(const Buffer& src);
 
 private:
-    void InternalAddAtEnd(size_t numBytes, size_t dataSize, AdjustOffsetTag);
-    void InternalAddAtEnd(size_t numBytes, size_t newCapacity,
+    void InternalAddAtEnd(size_t size, size_t dataSize, AdjustOffsetTag);
+    void InternalAddAtEnd(size_t size, size_t newCapacity,
                           size_t newStart, size_t dataSize, ReallocateTag);
-    void InternalAddAtEnd(size_t numBytes, size_t dataSize, MoveMemoryTag);
+    void InternalAddAtEnd(size_t size, size_t dataSize, MoveMemoryTag);
 
 public:
     /**
      * @brief Reduce the data area toward the end of the buffer.
      *
-     * @param[in] numBytes If the number of bytes is too large, the data area
-     *                     becomes empty.
+     * @param[in] size If the number of bytes is too large, the data area
+     *                 becomes empty.
      *
      * @pre There are no dangling buffer iterators holding the underlying
      *      storage.
      */
-    void RemoveAtStart(size_t numBytes) BOOST_NOEXCEPT;
+    void RemoveAtStart(size_t size) BOOST_NOEXCEPT;
 
     /**
      * @brief Reduce the data area and leave more post-data area.
      *
-     * @param[in] numBytes If the number of bytes is too large, the data area
-     *                     becomes empty.
+     * @param[in] size If the number of bytes is too large, the data area
+     *                 becomes empty.
      *
      * @pre There are no dangling buffer iterators holding the underlying
      *      storage.
      */
-    void RemoveAtEnd(size_t numBytes) BOOST_NOEXCEPT;
+    void RemoveAtEnd(size_t size) BOOST_NOEXCEPT;
 
     // Fragmentation.
 public:
@@ -519,34 +555,34 @@ inline const BufferStorage* Buffer::GetStorage(void) const BOOST_NOEXCEPT
     return storage_;
 }
 
-size_t Buffer::CopyTo(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+size_t Buffer::CopyTo(uint8_t* dst, size_t size) const BOOST_NOEXCEPT
 {
     size_t copied = 0;
-    if (storage_ && bytes)
+    if (storage_ && dst)
     {
         if (zeroStart_ == zeroEnd_)
         {
-            copied = InternalCopyTo(bytes, size, ContinuousTag());
+            copied = InternalCopyTo(dst, size, ContinuousTag());
         }
         else
         {
-            copied = InternalCopyTo(bytes, size, SegmentedTag());
+            copied = InternalCopyTo(dst, size, SegmentedTag());
         }
     }
     return copied;
 }
 
 inline size_t
-Buffer::InternalCopyTo(uint8_t* bytes, size_t size, ContinuousTag) BOOST_NOEXCEPT
+Buffer::InternalCopyTo(uint8_t* dst, size_t size, ContinuousTag) const BOOST_NOEXCEPT
 {
     size_t dataSize = GetInternalSize();
     size_t copied = (dataSize <= size ? dataSize : size);
-    std::memmove(bytes, storage_->bytes_ + start_, copied);
+    std::memmove(dst, storage_->bytes_ + start_, copied);
     return copied;
 }
 
 inline size_t
-Buffer::InternalCopyTo(uint8_t* bytes, size_t size, SegmentedTag) BOOST_NOEXCEPT
+Buffer::InternalCopyTo(uint8_t* dst, size_t size, SegmentedTag) const BOOST_NOEXCEPT
 {
     size_t copied = 0;
     do
@@ -554,35 +590,35 @@ Buffer::InternalCopyTo(uint8_t* bytes, size_t size, SegmentedTag) BOOST_NOEXCEPT
         size_t headerSize = zeroStart_ - start_;
         if (size <= headerSize)
         {
-            std::memmove(bytes, storage_->bytes_ + start_, size);
+            std::memmove(dst, storage_->bytes_ + start_, size);
             copied += size;
             break;
         }
-        std::memmove(bytes, storage_->bytes_ + start_, headerSize);
+        std::memmove(dst, storage_->bytes_ + start_, headerSize);
         size   -= headerSize;
         copied += headerSize;
 
         size_t zeroSize = zeroEnd_ - zeroStart_;
         if (size <= zeroSize)
         {
-            std::memset(bytes + copied, 0, size);
+            std::memset(dst + copied, 0, size);
             copied += size;
             break;
         }
-        std::memset(bytes + copied, 0, zeroSize);
+        std::memset(dst + copied, 0, zeroSize);
         size   -= zeroSize;
         copied += zeroSize;
 
         size_t trailerSize = end_ - zeroEnd_;
         if (size <= trailerSize)
         {
-            std::memmove(bytes + copied,
+            std::memmove(dst + copied,
                          storage_->bytes_ + zeroStart_,
                          size);
             copied += size;
             break;
         }
-        std::memmove(bytes + copied,
+        std::memmove(dst + copied,
                      storage_->bytes_ + zeroStart_,
                      trailerSize);
         copied += trailerSize;
@@ -591,9 +627,9 @@ Buffer::InternalCopyTo(uint8_t* bytes, size_t size, SegmentedTag) BOOST_NOEXCEPT
     return copied;
 }
 
-inline void Buffer::AddAtStart(size_t numBytes)
+inline void Buffer::AddAtStart(size_t size)
 {
-    if (!numBytes)
+    if (!size)
     {
         return;
     }
@@ -602,9 +638,9 @@ inline void Buffer::AddAtStart(size_t numBytes)
     // The storage is not yet allocated.
     if (!storage_)
     {
-        size_t newCapacity = numBytes;
+        size_t newCapacity = size;
         size_t newStart = 0;
-        InternalAddAtStart(numBytes, newCapacity, newStart,
+        InternalAddAtStart(size, newCapacity, newStart,
                            dataSize, ReallocateTag());
         return;
     }
@@ -617,27 +653,27 @@ inline void Buffer::AddAtStart(size_t numBytes)
     if (storage_->refCount_ == 1)
     {
         // The pre-header area has enough space.
-        if (numBytes <= start_)
+        if (size <= start_)
         {
-            InternalAddAtStart(numBytes, AdjustOffsetTag());
+            InternalAddAtStart(size, AdjustOffsetTag());
         }
         // The pre-header area does not have enough space.
-        else // if (numBytes > start_)
+        else // if (size > start_)
         {
             // The storage has enough space to accommodate the requested size.
-            if (storage_->capacity_ >= dataSize + numBytes)
+            if (storage_->capacity_ >= dataSize + size)
             {
                 mmove = true;
-                InternalAddAtStart(numBytes, dataSize, MoveMemoryTag());
+                InternalAddAtStart(size, dataSize, MoveMemoryTag());
             }
             // The storage does not have enough space to accommodate
             // the requested size.
-            else // if (storage_->capacity_ < dataSize + numBytes)
+            else // if (storage_->capacity_ < dataSize + size)
             {
                 dirty = true;
-                size_t newCapacity = numBytes + dataSize;
+                size_t newCapacity = size + dataSize;
                 size_t newStart = 0;
-                InternalAddAtStart(numBytes, newCapacity, newStart,
+                InternalAddAtStart(size, newCapacity, newStart,
                                    dataSize, ReallocateTag());
             }
         }
@@ -650,17 +686,17 @@ inline void Buffer::AddAtStart(size_t numBytes)
         if (storage_->dirtyStart_ == start_)
         {
             // The pre-header area has enough space.
-            if (numBytes <= start_)
+            if (size <= start_)
             {
-                InternalAddAtStart(numBytes, AdjustOffsetTag());
+                InternalAddAtStart(size, AdjustOffsetTag());
             }
             // The pre-header area does not have enough space.
-            else // if (numBytes > start_)
+            else // if (size > start_)
             {
                 dirty = true;
-                size_t newCapacity = numBytes + dataSize;
+                size_t newCapacity = size + dataSize;
                 size_t newStart = 0;
-                InternalAddAtStart(numBytes, newCapacity, newStart,
+                InternalAddAtStart(size, newCapacity, newStart,
                                    dataSize, ReallocateTag());
             }
         }
@@ -669,37 +705,57 @@ inline void Buffer::AddAtStart(size_t numBytes)
         {
             dirty = true;
             // The pre-header area has enough space.
-            if (numBytes <= start_)
+            if (size <= start_)
             {
                 size_t newCapacity = storage_->capacity_;
-                size_t newStart = start_ - numBytes;
-                InternalAddAtStart(numBytes, newCapacity, newStart,
+                size_t newStart = start_ - size;
+                InternalAddAtStart(size, newCapacity, newStart,
                                    dataSize, ReallocateTag());
             }
             // The pre-header area does not have enough space.
             else // if (numBytes_ > start_)
             {
-                size_t newCapacity = numBytes + dataSize;
+                size_t newCapacity = size + dataSize;
                 size_t newStart = 0;
-                InternalAddAtStart(numBytes, newCapacity, newStart,
+                InternalAddAtStart(size, newCapacity, newStart,
                                    dataSize, ReallocateTag());
             }
         }
     }
 }
 
-inline void Buffer::InternalAddAtStart(size_t numBytes, AdjustOffsetTag)
+inline void Buffer::AddAtStart(const uint8_t* src, size_t size)
 {
-    start_ -= numBytes;
+    BOOST_ASSERT_MSG(src, "Invalid pointer.");
+    if (size)
+    {
+        AddAtStart(size);
+        std::memmove(storage_->bytes_ + start_, src, size);
+    }
+}
+
+inline void Buffer::AddAtStart(const Buffer& src)
+{
+    size_t size = src.GetSize();
+    if (size)
+    {
+        AddAtStart(src.GetSize());
+        src.CopyTo(storage_->bytes_ + start_, size);
+    }
+}
+
+inline void Buffer::InternalAddAtStart(size_t size, AdjustOffsetTag)
+{
+    start_ -= size;
     storage_->dirtyStart_ = start_;
 }
 
 inline void Buffer::InternalAddAtStart(
-    size_t numBytes, size_t newCapacity,
+    size_t size, size_t newCapacity,
     size_t newStart, size_t dataSize, ReallocateTag)
 {
     BufferStorage* newStorage = BufferStorage::Create(newCapacity);
-    std::memcpy(newStorage->bytes_ + newStart + numBytes,
+    std::memcpy(newStorage->bytes_ + newStart + size,
                   storage_->bytes_ + start_,
                 dataSize);
     if (storage_)
@@ -708,9 +764,9 @@ inline void Buffer::InternalAddAtStart(
     }
     storage_  = newStorage;
     storage_->dirtyStart_ = newStart;
-    storage_->dirtyEnd_   = newStart + numBytes + dataSize;
+    storage_->dirtyEnd_   = newStart + size + dataSize;
 
-    ptrdiff_t delta = newStart + numBytes - start_;
+    ptrdiff_t delta = newStart + size - start_;
     start_      = newStart;
     zeroStart_ += delta;
     zeroEnd_   += delta;
@@ -718,25 +774,25 @@ inline void Buffer::InternalAddAtStart(
 }
 
 inline void Buffer::InternalAddAtStart(
-    size_t numBytes, size_t dataSize, MoveMemoryTag)
+    size_t size, size_t dataSize, MoveMemoryTag)
 {
-    std::memmove(storage_->bytes_ + numBytes,
+    std::memmove(storage_->bytes_ + size,
                  storage_->bytes_ + start_,
                  dataSize);
 
     storage_->dirtyStart_ = 0;
-    storage_->dirtyEnd_   = numBytes + dataSize;
+    storage_->dirtyEnd_   = size + dataSize;
 
-    ptrdiff_t delta = numBytes - start_;
+    ptrdiff_t delta = size - start_;
     start_      = 0;
     zeroStart_ += delta;
     zeroEnd_   += delta;
     end_       += delta;
 }
 
-inline void Buffer::AddAtEnd(size_t numBytes)
+inline void Buffer::AddAtEnd(size_t size)
 {
-    if (!numBytes)
+    if (!size)
     {
         return;
     }
@@ -745,9 +801,9 @@ inline void Buffer::AddAtEnd(size_t numBytes)
     // The storage is not yet allocated.
     if (!storage_)
     {
-        size_t newCapacity = numBytes;
+        size_t newCapacity = size;
         size_t newStart = 0;
-        InternalAddAtEnd(numBytes, newCapacity, newStart,
+        InternalAddAtEnd(size, newCapacity, newStart,
                          dataSize, ReallocateTag());
         return;
     }
@@ -761,28 +817,28 @@ inline void Buffer::AddAtEnd(size_t numBytes)
     if (storage_->refCount_ == 1)
     {
         // The post-trailer area has enough space.
-        if (numBytes <= postSize)
+        if (size <= postSize)
         {
-            InternalAddAtEnd(numBytes, dataSize, AdjustOffsetTag());
+            InternalAddAtEnd(size, dataSize, AdjustOffsetTag());
         }
         // The post-trailer area does not have enough space.
-        else // if (numBytes > postSize)
+        else // if (size > postSize)
         {
             // The storage has enough space to accommodate the requested size.
-            if (storage_->capacity_ >= dataSize + numBytes)
+            if (storage_->capacity_ >= dataSize + size)
             {
                 mmove = true;
-                InternalAddAtEnd(numBytes, dataSize, MoveMemoryTag());
+                InternalAddAtEnd(size, dataSize, MoveMemoryTag());
             }
             // The storage does not have enough space to accommodate
             // the requested size.
-            else // if (storage_->capacity_ < dataSize + numBytes)
+            else // if (storage_->capacity_ < dataSize + size)
             {
                 dirty = true;
-                size_t newCapacity = dataSize + numBytes;
+                size_t newCapacity = dataSize + size;
                 size_t newStart = 0;
-                InternalAddAtEnd(numBytes, newCapacity, newStart,
-                                   dataSize, ReallocateTag());
+                InternalAddAtEnd(size, newCapacity, newStart,
+                                 dataSize, ReallocateTag());
             }
         }
     }
@@ -794,17 +850,17 @@ inline void Buffer::AddAtEnd(size_t numBytes)
         if (storage_->dirtyEnd_ == start_ + dataSize)
         {
             // The post-trailer area has enough space.
-            if (numBytes <= postSize)
+            if (size <= postSize)
             {
-                InternalAddAtEnd(numBytes, dataSize, AdjustOffsetTag());
+                InternalAddAtEnd(size, dataSize, AdjustOffsetTag());
             }
             // The post-trailer area does not have enough space.
-            else // if (numBytes > postSize)
+            else // if (size > postSize)
             {
                 dirty = true;
-                size_t newCapacity = dataSize + numBytes;
+                size_t newCapacity = dataSize + size;
                 size_t newStart = 0;
-                InternalAddAtEnd(numBytes, newCapacity, newStart,
+                InternalAddAtEnd(size, newCapacity, newStart,
                                  dataSize, ReallocateTag());
             }
         }
@@ -813,34 +869,56 @@ inline void Buffer::AddAtEnd(size_t numBytes)
         {
             dirty = true;
             // The post-tailer area has enough space.
-            if (numBytes <= postSize)
+            if (size <= postSize)
             {
                 size_t newCapacity = storage_->capacity_;
                 size_t newStart = start_;
-                InternalAddAtEnd(numBytes, newCapacity, newStart,
+                InternalAddAtEnd(size, newCapacity, newStart,
                                  dataSize, ReallocateTag());
             }
             // The post-tailer area does not have enough space.
             else // if (numBytes_ > postSize)
             {
-                size_t newCapacity = numBytes + dataSize;
+                size_t newCapacity = size + dataSize;
                 size_t newStart = 0;
-                InternalAddAtEnd(numBytes, newCapacity, newStart,
+                InternalAddAtEnd(size, newCapacity, newStart,
                                  dataSize, ReallocateTag());
             }
         }
     }
 }
 
-inline void Buffer::InternalAddAtEnd(
-    size_t numBytes, size_t dataSize, AdjustOffsetTag)
+inline void Buffer::AddAtEnd(const uint8_t* src, size_t size)
 {
-    end_ += numBytes;
-    storage_->dirtyEnd_ = start_ + dataSize + numBytes;
+    BOOST_ASSERT_MSG(src, "Invalid pointer.");
+    if (size)
+    {
+        AddAtEnd(size);
+        std::memmove(storage_->bytes_ + (end_ - (zeroEnd_ - zeroStart_) - size),
+                     src, size);
+    }
+}
+
+inline void Buffer::AddAtEnd(const Buffer& src)
+{
+    size_t size = src.GetSize();
+    if (size)
+    {
+        AddAtEnd(size);
+        src.CopyTo(storage_->bytes_ + (end_ - (zeroEnd_ - zeroStart_) - size),
+                   size);
+    }
 }
 
 inline void Buffer::InternalAddAtEnd(
-    size_t numBytes, size_t newCapacity,
+    size_t size, size_t dataSize, AdjustOffsetTag)
+{
+    end_ += size;
+    storage_->dirtyEnd_ = start_ + dataSize + size;
+}
+
+inline void Buffer::InternalAddAtEnd(
+    size_t size, size_t newCapacity,
     size_t newStart, size_t dataSize, ReallocateTag)
 {
     BufferStorage* newStorage = BufferStorage::Create(newCapacity);
@@ -853,19 +931,19 @@ inline void Buffer::InternalAddAtEnd(
     }
     storage_  = newStorage;
     storage_->dirtyStart_ = newStart;
-    storage_->dirtyEnd_   = newStart + dataSize + numBytes;
+    storage_->dirtyEnd_   = newStart + dataSize + size;
 
     ptrdiff_t delta = newStart - start_;
     start_      = newStart;
     zeroStart_ += delta;
     zeroEnd_   += delta;
-    end_       += delta + numBytes;
+    end_       += delta + size;
 }
 
 inline void Buffer::InternalAddAtEnd(
-    size_t numBytes, size_t dataSize, MoveMemoryTag)
+    size_t size, size_t dataSize, MoveMemoryTag)
 {
-    size_t newStart = storage_->capacity_ - (dataSize + numBytes);
+    size_t newStart = storage_->capacity_ - (dataSize + size);
     std::memmove(storage_->bytes_ + newStart,
                  storage_->bytes_ + start_,
                  dataSize);
@@ -877,12 +955,12 @@ inline void Buffer::InternalAddAtEnd(
     start_      = newStart;
     zeroStart_ += delta;
     zeroEnd_   += delta;
-    end_       += delta + numBytes;
+    end_       += delta + size;
 }
 
-inline void Buffer::RemoveAtStart(size_t numBytes) BOOST_NOEXCEPT
+inline void Buffer::RemoveAtStart(size_t size) BOOST_NOEXCEPT
 {
-    size_t newStart = start_ + numBytes;
+    size_t newStart = start_ + size;
     if (newStart <= zeroStart_)
     {
         start_ = newStart;
@@ -914,26 +992,26 @@ inline void Buffer::RemoveAtStart(size_t numBytes) BOOST_NOEXCEPT
     }
 }
 
-inline void Buffer::RemoveAtEnd(size_t numBytes) BOOST_NOEXCEPT
+inline void Buffer::RemoveAtEnd(size_t size) BOOST_NOEXCEPT
 {
-    if (numBytes <= end_ - zeroEnd_)
+    if (size <= end_ - zeroEnd_)
     {
-        end_ -= numBytes;
+        end_ -= size;
     }
-    else if (numBytes <= end_ - zeroStart_)
+    else if (size <= end_ - zeroStart_)
     {
-        size_t delta = numBytes - (end_ - zeroEnd_);
+        size_t delta = size - (end_ - zeroEnd_);
         zeroEnd_ -= delta;
         end_      = zeroEnd_;
     }
-    else if (numBytes <= end_ - start_)
+    else if (size <= end_ - start_)
     {
-        size_t delta = numBytes - (end_ - zeroStart_);
+        size_t delta = size - (end_ - zeroStart_);
         zeroStart_ -= delta;
         zeroEnd_    = zeroStart_;
         end_        = zeroStart_;
     }
-    else // if (numBytes > end_ - start_)
+    else // if (size > end_ - start_)
     {
         zeroStart_ = start_;
         zeroEnd_   = start_;

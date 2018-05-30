@@ -268,6 +268,80 @@ NSFX_TEST_SUITE(Buffer)
         }
     }/*}}}*/
 
+    NSFX_TEST_SUITE(CopyTo)/*{{{*/
+    {
+        NSFX_TEST_CASE(Segmented)
+        {
+            nsfx::Buffer b0(1000, 700, 300);
+            // [700 s zs 300 ze e 300]
+            b0.AddAtStart(100);
+            // [600 s 100 zs 300 ze e 300]
+            b0.AddAtEnd(100);
+            // [600 s 100 zs 300 ze 100 e 200]
+
+            nsfx::BufferIterator it = b0.begin();
+            for (size_t i = 0; i < 100; ++i)
+            {
+                it.Write<uint8_t>(0xfe);
+            }
+            it += 300;
+            for (size_t i = 0; i < 100; ++i)
+            {
+                it.Write<uint8_t>(0xef);
+            }
+
+            size_t size = b0.GetSize();
+            uint8_t* byte = new uint8_t[size];
+            b0.CopyTo(byte, size);
+
+            for (size_t i = 0; i < 100; ++i)
+            {
+                NSFX_TEST_EXPECT_EQ(byte[i], 0xfe);
+            }
+            for (size_t i = 100; i < 400; ++i)
+            {
+                NSFX_TEST_EXPECT_EQ(byte[i], 0);
+            }
+            for (size_t i = 400; i < 500; ++i)
+            {
+                NSFX_TEST_EXPECT_EQ(byte[i], 0xef);
+            }
+        }
+
+        NSFX_TEST_CASE(Continuous)
+        {
+            nsfx::Buffer b0(1000);
+            // [1000 s zs ze e]
+            b0.AddAtEnd(100);
+            // [900 s zs ze 100 e]
+            b0.AddAtStart(100);
+            // [800 s 100 zs ze 100 e]
+
+            nsfx::BufferIterator it = b0.begin();
+            for (size_t i = 0; i < 100; ++i)
+            {
+                it.Write<uint8_t>(0xfe);
+            }
+            for (size_t i = 0; i < 100; ++i)
+            {
+                it.Write<uint8_t>(0xef);
+            }
+
+            size_t size = b0.GetSize();
+            uint8_t* byte = new uint8_t[size];
+            b0.CopyTo(byte, size);
+
+            for (size_t i = 0; i < 100; ++i)
+            {
+                NSFX_TEST_EXPECT_EQ(byte[i], 0xfe);
+            }
+            for (size_t i = 100; i < 200; ++i)
+            {
+                NSFX_TEST_EXPECT_EQ(byte[i], 0xef);
+            }
+        }
+    }/*}}}*/
+
     NSFX_TEST_SUITE(AddAtStart)/*{{{*/
     {
         NSFX_TEST_SUITE(Add0)
@@ -532,6 +606,67 @@ NSFX_TEST_SUITE(Buffer)
                         NSFX_TEST_EXPECT_EQ(b0.GetStorage()->refCount_, 1);
                     }
                 }
+            }
+        }
+
+        NSFX_TEST_CASE(AddMemory)
+        {
+            uint8_t s[100];
+            for (size_t i = 0; i < 100; ++i)
+            {
+                uint8_t v = 0xfe + i;
+                s[i] = v;
+            }
+
+            nsfx::Buffer b0(1000, 700, 300);
+            // b0 [700 s zs 300 ze e 300]
+            b0.AddAtStart(s, 100);
+            b0.AddAtEnd(100);
+            // b0 [600 s 100 zs 300 ze 100 e 200]
+            auto it = b0.begin();
+            for (size_t i = 0; i < 100; ++i)
+            {
+                uint8_t v = 0xfe + i;
+                if (i == 99)
+                {
+                    i = 99;
+                }
+                NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), v) << i;
+            }
+        }
+
+        NSFX_TEST_CASE(AddBuffer)
+        {
+            nsfx::Buffer s(1000, 700, 0);
+            s.AddAtStart(100);
+            s.AddAtEnd(100);
+            // s [600 s 100 zs ze 100 e 200]
+            auto it = s.begin();
+            for (size_t i = 0; i < 100; ++i)
+            {
+                uint8_t v = 0xfe + i;
+                it.Write<uint8_t>(v);
+            }
+            for (size_t i = 0; i < 100; ++i)
+            {
+                uint8_t v = 0xef + i;
+                it.Write<uint8_t>(v);
+            }
+
+            nsfx::Buffer b0(1000, 700, 300);
+            b0.AddAtEnd(100);
+            b0.AddAtStart(s);
+            // s [100 s 200 zs 300 ze 100 e 200]
+            it = b0.begin();
+            for (size_t i = 0; i < 100; ++i)
+            {
+                uint8_t v = 0xfe + i;
+                NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), v);
+            }
+            for (size_t i = 0; i < 100; ++i)
+            {
+                uint8_t v = 0xef + i;
+                NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), v);
             }
         }
     }/*}}}*/
@@ -802,78 +937,61 @@ NSFX_TEST_SUITE(Buffer)
                 }
             }
         }
-    }/*}}}*/
 
-    NSFX_TEST_SUITE(CopyTo)/*{{{*/
-    {
-        NSFX_TEST_CASE(Segmented)
+        NSFX_TEST_CASE(AddMemory)
         {
+            uint8_t s[100];
+            for (size_t i = 0; i < 100; ++i)
+            {
+                uint8_t v = 0xef + i;
+                s[i] = v;
+            }
+
             nsfx::Buffer b0(1000, 700, 300);
-            // [700 s zs 300 ze e 300]
+            // b0 [700 s zs 300 ze e 300]
             b0.AddAtStart(100);
-            // [600 s 100 zs 300 ze e 300]
-            b0.AddAtEnd(100);
-            // [600 s 100 zs 300 ze 100 e 200]
-
-            nsfx::BufferIterator it = b0.begin();
+            b0.AddAtEnd(s, 100);
+            // b0 [600 s 100 zs 300 ze 100 e 200]
+            auto it = b0.end() - 100;
             for (size_t i = 0; i < 100; ++i)
             {
-                it.Write<uint8_t>(0xfe);
-            }
-            it += 300;
-            for (size_t i = 0; i < 100; ++i)
-            {
-                it.Write<uint8_t>(0xef);
-            }
-
-            size_t size = b0.GetSize();
-            uint8_t* byte = new uint8_t[size];
-            b0.CopyTo(byte, size);
-
-            for (size_t i = 0; i < 100; ++i)
-            {
-                NSFX_TEST_EXPECT_EQ(byte[i], 0xfe);
-            }
-            for (size_t i = 100; i < 400; ++i)
-            {
-                NSFX_TEST_EXPECT_EQ(byte[i], 0);
-            }
-            for (size_t i = 400; i < 500; ++i)
-            {
-                NSFX_TEST_EXPECT_EQ(byte[i], 0xef);
+                uint8_t v = 0xef + i;
+                NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), v);
             }
         }
 
-        NSFX_TEST_CASE(Continuous)
+        NSFX_TEST_CASE(AddBuffer)
         {
-            nsfx::Buffer b0(1000);
-            // [1000 s zs ze e]
-            b0.AddAtEnd(100);
-            // [900 s zs ze 100 e]
+            nsfx::Buffer s(1000, 700, 0);
+            s.AddAtStart(100);
+            s.AddAtEnd(100);
+            // s [600 s 100 zs ze 100 e 200]
+            auto it = s.begin();
+            for (size_t i = 0; i < 100; ++i)
+            {
+                uint8_t v = 0xfe + i;
+                it.Write<uint8_t>(v);
+            }
+            for (size_t i = 0; i < 100; ++i)
+            {
+                uint8_t v = 0xef + i;
+                it.Write<uint8_t>(v);
+            }
+
+            nsfx::Buffer b0(1000, 700, 300);
+            b0.AddAtEnd(s);
             b0.AddAtStart(100);
-            // [800 s 100 zs ze 100 e]
-
-            nsfx::BufferIterator it = b0.begin();
+            // s [200 s 100 zs 300 ze 200 e 100]
+            it = b0.end() - 200;
             for (size_t i = 0; i < 100; ++i)
             {
-                it.Write<uint8_t>(0xfe);
+                uint8_t v = 0xfe + i;
+                NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), v);
             }
             for (size_t i = 0; i < 100; ++i)
             {
-                it.Write<uint8_t>(0xef);
-            }
-
-            size_t size = b0.GetSize();
-            uint8_t* byte = new uint8_t[size];
-            b0.CopyTo(byte, size);
-
-            for (size_t i = 0; i < 100; ++i)
-            {
-                NSFX_TEST_EXPECT_EQ(byte[i], 0xfe);
-            }
-            for (size_t i = 100; i < 200; ++i)
-            {
-                NSFX_TEST_EXPECT_EQ(byte[i], 0xef);
+                uint8_t v = 0xef + i;
+                NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), v);
             }
         }
     }/*}}}*/
