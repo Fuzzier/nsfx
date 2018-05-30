@@ -558,7 +558,7 @@ inline T BufferIterator::ReadInOrder(void) BOOST_NOEXCEPT
     ReadableCheck(sizeof (T));
     typedef typename MakeEndianTag<order>::Type  E;
     // Read in header area.
-    if (cursor_ + sizeof (T) < zeroStart_)
+    if (cursor_ + sizeof (T) <= zeroStart_)
     {
         typedef ReadTag<sizeof (T), InSolidAreaTag>  R;
         return InternalRead(cursor_, R(), E());
@@ -570,7 +570,7 @@ inline T BufferIterator::ReadInOrder(void) BOOST_NOEXCEPT
         return InternalRead(cursor_ - (zeroEnd_ - zeroStart_), R(), E());
     }
     // Read in zero-compressed area.
-    else if (zeroStart_ <= cursor_ && cursor_ + sizeof (T) < zeroEnd_)
+    else if (zeroStart_ <= cursor_ && cursor_ + sizeof (T) <= zeroEnd_)
     {
         cursor_ += sizeof (T);
         return 0;
@@ -890,7 +890,8 @@ inline bool BufferIterator::InZeroArea(void) const BOOST_NOEXCEPT
 
 inline bool BufferIterator::CrossZeroArea(size_t numBytes) const BOOST_NOEXCEPT
 {
-    return (zeroStart_ < cursor_ + numBytes) && (cursor_ < zeroEnd_);
+    return (cursor_ < zeroStart_ && zeroStart_ < cursor_ + numBytes) ||
+           (cursor_ < zeroEnd_   && zeroEnd_   < cursor_ + numBytes);
 }
 
 inline BufferIterator& BufferIterator::operator++(void) BOOST_NOEXCEPT
