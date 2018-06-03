@@ -4,7 +4,7 @@
  * @brief Chrono support for Network Simulation Frameworks.
  *
  * @version 1.0
- * @author  Fuzzier Tang <gauchyler@uestc.edu.cn>
+ * @author  Wei Tang <gauchyler@uestc.edu.cn>
  * @date    2015-03-14
  *
  * @copyright Copyright (c) 2015.
