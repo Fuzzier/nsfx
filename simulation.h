@@ -4,7 +4,7 @@
  * @brief Simulation support for Network Simulation Frameworks.
  *
  * @version 1.0
- * @author  Fuzzier Tang <gauchyler@uestc.edu.cn>
+ * @author  Wei Tang <gauchyler@uestc.edu.cn>
  * @date    2018-01-16
  *
  * @copyright Copyright (c) 2018.

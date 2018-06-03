@@ -307,11 +307,11 @@ inline Ptr<ISink> CreateEventSink(IObject* controller, O* o, Ret(O::* ptmf)(Args
 ////////////////////////////////////////
 #else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-#define BOOST_PP_ITERATION_PARAMS_1  (3, (0, NSFX_MAX_ARITY, <nsfx/event/event-sink.h>))
+# define BOOST_PP_ITERATION_PARAMS_1  (3, (0, NSFX_MAX_ARITY, <nsfx/event/event-sink.h>))
 
-#include BOOST_PP_ITERATE()
+# include BOOST_PP_ITERATE()
 
-#endif // defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+#endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
 
 NSFX_CLOSE_NAMESPACE
