@@ -44,6 +44,8 @@ struct TagIndex
     static void CopyAssign(TagIndex* lhs, const TagIndex* rhs);
     static void Release(TagIndex* idx);
     static void Swap(TagIndex* lhs, TagIndex* rhs) BOOST_NOEXCEPT;
+    static bool HasTaggedByte(size_t tagStart, size_t tagEnd,
+                              size_t bufferStart, size_t bufferEnd) BOOST_NOEXCEPT;
     static bool HasTaggedByte(const TagIndex* idx,
                               size_t bufferStart, size_t bufferEnd) BOOST_NOEXCEPT;
 };
@@ -120,11 +122,17 @@ inline void TagIndex::Swap(TagIndex* lhs, TagIndex* rhs) BOOST_NOEXCEPT
     }
 }
 
-inline bool TagIndex::HasTaggedByte(
-    const TagIndex* idx, size_t bufferStart, size_t bufferEnd) BOOST_NOEXCEPT
+inline bool TagIndex::HasTaggedByte(size_t tagStart, size_t tagEnd,
+                                    size_t bufferStart, size_t bufferEnd) BOOST_NOEXCEPT
 {
-    return (idx->tagStart_ < bufferEnd &&
-            idx->tagEnd_   >  bufferStart);
+    return (tagStart < bufferEnd &&
+            tagEnd   > bufferStart);
+}
+
+inline bool TagIndex::HasTaggedByte(const TagIndex* idx,
+                                    size_t bufferStart, size_t bufferEnd) BOOST_NOEXCEPT
+{
+    return HasTaggedByte(idx->tagStart_, idx->tagEnd_, bufferStart, bufferEnd);
 }
 
 
