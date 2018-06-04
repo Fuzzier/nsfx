@@ -33,9 +33,9 @@ NSFX_OPEN_NAMESPACE
 struct TagIndex
 {
     size_t  tagId_;       ///< The id of the tag.
-    size_t  tagStart_;    ///< The start of tagged bytes.
-    size_t  tagEnd_;      ///< The end of tagged bytes.
-    TagStorage* tag_;     ///< The tag.
+    size_t  tagStart_;    ///< The start of tagged bytes (inclusive).
+    size_t  tagEnd_;      ///< The end of tagged bytes (exclusive).
+    TagStorage* tag_;     ///< The value of the tag.
 
     // Helper functions.
     static void Ctor(TagIndex* idx, size_t tagId, size_t tagStart,
@@ -44,6 +44,8 @@ struct TagIndex
     static void CopyAssign(TagIndex* lhs, const TagIndex* rhs);
     static void Release(TagIndex* idx);
     static void Swap(TagIndex* lhs, TagIndex* rhs) BOOST_NOEXCEPT;
+    static bool HasTaggedByte(const TagIndex* idx,
+                              size_t bufferStart, size_t bufferEnd) BOOST_NOEXCEPT;
 };
 
 
@@ -116,6 +118,13 @@ inline void TagIndex::Swap(TagIndex* lhs, TagIndex* rhs) BOOST_NOEXCEPT
         *lhs = *rhs;
         *rhs = tmp;
     }
+}
+
+inline bool TagIndex::HasTaggedByte(
+    const TagIndex* idx, size_t bufferStart, size_t bufferEnd) BOOST_NOEXCEPT
+{
+    return (idx->tagStart_ < bufferEnd &&
+            idx->tagEnd_   >  bufferStart);
 }
 
 

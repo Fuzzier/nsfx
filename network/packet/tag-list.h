@@ -38,57 +38,185 @@ NSFX_OPEN_NAMESPACE
  * @ingroup Network
  * @brief The tag list.
  *
- * The origin of a buffer is a fixed position, which is determined when the
- * packet is created.
+ * # Overview
+ *  A tag is a user-defined value that are associated with a range of bytes in
+ *  the current buffer.
+ *  A tag consists of a tag id, a tag value and the range of tagged bytes.
+ *  A byte may be tagged by multiple tags.
  *
- * When a packet is created, it sets the origin of its buffer list.
- * The origin is \c TagList::REF_POINT bytes ahead of the middle of the current
- * buffer.
- * The \c TagList::REF_POINT is half of the maximum value of \c size_t.
- * The packet can add about \c TagList::REF_POINT bytes of headers and about
- * \c TagList::REF_POINT bytes of trailers before overflow.
+ *  A packet uses a tag list to hold the set of tags.
+ *  When a packet is duplicated, fragmented or reassembled, the tags are
+ *  carried along with its tagged bytes.
+ *  i.e., when a byte is transferred to a packet, all of its tags are also
+ *  carried by the packet.
  *
- * The tag list must keep synchronized with the position of the buffer.
- * Thus, the origin the tag list can be deduced.
- * And whether the tagged bytes is within the buffer can be deduced.
- * A packet is responsibility to call \c TagList::AddAtStart(),
- * \c TagList::RemoveAtStart(), \c TagList::AddAtEnd(), and
- * \c TagList::RemoveAtEnd() when it does the same action to its buffer.
+ * # The 1-D byte space
+ *   In order to locate the tagged bytes of a buffer, a tag list builds a 1-D
+ *   byte space.
+ *   The origin of a tag list is the origin of the 1-D byte space.
+ *   The 1-D byte space can accommodate <code>MAX_SIZE + 1</code> bytes.
+ *   The coordinate of the origin is \c 0, and the coordinate of the furthest
+ *   byte is \c MAX_SIZE.
  *
- * The tag value is stored in a \c TagStorage.
- * A \c TagStorage is responsible to store the tag value, and provides a
- * reference count.
- * The tag storage is designed to be able to hold non-copyable, non-movable
- * tag values.
+ *   The origin of a tag list is determined when the packet is created.
+ *   To allow the buffer to grow to the maximum extent, the origin is chosen as
+ *   such that the current buffer is located at the middle of the space.
  *
- * A \c TagIndex holds the tag and its id.
- * It is also responsible to hold the start and end position of the tagged
- * bytes, relative to the origin of the tag list.
+ *   @code
+ *   origin of byte space    start of buffer    end of buffer
+ *   |                       |                  |
+ *   v                       v                  v
+ *   |-----------------------|--------|--------|-----------------------|
+ *   0                                ^                                MAX_SIZE
+ *                                    |
+ *                                    middle of buffer
+ *                                    middle of byte space
+ *   @endcode
  *
- * The tag indices are stored in a \c TagIndexArray.
- * The tag indices may not be ordered.
+ *   The \c TagList::REF_POINT is the half of \c MAX_SIZE.
+ *   The origin is \c TagList::REF_POINT bytes ahead from the middle of the
+ *   current buffer.
+ *   The packet can add about \c TagList::REF_POINT bytes of headers and about
+ *   \c TagList::REF_POINT bytes of trailers before overflow.
  *
- * @code
- * origin of tag list       start of buffer                      end of buffer
- * |                        |                                    |
- * |----- buffer start ---->|                                    |
- * |----- buffer end ------------------------------------------->|
- * |                        v                tagged bytes        v
- * |                        |===============|************|======|
- * |                                        ^             ^
- * |------------- tag start --------------->|             |
- * |------------- tag end ------------------------------->|
- * @endcode
+ * # Track the position of bytes
+ *   Once a byte is tagged, the coordinate of the tagged byte is fixed in the
+ *   space.
+ *   i.e., no matter how the buffer grows or shrinks, the coordinates of the
+ *   tagged bytes are not changed.
+ *   The coordinates of tagged bytes are only changed when the origin changes.
+ *   e.g., a tag is transferred to another tag list with a different origin.
  *
- * @code
- * TagList        [list]
- *                  |
- * TagIndexArray  [idx1   idx2   idx3  ...]   (shared, copy-on-write)
- *                  |      |      |
- * TagStorage     [tag1] [tag2] [tag3] ...    (shared, store value)
+ *   To obtain the offset of a tagged byte relative to the start of the
+ *   current buffer, the tag list must keep track the location of the buffer.
+ *   The tag list records the coordinates of the start and end bytes of the
+ *   current buffer.
+ *   Thus, whether a tagged byte is within the current buffer can be deduced.
  *
- * @endcode
+ *   The packet is responsibility to call \c TagList::AddAtStart(),
+ *   \c TagList::RemoveAtStart(), \c TagList::AddAtEnd(), and
+ *   \c TagList::RemoveAtEnd(), when it does the same action to its buffer.
  *
+ *   @code
+ *   origin of tag list       start of buffer                     end of buffer
+ *   |                        |                                   |
+ *   |----- buffer start ---->|                                   |
+ *   |----- buffer end ------------------------------------------>|
+ *   |                        v               tagged bytes        v
+ *   |                        |==============|************|======|
+ *   |                                       ^             ^
+ *   |------------- tag start -------------->|             |
+ *   |------------- tag end ------------------------------>|
+ *   @endcode
+ *
+ * # Management of tags
+ *   To avoid memory allocation and deallocation, the tag values are shared
+ *   among packets.
+ *
+ * ## Tag storage
+ *    A tag value is stored in a \c TagStorage.
+ *    A tag storage is responsible to store the tag value, and provides a
+ *    reference count for lifetime management.
+ *
+ *    The tag storage is designed to construct a tag value 'emplace'.
+ *    Thus, tag storages are able to hold non-copyable, non-movable tag values.
+ *    The tag values are created once, read-only, and destroyed once.
+ *
+ * ## Tag index
+ *    A \c TagIndex holds a pointer to the tag storage, and is responsible to
+ *    record the tag id and the range of tagged bytes.
+ *
+ * ## Tag index array
+ *    The tag indices are stored in a \c TagIndexArray.
+ *    The tag indices is not ordered in the array.
+ *
+ * ## Tag list
+ *    A \c TagList holds a pointer to the tag array, and records the number of
+ *    used tag indices.
+ *    It is also responsible to keep track of the location of the current
+ *    buffer.
+ *    Each packet holds a tag list.
+ *
+ *    Whether a tag is carried by the packet <b>is</b> determined by comparing
+ *    the range of tagged bytes and the location of the current buffer.
+ *
+ *    To avoid memory allocation and deallocation, the tag index arrays are
+ *    also shared among tag lists.
+ *    The tag index array is managed in a copy-on-write manner.
+ *    The array is not reallocated, as long as the following conditions are all
+ *    held.
+ *
+ *    * The modification of the buffer location does not introduce tags that
+ *      are not in the tag list.
+ *    * The modification to the tag index array does not introduce, modify or
+ *      remove tags in other tag lists that share the array.
+ *
+ *    @code
+ *    TagList        [list]
+ *                     |
+ *    TagIndexArray  [idx1   idx2   idx3  ...]   (shared, copy-on-write)
+ *                     |      |      |
+ *    TagStorage     [tag1] [tag2] [tag3] ...    (shared, store value)
+ *    @endcode
+ *
+ * ## Coordinate transformation
+ *    Duplicating, expanding or shrinking a packet does not change the origin
+ *    of the tag list.
+ *    The range of tagged bytes in a tag index is not changed when they are
+ *    copied among the tag index arrays.
+ *
+ *    However, when packets are reassembled, the tag lists of different packets
+ *    may have different origins.
+ *    The range of tagged bytes are modified accordingly when the tags are
+ *    copied from one tag index array to another.
+ *
+ *    To transform the coordinates between two byte spaces, the coordinate of
+ *    the origin of byte space 2 in byte space 1 must be known.
+ *    However, this information can only be provided by the packet.
+ *    i.e., one cannot deduce this information by comparing two tag lists.
+ *
+ *    @code
+ *    origin of byte space 1
+ *    v                        coordinate of a byte
+ *    |---------------|--------|--------------
+ *    |               coordinate of 'origin 2' in byte space 1
+ *    |
+ *    |               origin of byte space 2
+ *    |               v                        coordinate of the same byte
+ *    |---------------|------------------------|--------------
+ *    @endcode
+ *
+ *    When one packet is added to the start of another packet, .
+ *
+ *    @code
+ *    origin 1                 start of buffer        end of buffer
+ *    |                        |                      |
+ *    |----- buffer start ---->|                      |
+ *    |----- buffer end ----------------------------->|
+ *    @endcode
+ *
+ * ## Copy-on-write
+ *    When a packet shrinks its buffer, it does not reallocate or modify the
+ *    array, nor does it change the number of tag indices used by the tag list.
+ *    It may leave some dirty tags in the array that are no longer in the tag
+ *    list.
+ *
+ *    When a packet expands its buffer, the array is reallocated if dirty tags
+ *    are to be introduced into the tag list.
+ *
+ *    When a packet is duplicated, it does not reallocate or modify the array.
+ *
+ *    When a packet is fragmented, it is duplicated and shrinked, the array is
+ *    not reallocated.
+ *
+ *    When one packet is added to the start or end of an other packet, the later
+ *    expands its buffer, and copies tag indices from the former.
+ *    The former packet does not reallocate its array.
+ *    And it depends on the situation whether the later packet reallocates its
+ *    array or not.
+ *
+ *    When a tag is inserted to a packet, it depends on the situation whether
+ *    the array is reallocates or not.
  */
 class TagList
 {
@@ -126,9 +254,24 @@ public:
 
     // Synchronize with buffer.
 public:
-    void AddAtStart(size_t size) BOOST_NOEXCEPT;
+    /**
+     * @brief Keep synchronized with the resizing of the buffer.
+     */
+    void AddAtStart(size_t size);
+
+    /**
+     * @brief Keep synchronized with the resizing of the buffer.
+     */
     void RemoveAtStart(size_t size) BOOST_NOEXCEPT;
-    void AddAtEnd(size_t size) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Keep synchronized with the resizing of the buffer.
+     */
+    void AddAtEnd(size_t size);
+
+    /**
+     * @brief Keep synchronized with the resizing of the buffer.
+     */
     void RemoveAtEnd(size_t size) BOOST_NOEXCEPT;
 
     // Tag.
@@ -180,6 +323,10 @@ public:
     template<class T>
     const T& Get(size_t tagId, size_t offset) const;
 
+    // Merge.
+public:
+    void operator+=(const TagList& rhs);
+
     // Methods.
 public:
     size_t GetSize(void) const BOOST_NOEXCEPT;
@@ -188,11 +335,6 @@ public:
     const TagIndexArray* GetTagIndexArray(void) const BOOST_NOEXCEPT;
 
 private:
-    /**
-     * @brief Whether any of the tagged bytes are within the buffer.
-     */
-    bool BufferHasTaggedByte(const TagIndex* idx) const BOOST_NOEXCEPT;
-
     /**
      * @brief Compact the tag index array if its owned by this tag list alone.
      *
@@ -205,6 +347,14 @@ private:
      * @brief Reallocate the tag index array.
      */
     void Reallocate(size_t newCapacity);
+
+    /**
+     * @brief Expand the buffer.
+     *
+     * @param[in] deltaStart The amount added to the start.
+     * @param[in] deltaEnd   The amount added to the end.
+     */
+    void ExpandBuffer(size_t deltaStart, size_t deltaEnd);
 
 public:
     enum
@@ -288,12 +438,28 @@ inline TagList& TagList::operator=(const TagList& rhs)
     return *this;
 }
 
-inline void TagList::AddAtStart(size_t size) BOOST_NOEXCEPT
+inline void TagList::AddAtStart(size_t size)
 {
     BOOST_ASSERT_MSG(bufferStart_ >= size,
                      "The buffer grows too large that the start position of "
                      "the buffer tracked by the tag list would be negative.");
-    bufferStart_ -= size;
+    ExpandBuffer(size, 0);
+}
+
+inline void TagList::AddAtStart(size_t size, const TagList& rhs)
+{
+    if (this != &rhs && rhs.tia_)
+    {
+        const TagIndex* idx = rhs.tia_->indices_;
+        const TagIndex* end = rhs.tia_->indices_ + rhs.size_;
+        while (idx != end)
+        {
+            if (TagIndex::HasTaggedByte(idx, ))
+            {
+            }
+        }
+    }
+    return *this;
 }
 
 inline void TagList::RemoveAtStart(size_t size) BOOST_NOEXCEPT
@@ -303,12 +469,12 @@ inline void TagList::RemoveAtStart(size_t size) BOOST_NOEXCEPT
     bufferStart_ += size;
 }
 
-inline void TagList::AddAtEnd(size_t size) BOOST_NOEXCEPT
+inline void TagList::AddAtEnd(size_t size)
 {
     BOOST_ASSERT_MSG(bufferEnd_ + size >= bufferEnd_,
                      "The buffer grows too large that the end position of "
                      "the buffer tracked by the tag list would overflow.");
-    bufferEnd_ += size;
+    ExpandBuffer(0, size);
 }
 
 inline void TagList::RemoveAtEnd(size_t size) BOOST_NOEXCEPT
@@ -326,8 +492,6 @@ TagList::Insert(size_t tagId, size_t start, size_t size, Args&&... args)
     // Be careful that 'size' and 'size_' are confusion.
     BOOST_ASSERT_MSG(start + size <= bufferEnd_ - bufferStart_,
                      "Cannot tag bytes that are outside of the buffer.");
-    // Reallocate?
-    bool dirty = false;
     // If the array is not allocated yet.
     if (!tia_)
     {
@@ -345,7 +509,6 @@ TagList::Insert(size_t tagId, size_t start, size_t size, Args&&... args)
         if (tia_->dirty_ == tia_->capacity_)
         {
             // Reallocate the array for this list.
-            dirty = true;
             Reallocate(tia_->capacity_ * 2);
         }
         // If the array has free elements.
@@ -362,7 +525,6 @@ TagList::Insert(size_t tagId, size_t start, size_t size, Args&&... args)
         if (tia_->dirty_ == tia_->capacity_)
         {
             // Reallocate the array for this list.
-            dirty = true;
             Reallocate(tia_->capacity_ * 2);
         }
         // If the array has free elements.
@@ -379,7 +541,6 @@ TagList::Insert(size_t tagId, size_t start, size_t size, Args&&... args)
             else // if (size_ < tia_->dirty_)
             {
                 // Reallocate the array for this list.
-                dirty = true;
                 Reallocate(tia_->capacity_);
             }
         }
@@ -469,13 +630,6 @@ inline const TagIndexArray* TagList::GetTagIndexArray(void) const BOOST_NOEXCEPT
     return tia_;
 }
 
-inline bool TagList::BufferHasTaggedByte(const TagIndex* idx) const BOOST_NOEXCEPT
-{
-    BOOST_ASSERT(idx);
-    return (idx->tagStart_ < bufferEnd_ &&
-            idx->tagEnd_   > bufferStart_);
-}
-
 inline void TagList::Compact(void)
 {
     BOOST_ASSERT(tia_);
@@ -484,9 +638,8 @@ inline void TagList::Compact(void)
     // i.e., remove elements from the tail of the array.
     TagIndex* head = tia_->indices_;
     TagIndex* tail = tia_->indices_ + (tia_->dirty_ - 1);
-    TagIndex* end  = tia_->indices_ + size_;
     // Release the elements that are not held by the list.
-    while (tail >= end)
+    while (tia_->dirty_ > size_)
     {
         // Reduce the size of the array before releasing the tag index.
         // Even if the release operation throws, the array is still valid.
@@ -494,12 +647,15 @@ inline void TagList::Compact(void)
         TagIndex::Release(tail);
         --tail;
     }
+    // The remaining number of tag indices to examine.
+    size_t count = size_;
     // Preserve the elements at the head of the list.
-    while (tail >= head)
+    while (count)
     {
-        if (BufferHasTaggedByte(head))
+        if (TagIndex::HasTaggedByte(head, bufferStart_, bufferEnd_))
         {
             ++head;
+            --count;
         }
         else
         {
@@ -508,16 +664,18 @@ inline void TagList::Compact(void)
             --tia_->dirty_;
             TagIndex::Release(tail);
             --tail;
+            --count;
             break;
         }
     }
-    while (tail >= head)
+    while (count)
     {
-        if (BufferHasTaggedByte(tail))
+        if (TagIndex::HasTaggedByte(tail, bufferStart_, bufferEnd_))
         {
             // The tail is swapped to the head, and preserved.
             TagIndex::Swap(tail, head);
             ++head;
+            --count;
         }
         else
         {
@@ -525,6 +683,7 @@ inline void TagList::Compact(void)
             --tia_->dirty_;
             TagIndex::Release(tail);
             --tail;
+            --count;
         }
     }
     BOOST_ASSERT(size_ == tia_->dirty_);
@@ -544,7 +703,7 @@ inline void TagList::Reallocate(size_t newCapacity)
     while (src != end)
     {
         // If any of the tagged bytes are within the current buffer.
-        if (BufferHasTaggedByte(src))
+        if (TagIndex::HasTaggedByte(src, bufferStart_, bufferEnd_))
         {
             // The retain the origin of the list, thus the position of the
             // the tagged bytes is also retained.
@@ -559,6 +718,60 @@ inline void TagList::Reallocate(size_t newCapacity)
     // Use the new array.
     tia_ = newTia;
     size_ = tia_->dirty_;
+}
+
+inline void TagList::ExpandBuffer(size_t deltaStart, size_t deltaEnd)
+{
+    // If the array is not allocated yet.
+    if (!tia_)
+    {
+        // Do nothing, since it is safe to update the location of the buffer.
+    }
+    // If the array is owned by this list alone.
+    else if (tia_->refCount_ == 1)
+    {
+        // Compact the array.
+        Compact();
+    }
+    // If the array is shared with other lists.
+    else // if (tia->refCount_ > 1)
+    {
+        size_t newBufferStart = bufferStart_ - deltaStart;
+        size_t newBufferEnd   = bufferEnd_   + deltaEnd;
+        // Whether dirty tags are to be introduced into the list?
+        bool dirty = false;
+        TagIndex* tail = tia_->indices_ + (size_ - 1);
+        // The remaining number of tag indices to examine.
+        size_t count = size_;
+        while (count && !TagIndex::HasTaggedByte(tail, bufferStart_, bufferEnd_))
+        {
+            --size_;
+            --tail;
+            --count;
+        }
+        TagIndex* idx = tail;
+        while (count)
+        {
+            size_t newBufferStart = bufferStart_ - deltaStart;
+            size_t newBufferEnd   = bufferEnd_   + deltaEnd;
+            if (!TagIndex::HasTaggedByte(idx, bufferStart_, bufferEnd_) &&
+                 TagIndex::HasTaggedByte(idx, newBufferStart, newBufferEnd))
+            {
+                dirty = true;
+                break;
+            }
+            --idx;
+            --count;
+        }
+        if (dirty)
+        {
+            // Reallocate the array for this list.
+            Reallocate(tia_->capacity_);
+        }
+    }
+    // Update the location of the buffer.
+    bufferStart_ -= deltaStart;
+    bufferEnd_   += deltaEnd;
 }
 
 
@@ -599,8 +812,6 @@ TagList::Insert(size_t tagId, size_t start, size_t size
     // Be careful that 'size' and 'size_' are confusion.
     BOOST_ASSERT_MSG(start + size <= bufferEnd_ - bufferStart_,
                      "Cannot tag bytes that are outside of the buffer.");
-    // Reallocate?
-    bool dirty = false;
     // If the array is not allocated yet.
     if (!tia_)
     {
@@ -618,7 +829,6 @@ TagList::Insert(size_t tagId, size_t start, size_t size
         if (tia_->dirty_ == tia_->capacity_)
         {
             // Reallocate the array for this list.
-            dirty = true;
             Reallocate(tia_->capacity_ * 2);
         }
         // If the array has free elements.
@@ -635,7 +845,6 @@ TagList::Insert(size_t tagId, size_t start, size_t size
         if (tia_->dirty_ == tia_->capacity_)
         {
             // Reallocate the array for this list.
-            dirty = true;
             Reallocate(tia_->capacity_ * 2);
         }
         // If the array has free elements.
@@ -652,7 +861,6 @@ TagList::Insert(size_t tagId, size_t start, size_t size
             else // if (size_ < tia_->dirty_)
             {
                 // Reallocate the array for this list.
-                dirty = true;
                 Reallocate(tia_->capacity_);
             }
         }

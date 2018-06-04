@@ -18,11 +18,11 @@
 #include <iostream>
 
 
-int k = 1;
+int k = 0;
 struct Test
 {
-    Test(int i, double j) : i_(i), j_(j) {}
-    ~Test(void) { k = 0; }
+    Test(int i, double j) : i_(i), j_(j) { ++k; }
+    ~Test(void) { --k; }
     int i_;
     double j_;
 };
@@ -45,7 +45,6 @@ NSFX_TEST_SUITE(TagIndex)
 
         NSFX_TEST_EXPECT_EQ(tag->refCount_, 1);
 
-        k = 1;
         nsfx::TagIndex::Release(&idx);
         // Test::~Test() is called.
         NSFX_TEST_EXPECT_EQ(k, 0);
@@ -75,7 +74,6 @@ NSFX_TEST_SUITE(TagIndex)
 
         NSFX_TEST_EXPECT_EQ(tag->refCount_, 2);
 
-        k = 1;
         nsfx::TagIndex::Release(&idx1);
         // Test::~Test() is not called.
         NSFX_TEST_EXPECT_EQ(k, 1);
@@ -157,6 +155,22 @@ NSFX_TEST_SUITE(TagIndex)
 
         nsfx::TagIndex::Release(&idx1);
         nsfx::TagIndex::Release(&idx2);
+    }
+
+    NSFX_TEST_CASE(HasTaggedByte)
+    {
+        nsfx::TagStorage* tag = nsfx::TagStorage::Allocate<Test>(1, 2.3);
+        nsfx::TagIndex idx;
+        size_t tagId = 4;
+        size_t tagStart = 5;
+        size_t tagEnd = 6;
+        nsfx::TagIndex::Ctor(&idx, tagId, tagStart, tagEnd, tag);
+
+        NSFX_TEST_EXPECT(!nsfx::TagIndex::HasTaggedByte(&idx, 0, tagStart));
+        NSFX_TEST_EXPECT(nsfx::TagIndex::HasTaggedByte(&idx, tagStart, tagEnd));
+        NSFX_TEST_EXPECT(!nsfx::TagIndex::HasTaggedByte(&idx, tagEnd, static_cast<size_t>(-1)));
+
+        nsfx::TagIndex::Release(&idx);
     }
 }
 

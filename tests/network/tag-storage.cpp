@@ -18,11 +18,11 @@
 #include <iostream>
 
 
-int k = 1;
+int k = 0;
 struct Test
 {
-    Test(int i, double j) : i_(i), j_(j) {}
-    ~Test(void) { k = 0; }
+    Test(int i, double j) : i_(i), j_(j) { ++k; }
+    ~Test(void) { --k; }
     int i_;
     double j_;
 };
@@ -32,8 +32,10 @@ NSFX_TEST_SUITE(TagStorage)
 {
     NSFX_TEST_CASE(Allocate)
     {
-        k = 1;
         nsfx::TagStorage* ts = nsfx::TagStorage::Allocate<Test>(1, 2.3);
+        // Test::Test() is called.
+        NSFX_TEST_EXPECT_EQ(k, 1);
+
         NSFX_TEST_EXPECT_EQ(ts->refCount_, 1);
         NSFX_TEST_EXPECT(ts->intf_->GetTypeId() ==
                          boost::typeindex::type_id<Test>());
@@ -47,7 +49,6 @@ NSFX_TEST_SUITE(TagStorage)
 
     NSFX_TEST_CASE(RefCount)
     {
-        k = 1;
         nsfx::TagStorage* ts = nsfx::TagStorage::Allocate<Test>(1, 2.3);
         NSFX_TEST_EXPECT_EQ(ts->refCount_, 1);
         nsfx::TagStorage::AddRef(ts);
