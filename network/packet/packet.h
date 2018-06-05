@@ -19,9 +19,7 @@
 
 #include <nsfx/network/config.h>
 #include <nsfx/network/buffer.h>
-#include "par/par.h"
-#include "par/make-par.h"
-#include "par/par-set.h"
+#include <nsfx/network/packet/tag-list.h>
 #include <boost/core/swap.hpp>
 #include <utility> // move
 #include <string>
@@ -203,9 +201,11 @@ typedef int64_t  packet_id_t;
  *      of some other buffers, the storage is duplicated for the buffer, and
  *      the dirty area is updated to the private area as the buffer.
  *
- * ## Fragmentation
+ * ## Fragmentation and reassembly
  *    Since solid buffer is used to model a packet, fragmentation can be done
  *    by creating a buffer with a smaller private area.
+ *    And reassembly can be done by adding the buffer from a fragment to the
+ *    start or end of a buffer.
  *
  * # Tags
  *   In the simulation, a packet can carry side information that is not present
@@ -241,8 +241,8 @@ typedef int64_t  packet_id_t;
  *    boundary, as side information that cannot be transferred by packets in
  *    real systems.
  *
- *    Second, tags <b>must</b> not carry information that impractically affects
- *    the behavior of an entity.
+ *    Second, tags <b>must</b> not carry information that <i>impractically</i>
+ *    affects the behavior of an entity.
  *    Tags shall only carry side information that helps collecting performance
  *    statistics.
  *
@@ -259,15 +259,12 @@ typedef int64_t  packet_id_t;
  *     entity.
  *     This is similar to the 'byte-tag' in NS3.
  *
- *     When a packet is fragmented, the tag is associated with the bytes of
- *     the header.
- *     i.e., if the fragment contains any bytes of the header, the fragment
- *     shall also carries the associated tag.
- *     When the fragments are reassembled, the tag is associated with the
- *     recovered header.
- *
- *     Thus, a tag can simply be associated with the <b>first</b> byte of
- *     a header or the <b>last</b> byte of a trailer.
+ *     When a packet is fragmented, the tag is carried by the fragment if any
+ *     of the tagged bytes remain in the fragment.
+ *     i.e., if the fragment contains any bytes that have a tag, the fragment
+ *     shall also carries that tag.
+ *     When the fragments are reassembled, the tags are merged as the tagged
+ *     bytes are put together.
  *
  * ## Tags are read-only
  *    To make memory usage efficient, tags are shared among duplicated packets
@@ -279,57 +276,8 @@ typedef int64_t  packet_id_t;
  *    i.e., other entities must not modify the tags.
  *
  *    Thus, a tag is inserted once, and is read-only.
- *    A tag is removed automatically when the associated bytes are removed from
+ *    A tag is removed automatically when the tagged bytes are removed from
  *    the packet.
- *
- * ## Management of tags
- *    To implement the behavior that tags are private to a packet, a packet
- *    manages it own set of tags.
- *    For example, there are a pool of tags, and each packet holds a set of
- *    pointers (or indices) that refers to the tags that are private to the
- *    packet.
- *    When a tag is removed from a packet, the packet simply drops the pointer,
- *    without affecting the other packets.
- *
- *    Since tags are associated with header or trailer, they can be ordered
- *    according to the order of the associated header or trailer in a packet.
- *    Thus, tags can be managed by a list.
- *    The tags that are associated with headers are managed by a <i>header
- *    tag list</i>.
- *    And the tags that are associated with trailers are managed by a <i>trailer
- *    tag list</i>.
- *    A tag can only be added to (or removed from) the head of the header tag
- *    list, and can only be added to (or removed from) the tail of the trailer
- *    tag list.
- *
- *    Thus, tags can be managed by a stack-like singly link list.
- *    @code
- *               packet1
- *                  \
- *                   \
- *                  header-tag
- *    packet2          \
- *       \              \
- *        \              v
- *       header-tag --> header-tag --> header-tag
- *                       /
- *                      /
- *                   packet3
- *    @endcode
- *
- *    @code
- *                                                   packet1
- *                                                     /
- *                                                    /
- *                                           trailer-tag
- *               packet2                            /
- *                 /                               /
- *                /                               v
- *       trailer-tag <-- trailer-tag <-- trailer-tag
- *                                \
- *                                 \
- *                               packet3
- *    @endcode
  */
 class Packet
 {
@@ -370,7 +318,7 @@ public:
      *
      * @return A writable buffer of the header.
      */
-    Buffer AddHeader(size_t size) BOOST_NOEXCEPT;
+    Buffer AddHeader(size_t size);
 
     /**
      * @brief Add a trailer to the packet.
@@ -379,7 +327,7 @@ public:
      *
      * @return A writable buffer of the trailer.
      */
-    Buffer AddTrailer(size_t size) BOOST_NOEXCEPT;
+    Buffer AddTrailer(size_t size);
 
     /**
      * @brief Get the read-only buffer iterator of the packet.
@@ -387,14 +335,14 @@ public:
      * @return A read-only buffer iterator that points to the start of the
      *         buffer.
      */
-    ConstBufferIterator cbegin(void) const BOOST_NOEXCEPT;
+    ConstBufferIterator GetBufferBegin(void) const BOOST_NOEXCEPT;
 
     /**
      * @brief Get the read-only buffer iterator of the packet.
      *
      * @return A read-only buffer iterator that points to the end of the buffer.
      */
-    ConstBufferIterator cend(void) const BOOST_NOEXCEPT;
+    ConstBufferIterator GetBufferEnd(void) const BOOST_NOEXCEPT;
 
     /**
      * @brief Remove the header from the packet.
@@ -412,30 +360,37 @@ public:
 
     // Tag.
 public:
-    void AddHeaderTag(const Tag& tag) BOOST_NOEXCEPT;
-    void RemoveHeaderTag(void) BOOST_NOEXCEPT;
-
-    void AddTrailerTag(const Tag& tag) BOOST_NOEXCEPT;
-    void RemoveTrailerTag(void) BOOST_NOEXCEPT;
+    /**
+     * @brief Tag a range of bytes.
+     *
+     * @param[in] tag   The tag.
+     * @param[in] start The start of the tagged bytes.
+     * @param[in] size  The number of tagged bytes.
+     */
+    void InsertTag(const Tag& tag, size_t start, size_t size);
 
     // Fragmentation.
 public:
-    Packet GetFragment(size_t offset, size_t size) BOOST_NOEXCEPT;
+    /**
+     * @brief Make a fragment.
+     *
+     * @param[in] start The start of the bytes.
+     * @param[in] size  The number of bytes.
+     */
+    Packet MakeFragment(size_t start, size_t size) BOOST_NOEXCEPT;
+
+    // Reassembly.
+public:
+    void AddHeader(const Packet& packet);
+    void AddTrailer(const Packet& packet);
 
 public:
-    void swap(Packet& rhs) BOOST_NOEXCEPT
-    {
-        boost::swap(id_, rhs.id_);
-        boost::swap(buffer_, rhs.buffer_);
-        boost::swap(pars_, rhs.pars_);
-    }
+    void swap(Packet& rhs) BOOST_NOEXCEPT;
 
 private:
     packet_id_t  id_;
-
     Buffer  buffer_;
-
-    TagList headerTagList_;
+    TagList tagList_;
 };
 
 
@@ -448,14 +403,16 @@ inline packet_id_t Packet::GetNextId(void) BOOST_NOEXCEPT
 
 inline Packet::Packet(const Buffer& buffer) BOOST_NOEXCEPT :
     id_(GetNextId()),
-    buffer_(buffer),
-    headerTagList_(buffer.GetSize())
-{}
+    buffer_(buffer)
+{
+    // Will not throw.
+    tagList_.AddAtEnd(buffer.GetSize());
+}
 
 inline Packet::Packet(const Packet& rhs) :
     id_(GetNextId()),
     buffer_(rhs.buffer_),
-    headerTagList_(rhs.headerTagList_)
+    tagList_(rhs.tagList_)
 {
 }
 
@@ -463,9 +420,9 @@ inline Packet& Packet::operator=(const Packet& rhs)
 {
     if (this != &rhs)
     {
-        id_     = GetNextId();;
-        buffer_ = rhs.buffer_;
-        pars_   = rhs.pars_;
+        id_      = GetNextId();;
+        buffer_  = rhs.buffer_;
+        tagList_ = rhs.tagList_;
     }
     return *this;
 }
@@ -473,19 +430,21 @@ inline Packet& Packet::operator=(const Packet& rhs)
 inline Packet::Packet(Packet&& rhs) BOOST_NOEXCEPT :
     id_(rhs.id_),
     buffer_(std::move(rhs.buffer_)),
-    pars_(std::move(rhs.pars_))
+    tagList_(rhs.tagList_)
 {
     rhs.id_ = 0;
+    rhs.tagList_ = TagList();
 }
 
 inline Packet& Packet::operator=(Packet&& rhs) BOOST_NOEXCEPT
 {
     if (this != &rhs)
     {
-        id_     = rhs.id_;
-        buffer_ = std::move(rhs.buffer_);
-        pars_   = std::move(rhs.pars_);
+        id_      = rhs.id_;
+        buffer_  = std::move(rhs.buffer_);
+        tagList_ = rhs.tagList_;
         rhs.id_ = 0;
+        rhs.tagList_ = TagList();
     }
     return *this;
 }
@@ -500,24 +459,26 @@ inline size_t Packet::GetSize(void) const BOOST_NOEXCEPT
     return buffer_.GetSize();
 }
 
-inline Buffer Packet::AddHeader(size_t size) BOOST_NOEXCEPT
+inline Buffer Packet::AddHeader(size_t size)
 {
     buffer_.AddAtStart(size);
-    return buffer_.GetFragment(0, size);
+    tagList_.AddAtStart(size);
+    return buffer_.MakeFragment(0, size);
 }
 
-inline Buffer Packet::AddTrailer(size_t size) BOOST_NOEXCEPT
+inline Buffer Packet::AddTrailer(size_t size)
 {
     buffer_.AddAtEnd(size);
-    return buffer_.GetFragment(buffer_.GetSize() - size, size);
+    tagList_.AddAtEnd(size);
+    return buffer_.MakeFragment(buffer_.GetSize() - size, size);
 }
 
-inline ConstBufferIterator Packet::cbegin(void) const BOOST_NOEXCEPT
+inline ConstBufferIterator Packet::GetBufferBegin(void) const BOOST_NOEXCEPT
 {
     return buffer_.cbegin();
 }
 
-inline ConstBufferIterator Packet::cend(void) const BOOST_NOEXCEPT
+inline ConstBufferIterator Packet::GetBufferEnd(void) const BOOST_NOEXCEPT
 {
     return buffer_.cend();
 }
@@ -525,33 +486,45 @@ inline ConstBufferIterator Packet::cend(void) const BOOST_NOEXCEPT
 inline void Packet::RemoveHeader(size_t size) BOOST_NOEXCEPT
 {
     buffer_.RemoveAtStart(size);
+    tagList_.RemoveAtStart(size);
 }
 
 inline void Packet::RemoveTrailer(size_t size) BOOST_NOEXCEPT
 {
     buffer_.RemoveAtEnd(size);
+    tagList_.RemoveAtEnd(size);
 }
 
-inline void Packet::AddHeaderTag(const Tag& tag) BOOST_NOEXCEPT
+inline void Packet::InsertTag(const Tag& tag, size_t start, size_t size)
 {
-    tag.SetNext(headerTag_);
-    headerTag_ = tag;
+    tagList_.Insert(tag, start, size);
 }
 
-inline void Packet::RemoveHeaderTag(void) BOOST_NOEXCEPT
+inline Packet TagList::MakeFragment(size_t start, size_t size) BOOST_NOEXCEPT
 {
-    headerTag_ = headerTag_.GetNext();
+    Packet fragment(*this);
+    fragment.RemoveAtStart(offset);
+    fragment.RemoveAtEnd(packet.GetSize() - size);
+    return fragment;
 }
 
-inline void Packet::AddTrailerTag(const Tag& tag) BOOST_NOEXCEPT
+inline void TagList::AddHeader(const Packet& packet)
 {
-    tag.SetNext(trailerTag_);
-    trailerTag_ = tag;
+    buffer_.AddAtStart(packet.buffer_);
+    tagList_.AddAtStart(packet.tagList_);
 }
 
-inline void Packet::RemoveTrailerTag(void) BOOST_NOEXCEPT
+inline void TagList::AddTrailer(const Packet& packet)
 {
-    trailerTag_ = trailerTag_.GetNext();
+    buffer_.AddAtEnd(packet.buffer_);
+    tagList_.AddAtEnd(packet.tagList_);
+}
+
+inline void Packet::swap(Packet& rhs) BOOST_NOEXCEPT
+{
+    boost::swap(id_, rhs.id_);
+    boost::swap(buffer_, rhs.buffer_);
+    boost::swap(pars_, rhs.pars_);
 }
 
 
