@@ -995,6 +995,150 @@ NSFX_TEST_SUITE(Buffer)
             }
         }
     }/*}}}*/
+
+    NSFX_TEST_SUITE(Fragment)/*{{{*/
+    {
+        NSFX_TEST_CASE(MakeFragment)
+        {
+            nsfx::Buffer b0(1000, 700, 300);
+            // [700 s zs 300 ze e 300 ]
+            const nsfx::BufferStorage* s0 = b0.GetStorage();
+            b0.AddAtEnd(100);
+            // [700 s zs 300 ze 100 e 200 ]
+            b0.AddAtStart(100);
+            // [600 s 100 zs 300 ze 100 e 200]
+            auto it = b0.begin();
+            for (size_t i = 0; i < 100; ++i)
+            {
+                uint8_t v = 0xfe + i;
+                it.Write<uint8_t>(v);
+            }
+            it += 300;
+            for (size_t i = 0; i < 100; ++i)
+            {
+                uint8_t v = 0xef + i;
+                it.Write<uint8_t>(v);
+            }
+            // Make fragment.
+            nsfx::Buffer f0 = b0.MakeFragment(0, 200);
+            NSFX_TEST_EXPECT_EQ(f0.GetSize(), 200);
+            it = f0.begin();
+            for (size_t i = 0; i < 100; ++i)
+            {
+                uint8_t v = 0xfe + i;
+                NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), v);
+            }
+            for (size_t i = 0; i < 100; ++i)
+            {
+                NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), 0);
+            }
+            // Make fragment.
+            nsfx::Buffer f1 = b0.MakeFragment(300, 200);
+            NSFX_TEST_EXPECT_EQ(f1.GetSize(), 200);
+            it = f1.begin();
+            for (size_t i = 0; i < 100; ++i)
+            {
+                NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), 0);
+            }
+            for (size_t i = 0; i < 100; ++i)
+            {
+                uint8_t v = 0xef + i;
+                NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), v);
+            }
+            // Make fragment.
+            nsfx::Buffer f2 = b0.MakeFragment(200, 0);
+            NSFX_TEST_EXPECT_EQ(f2.GetSize(), 0);
+        }
+    }/*}}}*/
+
+    NSFX_TEST_SUITE(RealBuffer)/*{{{*/
+    {
+        NSFX_TEST_CASE(MakeRealBuffer)
+        {
+            nsfx::Buffer b0(1000, 700, 300);
+            // [700 s zs 300 ze e 300 ]
+            const nsfx::BufferStorage* s0 = b0.GetStorage();
+            b0.AddAtEnd(100);
+            // [700 s zs 300 ze 100 e 200 ]
+            b0.AddAtStart(100);
+            // [600 s 100 zs 300 ze 100 e 200]
+            auto it = b0.begin();
+            for (size_t i = 0; i < 100; ++i)
+            {
+                uint8_t v = 0xfe + i;
+                it.Write<uint8_t>(v);
+            }
+            it += 300;
+            for (size_t i = 0; i < 100; ++i)
+            {
+                uint8_t v = 0xef + i;
+                it.Write<uint8_t>(v);
+            }
+            // Make real buffer.
+            nsfx::Buffer b1 = b0.MakeRealBuffer();
+            NSFX_TEST_EXPECT_EQ(b1.GetSize(), 500);
+            NSFX_TEST_EXPECT_EQ(b1.GetInternalSize(), 500);
+            it = b1.begin();
+            for (size_t i = 0; i < 100; ++i)
+            {
+                uint8_t v = 0xfe + i;
+                NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), v);
+            }
+            for (size_t i = 0; i < 300; ++i)
+            {
+                uint8_t v = 0xfe + i;
+                NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), 0);
+            }
+            for (size_t i = 0; i < 100; ++i)
+            {
+                uint8_t v = 0xef + i;
+                NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), v);
+            }
+        }
+
+        NSFX_TEST_CASE(Realize)
+        {
+            nsfx::Buffer b0(1000, 700, 300);
+            // [700 s zs 300 ze e 300 ]
+            const nsfx::BufferStorage* s0 = b0.GetStorage();
+            b0.AddAtEnd(100);
+            // [700 s zs 300 ze 100 e 200 ]
+            b0.AddAtStart(100);
+            // [600 s 100 zs 300 ze 100 e 200]
+            auto it = b0.begin();
+            for (size_t i = 0; i < 100; ++i)
+            {
+                uint8_t v = 0xfe + i;
+                it.Write<uint8_t>(v);
+            }
+            it += 300;
+            for (size_t i = 0; i < 100; ++i)
+            {
+                uint8_t v = 0xef + i;
+                it.Write<uint8_t>(v);
+            }
+            // Realize.
+            b0.Realize();
+            NSFX_TEST_EXPECT_EQ(b0.GetSize(), 500);
+            NSFX_TEST_EXPECT_EQ(b0.GetInternalSize(), 500);
+            it = b0.begin();
+            for (size_t i = 0; i < 100; ++i)
+            {
+                uint8_t v = 0xfe + i;
+                NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), v);
+            }
+            for (size_t i = 0; i < 300; ++i)
+            {
+                uint8_t v = 0xfe + i;
+                NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), 0);
+            }
+            for (size_t i = 0; i < 100; ++i)
+            {
+                uint8_t v = 0xef + i;
+                NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), v);
+            }
+        }
+    }/*}}}*/
 }
 
 
