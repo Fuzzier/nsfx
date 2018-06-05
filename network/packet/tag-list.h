@@ -362,18 +362,15 @@ public:
     bool Exists(size_t tagId, size_t offset) const BOOST_NOEXCEPT;
 
     /**
-     * @brief Get the value of the tag for the specified byte.
+     * @brief Get the tag for the specified byte.
      *
-     * @tparam T  The type of the tag value.
      * @param[in] tagId  The id of the tag.
      * @param[in] offset The offset of the byte, relative to the start of
      *                   the buffer.
      *
-     * @throw TagTypeMismatch
      * @throw TagNotFound
      */
-    template<class T>
-    const T& Get(size_t tagId, size_t offset) const;
+    Tag Get(size_t tagId, size_t offset) const;
 
     // Methods.
 public:
@@ -382,6 +379,10 @@ public:
     size_t GetBufferStart(void) const BOOST_NOEXCEPT;
     size_t GetBufferEnd(void) const BOOST_NOEXCEPT;
     const TagIndexArray* GetTagIndexArray(void) const BOOST_NOEXCEPT;
+
+    // Swappable.
+public:
+    void swap(TagList& rhs) BOOST_NOEXCEPT;
 
 private:
     /**
@@ -425,7 +426,7 @@ private:
      *
      * If the tag is already in the list, it is not inserted.
      */
-    void InsertTag(size_t tagId, size_t tagStart, size_t tagEnd, TagStorage* tag);
+    void InsertTag(size_t tagId, size_t tagStart, size_t tagEnd, TagStorage* storage);
 
 public:
     enum
@@ -440,6 +441,10 @@ private:
     size_t size_;         ///< The number of indices used by this list.
     TagIndexArray* tia_;  ///< The array of indices.
 };
+
+
+////////////////////////////////////////////////////////////////////////////////
+void swap(TagList& lhs, TagList& rhs) BOOST_NOEXCEPT;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -532,7 +537,7 @@ inline void TagList::AddAtStart(const TagList& rhs)
                      idx->tagStart_ - (rhs.bufferStart_ - bufferStart_));
         BOOST_ASSERT(newTagEnd ==
                      idx->tagEnd_   - (rhs.bufferStart_ - bufferStart_));
-        InsertTag(idx->tagId_, newTagStart, newTagEnd, idx->tag_);
+        InsertTag(idx->tagId_, newTagStart, newTagEnd, idx->storage_);
         ++idx;
     }
 }
@@ -568,7 +573,7 @@ inline void TagList::AddAtEnd(const TagList& rhs)
                      idx->tagStart_ - (rhs.bufferEnd_ - bufferEnd_));
         BOOST_ASSERT(newTagEnd ==
                      idx->tagEnd_   - (rhs.bufferEnd_ - bufferEnd_));
-        InsertTag(idx->tagId_, newTagStart, newTagEnd, idx->tag_);
+        InsertTag(idx->tagId_, newTagStart, newTagEnd, idx->storage_);
         ++idx;
     }
 }
@@ -603,7 +608,7 @@ TagList::Insert(size_t tagId, size_t start, size_t size, Args&&... args)
     BOOST_ASSERT_MSG(start + size <= bufferEnd_ - bufferStart_,
                      "Cannot tag bytes that are outside of the buffer.");
     PrepareToInsert();
-    TagStorage* tag = TagStorage::Allocate<T>(std::forward<Args>(args)...);
+    TagStorage* storage = TagStorage::Allocate<T>(std::forward<Args>(args)...);
     TagIndex* idx   = tia_->indices_ + size_;
     size_t tagStart = bufferStart_ + start;
     size_t tagEnd   = bufferStart_ + start + size;
@@ -642,8 +647,7 @@ inline bool TagList::Exists(size_t tagId, size_t offset) const BOOST_NOEXCEPT
     return found;
 }
 
-template<class T>
-inline const T& TagList::Get(size_t tagId, size_t offset) const
+inline Tag TagList::Get(size_t tagId, size_t offset) const
 {
     BOOST_ASSERT_MSG(offset < bufferEnd_ - bufferStart_,
                      "The offset is outside of the buffer.");
@@ -655,14 +659,8 @@ inline const T& TagList::Get(size_t tagId, size_t offset) const
         if (idx->tagId_ == tagId &&
             idx->tagStart_ <= pos && pos < idx->tagEnd_)
         {
-            if (tag->intf_->GetTypeId() != boost::typeindex::type_id<T>())
-            {
-                BOOST_THROW_EXCEPTION(
-                    TagTypeMismatch() <<
-                    ErrorMessage("The requested value type mismatches "
-                                 "with the value type of the tag."));
-            }
-            return TagStorage::GetValue<T>(idx->tag_);
+            TagStorage::AddRef(idx->storage_);
+            return Tag(tagId, idx->storage_);
         }
         ++idx;
     }
@@ -705,6 +703,14 @@ inline size_t TagList::GetBufferEnd(void) const BOOST_NOEXCEPT
 inline const TagIndexArray* TagList::GetTagIndexArray(void) const BOOST_NOEXCEPT
 {
     return tia_;
+}
+
+inline void TagList::swap(TagList& rhs) BOOST_NOEXCEPT
+{
+    boost::swap(bufferStart_, rhs.bufferStart_);
+    boost::swap(bufferEnd_, rhs.bufferEnd_);
+    boost::swap(size_, rhs.size_);
+    boost::swap(tia_, rhs.tia_);
 }
 
 inline void TagList::PrepareToInsert(void)
@@ -932,18 +938,25 @@ inline bool TagList::HasTag(size_t tagId, size_t tagStart, size_t tagEnd) const 
 }
 
 inline void TagList::InsertTag(size_t tagId, size_t tagStart,
-                               size_t tagEnd, TagStorage* tag)
+                               size_t tagEnd, TagStorage* storage)
 {
     if (!HasTag(tagId, tagStart, tagEnd) &&
         TagIndex::HasTaggedByte(tagStart, tagEnd, bufferStart_, bufferEnd_))
     {
         PrepareToInsert();
         TagIndex* idx = tia_->indices_ + size_;
-        TagIndex::Ctor(idx, tagId, tagStart, tagEnd, tag);
+        TagIndex::Ctor(idx, tagId, tagStart, tagEnd, storage);
         // Increase the size after the construction succeeded.
         ++size_;
         ++tia_->dirty_;
     }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+void swap(TagList& lhs, TagList& rhs) BOOST_NOEXCEPT
+{
+    lhs.swap(rhs);
 }
 
 
@@ -985,14 +998,14 @@ TagList::Insert(size_t tagId, size_t start, size_t size
     BOOST_ASSERT_MSG(start + size <= bufferEnd_ - bufferStart_,
                      "Cannot tag bytes that are outside of the buffer.");
     PrepareToInsert();
-    // TagStorage* tag = TagStorage::Allocate<T>(
+    // TagStorage* storage = TagStorage::Allocate<T>(
     //     std::forward<A0>(a0), std::forward<A1>(a1), ...);
-    TagStorage* tag = TagStorage::Allocate<T>(
+    TagStorage* storage = TagStorage::Allocate<T>(
         BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, ));
     TagIndex* idx   = tia_->indices_ + size_;
     size_t tagStart = bufferStart_ + start;
     size_t tagEnd   = bufferStart_ + start + size;
-    TagIndex::Ctor(idx, tagId, tagStart, tagEnd, tag);
+    TagIndex::Ctor(idx, tagId, tagStart, tagEnd, storage);
     // Increase the size after the construction succeeded.
     ++size_;
     ++tia_->dirty_;
