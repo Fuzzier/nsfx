@@ -48,27 +48,27 @@ NSFX_TEST_SUITE(Tag)
         NSFX_TEST_EXPECT_EQ(k, 0);
     }
 
-    NSFX_TEST_CASE(MakeTagIndex)
-    {
-        {
-            size_t tagId = 1;
-            nsfx::Tag tag = nsfx::MakeTag<Test>(tagId, 2, 3.4);
-            size_t tagStart = 5;
-            size_t tagEnd   = 6;
-            nsfx::TagIndex idx = tag.MakeTagIndex(tagStart, tagEnd);
-            NSFX_TEST_EXPECT_EQ(idx.tagId_, tagId);
-            NSFX_TEST_EXPECT_EQ(idx.tagStart_, tagStart);
-            NSFX_TEST_EXPECT_EQ(idx.tagEnd_, tagEnd);
-            NSFX_TEST_EXPECT(nsfx::TagStorage::GetTypeId(idx.tag_) ==
-                             boost::typeindex::type_id<Test>());
-            NSFX_TEST_EXPECT_EQ(idx.tag_->refCount_, 2);
-            const Test& t = nsfx::TagStorage::GetValue<Test>(idx.tag_);
-            NSFX_TEST_EXPECT_EQ(t.i_, 2);
-            NSFX_TEST_EXPECT_EQ(t.j_, 3.4);
-            nsfx::TagIndex::Release(&idx);
-        }
-        NSFX_TEST_EXPECT_EQ(k, 0);
-    }
+    // NSFX_TEST_CASE(MakeTagIndex)
+    // {
+    //     {
+    //         size_t tagId = 1;
+    //         nsfx::Tag tag = nsfx::MakeTag<Test>(tagId, 2, 3.4);
+    //         size_t tagStart = 5;
+    //         size_t tagEnd   = 6;
+    //         nsfx::TagIndex idx = tag.MakeTagIndex(tagStart, tagEnd);
+    //         NSFX_TEST_EXPECT_EQ(idx.tagId_, tagId);
+    //         NSFX_TEST_EXPECT_EQ(idx.tagStart_, tagStart);
+    //         NSFX_TEST_EXPECT_EQ(idx.tagEnd_, tagEnd);
+    //         NSFX_TEST_EXPECT(nsfx::TagStorage::GetTypeId(idx.tag_) ==
+    //                          boost::typeindex::type_id<Test>());
+    //         NSFX_TEST_EXPECT_EQ(idx.tag_->refCount_, 2);
+    //         const Test& t = nsfx::TagStorage::GetValue<Test>(idx.tag_);
+    //         NSFX_TEST_EXPECT_EQ(t.i_, 2);
+    //         NSFX_TEST_EXPECT_EQ(t.j_, 3.4);
+    //         nsfx::TagIndex::Release(&idx);
+    //     }
+    //     NSFX_TEST_EXPECT_EQ(k, 0);
+    // }
 }
 
 

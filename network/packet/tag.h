@@ -72,21 +72,18 @@ public:
     template<class T>
     const T& GetValue(void) const BOOST_NOEXCEPT;
 
-public:
+private:
     /**
      * @brief Make a tag index.
-     *
-     * This function is provided for \c TagList::Insert().
-     * Users <b>shall</b> not use this function to obtain and modify the tag
-     * storage.
-     *
-     * @internal
      */
     TagIndex MakeTagIndex(size_t tagStart, size_t tagEnd) const BOOST_NOEXCEPT;
 
 private:
     size_t id_;
     TagStorage* storage_;
+
+    // Required to access the constructor and MakeTagIndex().
+    friend class TagList;
 
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
     template<class T, class... Args>

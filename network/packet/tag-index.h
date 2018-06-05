@@ -35,11 +35,11 @@ struct TagIndex
     size_t  tagId_;       ///< The id of the tag.
     size_t  tagStart_;    ///< The start of tagged bytes (inclusive).
     size_t  tagEnd_;      ///< The end of tagged bytes (exclusive).
-    TagStorage* tag_;     ///< The value of the tag.
+    TagStorage* storage_; ///< The tag storage.
 
     // Helper functions.
     static void Ctor(TagIndex* idx, size_t tagId, size_t tagStart,
-                     size_t tagEnd, TagStorage* tag) BOOST_NOEXCEPT;
+                     size_t tagEnd, TagStorage* storage) BOOST_NOEXCEPT;
     static void CopyCtor(TagIndex* lhs, const TagIndex* rhs) BOOST_NOEXCEPT;
     static void CopyAssign(TagIndex* lhs, const TagIndex* rhs);
     static void Release(TagIndex* idx);
@@ -73,14 +73,14 @@ struct TagIndexArray
 
 ////////////////////////////////////////////////////////////////////////////////
 inline void TagIndex::Ctor(TagIndex* idx, size_t tagId, size_t tagStart,
-                           size_t tagEnd, TagStorage* tag) BOOST_NOEXCEPT
+                           size_t tagEnd, TagStorage* storage) BOOST_NOEXCEPT
 {
     BOOST_ASSERT(idx);
-    BOOST_ASSERT(tag);
+    BOOST_ASSERT(storage);
     idx->tagId_    = tagId;
     idx->tagStart_ = tagStart;
     idx->tagEnd_   = tagEnd;
-    idx->tag_      = tag;
+    idx->storage_  = storage;
 }
 
 inline void TagIndex::CopyCtor(TagIndex* lhs, const TagIndex* rhs) BOOST_NOEXCEPT
@@ -89,7 +89,7 @@ inline void TagIndex::CopyCtor(TagIndex* lhs, const TagIndex* rhs) BOOST_NOEXCEP
     BOOST_ASSERT(rhs);
     BOOST_ASSERT(lhs != rhs);
     *lhs = *rhs;
-    TagStorage::AddRef(lhs->tag_);
+    TagStorage::AddRef(lhs->storage_);
 }
 
 inline void TagIndex::CopyAssign(TagIndex* lhs, const TagIndex* rhs)
@@ -98,16 +98,16 @@ inline void TagIndex::CopyAssign(TagIndex* lhs, const TagIndex* rhs)
     BOOST_ASSERT(rhs);
     if (lhs != rhs)
     {
-        TagStorage::Release(lhs->tag_);
+        TagStorage::Release(lhs->storage_);
         *lhs = *rhs;
-        TagStorage::AddRef(lhs->tag_);
+        TagStorage::AddRef(lhs->storage_);
     }
 }
 
 inline void TagIndex::Release(TagIndex* idx)
 {
     BOOST_ASSERT(idx);
-    TagStorage::Release(idx->tag_);
+    TagStorage::Release(idx->storage_);
 }
 
 inline void TagIndex::Swap(TagIndex* lhs, TagIndex* rhs) BOOST_NOEXCEPT

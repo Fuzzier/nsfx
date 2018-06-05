@@ -317,6 +317,7 @@ public:
      * @param[in] size The byte size of the header.
      *
      * @return A writable buffer of the header.
+     *         The buffer is valid until the size of the packet is changed.
      */
     Buffer AddHeader(size_t size);
 
@@ -326,6 +327,7 @@ public:
      * @param[in] size The byte size of the trailer.
      *
      * @return A writable buffer of the trailer.
+     *         The buffer is valid until the size of the packet is changed.
      */
     Buffer AddTrailer(size_t size);
 
@@ -334,6 +336,7 @@ public:
      *
      * @return A read-only buffer iterator that points to the start of the
      *         buffer.
+     *         The iterator is valid until the size of the packet is changed.
      */
     ConstBufferIterator GetBufferBegin(void) const BOOST_NOEXCEPT;
 
@@ -341,6 +344,7 @@ public:
      * @brief Get the read-only buffer iterator of the packet.
      *
      * @return A read-only buffer iterator that points to the end of the buffer.
+     *         The iterator is valid until the size of the packet is changed.
      */
     ConstBufferIterator GetBufferEnd(void) const BOOST_NOEXCEPT;
 
@@ -367,7 +371,25 @@ public:
      * @param[in] start The start of the tagged bytes.
      * @param[in] size  The number of tagged bytes.
      */
-    void InsertTag(const Tag& tag, size_t start, size_t size);
+    void AddTag(const Tag& tag, size_t start, size_t size);
+
+    /**
+     * @brief Is the byte tagged?
+     *
+     * @param[in] tagId  The id of the tag.
+     * @param[in] offset The offset of the byte.
+     */
+    bool HasTag(size_t tagId, size_t offset) const BOOST_NOEXCEPT;
+
+    /**
+     * @brief Get the tag.
+     *
+     * @param[in] tagId  The id of the tag.
+     * @param[in] offset The offset of the byte.
+     *
+     * @throw TagNotFound
+     */
+    Tag GetTag(size_t tagId, size_t offset) const BOOST_NOEXCEPT;
 
     // Fragmentation.
 public:
@@ -495,26 +517,36 @@ inline void Packet::RemoveTrailer(size_t size) BOOST_NOEXCEPT
     tagList_.RemoveAtEnd(size);
 }
 
-inline void Packet::InsertTag(const Tag& tag, size_t start, size_t size)
+inline void Packet::AddTag(const Tag& tag, size_t start, size_t size)
 {
     tagList_.Insert(tag, start, size);
 }
 
-inline Packet TagList::MakeFragment(size_t start, size_t size) BOOST_NOEXCEPT
+inline bool Packet::HasTag(size_t tagId, size_t offset) const BOOST_NOEXCEPT
+{
+    return tagList_.Exists(tagId, offset);
+}
+
+inline Tag Packet::GetTag(size_t tagId, size_t offset) const BOOST_NOEXCEPT
+{
+    return tagList_.Get(tagId, offset);
+}
+
+inline Packet Packet::MakeFragment(size_t start, size_t size) BOOST_NOEXCEPT
 {
     Packet fragment(*this);
-    fragment.RemoveAtStart(offset);
-    fragment.RemoveAtEnd(packet.GetSize() - size);
+    fragment.RemoveHeader(start);
+    fragment.RemoveTrailer(fragment.GetSize() - size);
     return fragment;
 }
 
-inline void TagList::AddHeader(const Packet& packet)
+inline void Packet::AddHeader(const Packet& packet)
 {
     buffer_.AddAtStart(packet.buffer_);
     tagList_.AddAtStart(packet.tagList_);
 }
 
-inline void TagList::AddTrailer(const Packet& packet)
+inline void Packet::AddTrailer(const Packet& packet)
 {
     buffer_.AddAtEnd(packet.buffer_);
     tagList_.AddAtEnd(packet.tagList_);
@@ -524,7 +556,7 @@ inline void Packet::swap(Packet& rhs) BOOST_NOEXCEPT
 {
     boost::swap(id_, rhs.id_);
     boost::swap(buffer_, rhs.buffer_);
-    boost::swap(pars_, rhs.pars_);
+    boost::swap(tagList_, rhs.tagList_);
 }
 
 

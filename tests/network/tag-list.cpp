@@ -84,6 +84,7 @@ NSFX_TEST_SUITE(TagList)
                 // Fill the array.
                 do
                 {
+                    // Create a free tag.
                     nsfx::Tag tag = nsfx::MakeTag<Test>(tagId++, 1, 2.3);
                     tl1.Insert(tag, 0, 100);
                     tia1 = tl1.GetTagIndexArray();
@@ -91,6 +92,12 @@ NSFX_TEST_SUITE(TagList)
                     NSFX_TEST_EXPECT_EQ(tia1->refCount_, 1);
                     NSFX_TEST_EXPECT_EQ(tia1->dirty_, tl1.GetInternalSize());
                     NSFX_TEST_EXPECT_EQ(k, tia1->dirty_);
+                    // Test.
+                    NSFX_TEST_EXPECT(tl1.Exists(tagId-1, 0));
+                    NSFX_TEST_EXPECT(tl1.Exists(tagId-1, 100-1));
+                    tag = tl1.Get(tagId-1, 0);
+                    NSFX_TEST_EXPECT(tag.GetTypeId() ==
+                                     boost::typeindex::type_id<Test>());
                 }
                 while (tia1->dirty_ < tia1->capacity_);
                 // Examine the array.
@@ -589,21 +596,21 @@ NSFX_TEST_SUITE(TagList)
                 tl1.Insert<Test>(tagId++, 200, 200, 1, 2.3);
                 tl1.Insert<Test>(tagId++, 300, 100, 1, 2.3);
                 // Create fragments.
-                //      | f1 |
-                //      0    50
-                //      |----|---|--------|--------|--------|
-                //      |<-tag1->|                 |<-tag4->|
-                //      |<------tag2----->|<------tag3----->|
+                // | f1 |
+                // 0    50
+                // |----|---|--------|--------|--------|
+                // |<-tag1->|                 |<-tag4->|
+                // |<------tag2----->|<------tag3----->|
                 nsfx::TagList f1(tl1);
                 f1.RemoveAtEnd(350);
                 NSFX_TEST_EXPECT_EQ(f1.GetSize(), 2);
                 NSFX_TEST_EXPECT(f1.Exists(1, 0));
                 NSFX_TEST_EXPECT(f1.Exists(2, 0));
-                //                |f2 |
-                //                0   50
-                //           |----|---|--------|--------|--------|
-                //           |<-tag1->|                 |<-tag4->|
-                //           |<------tag2----->|<------tag3----->|
+                //      |f2 |
+                //      0   50
+                // |----|---|--------|--------|--------|
+                // |<-tag1->|                 |<-tag4->|
+                // |<------tag2----->|<------tag3----->|
                 nsfx::TagList f2(tl1);
                 f2.RemoveAtStart(50);
                 f2.RemoveAtEnd(300);
