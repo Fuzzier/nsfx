@@ -18,7 +18,7 @@
 
 
 #include <nsfx/network/config.h>
-#include <nsfx/network/packet/tag.h>
+#include <nsfx/network/packet/i-tag.h>
 #include <boost/type_index.hpp>
 #include <boost/type_traits/decay.hpp>
 #include <boost/preprocessor/repetition/enum.hpp>
@@ -63,11 +63,14 @@ struct TagStorage
 
 #endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-    static void AddRef(TagStorage* storage);
+    static void AddRef(TagStorage* storage) BOOST_NOEXCEPT;
     static void Release(TagStorage* storage);
 
+    static const boost::typeindex::type_info&
+    GetTypeId(const TagStorage* storage) BOOST_NOEXCEPT;
+
     template<class T>
-    static const T& GetValue(const TagStorage* storage);
+    static const T& GetValue(const TagStorage* storage) BOOST_NOEXCEPT;
 };
 
 
@@ -103,7 +106,7 @@ inline TagStorage* TagStorage::Allocate(Args&&... args)
 
 #endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-inline void TagStorage::AddRef(TagStorage* storage)
+inline void TagStorage::AddRef(TagStorage* storage) BOOST_NOEXCEPT
 {
     BOOST_ASSERT(storage);
     ++storage->refCount_;
@@ -123,8 +126,16 @@ inline void TagStorage::Release(TagStorage* storage)
     }
 }
 
+inline const boost::typeindex::type_info&
+TagStorage::GetTypeId(const TagStorage* storage) BOOST_NOEXCEPT
+{
+    BOOST_ASSERT(storage);
+    BOOST_ASSERT(storage->intf_);
+    return storage->intf_->GetTypeId();
+}
+
 template<class T>
-inline const T& TagStorage::GetValue(const TagStorage* storage)
+inline const T& TagStorage::GetValue(const TagStorage* storage) BOOST_NOEXCEPT
 {
     BOOST_ASSERT(storage);
     BOOST_ASSERT(storage->intf_);

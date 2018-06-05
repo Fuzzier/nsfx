@@ -183,7 +183,11 @@ NSFX_OPEN_NAMESPACE
  *     |---------------|+++++++++++|*****|++++++|===========|-------
  *     |               |-- fixed ->|
  *     |------- new tag start ---->|
- *
+ *                     ^
+ *                     |
+ *                     reference point for transformation
+ *                     |
+ *                     v
  *         packet 2
  *         origin 2    |<------ buffer 2 ------>|
  *         |           |             tag        |
@@ -205,7 +209,11 @@ NSFX_OPEN_NAMESPACE
  *     |---------------|===========|++++++|*****|+++++++++++|-------
  *     |                                        |-- fixed ->|
  *     |-------------------- new tag end ------------------>|
- *
+ *                                                          ^
+ *                                                          |
+ *                         reference point for transformation
+ *                                                          |
+ *                                                          v
  *         packet 2
  *         origin 2                |<------ buffer 2 ------>|
  *         |                       |        tag             |
@@ -271,7 +279,7 @@ public:
     TagList(const TagList& rhs) BOOST_NOEXCEPT;
     TagList& operator=(const TagList& rhs);
 
-    // Synchronize with buffer.
+    // Buffer.
 public:
     /**
      * @brief Expand the buffer.
@@ -311,7 +319,7 @@ public:
 public:
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
     /**
-     * @brief Insert a tag for the specified bytes in the buffer.
+     * @brief Insert a tag for a range of bytes in the buffer.
      *
      * @tparam T  The type of the tag value.
      * @tparam Args  The argument types of the constructor of the tag value.
@@ -332,6 +340,17 @@ public:
 # include BOOST_PP_ITERATE()
 
 #endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+
+    /**
+     * @brief Insert a tag for a range of bytes in the buffer.
+     *
+     * @param[in] tag    The tag.
+     * @param[in] start  The start of the byte, relative to the start of
+     *                   the buffer.
+     * @param[in] size   The number of bytes to tag.
+     *                   All bytes <b>must</b> be within the current buffer.
+     */
+    void Insert(const Tag& tag, size_t start, size_t size);
 
     /**
      * @brief Whether the specified byte has a tag.
@@ -562,12 +581,26 @@ inline void TagList::RemoveAtEnd(size_t size) BOOST_NOEXCEPT
     bufferEnd_ -= size;
 }
 
+inline void TagList::Insert(const Tag& tag, size_t start, size_t size)
+{
+    BOOST_ASSERT_MSG(start + size <= bufferEnd_ - bufferStart_,
+                     "Cannot tag bytes that are outside of the buffer.");
+    PrepareToInsert();
+    TagIndex* idx   = tia_->indices_ + size_;
+    size_t tagStart = bufferStart_ + start;
+    size_t tagEnd   = bufferStart_ + start + size;
+    *idx = tag.MakeTagIndex(tagStart, tagEnd);
+    // Increase the size after the construction succeeded.
+    ++size_;
+    ++tia_->dirty_;
+}
+
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 template<class T, class... Args>
 inline void
 TagList::Insert(size_t tagId, size_t start, size_t size, Args&&... args)
 {
-    // Be careful that 'size' and 'size_' are confusion.
+    // Be careful that 'size' and 'size_' are confusing.
     BOOST_ASSERT_MSG(start + size <= bufferEnd_ - bufferStart_,
                      "Cannot tag bytes that are outside of the buffer.");
     PrepareToInsert();
@@ -949,7 +982,7 @@ TagList::Insert(size_t tagId, size_t start, size_t size
                 BOOST_PP_COMMA_IF(BOOST_PP_ITERATION())
                 BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, &&a))
 {
-    // Be careful that 'size' and 'size_' are confusion.
+    // Be careful that 'size' and 'size_' are confusing.
     BOOST_ASSERT_MSG(start + size <= bufferEnd_ - bufferStart_,
                      "Cannot tag bytes that are outside of the buffer.");
     PrepareToInsert();
