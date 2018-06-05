@@ -491,12 +491,7 @@ inline TagList& TagList::operator=(const TagList& rhs)
 {
     if (this != &rhs)
     {
-        if (tia_)
-        {
-            TagIndexArray* tmp = tia_;
-            tia_ = nullptr;
-            TagIndexArray::Release(tmp);
-        }
+        TagIndexArray* tmp = tia_;
         bufferStart_ = rhs.bufferStart_;
         bufferEnd_   = rhs.bufferEnd_;
         size_        = rhs.size_;
@@ -504,6 +499,10 @@ inline TagList& TagList::operator=(const TagList& rhs)
         if (tia_)
         {
             TagIndexArray::AddRef(tia_);
+        }
+        if (tmp)
+        {
+            TagIndexArray::Release(tmp);
         }
     }
     return *this;

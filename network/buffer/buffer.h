@@ -555,7 +555,7 @@ inline const BufferStorage* Buffer::GetStorage(void) const BOOST_NOEXCEPT
     return storage_;
 }
 
-size_t Buffer::CopyTo(uint8_t* dst, size_t size) const BOOST_NOEXCEPT
+inline size_t Buffer::CopyTo(uint8_t* dst, size_t size) const BOOST_NOEXCEPT
 {
     size_t copied = 0;
     if (storage_ && dst)
