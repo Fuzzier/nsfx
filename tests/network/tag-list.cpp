@@ -74,6 +74,34 @@ NSFX_TEST_SUITE(TagList)
             NSFX_TEST_EXPECT_EQ(k, 0);
         }
 
+        NSFX_TEST_CASE(FromFreeTag)
+        {
+            {
+                // Create an empty list.
+                nsfx::TagList tl1(4, 100);
+                size_t tagId = 1;
+                const nsfx::TagIndexArray* tia1 = nullptr;
+                // Fill the array.
+                do
+                {
+                    nsfx::Tag tag = nsfx::MakeTag<Test>(tagId++, 1, 2.3);
+                    tl1.Insert(tag, 0, 100);
+                    tia1 = tl1.GetTagIndexArray();
+                    NSFX_TEST_ASSERT(tia1);
+                    NSFX_TEST_EXPECT_EQ(tia1->refCount_, 1);
+                    NSFX_TEST_EXPECT_EQ(tia1->dirty_, tl1.GetInternalSize());
+                    NSFX_TEST_EXPECT_EQ(k, tia1->dirty_);
+                }
+                while (tia1->dirty_ < tia1->capacity_);
+                // Examine the array.
+                NSFX_TEST_EXPECT_EQ(tia1->refCount_, 1);
+                NSFX_TEST_EXPECT_EQ(tia1->dirty_, tia1->capacity_);
+                NSFX_TEST_EXPECT_EQ(k, tia1->dirty_);
+            }
+            // Release the tag list also releases all tags.
+            NSFX_TEST_EXPECT_EQ(k, 0);
+        }
+
         NSFX_TEST_SUITE(NonShared)
         {
             NSFX_TEST_CASE(Compact)
@@ -542,112 +570,115 @@ NSFX_TEST_SUITE(TagList)
         }
     }/*}}}*/
 
-    NSFX_TEST_SUITE(ReassembleFragments)
+    NSFX_TEST_SUITE(ReassembleFragments)/*{{{*/
     {
         NSFX_TEST_CASE(Test)
         {
-            // Create an empty list.
-            nsfx::TagList tl1(4, 400);
-            size_t tagId = 1;
-            // Add 4 tags.
-            // |<--------------buffer------------->|
-            // 0        100      200      300      400
-            // |--------|--------|--------|--------|
-            // |<-tag1->|                 |<-tag4->|
-            // |<------tag2----->|<------tag3----->|
-            tl1.Insert<Test>(tagId++,   0, 100, 1, 2.3);
-            tl1.Insert<Test>(tagId++,   0, 200, 1, 2.3);
-            tl1.Insert<Test>(tagId++, 200, 200, 1, 2.3);
-            tl1.Insert<Test>(tagId++, 300, 100, 1, 2.3);
-            // Create fragments.
-            //      | f1 |
-            //      0    50
-            //      |----|---|--------|--------|--------|
-            //      |<-tag1->|                 |<-tag4->|
-            //      |<------tag2----->|<------tag3----->|
-            nsfx::TagList f1(tl1);
-            f1.RemoveAtEnd(350);
-            NSFX_TEST_EXPECT_EQ(f1.GetSize(), 2);
-            NSFX_TEST_EXPECT(f1.Exists(1, 0));
-            NSFX_TEST_EXPECT(f1.Exists(2, 0));
-            //                |f2 |
-            //                0   50
-            //           |----|---|--------|--------|--------|
-            //           |<-tag1->|                 |<-tag4->|
-            //           |<------tag2----->|<------tag3----->|
-            nsfx::TagList f2(tl1);
-            f2.RemoveAtStart(50);
-            f2.RemoveAtEnd(300);
-            NSFX_TEST_EXPECT_EQ(f2.GetSize(), 2);
-            NSFX_TEST_EXPECT(f2.Exists(1, 0));
-            NSFX_TEST_EXPECT(f2.Exists(2, 0));
-            //          |     f3      |
-            //          0             150
-            // |----|---|-------------|---|--------|
-            // |<-tag1->|                 |<-tag4->|
-            // |<------tag2----->|<------tag3----->|
-            nsfx::TagList f3(tl1);
-            f3.RemoveAtStart(100);
-            f3.RemoveAtEnd(150);
-            NSFX_TEST_EXPECT_EQ(f3.GetSize(), 2);
-            NSFX_TEST_EXPECT(f3.Exists(2, 0));
-            NSFX_TEST_EXPECT(f3.Exists(3, 100));
-            //                        |       f4   |
-            //                        0   50       150
-            // |----|---|--------|----|---|--------|
-            // |<-tag1->|                 |<-tag4->|
-            // |<------tag2----->|<------tag3----->|
-            nsfx::TagList f4(tl1);
-            f4.RemoveAtStart(250);
-            NSFX_TEST_EXPECT_EQ(f4.GetSize(), 2);
-            NSFX_TEST_EXPECT(f4.Exists(3, 0));
-            NSFX_TEST_EXPECT(f4.Exists(4, 50));
-            // Reassemble the fragments.
             {
-                nsfx::TagList r;
-                r.AddAtStart(f4);
-                r.AddAtStart(f3);
-                r.AddAtStart(f2);
-                r.AddAtStart(f1);
-                NSFX_TEST_EXPECT_EQ(r.GetSize(), 4);
-                NSFX_TEST_EXPECT_EQ(r.GetInternalSize(), 4);
-                // tag1 survives.
-                NSFX_TEST_EXPECT(r.Exists(1, 0));
-                NSFX_TEST_EXPECT(r.Exists(1, 100-1));
-                // tag2 survives.
-                NSFX_TEST_EXPECT(r.Exists(2, 0));
-                NSFX_TEST_EXPECT(r.Exists(2, 200-1));
-                // tag3 survives.
-                NSFX_TEST_EXPECT(r.Exists(3, 200));
-                NSFX_TEST_EXPECT(r.Exists(3, 400-1));
-                // tag4 survives.
-                NSFX_TEST_EXPECT(r.Exists(4, 300));
-                NSFX_TEST_EXPECT(r.Exists(4, 400-1));
+                // Create an empty list.
+                nsfx::TagList tl1(4, 400);
+                size_t tagId = 1;
+                // Add 4 tags.
+                // |<--------------buffer------------->|
+                // 0        100      200      300      400
+                // |--------|--------|--------|--------|
+                // |<-tag1->|                 |<-tag4->|
+                // |<------tag2----->|<------tag3----->|
+                tl1.Insert<Test>(tagId++,   0, 100, 1, 2.3);
+                tl1.Insert<Test>(tagId++,   0, 200, 1, 2.3);
+                tl1.Insert<Test>(tagId++, 200, 200, 1, 2.3);
+                tl1.Insert<Test>(tagId++, 300, 100, 1, 2.3);
+                // Create fragments.
+                //      | f1 |
+                //      0    50
+                //      |----|---|--------|--------|--------|
+                //      |<-tag1->|                 |<-tag4->|
+                //      |<------tag2----->|<------tag3----->|
+                nsfx::TagList f1(tl1);
+                f1.RemoveAtEnd(350);
+                NSFX_TEST_EXPECT_EQ(f1.GetSize(), 2);
+                NSFX_TEST_EXPECT(f1.Exists(1, 0));
+                NSFX_TEST_EXPECT(f1.Exists(2, 0));
+                //                |f2 |
+                //                0   50
+                //           |----|---|--------|--------|--------|
+                //           |<-tag1->|                 |<-tag4->|
+                //           |<------tag2----->|<------tag3----->|
+                nsfx::TagList f2(tl1);
+                f2.RemoveAtStart(50);
+                f2.RemoveAtEnd(300);
+                NSFX_TEST_EXPECT_EQ(f2.GetSize(), 2);
+                NSFX_TEST_EXPECT(f2.Exists(1, 0));
+                NSFX_TEST_EXPECT(f2.Exists(2, 0));
+                //          |     f3      |
+                //          0             150
+                // |----|---|-------------|---|--------|
+                // |<-tag1->|                 |<-tag4->|
+                // |<------tag2----->|<------tag3----->|
+                nsfx::TagList f3(tl1);
+                f3.RemoveAtStart(100);
+                f3.RemoveAtEnd(150);
+                NSFX_TEST_EXPECT_EQ(f3.GetSize(), 2);
+                NSFX_TEST_EXPECT(f3.Exists(2, 0));
+                NSFX_TEST_EXPECT(f3.Exists(3, 100));
+                //                        |       f4   |
+                //                        0   50       150
+                // |----|---|--------|----|---|--------|
+                // |<-tag1->|                 |<-tag4->|
+                // |<------tag2----->|<------tag3----->|
+                nsfx::TagList f4(tl1);
+                f4.RemoveAtStart(250);
+                NSFX_TEST_EXPECT_EQ(f4.GetSize(), 2);
+                NSFX_TEST_EXPECT(f4.Exists(3, 0));
+                NSFX_TEST_EXPECT(f4.Exists(4, 50));
+                // Reassemble the fragments.
+                {
+                    nsfx::TagList r;
+                    r.AddAtStart(f4);
+                    r.AddAtStart(f3);
+                    r.AddAtStart(f2);
+                    r.AddAtStart(f1);
+                    NSFX_TEST_EXPECT_EQ(r.GetSize(), 4);
+                    NSFX_TEST_EXPECT_EQ(r.GetInternalSize(), 4);
+                    // tag1 survives.
+                    NSFX_TEST_EXPECT(r.Exists(1, 0));
+                    NSFX_TEST_EXPECT(r.Exists(1, 100-1));
+                    // tag2 survives.
+                    NSFX_TEST_EXPECT(r.Exists(2, 0));
+                    NSFX_TEST_EXPECT(r.Exists(2, 200-1));
+                    // tag3 survives.
+                    NSFX_TEST_EXPECT(r.Exists(3, 200));
+                    NSFX_TEST_EXPECT(r.Exists(3, 400-1));
+                    // tag4 survives.
+                    NSFX_TEST_EXPECT(r.Exists(4, 300));
+                    NSFX_TEST_EXPECT(r.Exists(4, 400-1));
+                }
+                // Reassemble the fragments.
+                {
+                    nsfx::TagList r;
+                    r.AddAtEnd(f1);
+                    r.AddAtEnd(f2);
+                    r.AddAtEnd(f3);
+                    r.AddAtEnd(f4);
+                    NSFX_TEST_EXPECT_EQ(r.GetSize(), 4);
+                    NSFX_TEST_EXPECT_EQ(r.GetInternalSize(), 4);
+                    // tag1 survives.
+                    NSFX_TEST_EXPECT(r.Exists(1, 0));
+                    NSFX_TEST_EXPECT(r.Exists(1, 100-1));
+                    // tag2 survives.
+                    NSFX_TEST_EXPECT(r.Exists(2, 0));
+                    NSFX_TEST_EXPECT(r.Exists(2, 200-1));
+                    // tag3 survives.
+                    NSFX_TEST_EXPECT(r.Exists(3, 200));
+                    NSFX_TEST_EXPECT(r.Exists(3, 400-1));
+                    // tag4 survives.
+                    NSFX_TEST_EXPECT(r.Exists(4, 300));
+                    NSFX_TEST_EXPECT(r.Exists(4, 400-1));
+                }
             }
-            // Reassemble the fragments.
-            {
-                nsfx::TagList r;
-                r.AddAtEnd(f1);
-                r.AddAtEnd(f2);
-                r.AddAtEnd(f3);
-                r.AddAtEnd(f4);
-                NSFX_TEST_EXPECT_EQ(r.GetSize(), 4);
-                NSFX_TEST_EXPECT_EQ(r.GetInternalSize(), 4);
-                // tag1 survives.
-                NSFX_TEST_EXPECT(r.Exists(1, 0));
-                NSFX_TEST_EXPECT(r.Exists(1, 100-1));
-                // tag2 survives.
-                NSFX_TEST_EXPECT(r.Exists(2, 0));
-                NSFX_TEST_EXPECT(r.Exists(2, 200-1));
-                // tag3 survives.
-                NSFX_TEST_EXPECT(r.Exists(3, 200));
-                NSFX_TEST_EXPECT(r.Exists(3, 400-1));
-                // tag4 survives.
-                NSFX_TEST_EXPECT(r.Exists(4, 300));
-                NSFX_TEST_EXPECT(r.Exists(4, 400-1));
-            }
+            NSFX_TEST_EXPECT_EQ(k, 0);
         }
-    }
+    }/*}}}*/
 }
 
 

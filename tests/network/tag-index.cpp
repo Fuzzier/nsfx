@@ -90,15 +90,15 @@ NSFX_TEST_SUITE(TagIndex)
         nsfx::TagStorage* tag2 = nsfx::TagStorage::Allocate<Test>(4, 5.6);
 
         nsfx::TagIndex idx1;
-        size_t tagId1 = 4;
-        size_t tagStart1 = 5;
-        size_t tagEnd1 = 6;
+        size_t tagId1 = 7;
+        size_t tagStart1 = 8;
+        size_t tagEnd1 = 9;
         nsfx::TagIndex::Ctor(&idx1, tagId1, tagStart1, tagEnd1, tag1);
 
         nsfx::TagIndex idx2;
-        size_t tagId2 = 7;
-        size_t tagStart2 = 8;
-        size_t tagEnd2 = 9;
+        size_t tagId2 = 10;
+        size_t tagStart2 = 11;
+        size_t tagEnd2 = 12;
         nsfx::TagIndex::Ctor(&idx2, tagId2, tagStart2, tagEnd2, tag2);
 
         nsfx::TagStorage::AddRef(tag2);

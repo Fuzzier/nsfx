@@ -13,18 +13,14 @@
  *            All rights reserved.
  */
 
-#ifndef TAG_H__9AFD9FF4_A048_455E_8569_D90DD7604F6E
-#define TAG_H__9AFD9FF4_A048_455E_8569_D90DD7604F6E
+#ifndef TAG_H__00CF596A_BA0E_4E34_8C66_F41A47718C3F
+#define TAG_H__00CF596A_BA0E_4E34_8C66_F41A47718C3F
 
 
 #include <nsfx/network/config.h>
+#include <nsfx/network/packet/tag-storage.h>
+#include <nsfx/network/packet/tag-index.h>
 #include <boost/type_index.hpp>
-#include <boost/type_traits/decay.hpp>
-#include <boost/preprocessor/repetition/enum.hpp>
-#include <boost/preprocessor/repetition/enum_params.hpp>
-#include <boost/preprocessor/repetition/enum_binary_params.hpp>
-#include <boost/preprocessor/iteration/iterate.hpp>
-#include <utility> // forward
 
 
 NSFX_OPEN_NAMESPACE
@@ -33,76 +29,167 @@ NSFX_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Network
- * @brief The type-neutral tag interface.
+ * @brief A free tag that is not associated with any bytes.
  */
-class ITag
+class Tag
 {
-public:
-    virtual ~ITag(void) BOOST_NOEXCEPT {}
+    // Xtructors.
+private:
+    /**
+     * @brief Construct a tag.
+     *
+     * @param[in] tagId   The id of the tag.
+     * @param[in] storage <b>Must</b> not be \c nullptr.
+     */
+    Tag(size_t tagId, TagStorage* storage) BOOST_NOEXCEPT;
 
-    virtual const boost::typeindex::type_info& GetTypeId(void) = 0;
+public:
+    ~Tag(void);
+
+    // Copyable.
+public:
+    Tag(const Tag& rhs) BOOST_NOEXCEPT;
+    Tag& operator=(const Tag& rhs);
+
+public:
+    /**
+     * @brief Get the id of the tag.
+     */
+    size_t GetId(void) const BOOST_NOEXCEPT;
+
+    /**
+     * @brief Get the value type of the tag.
+     */
+    const boost::typeindex::type_info& GetTypeId(void) const BOOST_NOEXCEPT;
+
+    /**
+     * @brief Get the value of the tag.
+     *
+     * @tparam T The type of the value.
+     *           It <b>must</b> have the same type id as the return value of
+     *           \c Tag::GetTypeId().
+     */
+    template<class T>
+    const T& GetValue(void) const BOOST_NOEXCEPT;
+
+public:
+    /**
+     * @brief Make a tag index.
+     *
+     * This function is provided for \c TagList::Insert().
+     * Users <b>shall</b> not use this function to obtain and modify the tag
+     * storage.
+     *
+     * @internal
+     */
+    TagIndex MakeTagIndex(size_t tagStart, size_t tagEnd) const BOOST_NOEXCEPT;
+
+private:
+    size_t id_;
+    TagStorage* storage_;
+
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+    template<class T, class... Args>
+    friend Tag MakeTag(size_t tagId, Args&&... args);
+#else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+
+# define BOOST_PP_ITERATION_PARAMS_1  (4, (0, NSFX_MAX_ARITY, <nsfx/network/packet/tag.h>, 0))
+# include BOOST_PP_ITERATE()
+
+#endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 };
 
 
 ////////////////////////////////////////////////////////////////////////////////
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 /**
  * @ingroup Network
- * @brief The type-specific tag.
- *
- * @tparam T  The type of the underlying value of the tag.
+ * @brief Make a free tag.
  */
-template<class T>
-class TypedTag :
-    public ITag
-{
-public:
-    typedef typename boost::decay<T>::type  ValueType;
-    static_assert(boost::is_same<T, ValueType>::value,
-                  "Invalid value type for a packet tag.");
+template<class T, class... Args>
+Tag MakeTag(size_t tagId, Args&&... args);
+#endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-    // Xtructors.
-public:
+
+////////////////////////////////////////////////////////////////////////////////
+inline Tag::Tag(size_t tagId, TagStorage* storage) BOOST_NOEXCEPT :
+    id_(tagId),
+    storage_(storage)
+{
+}
+
+inline Tag::~Tag(void)
+{
+    TagStorage::Release(storage_);
+}
+
+inline Tag::Tag(const Tag& rhs) BOOST_NOEXCEPT :
+    id_(rhs.id_),
+    storage_(rhs.storage_)
+{
+    TagStorage::AddRef(storage_);
+}
+
+inline Tag& Tag::operator=(const Tag& rhs)
+{
+    if (this != &rhs)
+    {
+        TagStorage* tmp = storage_;
+        id_ = rhs.id_;
+        storage_ = rhs.storage_;
+        TagStorage::AddRef(storage_);
+        TagStorage::Release(tmp);
+    }
+    return *this;
+}
+
+inline size_t Tag::GetId(void) const BOOST_NOEXCEPT
+{
+    return id_;
+}
+
+inline const boost::typeindex::type_info&
+Tag::GetTypeId(void) const BOOST_NOEXCEPT
+{
+    return TagStorage::GetTypeId(storage_);
+}
+
+template<class T>
+inline const T& Tag::GetValue(void) const BOOST_NOEXCEPT
+{
+    return TagStorage::GetValue<T>(storage_);
+}
+
+inline TagIndex Tag::MakeTagIndex(size_t tagStart, size_t tagEnd) const BOOST_NOEXCEPT
+{
+    TagIndex idx;
+    TagStorage::AddRef(storage_);
+    TagIndex::Ctor(&idx, id_, tagStart, tagEnd, storage_);
+    return idx;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-    template<class... Args>
-    TypedTag(Args&&... args) :
-        value_(std::forward<Args>(args)...)
-    {}
+template<class T, class... Args>
+inline Tag MakeTag(size_t tagId, Args&&... args)
+{
+    TagStorage* storage = TagStorage::Allocate<T>(std::forward<Args>(args)...);
+    return Tag(tagId, storage);
+}
 
 #else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-    TypedTag(void) {}
 
-# define BOOST_PP_ITERATION_PARAMS_1  (4, (1, NSFX_MAX_ARITY, <nsfx/network/packet/tag.h>, 0))
+# define BOOST_PP_ITERATION_PARAMS_1  (4, (0, NSFX_MAX_ARITY, <nsfx/network/packet/tag.h>, 1))
 # include BOOST_PP_ITERATE()
 
 #endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-
-    virtual ~TypedTag(void) {}
-
-    // Non-copyable.
-public:
-    BOOST_DELETED_FUNCTION(TypedTag(const TypedTag&));
-    BOOST_DELETED_FUNCTION(TypedTag& operator=(const TypedTag&));
-
-public:
-    virtual const boost::typeindex::type_info& GetTypeId(void) NSFX_OVERRIDE NSFX_FINAL
-    {
-        return boost::typeindex::type_id<ValueType>().type_info();
-    }
-
-    const ValueType& GetValue(void) const BOOST_NOEXCEPT
-    {
-        return value_;
-    }
-
-private:
-    ValueType  value_;
-};
 
 
 NSFX_CLOSE_NAMESPACE
 
 
-#endif // TAG_H__9AFD9FF4_A048_455E_8569_D90DD7604F6E
+#endif // TAG_H__00CF596A_BA0E_4E34_8C66_F41A47718C3F
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -112,13 +199,28 @@ NSFX_CLOSE_NAMESPACE
 
 ////////////////////////////////////////
 # if BOOST_PP_ITERATION_FLAGS() == 0
-// template<class A0, class A1, ...>
-// TypedTag(A0&& a0, A1&& a1, ...) :
-//     value_(std::forward<A0>(a0), std::forward<A1>(a1), ...)
-template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
-TypedTag(BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, &&a)) :
-    value_(BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, ))
-{}
+// template<class T, class A0, class A1, ...>
+// friend Tag MakeTag(size_t tagId, A0&& a0, A1&& a1, ...);
+template<class T  BOOST_PP_COMMA_IF(BOOST_PP_ITERATION())
+                  BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
+friend Tag MakeTag(size_t tagId
+    BOOST_PP_COMMA_IF(BOOST_PP_ITERATION())
+    BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, &&a));
+
+////////////////////////////////////////
+# elif BOOST_PP_ITERATION_FLAGS() == 1
+// template<class T, class A0, class A1, ...>
+// inline Tag MakeTag(size_t tagId, A0&& a0, A1&& a1, ...)
+template<class T  BOOST_PP_COMMA_IF(BOOST_PP_ITERATION())
+                  BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
+inline Tag MakeTag(size_t tagId
+    BOOST_PP_COMMA_IF(BOOST_PP_ITERATION())
+    BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, &&a))
+{
+    TagStorage* storage = TagStorage::Allocate<T>(
+        BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, ));
+    return Tag(tagId, storage);
+}
 
 # endif // BOOST_PP_ITERATION_FLAGS() == x
 

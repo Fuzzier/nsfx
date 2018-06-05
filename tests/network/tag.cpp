@@ -18,30 +18,55 @@
 #include <iostream>
 
 
-int k = 1;
+int k = 0;
 struct Test
 {
-    Test(int i, double j) : i_(i), j_(j) {}
-    ~Test(void) { k = 0; }
+    Test(int i, double j) : i_(i), j_(j) { ++k; }
+    ~Test(void) { --k; }
     int i_;
     double j_;
 };
 
 
-NSFX_TEST_SUITE(TypedTag)
+NSFX_TEST_SUITE(Tag)
 {
-    NSFX_TEST_CASE(Ctor)
+    NSFX_TEST_CASE(MakeTag)
     {
-        k = 1;
         {
-            nsfx::TypedTag<Test> tt(1, 2.3);
-            NSFX_TEST_EXPECT(tt.GetTypeId() ==
+            size_t tagId = 1;
+            nsfx::Tag tag = nsfx::MakeTag<Test>(tagId, 2, 3.4);
+            // Test::Test() is called.
+            NSFX_TEST_EXPECT_EQ(k, 1);
+            NSFX_TEST_EXPECT_EQ(tag.GetId(), tagId);
+            NSFX_TEST_EXPECT(tag.GetTypeId() ==
                              boost::typeindex::type_id<Test>());
-            const Test& t = tt.GetValue();
-            NSFX_TEST_EXPECT_EQ(t.i_, 1);
-            NSFX_TEST_EXPECT_EQ(t.j_, 2.3);
+            const Test& t = tag.GetValue<Test>();
+            NSFX_TEST_EXPECT_EQ(t.i_, 2);
+            NSFX_TEST_EXPECT_EQ(t.j_, 3.4);
         }
         // Test::~Test() is called.
+        NSFX_TEST_EXPECT_EQ(k, 0);
+    }
+
+    NSFX_TEST_CASE(MakeTagIndex)
+    {
+        {
+            size_t tagId = 1;
+            nsfx::Tag tag = nsfx::MakeTag<Test>(tagId, 2, 3.4);
+            size_t tagStart = 5;
+            size_t tagEnd   = 6;
+            nsfx::TagIndex idx = tag.MakeTagIndex(tagStart, tagEnd);
+            NSFX_TEST_EXPECT_EQ(idx.tagId_, tagId);
+            NSFX_TEST_EXPECT_EQ(idx.tagStart_, tagStart);
+            NSFX_TEST_EXPECT_EQ(idx.tagEnd_, tagEnd);
+            NSFX_TEST_EXPECT(nsfx::TagStorage::GetTypeId(idx.tag_) ==
+                             boost::typeindex::type_id<Test>());
+            NSFX_TEST_EXPECT_EQ(idx.tag_->refCount_, 2);
+            const Test& t = nsfx::TagStorage::GetValue<Test>(idx.tag_);
+            NSFX_TEST_EXPECT_EQ(t.i_, 2);
+            NSFX_TEST_EXPECT_EQ(t.j_, 3.4);
+            nsfx::TagIndex::Release(&idx);
+        }
         NSFX_TEST_EXPECT_EQ(k, 0);
     }
 }

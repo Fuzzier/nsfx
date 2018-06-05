@@ -35,9 +35,10 @@ NSFX_TEST_SUITE(TagStorage)
         nsfx::TagStorage* ts = nsfx::TagStorage::Allocate<Test>(1, 2.3);
         // Test::Test() is called.
         NSFX_TEST_EXPECT_EQ(k, 1);
-
         NSFX_TEST_EXPECT_EQ(ts->refCount_, 1);
         NSFX_TEST_EXPECT(ts->intf_->GetTypeId() ==
+                         boost::typeindex::type_id<Test>());
+        NSFX_TEST_EXPECT(nsfx::TagStorage::GetTypeId(ts) ==
                          boost::typeindex::type_id<Test>());
         const Test& t = nsfx::TagStorage::GetValue<Test>(ts);
         NSFX_TEST_EXPECT_EQ(t.i_, 1);
