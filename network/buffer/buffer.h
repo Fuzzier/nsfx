@@ -287,14 +287,14 @@ public:
      * @param[in] start Offset from the start of the buffer.
      * @param[in] size  The size of the fragment.
      */
-    Buffer GetFragment(size_t start, size_t size) const BOOST_NOEXCEPT;
+    Buffer MakeFragment(size_t start, size_t size) const BOOST_NOEXCEPT;
 
     // Decompression.
 public:
     /**
      * @brief Expand the zero-compressed data as part of the header.
      */
-    Buffer GetRealBuffer(void) const;
+    Buffer MakeRealBuffer(void) const;
 
     /**
      * @brief Expand the zero-compressed data as part of the header.
@@ -1019,7 +1019,7 @@ inline void Buffer::RemoveAtEnd(size_t size) BOOST_NOEXCEPT
     }
 }
 
-inline Buffer Buffer::GetFragment(size_t start, size_t size) const BOOST_NOEXCEPT
+inline Buffer Buffer::MakeFragment(size_t start, size_t size) const BOOST_NOEXCEPT
 {
     Buffer result(*this);
     result.RemoveAtStart(start);
@@ -1027,7 +1027,7 @@ inline Buffer Buffer::GetFragment(size_t start, size_t size) const BOOST_NOEXCEP
     return result;
 }
 
-inline Buffer Buffer::GetRealBuffer(void) const
+inline Buffer Buffer::MakeRealBuffer(void) const
 {
     return (zeroEnd_ == zeroStart_) ?
         Buffer(*this) : InternalGetRealBuffer(ReallocateTag());
@@ -1035,7 +1035,7 @@ inline Buffer Buffer::GetRealBuffer(void) const
 
 inline void Buffer::Realize(void) const
 {
-    *const_cast<Buffer*>(this) = GetRealBuffer();
+    *const_cast<Buffer*>(this) = MakeRealBuffer();
 }
 
 inline Buffer Buffer::InternalGetRealBuffer(ReallocateTag) const
