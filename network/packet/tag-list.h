@@ -114,7 +114,7 @@ NSFX_OPEN_NAMESPACE
  *   among packets.
  *
  * ## Tag storage
- *    A tag value is stored in a \c TagStorage.
+ *    A tag value is stored in a \c TagBufferStorage.
  *    A tag storage is responsible to store the tag value, and provides a
  *    reference count for lifetime management.
  *
@@ -152,11 +152,11 @@ NSFX_OPEN_NAMESPACE
  *      remove tags in other tag lists that share the array.
  *
  *    @code
- *    TagList        [list]
- *                     |
- *    TagIndexArray  [idx1   idx2   idx3  ...]   (shared, copy-on-write)
- *                     |      |      |
- *    TagStorage     [tag1] [tag2] [tag3] ...    (shared, store value)
+ *    TagList          [list]
+ *                       |
+ *    TagIndexArray    [idx1   idx2   idx3  ...]   (shared, copy-on-write)
+ *                       |      |      |
+ *    TagBufferStorage [tag1] [tag2] [tag3] ...    (shared, store value)
  *    @endcode
  *
  * ## Coordinate transformation
@@ -317,30 +317,6 @@ public:
 
     // Tag.
 public:
-#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-    /**
-     * @brief Insert a tag for a range of bytes in the buffer.
-     *
-     * @tparam T  The type of the tag value.
-     * @tparam Args  The argument types of the constructor of the tag value.
-     *
-     * @param[in] tagId  The id of the tag.
-     * @param[in] start  The start of the byte, relative to the start of
-     *                   the buffer.
-     * @param[in] size   The number of bytes to tag.
-     *                   All bytes <b>must</b> be within the current buffer.
-     * @param[in] args   The arguments to construct the tag value.
-     */
-    template<class T, class... Args>
-    void Insert(size_t tagId, size_t start, size_t size, Args&&... args);
-
-#else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-
-# define BOOST_PP_ITERATION_PARAMS_1  (4, (0, NSFX_MAX_ARITY, <nsfx/network/packet/tag-list.h>, 0))
-# include BOOST_PP_ITERATE()
-
-#endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-
     /**
      * @brief Insert a tag for a range of bytes in the buffer.
      *
@@ -426,7 +402,7 @@ private:
      *
      * If the tag is already in the list, it is not inserted.
      */
-    void InsertTag(size_t tagId, size_t tagStart, size_t tagEnd, TagStorage* storage);
+    void InsertTag(size_t tagId, size_t tagStart, size_t tagEnd, TagBufferStorage* storage);
 
 public:
     enum
@@ -599,33 +575,6 @@ inline void TagList::Insert(const Tag& tag, size_t start, size_t size)
     ++tia_->dirty_;
 }
 
-#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-template<class T, class... Args>
-inline void
-TagList::Insert(size_t tagId, size_t start, size_t size, Args&&... args)
-{
-    // Be careful that 'size' and 'size_' are confusing.
-    BOOST_ASSERT_MSG(start + size <= bufferEnd_ - bufferStart_,
-                     "Cannot tag bytes that are outside of the buffer.");
-    PrepareToInsert();
-    TagStorage* storage = TagStorage::Allocate<T>(std::forward<Args>(args)...);
-    TagIndex* idx   = tia_->indices_ + size_;
-    size_t tagStart = bufferStart_ + start;
-    size_t tagEnd   = bufferStart_ + start + size;
-    TagIndex::Ctor(idx, tagId, tagStart, tagEnd, tag);
-    // Increase the size after the construction succeeded.
-    ++size_;
-    ++tia_->dirty_;
-}
-
-#else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-
-# define BOOST_PP_ITERATION_PARAMS_1  (4, (0, NSFX_MAX_ARITY, <nsfx/network/packet/tag-list.h>, 1))
-# include BOOST_PP_ITERATE()
-
-#endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-
-
 inline bool TagList::Exists(size_t tagId, size_t offset) const BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(offset < bufferEnd_ - bufferStart_,
@@ -659,7 +608,7 @@ inline Tag TagList::Get(size_t tagId, size_t offset) const
         if (idx->tagId_ == tagId &&
             idx->tagStart_ <= pos && pos < idx->tagEnd_)
         {
-            TagStorage::AddRef(idx->storage_);
+            TagBufferStorage::AddRef(idx->storage_);
             return Tag(tagId, idx->storage_);
         }
         ++idx;
@@ -938,7 +887,7 @@ inline bool TagList::HasTag(size_t tagId, size_t tagStart, size_t tagEnd) const 
 }
 
 inline void TagList::InsertTag(size_t tagId, size_t tagStart,
-                               size_t tagEnd, TagStorage* storage)
+                               size_t tagEnd, TagBufferStorage* storage)
 {
     if (!HasTag(tagId, tagStart, tagEnd) &&
         TagIndex::HasTaggedByte(tagStart, tagEnd, bufferStart_, bufferEnd_))
@@ -964,57 +913,4 @@ NSFX_CLOSE_NAMESPACE
 
 
 #endif // TAG_LIST_H__E97CCFD4_4B27_40D4_A750_379D8FB31667
-
-
-////////////////////////////////////////////////////////////////////////////////
-#if defined(BOOST_PP_IS_ITERATING)/*{{{*/
-
-# define NSFX_PP_FORWARD(z, n, d)  std::forward<A ## n>(a ## n)
-
-////////////////////////////////////////
-# if BOOST_PP_ITERATION_FLAGS() == 0
-// template<class T, class A0, class A1, ...>
-// void Insert(size_t tagId, size_t start, size_t size, A0&& a0, A1&& a1, ...);
-template<class T  BOOST_PP_COMMA_IF(BOOST_PP_ITERATION())
-                  BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
-void Insert(size_t tagId, size_t start, size_t size
-            BOOST_PP_COMMA_IF(BOOST_PP_ITERATION())
-            BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, &&a));
-
-
-////////////////////////////////////////
-# elif BOOST_PP_ITERATION_FLAGS() == 1
-// template<class T, class A0, class A1, ...>
-// inline void TagList::Insert(size_t tagId, size_t start, size_t size,
-//                             A0&& a0, A1&& a1, ...)
-template<class T  BOOST_PP_COMMA_IF(BOOST_PP_ITERATION())
-                  BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
-inline void
-TagList::Insert(size_t tagId, size_t start, size_t size
-                BOOST_PP_COMMA_IF(BOOST_PP_ITERATION())
-                BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, &&a))
-{
-    // Be careful that 'size' and 'size_' are confusing.
-    BOOST_ASSERT_MSG(start + size <= bufferEnd_ - bufferStart_,
-                     "Cannot tag bytes that are outside of the buffer.");
-    PrepareToInsert();
-    // TagStorage* storage = TagStorage::Allocate<T>(
-    //     std::forward<A0>(a0), std::forward<A1>(a1), ...);
-    TagStorage* storage = TagStorage::Allocate<T>(
-        BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, ));
-    TagIndex* idx   = tia_->indices_ + size_;
-    size_t tagStart = bufferStart_ + start;
-    size_t tagEnd   = bufferStart_ + start + size;
-    TagIndex::Ctor(idx, tagId, tagStart, tagEnd, storage);
-    // Increase the size after the construction succeeded.
-    ++size_;
-    ++tia_->dirty_;
-}
-
-
-# endif // BOOST_PP_ITERATION_FLAGS() == x
-
-# undef NSFX_PP_FORWARD
-
-#endif // defined(BOOST_PP_IS_ITERATING) /*}}}*/
 

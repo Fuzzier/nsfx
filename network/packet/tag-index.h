@@ -5,7 +5,7 @@
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
- * @date    2018-05-22
+ * @date    2018-06-06
  *
  * @copyright Copyright (c) 2018.
  *            National Key Laboratory of Science and Technology on Communications,
@@ -18,7 +18,7 @@
 
 
 #include <nsfx/network/config.h>
-#include <nsfx/network/packet/tag-storage.h>
+#include <nsfx/network/buffer/tag-buffer-storage.h>
 
 
 NSFX_OPEN_NAMESPACE
@@ -35,11 +35,11 @@ struct TagIndex
     size_t  tagId_;       ///< The id of the tag.
     size_t  tagStart_;    ///< The start of tagged bytes (inclusive).
     size_t  tagEnd_;      ///< The end of tagged bytes (exclusive).
-    Buffer  tag_;
+    TagBufferStorage* storage_;  ///< The storage of the tag.
 
     // Helper functions.
     static void Ctor(TagIndex* idx, size_t tagId, size_t tagStart,
-                     size_t tagEnd, TagStorage* storage) BOOST_NOEXCEPT;
+                     size_t tagEnd, TagBufferStorage* storage) BOOST_NOEXCEPT;
     static void CopyCtor(TagIndex* lhs, const TagIndex* rhs) BOOST_NOEXCEPT;
     static void CopyAssign(TagIndex* lhs, const TagIndex* rhs);
     static void Release(TagIndex* idx);
@@ -73,10 +73,9 @@ struct TagIndexArray
 
 ////////////////////////////////////////////////////////////////////////////////
 inline void TagIndex::Ctor(TagIndex* idx, size_t tagId, size_t tagStart,
-                           size_t tagEnd, TagStorage* storage) BOOST_NOEXCEPT
+                           size_t tagEnd, TagBufferStorage* storage) BOOST_NOEXCEPT
 {
     BOOST_ASSERT(idx);
-    BOOST_ASSERT(storage);
     idx->tagId_    = tagId;
     idx->tagStart_ = tagStart;
     idx->tagEnd_   = tagEnd;
@@ -89,7 +88,10 @@ inline void TagIndex::CopyCtor(TagIndex* lhs, const TagIndex* rhs) BOOST_NOEXCEP
     BOOST_ASSERT(rhs);
     BOOST_ASSERT(lhs != rhs);
     *lhs = *rhs;
-    TagStorage::AddRef(lhs->storage_);
+    if (lhs->storage_)
+    {
+        TagBufferStorage::AddRef(lhs->storage_);
+    }
 }
 
 inline void TagIndex::CopyAssign(TagIndex* lhs, const TagIndex* rhs)
@@ -98,16 +100,26 @@ inline void TagIndex::CopyAssign(TagIndex* lhs, const TagIndex* rhs)
     BOOST_ASSERT(rhs);
     if (lhs != rhs)
     {
-        TagStorage::Release(lhs->storage_);
+        TagBufferStorage* tmp = lhs->storage_;
         *lhs = *rhs;
-        TagStorage::AddRef(lhs->storage_);
+        if (lhs->storage_)
+        {
+            TagBufferStorage::AddRef(lhs->storage_);
+        }
+        if (tmp)
+        {
+            TagBufferStorage::Release(tmp);
+        }
     }
 }
 
 inline void TagIndex::Release(TagIndex* idx)
 {
     BOOST_ASSERT(idx);
-    TagStorage::Release(idx->storage_);
+    if (idx->storage_)
+    {
+        TagBufferStorage::Release(idx->storage_);
+    }
 }
 
 inline void TagIndex::Swap(TagIndex* lhs, TagIndex* rhs) BOOST_NOEXCEPT
@@ -151,12 +163,14 @@ inline TagIndexArray* TagIndexArray::Allocate(size_t capacity)
 inline void TagIndexArray::AddRef(TagIndexArray* tia) BOOST_NOEXCEPT
 {
     BOOST_ASSERT(tia);
+    BOOST_ASSERT(tia->refCount_ >= 0);
     ++tia->refCount_;
 }
 
 inline void TagIndexArray::Release(TagIndexArray* tia)
 {
     BOOST_ASSERT(tia);
+    BOOST_ASSERT(tia->refCount_ > 0);
     if (--tia->refCount_ == 0)
     {
         TagIndex* idx = tia->indices_ + (tia->dirty_ - 1);
