@@ -58,11 +58,11 @@ struct TagBufferStorage
     ////////////////////////////////////////
     // Static methods.
     /**
-     * @brief Create a tag buffer storage.
+     * @brief Allocate a tag buffer storage.
      *
      * @return If the capacity is \c 0, \c nullptr is returned.
      */
-    static TagBufferStorage* Create(size_t capacity);
+    static TagBufferStorage* Allocate(size_t capacity);
 
     static void AddRef(TagBufferStorage* storage) BOOST_NOEXCEPT;
 
@@ -72,7 +72,7 @@ struct TagBufferStorage
 
 
 ////////////////////////////////////////////////////////////////////////////////
-inline TagBufferStorage* TagBufferStorage::Create(size_t capacity)
+inline TagBufferStorage* TagBufferStorage::Allocate(size_t capacity)
 {
     TagBufferStorage* storage = nullptr;
     if (capacity > 0)

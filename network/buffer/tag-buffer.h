@@ -163,12 +163,12 @@ inline TagBuffer::TagBuffer(void) BOOST_NOEXCEPT :
 }
 
 inline TagBuffer::TagBuffer(size_t size) :
-    storage_(TagBufferStorage::Create(size))
+    storage_(TagBufferStorage::Allocate(size))
 {
 }
 
 inline TagBuffer::TagBuffer(size_t size, bool zeroInit) :
-    storage_(TagBufferStorage::Create(size))
+    storage_(TagBufferStorage::Allocate(size))
 {
     if (zeroInit && storage_)
     {

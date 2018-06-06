@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Test Tag.
+ * @brief Test TagList.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -16,16 +16,6 @@
 #include <nsfx/test.h>
 #include <nsfx/network/packet/tag-list.h>
 #include <iostream>
-
-
-int k = 0;
-struct Test
-{
-    Test(int i, double j) : i_(i), j_(j) { ++k; }
-    ~Test(void) { --k; }
-    int i_;
-    double j_;
-};
 
 
 NSFX_TEST_SUITE(TagList)

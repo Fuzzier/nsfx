@@ -343,7 +343,7 @@ inline Buffer::Buffer(void) BOOST_NOEXCEPT :
 }
 
 inline Buffer::Buffer(size_t capacity) :
-    storage_(BufferStorage::Create(capacity)),
+    storage_(BufferStorage::Allocate(capacity)),
     start_(capacity),
     end_(capacity)
 {
@@ -355,7 +355,7 @@ inline Buffer::Buffer(size_t capacity) :
 }
 
 inline Buffer::Buffer(size_t reserved, size_t zeroSize) :
-    storage_(BufferStorage::Create(reserved + zeroSize)),
+    storage_(BufferStorage::Allocate(reserved + zeroSize)),
     start_(reserved),
     end_(reserved + zeroSize)
 {
@@ -372,7 +372,7 @@ inline Buffer::Buffer(size_t reserved, size_t zeroStart, size_t zeroSize)
     BOOST_ASSERT_MSG(zeroStart <= reserved,
                      "Cannot construct a Buffer, since the start of "
                      "the zero data is beyond the end of the buffer storage.");
-    storage_ = BufferStorage::Create(reserved + zeroSize);
+    storage_ = BufferStorage::Allocate(reserved + zeroSize);
     start_   = zeroStart;
     end_     = zeroStart + zeroSize;
     if (storage_)
@@ -659,7 +659,7 @@ inline void Buffer::InternalAddAtStart(
     size_t size, size_t newCapacity,
     size_t newStart, size_t dataSize, ReallocateTag)
 {
-    BufferStorage* newStorage = BufferStorage::Create(newCapacity);
+    BufferStorage* newStorage = BufferStorage::Allocate(newCapacity);
     std::memcpy(newStorage->bytes_ + newStart + size,
                   storage_->bytes_ + start_,
                 dataSize);
@@ -822,7 +822,7 @@ inline void Buffer::InternalAddAtEnd(
     size_t size, size_t newCapacity,
     size_t newStart, size_t dataSize, ReallocateTag)
 {
-    BufferStorage* newStorage = BufferStorage::Create(newCapacity);
+    BufferStorage* newStorage = BufferStorage::Allocate(newCapacity);
     std::memcpy(newStorage->bytes_ + newStart,
                   storage_->bytes_ + start_,
                 dataSize);
