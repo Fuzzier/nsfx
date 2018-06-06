@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Buffer for Network Simulation Frameworks.
+ * @brief Zero-compressed buffer for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -13,13 +13,13 @@
  *            All rights reserved.
  */
 
-#ifndef BUFFER_H__6C3B4527_139F_4C12_BE2D_89B97CF1ADDD
-#define BUFFER_H__6C3B4527_139F_4C12_BE2D_89B97CF1ADDD
+#ifndef ZC_BUFFER_H__C2DEDFE9_A0FA_405F_AE24_66679E3B3608
+#define ZC_BUFFER_H__C2DEDFE9_A0FA_405F_AE24_66679E3B3608
 
 
 #include <nsfx/network/config.h>
 #include <nsfx/network/buffer/buffer-storage.h>
-#include <nsfx/network/buffer/buffer-iterator.h>
+#include <nsfx/network/buffer/zc-buffer-iterator.h>
 #include <boost/core/swap.hpp>
 #include <cstring> // memcpy, memmove, memset
 
@@ -28,72 +28,85 @@ NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Buffer.
+// ZcBuffer.
 /**
  * @ingroup Network
- * @brief An automatically resized and copy-on-write buffer.
+ * @brief An zero-compressed, automatically resized and copy-on-write buffer.
  *
- * \c Buffer does not provide zero-compressed data area.
- * For compatibility considerations, \c Buffer provides the same set of public
- * interfaces as \c ZcBuffer.
+ * # Structure
+ *   The buffer holds a storage that provides a memory space for the buffer.
+ *   The storage is logically divided into three areas.
+ *   The data area is located in middle of the storage, and the remaining space
+ *   is naturally divided in to the pre-data (pre-header) area and the post-data
+ *   (post-trailer) area.
  *
- * In most cases, \c ZcBuffer can be replaced by \c Buffer without problem.
- * For a \c Buffer, the zero-compressed area is always assumed to be empty, and
- * located at the end of the buffer.
+ *   To reduce memory consumption, the buffer models a <i>virtual data area</i>.
+ *   The buffer is logically divided into three areas: the <i>header area</i>,
+ *   the <i>zero-compressed data area</i>, and the <i>trailer area</i>.
+ *   The zero-compressed data area does not consume any physical memory, which
+ *   is usually used to represent the application layer payload.
  *
- * Miraculously, \c Buffer and \c ZcBuffer can share a same \c BufferStorage.
- * The conversion from \c ZcBuffer to \c Buffer is provided.
+ *   When the zero-compressed data area is not empty, the buffer represents a
+ *   <i>virtual data buffer</i>.
+ *   When the zero-compressed data area is empty, the buffer represents a
+ *   <i>real buffer</i>.
  *
+ * # Reallocation on expansion
+ *   Several buffers can link to the same buffer storage, and each buffer has
+ *   its own view of the start and end positions of the data area.
+ *
+ *   When a buffer expands, its buffer storage may be reallocated.
+ *   If the buffer storage is shared by other buffers, and the buffer expands
+ *   to an area that has already been occupied by other buffers, the buffer
+ *   storage is automatically reallocated and duplicated for the buffer.
+ *   The copy-on-write operations are \c ZcBuffer::AddAtStart() and
+ *   \c ZcBuffer::AddAtEnd().
  */
-class Buffer
+class ZcBuffer
 {
 public:
-    typedef BufferIterator      iterator;
-    typedef ConstBufferIterator const_iterator;
+    typedef ZcBufferIterator      iterator;
+    typedef ConstZcBufferIterator const_iterator;
 
     // Xtructors.
 public:
     /**
      * @brief Create an empty buffer.
      */
-    Buffer(void) BOOST_NOEXCEPT;
+    ZcBuffer(void) BOOST_NOEXCEPT;
 
     /**
      * @brief Create a buffer.
      *
-     * @param[in] capacity The initial capacity of the buffer.
+     * @param[in] capacity The initial apacity of the buffer.
+     *
+     * The zero-compressed data area is empty in this buffer.
+     * The zero-compressed data area is located at the end of the storage,
+     * optimizing for adding data toward the head of the storage.
      */
-    explicit Buffer(size_t capacity);
+    explicit ZcBuffer(size_t capacity);
 
     /**
      * @brief Create a buffer.
      *
-     * @param[in] reserved The size of reserved space of the buffer in addition
-     *                     to zero data.
-     * @param[in] zeroSize The size of the zero data.
-     *                     <p>
-     *                     <code>zeroSize <= size</code>.
+     * @param[in] capacity The initial apacity of the buffer.
+     * @param[in] zeroSize The size of the zero-compressed data area.
      *
-     * The initial capacity of the buffer is <code>reserved + zeroSize</code>.
-     *
-     * The zero data is located at the end of the storage,
+     * The zero-compressed data area is located at the end of the storage,
      * optimizing for adding data at the head of the storage.
      */
-    Buffer(size_t reserved, size_t zeroSize);
+    ZcBuffer(size_t capacity, size_t zeroSize);
 
     /**
      * @brief Create a buffer.
      *
-     * @param[in] reserved  The size of reserved space of the buffer in addition
-     *                      to zero data.
-     * @param[in] zeroStart The start of the zero data.
-     *                      <p>
-     *                      <code>zeroStart <= reserved</code>.
-     * @param[in] zeroSize  The size of the zero data.
-     *
-     * The initial capacity of the buffer is <code>reserved + zeroSize</code>.
+     * @param[in] capacity   The initial apacity of the buffer.
+     * @param[in] zeroStart  The start of the zero-compressed data area.
+     *                       <p>
+     *                       <code>zeroStart <= capacity</code>.
+     * @param[in] zeroSize   The size of the zero-compressed data area.
      */
-    Buffer(size_t reserved, size_t zeroStart, size_t zeroSize);
+    ZcBuffer(size_t capacity, size_t zeroStart, size_t zeroSize);
 
 private:
     /**
@@ -101,37 +114,38 @@ private:
      *
      * @param[in] storage  The reference count is taken by the buffer.
      *
-     * @see \c MakeFragment().
+     * @see \c InternalMakeRealCopy().
      * @internal
      */
-    Buffer(BufferStorage* storage, size_t start, size_t end) BOOST_NOEXCEPT;
+    ZcBuffer(BufferStorage* storage, size_t start, size_t zeroStart,
+           size_t zeroEnd, size_t end) BOOST_NOEXCEPT;
 
 public:
-    ~Buffer(void) BOOST_NOEXCEPT;
+    ~ZcBuffer(void) BOOST_NOEXCEPT;
 
     // Copyable.
 public:
     /**
      * @brief Make a shallow copy of the buffer.
      */
-    Buffer(const Buffer& rhs) BOOST_NOEXCEPT;
+    ZcBuffer(const ZcBuffer& rhs) BOOST_NOEXCEPT;
 
     /**
      * @brief Make a shallow copy of the buffer.
      */
-    Buffer& operator=(const Buffer& rhs) BOOST_NOEXCEPT;
+    ZcBuffer& operator=(const ZcBuffer& rhs) BOOST_NOEXCEPT;
 
     // Movable.
 public:
     /**
      * @brief Move a buffer.
      */
-    Buffer(Buffer&& rhs) BOOST_NOEXCEPT;
+    ZcBuffer(ZcBuffer&& rhs) BOOST_NOEXCEPT;
 
     /**
      * @brief Move a buffer.
      */
-    Buffer& operator=(Buffer&& rhs) BOOST_NOEXCEPT;
+    ZcBuffer& operator=(ZcBuffer&& rhs) BOOST_NOEXCEPT;
 
     // Acquire/release buffer storage.
 private:
@@ -192,7 +206,7 @@ public:
     /**
      * @brief Expand the buffer and copy the specified contents.
      *
-     * @remarks Potentially invalidates existing iterators of the buffer.
+     * @remarks Invalidates existing iterators of the buffer.
      */
     void AddAtStart(const uint8_t* src, size_t size);
 
@@ -201,7 +215,7 @@ public:
      *
      * @remarks Invalidates existing iterators of the buffer.
      */
-    void AddAtStart(const Buffer& src);
+    void AddAtStart(const ZcBuffer& src);
 
 private:
     void InternalAddAtStart(size_t size, AdjustOffsetTag) BOOST_NOEXCEPT;
@@ -211,25 +225,25 @@ private:
 
 public:
     /**
-     * @brief Expand the data area toward the end of the buffer.
+     * @brief Expand the buffer toward the end.
      *
      * @remarks Invalidates existing iterators of the buffer.
      */
     void AddAtEnd(size_t size);
 
     /**
-     * @brief Expand the buffer and copy the specified contents.
+     * @brief Extend the buffer and copy the specified contents.
      *
      * @remarks Invalidates existing iterators of the buffer.
      */
     void AddAtEnd(const uint8_t* src, size_t size);
 
     /**
-     * @brief Expand the buffer and copy the contents from the specified buffer.
+     * @brief Extend the buffer and copy the contents from the specified buffer.
      *
      * @remarks Invalidates existing iterators of the buffer.
      */
-    void AddAtEnd(const Buffer& src);
+    void AddAtEnd(const ZcBuffer& src);
 
 private:
     void InternalAddAtEnd(size_t size, size_t dataSize, AdjustOffsetTag) BOOST_NOEXCEPT;
@@ -270,48 +284,48 @@ public:
      * @param[in] start The start of the fragment.
      * @param[in] size  The size of the fragment.
      */
-    Buffer MakeFragment(size_t start, size_t size) const BOOST_NOEXCEPT;
+    ZcBuffer MakeFragment(size_t start, size_t size) const BOOST_NOEXCEPT;
 
     // Decompression.
 public:
     /**
      * @brief Expand the zero-compressed data as part of the header.
      */
-    Buffer MakeRealBuffer(void) const BOOST_NOEXCEPT;
+    ZcBuffer MakeRealBuffer(void) const;
 
     /**
      * @brief Expand the zero-compressed data as part of the header.
      */
-    void Realize(void) const BOOST_NOEXCEPT;
+    void Realize(void) const;
 
 private:
-    Buffer InternalGetRealBuffer(ReallocateTag) const BOOST_NOEXCEPT;
+    ZcBuffer InternalGetRealBuffer(ReallocateTag) const;
 
     // Iterator.
 public:
     /**
      * @brief Get an iterator that points to the first byte of the data.
      */
-    BufferIterator begin(void) BOOST_NOEXCEPT;
+    ZcBufferIterator begin(void) BOOST_NOEXCEPT;
 
     /**
      * @brief Get an iterator that points one byte after the last byte of the data area.
      */
-    BufferIterator end(void) BOOST_NOEXCEPT;
+    ZcBufferIterator end(void) BOOST_NOEXCEPT;
 
     /**
      * @brief Get a const iterator that points to the first byte of the data.
      */
-    ConstBufferIterator cbegin(void) const BOOST_NOEXCEPT;
+    ConstZcBufferIterator cbegin(void) const BOOST_NOEXCEPT;
 
     /**
      * @brief Get a const iterator that points one byte after the last byte of the data area.
      */
-    ConstBufferIterator cend(void) const BOOST_NOEXCEPT;
+    ConstZcBufferIterator cend(void) const BOOST_NOEXCEPT;
 
     // Swappable.
 public:
-    void swap(Buffer& rhs) BOOST_NOEXCEPT;
+    void swap(ZcBuffer& rhs) BOOST_NOEXCEPT;
 
     // Properties.
 private:
@@ -326,6 +340,16 @@ private:
     size_t start_;
 
     /**
+     * @brief The logical offset of the start of the zero-compressed data area.
+     */
+    size_t zeroStart_;
+
+    /**
+     * @brief The logical offset of the end of the zero-compressed data area (on-byte-beyond).
+     */
+    size_t zeroEnd_;
+
+    /**
      * @brief The logical offset of the end of the trailer area (on-byte-beyond).
      */
     size_t end_;
@@ -334,83 +358,98 @@ private:
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Buffer.
-inline Buffer::Buffer(void) BOOST_NOEXCEPT :
+// ZcBuffer.
+inline ZcBuffer::ZcBuffer(void) BOOST_NOEXCEPT :
     storage_(nullptr),
     start_(0),
+    zeroStart_(0),
+    zeroEnd_(0),
     end_(0)
 {
 }
 
-inline Buffer::Buffer(size_t capacity) :
+inline ZcBuffer::ZcBuffer(size_t capacity) :
     storage_(BufferStorage::Create(capacity)),
     start_(capacity),
+    zeroStart_(capacity),
+    zeroEnd_(capacity),
     end_(capacity)
 {
     if (storage_)
     {
         storage_->dirtyStart_ = start_;
-        storage_->dirtyEnd_   = end_;
+        storage_->dirtyEnd_   = end_ - (zeroEnd_ - zeroStart_);
     }
 }
 
-inline Buffer::Buffer(size_t reserved, size_t zeroSize) :
-    storage_(BufferStorage::Create(reserved + zeroSize)),
-    start_(reserved),
-    end_(reserved + zeroSize)
+inline ZcBuffer::ZcBuffer(size_t capacity, size_t zeroSize) :
+    storage_(BufferStorage::Create(capacity)),
+    start_(capacity),
+    zeroStart_(capacity),
+    zeroEnd_(capacity + zeroSize),
+    end_(capacity + zeroSize)
 {
     if (storage_)
     {
         storage_->dirtyStart_ = start_;
-        storage_->dirtyEnd_   = end_;
-        std::memset(storage_->bytes_ + start_, 0, zeroSize);
+        storage_->dirtyEnd_   = end_ - (zeroEnd_ - zeroStart_);
     }
 }
 
-inline Buffer::Buffer(size_t reserved, size_t zeroStart, size_t zeroSize)
+inline ZcBuffer::ZcBuffer(size_t capacity, size_t zeroStart, size_t zeroSize)
 {
-    BOOST_ASSERT_MSG(zeroStart <= reserved,
-                     "Cannot construct a Buffer, since the start of "
-                     "the zero data is beyond the end of the buffer storage.");
-    storage_ = BufferStorage::Create(reserved + zeroSize);
-    start_   = zeroStart;
-    end_     = zeroStart + zeroSize;
+    BOOST_ASSERT_MSG(zeroStart <= capacity,
+                     "Cannot construct a ZcBuffer, since the start of "
+                     "the zero-compressed data area is beyond the end of "
+                     "the buffer storage.");
+    storage_   = BufferStorage::Create(capacity);
+    start_     = zeroStart;
+    zeroStart_ = zeroStart;
+    zeroEnd_   = zeroStart + zeroSize;
+    end_       = zeroStart + zeroSize;
     if (storage_)
     {
         storage_->dirtyStart_ = start_;
-        storage_->dirtyEnd_   = end_;
-        std::memset(storage_->bytes_ + zeroStart, 0, zeroSize);
+        storage_->dirtyEnd_   = end_ - (zeroEnd_ - zeroStart_);
     }
 }
 
-inline Buffer::Buffer(BufferStorage* storage, size_t start, size_t end) BOOST_NOEXCEPT :
+inline ZcBuffer::ZcBuffer(BufferStorage* storage, size_t start,
+                          size_t zeroStart, size_t zeroEnd, size_t end) BOOST_NOEXCEPT :
     storage_(storage),
     start_(start),
+    zeroStart_(zeroStart),
+    zeroEnd_(zeroEnd),
     end_(end)
 {
-    BOOST_ASSERT(start <= end);
-    BOOST_ASSERT(!storage_ ? true : end <= storage_->capacity_);
+    BOOST_ASSERT(start     <= zeroStart);
+    BOOST_ASSERT(zeroStart <= zeroEnd);
+    BOOST_ASSERT(zeroEnd   <= end);
+    BOOST_ASSERT(!storage_ ? true :
+                 end - (zeroEnd - zeroStart) <= storage_->capacity_);
     if (storage_)
     {
         storage_->dirtyStart_ = start_;
-        storage_->dirtyEnd_   = end_;
+        storage_->dirtyEnd_   = end_ - (zeroEnd_ - zeroStart_);
     }
 }
 
-inline Buffer::~Buffer(void) BOOST_NOEXCEPT
+inline ZcBuffer::~ZcBuffer(void) BOOST_NOEXCEPT
 {
     Release();
 }
 
-inline Buffer::Buffer(const Buffer& rhs) BOOST_NOEXCEPT :
+inline ZcBuffer::ZcBuffer(const ZcBuffer& rhs) BOOST_NOEXCEPT :
     storage_(rhs.storage_),
     start_(rhs.start_),
+    zeroStart_(rhs.zeroStart_),
+    zeroEnd_(rhs.zeroEnd_),
     end_(rhs.end_)
 {
     Acquire();
 }
 
-inline Buffer& Buffer::operator=(const Buffer& rhs) BOOST_NOEXCEPT
+inline ZcBuffer& ZcBuffer::operator=(const ZcBuffer& rhs) BOOST_NOEXCEPT
 {
     if (this != &rhs)
     {
@@ -418,25 +457,31 @@ inline Buffer& Buffer::operator=(const Buffer& rhs) BOOST_NOEXCEPT
         {
             BufferStorage::Release(storage_);
         }
-        storage_ = rhs.storage_;
-        start_   = rhs.start_;
-        end_     = rhs.end_;
+        storage_   = rhs.storage_;
+        start_     = rhs.start_;
+        zeroStart_ = rhs.zeroStart_;
+        zeroEnd_   = rhs.zeroEnd_;
+        end_       = rhs.end_;
         Acquire();
     }
     return *this;
 }
 
-inline Buffer::Buffer(Buffer&& rhs) BOOST_NOEXCEPT :
+inline ZcBuffer::ZcBuffer(ZcBuffer&& rhs) BOOST_NOEXCEPT :
         storage_(rhs.storage_),
         start_(rhs.start_),
+        zeroStart_(rhs.zeroStart_),
+        zeroEnd_(rhs.zeroEnd_),
         end_(rhs.end_)
 {
-    rhs.storage_ = nullptr;
-    rhs.start_   = 0;
-    rhs.end_     = 0;
+    rhs.storage_   = nullptr;
+    rhs.start_     = 0;
+    rhs.zeroStart_ = 0;
+    rhs.zeroEnd_   = 0;
+    rhs.end_       = 0;
 }
 
-inline Buffer& Buffer::operator=(Buffer&& rhs) BOOST_NOEXCEPT
+inline ZcBuffer& ZcBuffer::operator=(ZcBuffer&& rhs) BOOST_NOEXCEPT
 {
     if (this != &rhs)
     {
@@ -446,7 +491,7 @@ inline Buffer& Buffer::operator=(Buffer&& rhs) BOOST_NOEXCEPT
     return *this;
 }
 
-inline void Buffer::Acquire(void) BOOST_NOEXCEPT
+inline void ZcBuffer::Acquire(void) BOOST_NOEXCEPT
 {
     if (storage_)
     {
@@ -454,70 +499,79 @@ inline void Buffer::Acquire(void) BOOST_NOEXCEPT
     }
 }
 
-inline void Buffer::Release(void) BOOST_NOEXCEPT
+inline void ZcBuffer::Release(void) BOOST_NOEXCEPT
 {
     if (storage_)
     {
         BufferStorage* tmp = storage_;
-        storage_ = nullptr;
-        start_   = 0;
-        end_     = 0;
+        storage_   = nullptr;
+        start_     = 0;
+        zeroStart_ = 0;
+        zeroEnd_   = 0;
+        end_       = 0;
         BufferStorage::Release(tmp);
     }
 }
 
-inline size_t Buffer::GetSize(void) const BOOST_NOEXCEPT
-{
-    return GetInternalSize();
-}
-
-inline size_t Buffer::GetInternalSize(void) const BOOST_NOEXCEPT
+inline size_t ZcBuffer::GetSize(void) const BOOST_NOEXCEPT
 {
     return end_ - start_;
 }
 
-inline size_t Buffer::GetCapacity(void) const BOOST_NOEXCEPT
+inline size_t ZcBuffer::GetInternalSize(void) const BOOST_NOEXCEPT
+{
+    return (zeroStart_ - start_) + (end_ - zeroEnd_);
+}
+
+inline size_t ZcBuffer::GetCapacity(void) const BOOST_NOEXCEPT
 {
     return storage_ ? storage_->capacity_ : 0;
 }
 
-inline size_t Buffer::GetStart(void) const BOOST_NOEXCEPT
+inline size_t ZcBuffer::GetStart(void) const BOOST_NOEXCEPT
 {
     return start_;
 }
 
-inline size_t Buffer::GetZeroStart(void) const BOOST_NOEXCEPT
+inline size_t ZcBuffer::GetZeroStart(void) const BOOST_NOEXCEPT
 {
-    return GetEnd();
+    return zeroStart_;
 }
 
-inline size_t Buffer::GetZeroEnd(void) const BOOST_NOEXCEPT
+inline size_t ZcBuffer::GetZeroEnd(void) const BOOST_NOEXCEPT
 {
-    return GetEnd();
+    return zeroEnd_;
 }
 
-inline size_t Buffer::GetEnd(void) const BOOST_NOEXCEPT
+inline size_t ZcBuffer::GetEnd(void) const BOOST_NOEXCEPT
 {
     return end_;
 }
 
-inline const BufferStorage* Buffer::GetStorage(void) const BOOST_NOEXCEPT
+inline const BufferStorage* ZcBuffer::GetStorage(void) const BOOST_NOEXCEPT
 {
     return storage_;
 }
 
-inline size_t Buffer::CopyTo(uint8_t* dst, size_t size) const BOOST_NOEXCEPT
+inline size_t ZcBuffer::CopyTo(uint8_t* dst, size_t size) const BOOST_NOEXCEPT
 {
     size_t copied = 0;
     if (storage_ && dst)
     {
-        copied = InternalCopyTo(dst, size, ContinuousTag());
+        if (zeroStart_ == zeroEnd_)
+        {
+            copied = InternalCopyTo(dst, size, ContinuousTag());
+        }
+        else
+        {
+            copied = InternalCopyTo(dst, size, SegmentedTag());
+        }
     }
     return copied;
 }
 
 inline size_t
-Buffer::InternalCopyTo(uint8_t* dst, size_t size, ContinuousTag) const BOOST_NOEXCEPT
+ZcBuffer::InternalCopyTo(uint8_t* dst, size_t size, ContinuousTag) const BOOST_NOEXCEPT
 {
     size_t dataSize = GetInternalSize();
     size_t copied = (dataSize <= size ? dataSize : size);
@@ -526,12 +580,52 @@ Buffer::InternalCopyTo(uint8_t* dst, size_t size, ContinuousTag) const BOOST_NOE
 }
 
 inline size_t
-Buffer::InternalCopyTo(uint8_t* dst, size_t size, SegmentedTag) const BOOST_NOEXCEPT
+ZcBuffer::InternalCopyTo(uint8_t* dst, size_t size, SegmentedTag) const BOOST_NOEXCEPT
 {
-    InternalCopyTo(dst, size, ContinuousTag());
+    size_t copied = 0;
+    do
+    {
+        size_t headerSize = zeroStart_ - start_;
+        if (size <= headerSize)
+        {
+            std::memmove(dst, storage_->bytes_ + start_, size);
+            copied += size;
+            break;
+        }
+        std::memmove(dst, storage_->bytes_ + start_, headerSize);
+        size   -= headerSize;
+        copied += headerSize;
+
+        size_t zeroSize = zeroEnd_ - zeroStart_;
+        if (size <= zeroSize)
+        {
+            std::memset(dst + copied, 0, size);
+            copied += size;
+            break;
+        }
+        std::memset(dst + copied, 0, zeroSize);
+        size   -= zeroSize;
+        copied += zeroSize;
+
+        size_t trailerSize = end_ - zeroEnd_;
+        if (size <= trailerSize)
+        {
+            std::memmove(dst + copied,
+                         storage_->bytes_ + zeroStart_,
+                         size);
+            copied += size;
+            break;
+        }
+        std::memmove(dst + copied,
+                     storage_->bytes_ + zeroStart_,
+                     trailerSize);
+        copied += trailerSize;
+    }
+    while (false);
+    return copied;
 }
 
-inline void Buffer::AddAtStart(size_t size)
+inline void ZcBuffer::AddAtStart(size_t size)
 {
     if (!size)
     {
@@ -628,7 +722,7 @@ inline void Buffer::AddAtStart(size_t size)
     }
 }
 
-inline void Buffer::AddAtStart(const uint8_t* src, size_t size)
+inline void ZcBuffer::AddAtStart(const uint8_t* src, size_t size)
 {
     BOOST_ASSERT_MSG(src, "Invalid pointer.");
     if (size)
@@ -638,7 +732,7 @@ inline void Buffer::AddAtStart(const uint8_t* src, size_t size)
     }
 }
 
-inline void Buffer::AddAtStart(const Buffer& src)
+inline void ZcBuffer::AddAtStart(const ZcBuffer& src)
 {
     size_t size = src.GetSize();
     if (size)
@@ -648,13 +742,13 @@ inline void Buffer::AddAtStart(const Buffer& src)
     }
 }
 
-inline void Buffer::InternalAddAtStart(size_t size, AdjustOffsetTag) BOOST_NOEXCEPT
+inline void ZcBuffer::InternalAddAtStart(size_t size, AdjustOffsetTag) BOOST_NOEXCEPT
 {
     start_ -= size;
     storage_->dirtyStart_ = start_;
 }
 
-inline void Buffer::InternalAddAtStart(
+inline void ZcBuffer::InternalAddAtStart(
     size_t size, size_t newCapacity,
     size_t newStart, size_t dataSize, ReallocateTag)
 {
@@ -671,11 +765,13 @@ inline void Buffer::InternalAddAtStart(
     storage_->dirtyEnd_   = newStart + size + dataSize;
 
     ptrdiff_t delta = newStart + size - start_;
-    start_ = newStart;
-    end_   += delta;
+    start_      = newStart;
+    zeroStart_ += delta;
+    zeroEnd_   += delta;
+    end_       += delta;
 }
 
-inline void Buffer::InternalAddAtStart(
+inline void ZcBuffer::InternalAddAtStart(
     size_t size, size_t dataSize, MoveMemoryTag) BOOST_NOEXCEPT
 {
     std::memmove(storage_->bytes_ + size,
@@ -686,11 +782,13 @@ inline void Buffer::InternalAddAtStart(
     storage_->dirtyEnd_   = size + dataSize;
 
     ptrdiff_t delta = size - start_;
-    start_ = 0;
-    end_   += delta;
+    start_      = 0;
+    zeroStart_ += delta;
+    zeroEnd_   += delta;
+    end_       += delta;
 }
 
-inline void Buffer::AddAtEnd(size_t size)
+inline void ZcBuffer::AddAtEnd(size_t size)
 {
     if (!size)
     {
@@ -788,36 +886,36 @@ inline void Buffer::AddAtEnd(size_t size)
     }
 }
 
-inline void Buffer::AddAtEnd(const uint8_t* src, size_t size)
+inline void ZcBuffer::AddAtEnd(const uint8_t* src, size_t size)
 {
     BOOST_ASSERT_MSG(src, "Invalid pointer.");
     if (size)
     {
         AddAtEnd(size);
-        std::memmove(storage_->bytes_ + (end_ - size),
+        std::memmove(storage_->bytes_ + (end_ - (zeroEnd_ - zeroStart_) - size),
                      src, size);
     }
 }
 
-inline void Buffer::AddAtEnd(const Buffer& src)
+inline void ZcBuffer::AddAtEnd(const ZcBuffer& src)
 {
     size_t size = src.GetSize();
     if (size)
     {
         AddAtEnd(size);
-        src.CopyTo(storage_->bytes_ + (end_ - size),
+        src.CopyTo(storage_->bytes_ + (end_ - (zeroEnd_ - zeroStart_) - size),
                    size);
     }
 }
 
-inline void Buffer::InternalAddAtEnd(
+inline void ZcBuffer::InternalAddAtEnd(
     size_t size, size_t dataSize, AdjustOffsetTag) BOOST_NOEXCEPT
 {
     end_ += size;
     storage_->dirtyEnd_ = start_ + dataSize + size;
 }
 
-inline void Buffer::InternalAddAtEnd(
+inline void ZcBuffer::InternalAddAtEnd(
     size_t size, size_t newCapacity,
     size_t newStart, size_t dataSize, ReallocateTag)
 {
@@ -834,11 +932,13 @@ inline void Buffer::InternalAddAtEnd(
     storage_->dirtyEnd_   = newStart + dataSize + size;
 
     ptrdiff_t delta = newStart - start_;
-    start_ = newStart;
-    end_   += delta + size;
+    start_      = newStart;
+    zeroStart_ += delta;
+    zeroEnd_   += delta;
+    end_       += delta + size;
 }
 
-inline void Buffer::InternalAddAtEnd(
+inline void ZcBuffer::InternalAddAtEnd(
     size_t size, size_t dataSize, MoveMemoryTag) BOOST_NOEXCEPT
 {
     size_t newStart = storage_->capacity_ - (dataSize + size);
@@ -850,35 +950,74 @@ inline void Buffer::InternalAddAtEnd(
     storage_->dirtyEnd_   = storage_->capacity_;
 
     ptrdiff_t delta = newStart - start_;
-    start_ = newStart;
-    end_   += delta + size;
+    start_      = newStart;
+    zeroStart_ += delta;
+    zeroEnd_   += delta;
+    end_       += delta + size;
 }
 
-inline void Buffer::RemoveAtStart(size_t size) BOOST_NOEXCEPT
+inline void ZcBuffer::RemoveAtStart(size_t size) BOOST_NOEXCEPT
 {
-    if (size <= end_ - start_)
+    size_t newStart = start_ + size;
+    if (newStart <= zeroStart_)
     {
-        start_ += size;
+        start_ = newStart;
     }
-    else // if (size >= end_ - start_)
+    else if (newStart <= zeroEnd_)
     {
-        start_ = end_;
+        size_t delta = newStart - zeroStart_;
+        start_     = zeroStart_;
+        zeroStart_ = start_;
+        zeroEnd_  -= delta;
+        end_      -= delta;
+    }
+    else if (newStart <= end_)
+    {
+        size_t delta = newStart - zeroEnd_;
+        size_t gamma = zeroEnd_ - zeroStart_;
+        start_     = zeroStart_ + delta;
+        zeroStart_ = start_;
+        zeroEnd_   = start_;
+        end_      -= gamma;
+    }
+    else // if (newStart > end_)
+    {
+        size_t gamma = zeroEnd_ - zeroStart_;
+        end_      -= gamma;
+        start_     = end_;
+        zeroStart_ = end_;
+        zeroEnd_   = end_;
     }
 }
 
-inline void Buffer::RemoveAtEnd(size_t size) BOOST_NOEXCEPT
+inline void ZcBuffer::RemoveAtEnd(size_t size) BOOST_NOEXCEPT
 {
-    if (size <= end_ - start_)
+    if (size <= end_ - zeroEnd_)
     {
         end_ -= size;
     }
+    else if (size <= end_ - zeroStart_)
+    {
+        size_t delta = size - (end_ - zeroEnd_);
+        zeroEnd_ -= delta;
+        end_      = zeroEnd_;
+    }
+    else if (size <= end_ - start_)
+    {
+        size_t delta = size - (end_ - zeroStart_);
+        zeroStart_ -= delta;
+        zeroEnd_    = zeroStart_;
+        end_        = zeroStart_;
+    }
     else // if (size > end_ - start_)
     {
-        end_ = start_;
+        zeroStart_ = start_;
+        zeroEnd_   = start_;
+        end_       = start_;
     }
 }
 
-inline Buffer Buffer::MakeFragment(size_t start, size_t size) const BOOST_NOEXCEPT
+inline ZcBuffer ZcBuffer::MakeFragment(size_t start, size_t size) const BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(start <= GetSize(),
                      "Cannot create a fragment, since the start of "
@@ -886,62 +1025,79 @@ inline Buffer Buffer::MakeFragment(size_t start, size_t size) const BOOST_NOEXCE
     BOOST_ASSERT_MSG(size <= GetSize() - start,
                      "Cannot create a fragment, since the end of "
                      "the fragment is beyond the end of the buffer.");
-    BufferStorage::AddRef(storage_);
-    return Buffer(storage_, start_ + start, start_ + start + size);
+    ZcBuffer fragment(*this);
+    fragment.RemoveAtStart(start);
+    fragment.RemoveAtEnd(GetSize() - (start + size));
+    return fragment;
 }
 
-inline Buffer Buffer::MakeRealBuffer(void) const BOOST_NOEXCEPT
+inline ZcBuffer ZcBuffer::MakeRealBuffer(void) const
 {
-    return Buffer(*this);
+    return (zeroEnd_ == zeroStart_) ?
+        ZcBuffer(*this) : InternalGetRealBuffer(ReallocateTag());
 }
 
-inline void Buffer::Realize(void) const BOOST_NOEXCEPT
+inline void ZcBuffer::Realize(void) const
 {
-    // This is already a real buffer.
+    *const_cast<ZcBuffer*>(this) = MakeRealBuffer();
 }
 
-inline Buffer Buffer::InternalGetRealBuffer(ReallocateTag) const BOOST_NOEXCEPT
+inline ZcBuffer ZcBuffer::InternalGetRealBuffer(ReallocateTag) const
 {
-    return Buffer(*this);
+    size_t header  = zeroStart_ - start_;
+    size_t gamma   = zeroEnd_   - zeroStart_;
+    size_t trailer = end_       - zeroEnd_;
+    size_t newCapacity = end_ - start_;
+    BufferStorage* newStorage = BufferStorage::Create(newCapacity);
+    std::memcpy(newStorage->bytes_,
+                  storage_->bytes_ + start_,
+                header);
+    std::memset(newStorage->bytes_ + header, 0, gamma);
+    std::memcpy(newStorage->bytes_ + header + gamma,
+                  storage_->bytes_ + zeroStart_,
+                trailer);
+    return ZcBuffer(newStorage, 0, header + gamma, header + gamma, newCapacity);
 }
 
-inline void Buffer::swap(Buffer& rhs) BOOST_NOEXCEPT
+inline void ZcBuffer::swap(ZcBuffer& rhs) BOOST_NOEXCEPT
 {
     if (this != &rhs)
     {
-        boost::swap(storage_, rhs.storage_);
-        boost::swap(start_,   rhs.start_);
-        boost::swap(end_,     rhs.end_);
+        boost::swap(storage_,   rhs.storage_);
+        boost::swap(start_,     rhs.start_);
+        boost::swap(zeroStart_, rhs.zeroStart_);
+        boost::swap(zeroEnd_,   rhs.zeroEnd_);
+        boost::swap(end_,       rhs.end_);
     }
 }
 
-inline BufferIterator Buffer::begin(void) BOOST_NOEXCEPT
+inline ZcBufferIterator ZcBuffer::begin(void) BOOST_NOEXCEPT
 {
     size_t cursor = start_;
-    return BufferIterator(storage_, start_, end_, cursor);
+    return ZcBufferIterator(storage_, start_, zeroStart_, zeroEnd_, end_, cursor);
 }
 
-inline BufferIterator Buffer::end(void) BOOST_NOEXCEPT
+inline ZcBufferIterator ZcBuffer::end(void) BOOST_NOEXCEPT
 {
     size_t cursor = end_;
-    return BufferIterator(storage_, start_, end_, cursor);
+    return ZcBufferIterator(storage_, start_, zeroStart_, zeroEnd_, end_, cursor);
 }
 
-inline ConstBufferIterator Buffer::cbegin(void) const BOOST_NOEXCEPT
+inline ConstZcBufferIterator ZcBuffer::cbegin(void) const BOOST_NOEXCEPT
 {
     size_t cursor = start_;
-    return ConstBufferIterator(storage_, start_, end_, cursor);
+    return ConstZcBufferIterator(storage_, start_, zeroStart_, zeroEnd_, end_, cursor);
 }
 
-inline ConstBufferIterator Buffer::cend(void) const BOOST_NOEXCEPT
+inline ConstZcBufferIterator ZcBuffer::cend(void) const BOOST_NOEXCEPT
 {
     size_t cursor = end_;
-    return ConstBufferIterator(storage_, start_, end_, cursor);
+    return ConstZcBufferIterator(storage_, start_, zeroStart_, zeroEnd_, end_, cursor);
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
-inline void swap(Buffer& lhs, Buffer& rhs) BOOST_NOEXCEPT
+inline void swap(ZcBuffer& lhs, ZcBuffer& rhs) BOOST_NOEXCEPT
 {
     lhs.swap(rhs);
 }
@@ -950,5 +1106,5 @@ inline void swap(Buffer& lhs, Buffer& rhs) BOOST_NOEXCEPT
 NSFX_CLOSE_NAMESPACE
 
 
-#endif // BUFFER_H__6C3B4527_139F_4C12_BE2D_89B97CF1ADDD
+#endif // ZC_BUFFER_H__C2DEDFE9_A0FA_405F_AE24_66679E3B3608
 
