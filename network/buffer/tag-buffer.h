@@ -66,6 +66,13 @@ public:
      */
     TagBuffer(size_t size, bool zeroInit);
 
+    /**
+     * @brief Create a buffer.
+     *
+     * @param[in] storage The tag storage.
+     */
+    explicit TagBuffer(TagStorage* storage) BOOST_NOEXCEPT;
+
 public:
     ~TagBuffer(void) BOOST_NOEXCEPT;
 
@@ -167,6 +174,11 @@ inline TagBuffer::TagBuffer(size_t size, bool zeroInit) :
     {
         std::memset(storage_->bytes_, 0, storage_->capacity_);
     }
+}
+
+inline Packet::TagBuffer(TagStorage* storage) BOOST_NOEXCEPT :
+    storage_(storage)
+{
 }
 
 inline TagBuffer::~TagBuffer(void) BOOST_NOEXCEPT
