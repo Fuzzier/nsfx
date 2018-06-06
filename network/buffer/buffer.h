@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Buffer for Network Simulation Frameworks.
+ * @brief Packet buffer for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -33,17 +33,17 @@ NSFX_OPEN_NAMESPACE
  * @ingroup Network
  * @brief An automatically resized and copy-on-write buffer.
  *
- * \c Buffer does not provide zero-compressed data area.
- * For compatibility considerations, \c Buffer provides the same set of public
- * interfaces as \c ZcBuffer.
+ * \c Buffer provides the same set of public interfaces as \c ZcBuffer.
  *
- * In most cases, \c ZcBuffer can be replaced by \c Buffer without problem.
- * For a \c Buffer, the zero-compressed area is always assumed to be empty, and
- * located at the end of the buffer.
+ * \c Buffer and \c ZcBuffer are designed as such that \c Packet can use
+ * \c Buffer and \c ZcBuffer interchangeably without problem.
  *
- * Miraculously, \c Buffer and \c ZcBuffer can share a same \c BufferStorage.
- * The conversion from \c ZcBuffer to \c Buffer is provided.
- *
+ * In other situations, the interchangeability of \c Buffer and \c ZcBuffer is
+ * <b>not</b> guaranteed.
+ * The following issues shall be considered.
+ * * For a \c Buffer, the zero-compressed area is always assumed to be empty,
+ *   and located at the end of the buffer.
+ * * The zero-compressed area in a \c ZcBuffer is not writable.
  */
 class Buffer
 {
