@@ -58,6 +58,14 @@ public:
      */
     explicit TagBuffer(size_t size);
 
+    /**
+     * @brief Create a buffer.
+     *
+     * @param[in] size The size of the buffer.
+     * @param[in] zero Initialize the buffer to zeros.
+     */
+    TagBuffer(size_t size, bool zeroInit);
+
 public:
     ~TagBuffer(void) BOOST_NOEXCEPT;
 
@@ -147,9 +155,18 @@ inline TagBuffer::TagBuffer(void) BOOST_NOEXCEPT :
 {
 }
 
-inline TagBuffer::TagBuffer(size_t capacity) :
-    storage_(TagBufferStorage::Create(capacity))
+inline TagBuffer::TagBuffer(size_t size) :
+    storage_(TagBufferStorage::Create(size))
 {
+}
+
+inline TagBuffer::TagBuffer(size_t size, bool zeroInit) :
+    storage_(TagBufferStorage::Create(size))
+{
+    if (zeroInit && storage_)
+    {
+        std::memset(storage_->bytes_, 0, storage_->capacity_);
+    }
 }
 
 inline TagBuffer::~TagBuffer(void) BOOST_NOEXCEPT
