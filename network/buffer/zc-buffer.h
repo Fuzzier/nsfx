@@ -369,7 +369,7 @@ inline ZcBuffer::ZcBuffer(void) BOOST_NOEXCEPT :
 }
 
 inline ZcBuffer::ZcBuffer(size_t capacity) :
-    storage_(BufferStorage::Create(capacity)),
+    storage_(BufferStorage::Allocate(capacity)),
     start_(capacity),
     zeroStart_(capacity),
     zeroEnd_(capacity),
@@ -383,7 +383,7 @@ inline ZcBuffer::ZcBuffer(size_t capacity) :
 }
 
 inline ZcBuffer::ZcBuffer(size_t capacity, size_t zeroSize) :
-    storage_(BufferStorage::Create(capacity)),
+    storage_(BufferStorage::Allocate(capacity)),
     start_(capacity),
     zeroStart_(capacity),
     zeroEnd_(capacity + zeroSize),
@@ -402,7 +402,7 @@ inline ZcBuffer::ZcBuffer(size_t capacity, size_t zeroStart, size_t zeroSize)
                      "Cannot construct a ZcBuffer, since the start of "
                      "the zero-compressed data area is beyond the end of "
                      "the buffer storage.");
-    storage_   = BufferStorage::Create(capacity);
+    storage_   = BufferStorage::Allocate(capacity);
     start_     = zeroStart;
     zeroStart_ = zeroStart;
     zeroEnd_   = zeroStart + zeroSize;
@@ -753,7 +753,7 @@ inline void ZcBuffer::InternalAddAtStart(
     size_t size, size_t newCapacity,
     size_t newStart, size_t dataSize, ReallocateTag)
 {
-    BufferStorage* newStorage = BufferStorage::Create(newCapacity);
+    BufferStorage* newStorage = BufferStorage::Allocate(newCapacity);
     std::memcpy(newStorage->bytes_ + newStart + size,
                   storage_->bytes_ + start_,
                 dataSize);
@@ -920,7 +920,7 @@ inline void ZcBuffer::InternalAddAtEnd(
     size_t size, size_t newCapacity,
     size_t newStart, size_t dataSize, ReallocateTag)
 {
-    BufferStorage* newStorage = BufferStorage::Create(newCapacity);
+    BufferStorage* newStorage = BufferStorage::Allocate(newCapacity);
     std::memcpy(newStorage->bytes_ + newStart,
                   storage_->bytes_ + start_,
                 dataSize);
@@ -1043,7 +1043,7 @@ inline ZcBuffer ZcBuffer::InternalGetRealBuffer(ReallocateTag) const
     size_t gamma   = zeroEnd_   - zeroStart_;
     size_t trailer = end_       - zeroEnd_;
     size_t newCapacity = end_ - start_;
-    BufferStorage* newStorage = BufferStorage::Create(newCapacity);
+    BufferStorage* newStorage = BufferStorage::Allocate(newCapacity);
     std::memcpy(newStorage->bytes_,
                   storage_->bytes_ + start_,
                 header);

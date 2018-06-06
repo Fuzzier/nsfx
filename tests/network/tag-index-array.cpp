@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Test Tag.
+ * @brief Test TagIndexArray.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -16,16 +16,6 @@
 #include <nsfx/test.h>
 #include <nsfx/network/packet/tag-index.h>
 #include <iostream>
-
-
-int k = 0;
-struct Test
-{
-    Test(int i, double j) : i_(i), j_(j) { ++k; }
-    ~Test(void) { --k; }
-    int i_;
-    double j_;
-};
 
 
 NSFX_TEST_SUITE(TagIndexArray)
@@ -55,23 +45,24 @@ NSFX_TEST_SUITE(TagIndexArray)
         NSFX_TEST_EXPECT_EQ(tia->refCount_, 1);
 
         // Add elements.
+        nsfx::TagBufferStorage* storage = nsfx::TagBufferStorage::Allocate(16);
         nsfx::TagIndex* idx = tia->indices_;
         for (size_t i = 0; i < tia->capacity_; ++i)
         {
-            nsfx::TagStorage* tag = nsfx::TagStorage::Allocate<Test>(1, 2.3);
             size_t tagId = 4;
             size_t tagStart = 5;
             size_t tagEnd = 6;
-            nsfx::TagIndex::Ctor(idx, tagId, tagStart, tagEnd, tag);
+            nsfx::TagBufferStorage::AddRef(storage);
+            nsfx::TagIndex::Ctor(idx, tagId, tagStart, tagEnd, storage);
             ++tia->dirty_;
             ++idx;
         }
-        NSFX_TEST_EXPECT_EQ(k, tia->dirty_);
-
+        NSFX_TEST_EXPECT_EQ(storage->refCount_, tia->capacity_ + 1);
         // Release.
-        // All elements shall also be released.
         nsfx::TagIndexArray::Release(tia);
-        NSFX_TEST_EXPECT_EQ(k, 0);
+        // All array indices are released.
+        NSFX_TEST_EXPECT_EQ(storage->refCount_, 1);
+        nsfx::TagBufferStorage::Release(storage);
     }
 }
 

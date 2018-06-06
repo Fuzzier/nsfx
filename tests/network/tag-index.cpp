@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Test Tag.
+ * @brief Test TagIndex.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -18,21 +18,11 @@
 #include <iostream>
 
 
-int k = 0;
-struct Test
-{
-    Test(int i, double j) : i_(i), j_(j) { ++k; }
-    ~Test(void) { --k; }
-    int i_;
-    double j_;
-};
-
-
 NSFX_TEST_SUITE(TagIndex)
 {
     NSFX_TEST_CASE(Ctor)
     {
-        nsfx::TagStorage* storage = nsfx::TagStorage::Allocate<Test>(1, 2.3);
+        nsfx::TagBufferStorage* storage = nsfx::TagBufferStorage::Allocate(16);
         nsfx::TagIndex idx;
         size_t tagId = 4;
         size_t tagStart = 5;
@@ -43,16 +33,16 @@ NSFX_TEST_SUITE(TagIndex)
         NSFX_TEST_EXPECT_EQ(idx.tagEnd_, tagEnd);
         NSFX_TEST_EXPECT_EQ(idx.storage_, storage);
 
-        NSFX_TEST_EXPECT_EQ(storage->refCount_, 1);
-
+        nsfx::TagBufferStorage::AddRef(storage);
+        NSFX_TEST_EXPECT_EQ(storage->refCount_, 2);
         nsfx::TagIndex::Release(&idx);
-        // Test::~Test() is called.
-        NSFX_TEST_EXPECT_EQ(k, 0);
+        NSFX_TEST_EXPECT_EQ(storage->refCount_, 1);
+        nsfx::TagBufferStorage::Release(storage);
     }
 
     NSFX_TEST_CASE(CopyCtor)
     {
-        nsfx::TagStorage* storage = nsfx::TagStorage::Allocate<Test>(1, 2.3);
+        nsfx::TagBufferStorage* storage = nsfx::TagBufferStorage::Allocate(16);
         nsfx::TagIndex idx1;
         size_t tagId = 4;
         size_t tagStart = 5;
@@ -75,19 +65,14 @@ NSFX_TEST_SUITE(TagIndex)
         NSFX_TEST_EXPECT_EQ(storage->refCount_, 2);
 
         nsfx::TagIndex::Release(&idx1);
-        // Test::~Test() is not called.
-        NSFX_TEST_EXPECT_EQ(k, 1);
         NSFX_TEST_EXPECT_EQ(storage->refCount_, 1);
-
         nsfx::TagIndex::Release(&idx2);
-        // Test::~Test() is called.
-        NSFX_TEST_EXPECT_EQ(k, 0);
     }
 
     NSFX_TEST_CASE(CopyAssign)
     {
-        nsfx::TagStorage* storage1 = nsfx::TagStorage::Allocate<Test>(1, 2.3);
-        nsfx::TagStorage* storage2 = nsfx::TagStorage::Allocate<Test>(4, 5.6);
+        nsfx::TagBufferStorage* storage1 = nsfx::TagBufferStorage::Allocate(16);
+        nsfx::TagBufferStorage* storage2 = nsfx::TagBufferStorage::Allocate(16);
 
         nsfx::TagIndex idx1;
         size_t tagId1 = 7;
@@ -101,14 +86,14 @@ NSFX_TEST_SUITE(TagIndex)
         size_t tagEnd2 = 12;
         nsfx::TagIndex::Ctor(&idx2, tagId2, tagStart2, tagEnd2, storage2);
 
-        nsfx::TagStorage::AddRef(storage2);
+        nsfx::TagBufferStorage::AddRef(storage2);
         nsfx::TagIndex::CopyAssign(&idx2, &idx1);
         // The storage2 is released by idx2.
         NSFX_TEST_EXPECT_EQ(storage2->refCount_, 1);
         // The storage1 is addref by idx2.
         NSFX_TEST_EXPECT_EQ(storage1->refCount_, 2);
         // Release storage2, since it will not be used.
-        nsfx::TagStorage::Release(storage2);
+        nsfx::TagBufferStorage::Release(storage2);
 
         NSFX_TEST_EXPECT_EQ(idx1.tagId_, tagId1);
         NSFX_TEST_EXPECT_EQ(idx1.tagStart_, tagStart1);
@@ -126,8 +111,8 @@ NSFX_TEST_SUITE(TagIndex)
 
     NSFX_TEST_CASE(Swap)
     {
-        nsfx::TagStorage* storage1 = nsfx::TagStorage::Allocate<Test>(1, 2.3);
-        nsfx::TagStorage* storage2 = nsfx::TagStorage::Allocate<Test>(4, 5.6);
+        nsfx::TagBufferStorage* storage1 = nsfx::TagBufferStorage::Allocate(16);
+        nsfx::TagBufferStorage* storage2 = nsfx::TagBufferStorage::Allocate(16);
 
         nsfx::TagIndex idx1;
         size_t tagId1 = 4;
@@ -159,7 +144,7 @@ NSFX_TEST_SUITE(TagIndex)
 
     NSFX_TEST_CASE(HasTaggedByte)
     {
-        nsfx::TagStorage* storage = nsfx::TagStorage::Allocate<Test>(1, 2.3);
+        nsfx::TagBufferStorage* storage = nsfx::TagBufferStorage::Allocate(16);
         nsfx::TagIndex idx;
         size_t tagId = 4;
         size_t tagStart = 5;

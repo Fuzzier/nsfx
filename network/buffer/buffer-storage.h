@@ -71,11 +71,11 @@ struct BufferStorage
     ////////////////////////////////////////
     // Static methods.
     /**
-     * @brief Create a buffer storage.
+     * @brief Allocate a buffer storage.
      *
      * @return If the capacity is \c 0, \c nullptr is returned.
      */
-    static BufferStorage* Create(size_t capacity);
+    static BufferStorage* Allocate(size_t capacity);
 
     static void AddRef(BufferStorage* storage) BOOST_NOEXCEPT;
 
@@ -85,7 +85,7 @@ struct BufferStorage
 
 
 ////////////////////////////////////////////////////////////////////////////////
-inline BufferStorage* BufferStorage::Create(size_t capacity)
+inline BufferStorage* BufferStorage::Allocate(size_t capacity)
 {
     BufferStorage* storage = nullptr;
     if (capacity > 0)
