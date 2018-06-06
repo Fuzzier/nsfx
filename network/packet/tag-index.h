@@ -35,7 +35,7 @@ struct TagIndex
     size_t  tagId_;       ///< The id of the tag.
     size_t  tagStart_;    ///< The start of tagged bytes (inclusive).
     size_t  tagEnd_;      ///< The end of tagged bytes (exclusive).
-    TagStorage* storage_; ///< The tag storage.
+    Buffer  tag_;
 
     // Helper functions.
     static void Ctor(TagIndex* idx, size_t tagId, size_t tagStart,

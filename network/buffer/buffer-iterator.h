@@ -90,12 +90,8 @@ private:
 
     // Xtructors.
 private:
-    BufferIterator(BufferStorage* storage,
-                   size_t start,
-                   size_t zeroStart,
-                   size_t zeroEnd,
-                   size_t end,
-                   size_t cursor) BOOST_NOEXCEPT;
+    BufferIterator(BufferStorage* storage, size_t start,
+                   size_t end, size_t cursor) BOOST_NOEXCEPT;
 
     // Copyable.
 public:
@@ -209,19 +205,6 @@ private:
     uint32_t InternalRead(size_t offset, ReadTag<4, InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT;
     uint64_t InternalRead(size_t offset, ReadTag<8, InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT;
 
-    uint8_t  InternalRead(ReadTag<1, CheckAreaTag>) BOOST_NOEXCEPT;
-    size_t   CursorToOffset(void) const BOOST_NOEXCEPT;
-
-    uint8_t  InternalRead(ReadTag<1, CrossZeroAreaTag>, KeepEndianTag) BOOST_NOEXCEPT;
-    uint16_t InternalRead(ReadTag<2, CrossZeroAreaTag>, KeepEndianTag) BOOST_NOEXCEPT;
-    uint32_t InternalRead(ReadTag<4, CrossZeroAreaTag>, KeepEndianTag) BOOST_NOEXCEPT;
-    uint64_t InternalRead(ReadTag<8, CrossZeroAreaTag>, KeepEndianTag) BOOST_NOEXCEPT;
-
-    uint8_t  InternalRead(ReadTag<1, CrossZeroAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT;
-    uint16_t InternalRead(ReadTag<2, CrossZeroAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT;
-    uint32_t InternalRead(ReadTag<4, CrossZeroAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT;
-    uint64_t InternalRead(ReadTag<8, CrossZeroAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT;
-
     // Boundary check.
 private:
     bool CanMoveForward(size_t numBytes) const BOOST_NOEXCEPT;
@@ -247,16 +230,6 @@ private:
      * @brief Can we read the number of bytes at the cursor.
      */
     void ReadableCheck(size_t numBytes) const BOOST_NOEXCEPT;
-
-    /**
-     * @brief The cursor is within the zero-compressed area?
-     */
-    bool InZeroArea(void) const BOOST_NOEXCEPT;
-
-    /**
-     * @brief Moving the cursor crosses the zero-compressed area?
-     */
-    bool CrossZeroArea(size_t numBytes) const BOOST_NOEXCEPT;
 
     // Operators.
 public:
@@ -291,16 +264,6 @@ private:
     size_t start_;
 
     /**
-     * @brief The logical offset of the start of the zero-compressed data area.
-     */
-    size_t zeroStart_;
-
-    /**
-     * @brief The logical offset of the end of the zero-compressed data area (on-byte-beyond).
-     */
-    size_t zeroEnd_;
-
-    /**
      * @brief The logical offset of the end of the trailer area (on-byte-beyond).
      */
     size_t end_;
@@ -317,14 +280,10 @@ private:
 // BufferIterator.
 inline BufferIterator::BufferIterator(BufferStorage* storage,
                                       size_t start,
-                                      size_t zeroStart,
-                                      size_t zeroEnd,
                                       size_t end,
                                       size_t cursor) BOOST_NOEXCEPT :
     storage_(storage),
     start_(start),
-    zeroStart_(zeroStart),
-    zeroEnd_(zeroEnd),
     end_(end),
     cursor_(cursor)
 {
@@ -333,8 +292,6 @@ inline BufferIterator::BufferIterator(BufferStorage* storage,
 inline BufferIterator::BufferIterator(const BufferIterator& rhs) BOOST_NOEXCEPT :
     storage_(rhs.storage_),
     start_(rhs.start_),
-    zeroStart_(rhs.zeroStart_),
-    zeroEnd_(rhs.zeroEnd_),
     end_(rhs.end_),
     cursor_(rhs.cursor_)
 {
@@ -347,8 +304,6 @@ BufferIterator::operator=(const BufferIterator& rhs) BOOST_NOEXCEPT
     {
         storage_   = rhs.storage_;
         start_     = rhs.start_;
-        zeroStart_ = rhs.zeroStart_;
-        zeroEnd_   = rhs.zeroEnd_;
         end_       = rhs.end_;
         cursor_    = rhs.cursor_;
     }
@@ -407,7 +362,7 @@ inline void BufferIterator::WriteInOrder(T data) BOOST_NOEXCEPT
     WritableCheck(sizeof (T));
     typedef typename MakeEndianTag<order>::Type  E;
     InternalWrite(static_cast<typename boost::make_unsigned<T>::type>(data),
-                  CursorToOffset(),
+                  cursor_,
                   E());
 }
 
@@ -557,30 +512,8 @@ inline T BufferIterator::ReadInOrder(void) BOOST_NOEXCEPT
     static_assert(boost::is_integral<T>::value, "Invalid data type.");
     ReadableCheck(sizeof (T));
     typedef typename MakeEndianTag<order>::Type  E;
-    // Read in header area.
-    if (cursor_ + sizeof (T) <= zeroStart_)
-    {
-        typedef ReadTag<sizeof (T), InSolidAreaTag>  R;
-        return InternalRead(cursor_, R(), E());
-    }
-    // Read in trailer area.
-    else if (zeroEnd_ <= cursor_)
-    {
-        typedef ReadTag<sizeof (T), InSolidAreaTag>  R;
-        return InternalRead(cursor_ - (zeroEnd_ - zeroStart_), R(), E());
-    }
-    // Read in zero-compressed area.
-    else if (zeroStart_ <= cursor_ && cursor_ + sizeof (T) <= zeroEnd_)
-    {
-        cursor_ += sizeof (T);
-        return 0;
-    }
-    // Read across zero-compressed area.
-    else
-    {
-        typedef ReadTag<sizeof (T), CrossZeroAreaTag>  R;
-        return InternalRead(R(), E());
-    }
+    typedef ReadTag<sizeof (T), InSolidAreaTag>  R;
+    return InternalRead(cursor_, R(), E());
 }
 
 inline uint8_t
@@ -709,144 +642,6 @@ BufferIterator::InternalRead(size_t offset, ReadTag<8, InSolidAreaTag>, ReverseE
     return v;
 }
 
-inline uint8_t
-BufferIterator::InternalRead(ReadTag<1, CheckAreaTag>) BOOST_NOEXCEPT
-{
-    uint8_t b = 0;
-    if (!InZeroArea())
-    {
-        const uint8_t* data = storage_->bytes_;
-        b = data[CursorToOffset()];
-    }
-    ++cursor_;
-    return b;
-}
-
-inline size_t
-BufferIterator::CursorToOffset(void) const BOOST_NOEXCEPT
-{
-    BOOST_ASSERT_MSG(!InZeroArea(),
-                     "Cannot convert the current cursor to offset since "
-                     "the current cursor is in the zero-compressed area.");
-    size_t offset;
-    if (cursor_ < zeroStart_)
-    {
-        offset = cursor_;
-    }
-    else
-    {
-        offset = cursor_ - (zeroEnd_ - zeroStart_);
-    }
-    return offset;
-}
-
-inline uint8_t
-BufferIterator::InternalRead(ReadTag<1, CrossZeroAreaTag>, KeepEndianTag) BOOST_NOEXCEPT
-{
-    ++cursor_;
-    return 0;
-}
-
-inline uint16_t
-BufferIterator::InternalRead(ReadTag<2, CrossZeroAreaTag>, KeepEndianTag) BOOST_NOEXCEPT
-{
-    union
-    {
-        uint8_t  b[2];
-        uint16_t v;
-    };
-    b[0] = InternalRead(ReadTag<1, CheckAreaTag>());
-    b[1] = InternalRead(ReadTag<1, CheckAreaTag>());
-    return v;
-}
-
-inline uint32_t
-BufferIterator::InternalRead(ReadTag<4, CrossZeroAreaTag>, KeepEndianTag) BOOST_NOEXCEPT
-{
-    union
-    {
-        uint8_t  b[4];
-        uint32_t v;
-    };
-    b[0] = InternalRead(ReadTag<1, CheckAreaTag>());
-    b[1] = InternalRead(ReadTag<1, CheckAreaTag>());
-    b[2] = InternalRead(ReadTag<1, CheckAreaTag>());
-    b[3] = InternalRead(ReadTag<1, CheckAreaTag>());
-    return v;
-}
-
-inline uint64_t
-BufferIterator::InternalRead(ReadTag<8, CrossZeroAreaTag>, KeepEndianTag) BOOST_NOEXCEPT
-{
-    union
-    {
-        uint8_t  b[8];
-        uint64_t v;
-    };
-    b[0] = InternalRead(ReadTag<1, CheckAreaTag>());
-    b[1] = InternalRead(ReadTag<1, CheckAreaTag>());
-    b[2] = InternalRead(ReadTag<1, CheckAreaTag>());
-    b[3] = InternalRead(ReadTag<1, CheckAreaTag>());
-    b[4] = InternalRead(ReadTag<1, CheckAreaTag>());
-    b[5] = InternalRead(ReadTag<1, CheckAreaTag>());
-    b[6] = InternalRead(ReadTag<1, CheckAreaTag>());
-    b[7] = InternalRead(ReadTag<1, CheckAreaTag>());
-    return v;
-}
-
-inline uint8_t
-BufferIterator::InternalRead(ReadTag<1, CrossZeroAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT
-{
-    return 0;
-}
-
-inline uint16_t
-BufferIterator::InternalRead(ReadTag<2, CrossZeroAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT
-{
-    union
-    {
-        uint8_t  b[2];
-        uint16_t v;
-    };
-    b[1] = InternalRead(ReadTag<1, CheckAreaTag>());
-    b[0] = InternalRead(ReadTag<1, CheckAreaTag>());
-    return v;
-}
-
-inline uint32_t
-BufferIterator::InternalRead(ReadTag<4, CrossZeroAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT
-{
-    union
-    {
-        uint8_t  b[4];
-        uint32_t v;
-    };
-    b[3] = InternalRead(ReadTag<1, CheckAreaTag>());
-    b[2] = InternalRead(ReadTag<1, CheckAreaTag>());
-    b[1] = InternalRead(ReadTag<1, CheckAreaTag>());
-    b[0] = InternalRead(ReadTag<1, CheckAreaTag>());
-    return v;
-}
-
-inline uint64_t
-BufferIterator::InternalRead(ReadTag<8, CrossZeroAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT
-{
-    union
-    {
-        uint8_t  b[8];
-        uint64_t v;
-    };
-    b[7] = InternalRead(ReadTag<1, CheckAreaTag>());
-    b[6] = InternalRead(ReadTag<1, CheckAreaTag>());
-    b[5] = InternalRead(ReadTag<1, CheckAreaTag>());
-    b[4] = InternalRead(ReadTag<1, CheckAreaTag>());
-    b[3] = InternalRead(ReadTag<1, CheckAreaTag>());
-    b[2] = InternalRead(ReadTag<1, CheckAreaTag>());
-    b[1] = InternalRead(ReadTag<1, CheckAreaTag>());
-    b[0] = InternalRead(ReadTag<1, CheckAreaTag>());
-    return v;
-}
-
 inline bool BufferIterator::CanMoveForward(size_t numBytes) const BOOST_NOEXCEPT
 {
     return cursor_ + numBytes <= end_;
@@ -873,25 +668,12 @@ inline void BufferIterator::WritableCheck(size_t numBytes) const BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(CanMoveForward(numBytes),
                      "The buffer iterator cannot write beyond the end of buffer.");
-    BOOST_ASSERT_MSG(!CrossZeroArea(numBytes),
-                     "The buffer iterator cannot write in the zero-compressed area.");
 }
 
 inline void BufferIterator::ReadableCheck(size_t numBytes) const BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(CanMoveForward(numBytes),
                      "The buffer iterator cannot read beyond the end of buffer.");
-}
-
-inline bool BufferIterator::InZeroArea(void) const BOOST_NOEXCEPT
-{
-    return (zeroStart_ <= cursor_) && (cursor_ < zeroEnd_);
-}
-
-inline bool BufferIterator::CrossZeroArea(size_t numBytes) const BOOST_NOEXCEPT
-{
-    return (cursor_ < zeroStart_ && zeroStart_ < cursor_ + numBytes) ||
-           (cursor_ < zeroEnd_   && zeroEnd_   < cursor_ + numBytes);
 }
 
 inline BufferIterator& BufferIterator::operator++(void) BOOST_NOEXCEPT
@@ -1018,12 +800,8 @@ private:
 
     // Xtructors.
 private:
-    ConstBufferIterator(BufferStorage* storage,
-                        size_t start,
-                        size_t zeroStart_,
-                        size_t zeroEnd_,
-                        size_t end,
-                        size_t cursor) BOOST_NOEXCEPT;
+    ConstBufferIterator(BufferStorage* storage, size_t start,
+                        size_t end, size_t cursor) BOOST_NOEXCEPT;
 
     // Copyable.
 public:
@@ -1106,9 +884,8 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 inline ConstBufferIterator::ConstBufferIterator(
-    BufferStorage* storage, size_t start, size_t zeroStart,
-    size_t zeroEnd, size_t end, size_t cursor) BOOST_NOEXCEPT :
-    it_(storage, start, zeroStart, zeroEnd, end, cursor)
+    BufferStorage* storage, size_t start, size_t end, size_t cursor) BOOST_NOEXCEPT :
+    it_(storage, start, end, cursor)
 {
 }
 
