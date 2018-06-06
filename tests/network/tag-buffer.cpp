@@ -31,11 +31,24 @@ NSFX_TEST_SUITE(TagBuffer)
 
         NSFX_TEST_CASE(Ctor1)
         {
-            nsfx::TagBuffer b0(1000);
-            NSFX_TEST_EXPECT_EQ(b0.GetSize(), 1000);
+            nsfx::TagBuffer b0(300);
+            NSFX_TEST_EXPECT_EQ(b0.GetSize(), 300);
             NSFX_TEST_ASSERT(b0.GetStorage());
-            NSFX_TEST_EXPECT_EQ(b0.GetStorage()->capacity_, 1000);
+            NSFX_TEST_EXPECT_EQ(b0.GetStorage()->capacity_, 300);
             NSFX_TEST_EXPECT_EQ(b0.GetStorage()->refCount_, 1);
+        }
+
+        NSFX_TEST_CASE(ZeroInit)
+        {
+            nsfx::TagBuffer b0(300, true);
+            NSFX_TEST_EXPECT_EQ(b0.GetSize(), 300);
+            NSFX_TEST_ASSERT(b0.GetStorage());
+            NSFX_TEST_EXPECT_EQ(b0.GetStorage()->capacity_, 300);
+            NSFX_TEST_EXPECT_EQ(b0.GetStorage()->refCount_, 1);
+            for (auto it = b0.cbegin(); it != b0.cend(); ++it)
+            {
+                NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), 0);
+            }
         }
     }/*}}}*/
 

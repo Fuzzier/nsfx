@@ -19,9 +19,9 @@
 
 #include <nsfx/network/config.h>
 
-# include <nsfx/network/buffer/buffer-storage.h>
+#include <nsfx/network/buffer/buffer-storage.h>
 
-#if !defined(NSFX_USE_SOLID_BUFFER)
+#if !defined(NSFX_PACKET_USES_SOLID_BUFFER)
 # include <nsfx/network/buffer/zc-buffer-iterator.h>
 # include <nsfx/network/buffer/zc-buffer.h>
 
@@ -33,11 +33,15 @@ typedef ConstZcBufferIterator ConstBufferIterator;
 
 NSFX_CLOSE_NAMESPACE
 
-#else // defined(NSFX_USE_SOLID_BUFFER)
+#else // defined(NSFX_PACKET_USES_SOLID_BUFFER)
 # include <nsfx/network/buffer/buffer-iterator.h>
 # include <nsfx/network/buffer/buffer.h>
 
-#endif // !defined(NSFX_USE_SOLID_BUFFER)
+#endif // !defined(NSFX_PACKET_USES_SOLID_BUFFER)
+
+
+#include <nsfx/network/buffer/tag-buffer-storage.h>
+#include <nsfx/network/buffer/tag-buffer.h>
 
 
 #endif // BUFFER_H__50C89673_2F74_42D3_94EC_993B4FF4E2A8
