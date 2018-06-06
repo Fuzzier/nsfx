@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Zero-compressed buffer for Network Simulation Frameworks.
+ * @brief Zero-compressed packet buffer for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
