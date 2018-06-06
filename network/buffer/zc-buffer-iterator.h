@@ -18,7 +18,6 @@
 
 
 #include <nsfx/network/config.h>
-#include <nsfx/network/buffer/buffer-storage.h>
 #include <nsfx/utility/endian.h>
 #include <boost/core/swap.hpp>
 #include <boost/type_traits/make_unsigned.hpp>
@@ -36,7 +35,7 @@ NSFX_OPEN_NAMESPACE
  * @brief The iterator for accessing the buffer data.
  *
  * A buffer iterator is not associated with a buffer, but associated with the
- * underlying storage that is shared among buffers and iterators.
+ * underlying memory block that is shared among buffers and iterators.
  *
  * ### Supported methods:
  * * copyable
@@ -52,10 +51,6 @@ NSFX_OPEN_NAMESPACE
  */
 class ZcBufferIterator
 {
-private:
-    friend class ZcBuffer;
-    friend class ConstZcBufferIterator;
-
 private:
     // Endian tag.
     struct ReverseEndianTag {};
@@ -89,13 +84,13 @@ private:
     struct ReadTag {};
 
     // Xtructors.
-private:
-    ZcBufferIterator(BufferStorage* storage,
-                   size_t start,
-                   size_t zeroStart,
-                   size_t zeroEnd,
-                   size_t end,
-                   size_t cursor) BOOST_NOEXCEPT;
+public:
+    ZcBufferIterator(uint8_t* bytes,
+                     size_t start,
+                     size_t zeroStart,
+                     size_t zeroEnd,
+                     size_t end,
+                     size_t cursor) BOOST_NOEXCEPT;
 
     // Copyable.
 public:
@@ -281,9 +276,9 @@ public:
     // Properties.
 private:
     /**
-     * @brief The storage.
+     * @brief The data.
      */
-    BufferStorage* storage_;
+    uint8_t* bytes_;
 
     /**
      * @brief The logical offset of the start of the header area.
@@ -315,13 +310,13 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 // ZcBufferIterator.
-inline ZcBufferIterator::ZcBufferIterator(BufferStorage* storage,
-                                      size_t start,
-                                      size_t zeroStart,
-                                      size_t zeroEnd,
-                                      size_t end,
-                                      size_t cursor) BOOST_NOEXCEPT :
-    storage_(storage),
+inline ZcBufferIterator::ZcBufferIterator(uint8_t* bytes,
+                                          size_t start,
+                                          size_t zeroStart,
+                                          size_t zeroEnd,
+                                          size_t end,
+                                          size_t cursor) BOOST_NOEXCEPT :
+    bytes_(bytes),
     start_(start),
     zeroStart_(zeroStart),
     zeroEnd_(zeroEnd),
@@ -331,7 +326,7 @@ inline ZcBufferIterator::ZcBufferIterator(BufferStorage* storage,
 }
 
 inline ZcBufferIterator::ZcBufferIterator(const ZcBufferIterator& rhs) BOOST_NOEXCEPT :
-    storage_(rhs.storage_),
+    bytes_(rhs.bytes_),
     start_(rhs.start_),
     zeroStart_(rhs.zeroStart_),
     zeroEnd_(rhs.zeroEnd_),
@@ -345,7 +340,7 @@ ZcBufferIterator::operator=(const ZcBufferIterator& rhs) BOOST_NOEXCEPT
 {
     if (this != &rhs)
     {
-        storage_   = rhs.storage_;
+        bytes_     = rhs.bytes_;
         start_     = rhs.start_;
         zeroStart_ = rhs.zeroStart_;
         zeroEnd_   = rhs.zeroEnd_;
@@ -414,7 +409,7 @@ inline void ZcBufferIterator::WriteInOrder(T data) BOOST_NOEXCEPT
 inline void
 ZcBufferIterator::InternalWrite(uint8_t value, size_t offset, KeepEndianTag) BOOST_NOEXCEPT
 {
-    uint8_t* data = storage_->bytes_;
+    uint8_t* data = bytes_;
     data[offset++] = value;
     ++cursor_;
 }
@@ -428,7 +423,7 @@ ZcBufferIterator::InternalWrite(uint16_t value, size_t offset, KeepEndianTag) BO
         uint16_t v;
     };
     v = value;
-    uint8_t* data = storage_->bytes_;
+    uint8_t* data = bytes_;
     data[offset++] = b[0];
     data[offset++] = b[1];
     cursor_ += 2;
@@ -443,7 +438,7 @@ ZcBufferIterator::InternalWrite(uint32_t value, size_t offset, KeepEndianTag) BO
         uint32_t v;
     };
     v = value;
-    uint8_t* data = storage_->bytes_;
+    uint8_t* data = bytes_;
     data[offset++] = b[0];
     data[offset++] = b[1];
     data[offset++] = b[2];
@@ -460,7 +455,7 @@ ZcBufferIterator::InternalWrite(uint64_t value, size_t offset, KeepEndianTag) BO
         uint64_t v;
     };
     v = value;
-    uint8_t* data = storage_->bytes_;
+    uint8_t* data = bytes_;
     data[offset++] = b[0];
     data[offset++] = b[1];
     data[offset++] = b[2];
@@ -475,7 +470,7 @@ ZcBufferIterator::InternalWrite(uint64_t value, size_t offset, KeepEndianTag) BO
 inline void
 ZcBufferIterator::InternalWrite(uint8_t value, size_t offset, ReverseEndianTag) BOOST_NOEXCEPT
 {
-    uint8_t* data = storage_->bytes_;
+    uint8_t* data = bytes_;
     data[offset++] = value;
     ++cursor_;
 }
@@ -489,7 +484,7 @@ ZcBufferIterator::InternalWrite(uint16_t value, size_t offset, ReverseEndianTag)
         uint16_t v;
     };
     v = value;
-    uint8_t* data = storage_->bytes_;
+    uint8_t* data = bytes_;
     data[offset++] = b[1];
     data[offset++] = b[0];
     cursor_ += 2;
@@ -504,7 +499,7 @@ ZcBufferIterator::InternalWrite(uint32_t value, size_t offset, ReverseEndianTag)
         uint32_t v;
     };
     v = value;
-    uint8_t* data = storage_->bytes_;
+    uint8_t* data = bytes_;
     data[offset++] = b[3];
     data[offset++] = b[2];
     data[offset++] = b[1];
@@ -521,7 +516,7 @@ ZcBufferIterator::InternalWrite(uint64_t value, size_t offset, ReverseEndianTag)
         uint64_t v;
     };
     v = value;
-    uint8_t* data = storage_->bytes_;
+    uint8_t* data = bytes_;
     data[offset++] = b[7];
     data[offset++] = b[6];
     data[offset++] = b[5];
@@ -587,7 +582,7 @@ inline uint8_t
 ZcBufferIterator::InternalRead(size_t offset, ReadTag<1, InSolidAreaTag>, KeepEndianTag) BOOST_NOEXCEPT
 {
     uint8_t b;
-    const uint8_t* data = storage_->bytes_;
+    const uint8_t* data = bytes_;
     b = data[offset++];
     ++cursor_;
     return b;
@@ -601,7 +596,7 @@ ZcBufferIterator::InternalRead(size_t offset, ReadTag<2, InSolidAreaTag>, KeepEn
         uint8_t  b[2];
         uint16_t v;
     };
-    const uint8_t* data = storage_->bytes_;
+    const uint8_t* data = bytes_;
     b[0] = data[offset++];
     b[1] = data[offset++];
     cursor_+= 2;
@@ -616,7 +611,7 @@ ZcBufferIterator::InternalRead(size_t offset, ReadTag<4, InSolidAreaTag>, KeepEn
         uint8_t  b[4];
         uint32_t v;
     };
-    const uint8_t* data = storage_->bytes_;
+    const uint8_t* data = bytes_;
     b[0] = data[offset++];
     b[1] = data[offset++];
     b[2] = data[offset++];
@@ -633,7 +628,7 @@ ZcBufferIterator::InternalRead(size_t offset, ReadTag<8, InSolidAreaTag>, KeepEn
         uint8_t  b[8];
         uint64_t v;
     };
-    const uint8_t* data = storage_->bytes_;
+    const uint8_t* data = bytes_;
     b[0] = data[offset++];
     b[1] = data[offset++];
     b[2] = data[offset++];
@@ -650,7 +645,7 @@ inline uint8_t
 ZcBufferIterator::InternalRead(size_t offset, ReadTag<1, InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT
 {
     uint8_t b;
-    const uint8_t* data = storage_->bytes_;
+    const uint8_t* data = bytes_;
     b = data[offset++];
     ++cursor_;
     return b;
@@ -664,7 +659,7 @@ ZcBufferIterator::InternalRead(size_t offset, ReadTag<2, InSolidAreaTag>, Revers
         uint8_t  b[2];
         uint16_t v;
     };
-    const uint8_t* data = storage_->bytes_;
+    const uint8_t* data = bytes_;
     b[1] = data[offset++];
     b[0] = data[offset++];
     cursor_ += 2;
@@ -679,7 +674,7 @@ ZcBufferIterator::InternalRead(size_t offset, ReadTag<4, InSolidAreaTag>, Revers
         uint8_t  b[4];
         uint32_t v;
     };
-    const uint8_t* data = storage_->bytes_;
+    const uint8_t* data = bytes_;
     b[3] = data[offset++];
     b[2] = data[offset++];
     b[1] = data[offset++];
@@ -696,7 +691,7 @@ ZcBufferIterator::InternalRead(size_t offset, ReadTag<8, InSolidAreaTag>, Revers
         uint8_t  b[8];
         uint64_t v;
     };
-    const uint8_t* data = storage_->bytes_;
+    const uint8_t* data = bytes_;
     b[7] = data[offset++];
     b[6] = data[offset++];
     b[5] = data[offset++];
@@ -715,7 +710,7 @@ ZcBufferIterator::InternalRead(ReadTag<1, CheckAreaTag>) BOOST_NOEXCEPT
     uint8_t b = 0;
     if (!InZeroArea())
     {
-        const uint8_t* data = storage_->bytes_;
+        const uint8_t* data = bytes_;
         b = data[CursorToOffset()];
     }
     ++cursor_;
@@ -938,7 +933,7 @@ inline ZcBufferIterator& ZcBufferIterator::operator-=(size_t numBytes) BOOST_NOE
 inline bool operator> (const ZcBufferIterator& lhs,
                        const ZcBufferIterator& rhs) BOOST_NOEXCEPT
 {
-    BOOST_ASSERT_MSG(lhs.storage_ == rhs.storage_,
+    BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
                      "Cannot compare unrelated buffer iterators.");
     return lhs.cursor_ > rhs.cursor_;
 }
@@ -946,7 +941,7 @@ inline bool operator> (const ZcBufferIterator& lhs,
 inline bool operator>=(const ZcBufferIterator& lhs,
                        const ZcBufferIterator& rhs) BOOST_NOEXCEPT
 {
-    BOOST_ASSERT_MSG(lhs.storage_ == rhs.storage_,
+    BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
                      "Cannot compare unrelated buffer iterators.");
     return lhs.cursor_ >= rhs.cursor_;
 }
@@ -954,7 +949,7 @@ inline bool operator>=(const ZcBufferIterator& lhs,
 inline bool operator==(const ZcBufferIterator& lhs,
                        const ZcBufferIterator& rhs) BOOST_NOEXCEPT
 {
-    BOOST_ASSERT_MSG(lhs.storage_ == rhs.storage_,
+    BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
                      "Cannot compare unrelated buffer iterators.");
     return lhs.cursor_ == rhs.cursor_;
 }
@@ -962,7 +957,7 @@ inline bool operator==(const ZcBufferIterator& lhs,
 inline bool operator!=(const ZcBufferIterator& lhs,
                        const ZcBufferIterator& rhs) BOOST_NOEXCEPT
 {
-    BOOST_ASSERT_MSG(lhs.storage_ == rhs.storage_,
+    BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
                      "Cannot compare unrelated buffer iterators.");
     return lhs.cursor_ != rhs.cursor_;
 }
@@ -970,7 +965,7 @@ inline bool operator!=(const ZcBufferIterator& lhs,
 inline bool operator< (const ZcBufferIterator& lhs,
                        const ZcBufferIterator& rhs) BOOST_NOEXCEPT
 {
-    BOOST_ASSERT_MSG(lhs.storage_ == rhs.storage_,
+    BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
                      "Cannot compare unrelated buffer iterators.");
     return lhs.cursor_ < rhs.cursor_;
 }
@@ -978,7 +973,7 @@ inline bool operator< (const ZcBufferIterator& lhs,
 inline bool operator<=(const ZcBufferIterator& lhs,
                        const ZcBufferIterator& rhs) BOOST_NOEXCEPT
 {
-    BOOST_ASSERT_MSG(lhs.storage_ == rhs.storage_,
+    BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
                      "Cannot compare unrelated buffer iterators.");
     return lhs.cursor_ <= rhs.cursor_;
 }
@@ -1000,7 +995,7 @@ inline ZcBufferIterator operator-(const ZcBufferIterator& lhs, size_t numBytes) 
 inline ptrdiff_t
 operator-(const ZcBufferIterator& lhs, const ZcBufferIterator& rhs) BOOST_NOEXCEPT
 {
-    BOOST_ASSERT_MSG(lhs.storage_ == rhs.storage_,
+    BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
                      "Cannot compare unrelated buffer iterators.");
     return lhs.cursor_ - rhs.cursor_;
 }
@@ -1013,17 +1008,14 @@ operator-(const ZcBufferIterator& lhs, const ZcBufferIterator& rhs) BOOST_NOEXCE
  */
 class ConstZcBufferIterator
 {
-private:
-    friend class ZcBuffer;
-
     // Xtructors.
-private:
-    ConstZcBufferIterator(BufferStorage* storage,
-                        size_t start,
-                        size_t zeroStart_,
-                        size_t zeroEnd_,
-                        size_t end,
-                        size_t cursor) BOOST_NOEXCEPT;
+public:
+    ConstZcBufferIterator(uint8_t* bytes,
+                          size_t start,
+                          size_t zeroStart_,
+                          size_t zeroEnd_,
+                          size_t end,
+                          size_t cursor) BOOST_NOEXCEPT;
 
     // Copyable.
 public:
@@ -1107,9 +1099,9 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 inline ConstZcBufferIterator::ConstZcBufferIterator(
-    BufferStorage* storage, size_t start, size_t zeroStart,
+    uint8_t* bytes, size_t start, size_t zeroStart,
     size_t zeroEnd, size_t end, size_t cursor) BOOST_NOEXCEPT :
-    it_(storage, start, zeroStart, zeroEnd, end, cursor)
+    it_(bytes, start, zeroStart, zeroEnd, end, cursor)
 {
 }
 

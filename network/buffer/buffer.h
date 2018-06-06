@@ -414,14 +414,15 @@ inline Buffer& Buffer::operator=(const Buffer& rhs) BOOST_NOEXCEPT
 {
     if (this != &rhs)
     {
-        if (storage_)
-        {
-            BufferStorage::Release(storage_);
-        }
+        BufferStorage* tmp = storage_;
         storage_ = rhs.storage_;
         start_   = rhs.start_;
         end_     = rhs.end_;
         Acquire();
+        if (tmp)
+        {
+            BufferStorage::Release(tmp);
+        }
     }
     return *this;
 }
@@ -862,7 +863,7 @@ inline void Buffer::RemoveAtStart(size_t size) BOOST_NOEXCEPT
     }
     else // if (size >= end_ - start_)
     {
-        start_ = end_;
+        Release();
     }
 }
 
@@ -874,7 +875,7 @@ inline void Buffer::RemoveAtEnd(size_t size) BOOST_NOEXCEPT
     }
     else // if (size > end_ - start_)
     {
-        end_ = start_;
+        Release();
     }
 }
 
@@ -886,8 +887,15 @@ inline Buffer Buffer::MakeFragment(size_t start, size_t size) const BOOST_NOEXCE
     BOOST_ASSERT_MSG(size <= GetSize() - start,
                      "Cannot create a fragment, since the end of "
                      "the fragment is beyond the end of the buffer.");
-    BufferStorage::AddRef(storage_);
-    return Buffer(storage_, start_ + start, start_ + start + size);
+    if (size)
+    {
+        BufferStorage::AddRef(storage_);
+        return Buffer(storage_, start_ + start, start_ + start + size);
+    }
+    else
+    {
+        return Buffer();
+    }
 }
 
 inline Buffer Buffer::MakeRealBuffer(void) const BOOST_NOEXCEPT
@@ -905,6 +913,34 @@ inline Buffer Buffer::InternalGetRealBuffer(ReallocateTag) const BOOST_NOEXCEPT
     return Buffer(*this);
 }
 
+inline BufferIterator Buffer::begin(void) BOOST_NOEXCEPT
+{
+    uint8_t* bytes = storage_ ? storage_->bytes_ : nullptr;
+    size_t cursor = start_;
+    return BufferIterator(bytes, start_, end_, cursor);
+}
+
+inline BufferIterator Buffer::end(void) BOOST_NOEXCEPT
+{
+    uint8_t* bytes = storage_ ? storage_->bytes_ : nullptr;
+    size_t cursor = end_;
+    return BufferIterator(bytes, start_, end_, cursor);
+}
+
+inline ConstBufferIterator Buffer::cbegin(void) const BOOST_NOEXCEPT
+{
+    uint8_t* bytes = storage_ ? storage_->bytes_ : nullptr;
+    size_t cursor = start_;
+    return ConstBufferIterator(bytes, start_, end_, cursor);
+}
+
+inline ConstBufferIterator Buffer::cend(void) const BOOST_NOEXCEPT
+{
+    uint8_t* bytes = storage_ ? storage_->bytes_ : nullptr;
+    size_t cursor = end_;
+    return ConstBufferIterator(bytes, start_, end_, cursor);
+}
+
 inline void Buffer::swap(Buffer& rhs) BOOST_NOEXCEPT
 {
     if (this != &rhs)
@@ -913,30 +949,6 @@ inline void Buffer::swap(Buffer& rhs) BOOST_NOEXCEPT
         boost::swap(start_,   rhs.start_);
         boost::swap(end_,     rhs.end_);
     }
-}
-
-inline BufferIterator Buffer::begin(void) BOOST_NOEXCEPT
-{
-    size_t cursor = start_;
-    return BufferIterator(storage_, start_, end_, cursor);
-}
-
-inline BufferIterator Buffer::end(void) BOOST_NOEXCEPT
-{
-    size_t cursor = end_;
-    return BufferIterator(storage_, start_, end_, cursor);
-}
-
-inline ConstBufferIterator Buffer::cbegin(void) const BOOST_NOEXCEPT
-{
-    size_t cursor = start_;
-    return ConstBufferIterator(storage_, start_, end_, cursor);
-}
-
-inline ConstBufferIterator Buffer::cend(void) const BOOST_NOEXCEPT
-{
-    size_t cursor = end_;
-    return ConstBufferIterator(storage_, start_, end_, cursor);
 }
 
 
