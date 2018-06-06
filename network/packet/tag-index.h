@@ -30,31 +30,29 @@ NSFX_OPEN_NAMESPACE
  * @brief The tag index.
  * @internal
  */
-struct TagIndex
+class TagIndex
 {
+public:
+    TagIndex(size_t tagId, size_t tagStart, size_t tagEnd, TagBuffer buffer) BOOST_NOEXCEPT;
+
+    TagIndex(const TagIndex& rhs) BOOST_NOEXCEPT;
+    TagIndex& operator=(const TagIndex& rhs) BOOST_NOEXCEPT;
+
+    TagIndex(TagIndex&& rhs) BOOST_NOEXCEPT;
+    TagIndex& operator=(TagIndex&& rhs) BOOST_NOEXCEPT;
+
+private:
     size_t  tagId_;       ///< The id of the tag.
     size_t  tagStart_;    ///< The start of tagged bytes (inclusive).
     size_t  tagEnd_;      ///< The end of tagged bytes (exclusive).
     TagBuffer buffer_;    ///< The storage of the tag.
-
-    // Helper functions.
-    static void Ctor(TagIndex* idx, size_t tagId, size_t tagStart,
-                     size_t tagEnd, TagBufferStorage* storage) BOOST_NOEXCEPT;
-    static void CopyCtor(TagIndex* lhs, const TagIndex* rhs) BOOST_NOEXCEPT;
-    static void CopyAssign(TagIndex* lhs, const TagIndex* rhs);
-    static void Release(TagIndex* idx);
-    static void Swap(TagIndex* lhs, TagIndex* rhs) BOOST_NOEXCEPT;
-    static bool HasTaggedByte(size_t tagStart, size_t tagEnd,
-                              size_t bufferStart, size_t bufferEnd) BOOST_NOEXCEPT;
-    static bool HasTaggedByte(const TagIndex* idx,
-                              size_t bufferStart, size_t bufferEnd) BOOST_NOEXCEPT;
 };
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Network.
- * @brief The tag index array.
+ * @brief The tag index array (POD).
  * @internal
  */
 struct TagIndexArray
@@ -69,6 +67,57 @@ struct TagIndexArray
     static void AddRef(TagIndexArray* tia) BOOST_NOEXCEPT;
     static void Release(TagIndexArray* tia);
 };
+
+
+////////////////////////////////////////////////////////////////////////////////
+inline TagIndex::TagIndex(size_t tagId, size_t tagStart,
+                          size_t tagEnd, TagBuffer buffer) BOOST_NOEXCEPT :
+    tagId_(tagId),
+    tagStart_(tagStart),
+    tagEnd_(tagEnd),
+    buffer_(buffer)
+{
+}
+
+inline TagIndex::TagIndex(const TagIndex& rhs) BOOST_NOEXCEPT :
+    tagId_(rhs.tagId),
+    tagStart_(rhs.tagStart),
+    tagEnd_(rhs.tagEnd),
+    buffer_(rhs.buffer)
+{
+}
+
+inline TagIndex& operatorTagIndex::=(const TagIndex& rhs) BOOST_NOEXCEPT
+{
+    if (this != &rhs)
+    {
+        tagId_    = rhs.tagId_;
+        tagStart_ = rhs.tagStart_;
+        tagEnd_   = rhs.tagEnd_;
+        buffer_   = rhs.buffer_;
+    }
+    return *this;
+}
+
+inline TagIndex::TagIndex(TagIndex&& rhs) BOOST_NOEXCEPT :
+    tagId_(rhs.tagId),
+    tagStart_(rhs.tagStart),
+    tagEnd_(rhs.tagEnd),
+    buffer_(std::move(rhs.buffer))
+{
+}
+
+inline TagIndex& TagIndex::operator=(TagIndex&& rhs) BOOST_NOEXCEPT
+{
+    if (this != &rhs)
+    {
+        tagId_    = rhs.tagId_;
+        tagStart_ = rhs.tagStart_;
+        tagEnd_   = rhs.tagEnd_;
+        buffer_   = rhs.buffer_;
+    }
+    return *this;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
