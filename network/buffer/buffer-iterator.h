@@ -53,10 +53,6 @@ NSFX_OPEN_NAMESPACE
 class BufferIterator
 {
 private:
-    friend class Buffer;
-    friend class ConstBufferIterator;
-
-private:
     // Endian tag.
     struct ReverseEndianTag {};
     struct KeepEndianTag {};
@@ -80,17 +76,15 @@ private:
     };
 
     // Area tag.
-    struct InSolidAreaTag   {};
-    struct CrossZeroAreaTag {};
-    struct CheckAreaTag     {};
+    struct InSolidAreaTag {};
 
     // Read tag.
     template<size_t numBytes, class areaTag>
     struct ReadTag {};
 
     // Xtructors.
-private:
-    BufferIterator(BufferStorage* storage, size_t start,
+public:
+    BufferIterator(uint8_t* bytes, size_t start,
                    size_t end, size_t cursor) BOOST_NOEXCEPT;
 
     // Copyable.
@@ -254,9 +248,9 @@ public:
     // Properties.
 private:
     /**
-     * @brief The storage.
+     * @brief The data.
      */
-    BufferStorage* storage_;
+    uint8_t* bytes_;
 
     /**
      * @brief The logical offset of the start of the header area.
@@ -278,11 +272,11 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 // BufferIterator.
-inline BufferIterator::BufferIterator(BufferStorage* storage,
+inline BufferIterator::BufferIterator(uint8_t* bytes,
                                       size_t start,
                                       size_t end,
                                       size_t cursor) BOOST_NOEXCEPT :
-    storage_(storage),
+    bytes_(bytes),
     start_(start),
     end_(end),
     cursor_(cursor)
@@ -290,7 +284,7 @@ inline BufferIterator::BufferIterator(BufferStorage* storage,
 }
 
 inline BufferIterator::BufferIterator(const BufferIterator& rhs) BOOST_NOEXCEPT :
-    storage_(rhs.storage_),
+    bytes_(rhs.bytes_),
     start_(rhs.start_),
     end_(rhs.end_),
     cursor_(rhs.cursor_)
@@ -302,10 +296,10 @@ BufferIterator::operator=(const BufferIterator& rhs) BOOST_NOEXCEPT
 {
     if (this != &rhs)
     {
-        storage_   = rhs.storage_;
-        start_     = rhs.start_;
-        end_       = rhs.end_;
-        cursor_    = rhs.cursor_;
+        bytes_  = rhs.bytes_;
+        start_  = rhs.start_;
+        end_    = rhs.end_;
+        cursor_ = rhs.cursor_;
     }
     return *this;
 }
@@ -369,7 +363,7 @@ inline void BufferIterator::WriteInOrder(T data) BOOST_NOEXCEPT
 inline void
 BufferIterator::InternalWrite(uint8_t value, size_t offset, KeepEndianTag) BOOST_NOEXCEPT
 {
-    uint8_t* data = storage_->bytes_;
+    uint8_t* data = bytes_;
     data[offset++] = value;
     ++cursor_;
 }
@@ -383,7 +377,7 @@ BufferIterator::InternalWrite(uint16_t value, size_t offset, KeepEndianTag) BOOS
         uint16_t v;
     };
     v = value;
-    uint8_t* data = storage_->bytes_;
+    uint8_t* data = bytes_;
     data[offset++] = b[0];
     data[offset++] = b[1];
     cursor_ += 2;
@@ -398,7 +392,7 @@ BufferIterator::InternalWrite(uint32_t value, size_t offset, KeepEndianTag) BOOS
         uint32_t v;
     };
     v = value;
-    uint8_t* data = storage_->bytes_;
+    uint8_t* data = bytes_;
     data[offset++] = b[0];
     data[offset++] = b[1];
     data[offset++] = b[2];
@@ -415,7 +409,7 @@ BufferIterator::InternalWrite(uint64_t value, size_t offset, KeepEndianTag) BOOS
         uint64_t v;
     };
     v = value;
-    uint8_t* data = storage_->bytes_;
+    uint8_t* data = bytes_;
     data[offset++] = b[0];
     data[offset++] = b[1];
     data[offset++] = b[2];
@@ -430,7 +424,7 @@ BufferIterator::InternalWrite(uint64_t value, size_t offset, KeepEndianTag) BOOS
 inline void
 BufferIterator::InternalWrite(uint8_t value, size_t offset, ReverseEndianTag) BOOST_NOEXCEPT
 {
-    uint8_t* data = storage_->bytes_;
+    uint8_t* data = bytes_;
     data[offset++] = value;
     ++cursor_;
 }
@@ -444,7 +438,7 @@ BufferIterator::InternalWrite(uint16_t value, size_t offset, ReverseEndianTag) B
         uint16_t v;
     };
     v = value;
-    uint8_t* data = storage_->bytes_;
+    uint8_t* data = bytes_;
     data[offset++] = b[1];
     data[offset++] = b[0];
     cursor_ += 2;
@@ -459,7 +453,7 @@ BufferIterator::InternalWrite(uint32_t value, size_t offset, ReverseEndianTag) B
         uint32_t v;
     };
     v = value;
-    uint8_t* data = storage_->bytes_;
+    uint8_t* data = bytes_;
     data[offset++] = b[3];
     data[offset++] = b[2];
     data[offset++] = b[1];
@@ -476,7 +470,7 @@ BufferIterator::InternalWrite(uint64_t value, size_t offset, ReverseEndianTag) B
         uint64_t v;
     };
     v = value;
-    uint8_t* data = storage_->bytes_;
+    uint8_t* data = bytes_;
     data[offset++] = b[7];
     data[offset++] = b[6];
     data[offset++] = b[5];
@@ -520,7 +514,7 @@ inline uint8_t
 BufferIterator::InternalRead(size_t offset, ReadTag<1, InSolidAreaTag>, KeepEndianTag) BOOST_NOEXCEPT
 {
     uint8_t b;
-    const uint8_t* data = storage_->bytes_;
+    const uint8_t* data = bytes_;
     b = data[offset++];
     ++cursor_;
     return b;
@@ -534,7 +528,7 @@ BufferIterator::InternalRead(size_t offset, ReadTag<2, InSolidAreaTag>, KeepEndi
         uint8_t  b[2];
         uint16_t v;
     };
-    const uint8_t* data = storage_->bytes_;
+    const uint8_t* data = bytes_;
     b[0] = data[offset++];
     b[1] = data[offset++];
     cursor_+= 2;
@@ -549,7 +543,7 @@ BufferIterator::InternalRead(size_t offset, ReadTag<4, InSolidAreaTag>, KeepEndi
         uint8_t  b[4];
         uint32_t v;
     };
-    const uint8_t* data = storage_->bytes_;
+    const uint8_t* data = bytes_;
     b[0] = data[offset++];
     b[1] = data[offset++];
     b[2] = data[offset++];
@@ -566,7 +560,7 @@ BufferIterator::InternalRead(size_t offset, ReadTag<8, InSolidAreaTag>, KeepEndi
         uint8_t  b[8];
         uint64_t v;
     };
-    const uint8_t* data = storage_->bytes_;
+    const uint8_t* data = bytes_;
     b[0] = data[offset++];
     b[1] = data[offset++];
     b[2] = data[offset++];
@@ -583,7 +577,7 @@ inline uint8_t
 BufferIterator::InternalRead(size_t offset, ReadTag<1, InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT
 {
     uint8_t b;
-    const uint8_t* data = storage_->bytes_;
+    const uint8_t* data = bytes_;
     b = data[offset++];
     ++cursor_;
     return b;
@@ -597,7 +591,7 @@ BufferIterator::InternalRead(size_t offset, ReadTag<2, InSolidAreaTag>, ReverseE
         uint8_t  b[2];
         uint16_t v;
     };
-    const uint8_t* data = storage_->bytes_;
+    const uint8_t* data = bytes_;
     b[1] = data[offset++];
     b[0] = data[offset++];
     cursor_ += 2;
@@ -612,7 +606,7 @@ BufferIterator::InternalRead(size_t offset, ReadTag<4, InSolidAreaTag>, ReverseE
         uint8_t  b[4];
         uint32_t v;
     };
-    const uint8_t* data = storage_->bytes_;
+    const uint8_t* data = bytes_;
     b[3] = data[offset++];
     b[2] = data[offset++];
     b[1] = data[offset++];
@@ -629,7 +623,7 @@ BufferIterator::InternalRead(size_t offset, ReadTag<8, InSolidAreaTag>, ReverseE
         uint8_t  b[8];
         uint64_t v;
     };
-    const uint8_t* data = storage_->bytes_;
+    const uint8_t* data = bytes_;
     b[7] = data[offset++];
     b[6] = data[offset++];
     b[5] = data[offset++];
@@ -720,7 +714,7 @@ inline BufferIterator& BufferIterator::operator-=(size_t numBytes) BOOST_NOEXCEP
 inline bool operator> (const BufferIterator& lhs,
                        const BufferIterator& rhs) BOOST_NOEXCEPT
 {
-    BOOST_ASSERT_MSG(lhs.storage_ == rhs.storage_,
+    BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
                      "Cannot compare unrelated buffer iterators.");
     return lhs.cursor_ > rhs.cursor_;
 }
@@ -728,7 +722,7 @@ inline bool operator> (const BufferIterator& lhs,
 inline bool operator>=(const BufferIterator& lhs,
                        const BufferIterator& rhs) BOOST_NOEXCEPT
 {
-    BOOST_ASSERT_MSG(lhs.storage_ == rhs.storage_,
+    BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
                      "Cannot compare unrelated buffer iterators.");
     return lhs.cursor_ >= rhs.cursor_;
 }
@@ -736,7 +730,7 @@ inline bool operator>=(const BufferIterator& lhs,
 inline bool operator==(const BufferIterator& lhs,
                        const BufferIterator& rhs) BOOST_NOEXCEPT
 {
-    BOOST_ASSERT_MSG(lhs.storage_ == rhs.storage_,
+    BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
                      "Cannot compare unrelated buffer iterators.");
     return lhs.cursor_ == rhs.cursor_;
 }
@@ -744,7 +738,7 @@ inline bool operator==(const BufferIterator& lhs,
 inline bool operator!=(const BufferIterator& lhs,
                        const BufferIterator& rhs) BOOST_NOEXCEPT
 {
-    BOOST_ASSERT_MSG(lhs.storage_ == rhs.storage_,
+    BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
                      "Cannot compare unrelated buffer iterators.");
     return lhs.cursor_ != rhs.cursor_;
 }
@@ -752,7 +746,7 @@ inline bool operator!=(const BufferIterator& lhs,
 inline bool operator< (const BufferIterator& lhs,
                        const BufferIterator& rhs) BOOST_NOEXCEPT
 {
-    BOOST_ASSERT_MSG(lhs.storage_ == rhs.storage_,
+    BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
                      "Cannot compare unrelated buffer iterators.");
     return lhs.cursor_ < rhs.cursor_;
 }
@@ -760,7 +754,7 @@ inline bool operator< (const BufferIterator& lhs,
 inline bool operator<=(const BufferIterator& lhs,
                        const BufferIterator& rhs) BOOST_NOEXCEPT
 {
-    BOOST_ASSERT_MSG(lhs.storage_ == rhs.storage_,
+    BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
                      "Cannot compare unrelated buffer iterators.");
     return lhs.cursor_ <= rhs.cursor_;
 }
@@ -782,7 +776,7 @@ inline BufferIterator operator-(const BufferIterator& lhs, size_t numBytes) BOOS
 inline ptrdiff_t
 operator-(const BufferIterator& lhs, const BufferIterator& rhs) BOOST_NOEXCEPT
 {
-    BOOST_ASSERT_MSG(lhs.storage_ == rhs.storage_,
+    BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
                      "Cannot compare unrelated buffer iterators.");
     return lhs.cursor_ - rhs.cursor_;
 }
@@ -795,12 +789,9 @@ operator-(const BufferIterator& lhs, const BufferIterator& rhs) BOOST_NOEXCEPT
  */
 class ConstBufferIterator
 {
-private:
-    friend class Buffer;
-
     // Xtructors.
-private:
-    ConstBufferIterator(BufferStorage* storage, size_t start,
+public:
+    ConstBufferIterator(uint8_t* bytes, size_t start,
                         size_t end, size_t cursor) BOOST_NOEXCEPT;
 
     // Copyable.
@@ -884,8 +875,8 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 inline ConstBufferIterator::ConstBufferIterator(
-    BufferStorage* storage, size_t start, size_t end, size_t cursor) BOOST_NOEXCEPT :
-    it_(storage, start, end, cursor)
+    uint8_t* bytes, size_t start, size_t end, size_t cursor) BOOST_NOEXCEPT :
+    it_(bytes, start, end, cursor)
 {
 }
 

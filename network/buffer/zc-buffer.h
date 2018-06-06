@@ -453,16 +453,17 @@ inline ZcBuffer& ZcBuffer::operator=(const ZcBuffer& rhs) BOOST_NOEXCEPT
 {
     if (this != &rhs)
     {
-        if (storage_)
-        {
-            BufferStorage::Release(storage_);
-        }
+        BufferStorage* tmp = storage_;
         storage_   = rhs.storage_;
         start_     = rhs.start_;
         zeroStart_ = rhs.zeroStart_;
         zeroEnd_   = rhs.zeroEnd_;
         end_       = rhs.end_;
         Acquire();
+        if (tmp)
+        {
+            BufferStorage::Release(tmp);
+        }
     }
     return *this;
 }
@@ -982,11 +983,7 @@ inline void ZcBuffer::RemoveAtStart(size_t size) BOOST_NOEXCEPT
     }
     else // if (newStart > end_)
     {
-        size_t gamma = zeroEnd_ - zeroStart_;
-        end_      -= gamma;
-        start_     = end_;
-        zeroStart_ = end_;
-        zeroEnd_   = end_;
+        Release();
     }
 }
 
@@ -1011,9 +1008,7 @@ inline void ZcBuffer::RemoveAtEnd(size_t size) BOOST_NOEXCEPT
     }
     else // if (size > end_ - start_)
     {
-        zeroStart_ = start_;
-        zeroEnd_   = start_;
-        end_       = start_;
+        Release();
     }
 }
 
@@ -1059,6 +1054,34 @@ inline ZcBuffer ZcBuffer::InternalGetRealBuffer(ReallocateTag) const
     return ZcBuffer(newStorage, 0, header + gamma, header + gamma, newCapacity);
 }
 
+inline ZcBufferIterator ZcBuffer::begin(void) BOOST_NOEXCEPT
+{
+    uint8_t* bytes = storage_ ? storage_->bytes_ : nullptr;
+    size_t cursor = start_;
+    return ZcBufferIterator(bytes, start_, zeroStart_, zeroEnd_, end_, cursor);
+}
+
+inline ZcBufferIterator ZcBuffer::end(void) BOOST_NOEXCEPT
+{
+    uint8_t* bytes = storage_ ? storage_->bytes_ : nullptr;
+    size_t cursor = end_;
+    return ZcBufferIterator(bytes, start_, zeroStart_, zeroEnd_, end_, cursor);
+}
+
+inline ConstZcBufferIterator ZcBuffer::cbegin(void) const BOOST_NOEXCEPT
+{
+    uint8_t* bytes = storage_ ? storage_->bytes_ : nullptr;
+    size_t cursor = start_;
+    return ConstZcBufferIterator(bytes, start_, zeroStart_, zeroEnd_, end_, cursor);
+}
+
+inline ConstZcBufferIterator ZcBuffer::cend(void) const BOOST_NOEXCEPT
+{
+    uint8_t* bytes = storage_ ? storage_->bytes_ : nullptr;
+    size_t cursor = end_;
+    return ConstZcBufferIterator(bytes, start_, zeroStart_, zeroEnd_, end_, cursor);
+}
+
 inline void ZcBuffer::swap(ZcBuffer& rhs) BOOST_NOEXCEPT
 {
     if (this != &rhs)
@@ -1069,30 +1092,6 @@ inline void ZcBuffer::swap(ZcBuffer& rhs) BOOST_NOEXCEPT
         boost::swap(zeroEnd_,   rhs.zeroEnd_);
         boost::swap(end_,       rhs.end_);
     }
-}
-
-inline ZcBufferIterator ZcBuffer::begin(void) BOOST_NOEXCEPT
-{
-    size_t cursor = start_;
-    return ZcBufferIterator(storage_, start_, zeroStart_, zeroEnd_, end_, cursor);
-}
-
-inline ZcBufferIterator ZcBuffer::end(void) BOOST_NOEXCEPT
-{
-    size_t cursor = end_;
-    return ZcBufferIterator(storage_, start_, zeroStart_, zeroEnd_, end_, cursor);
-}
-
-inline ConstZcBufferIterator ZcBuffer::cbegin(void) const BOOST_NOEXCEPT
-{
-    size_t cursor = start_;
-    return ConstZcBufferIterator(storage_, start_, zeroStart_, zeroEnd_, end_, cursor);
-}
-
-inline ConstZcBufferIterator ZcBuffer::cend(void) const BOOST_NOEXCEPT
-{
-    size_t cursor = end_;
-    return ConstZcBufferIterator(storage_, start_, zeroStart_, zeroEnd_, end_, cursor);
 }
 
 
