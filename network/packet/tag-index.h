@@ -18,7 +18,7 @@
 
 
 #include <nsfx/network/config.h>
-#include <nsfx/network/buffer/tag-buffer-storage.h>
+#include <nsfx/network/packet/tag.h>
 
 
 NSFX_OPEN_NAMESPACE
@@ -33,7 +33,7 @@ NSFX_OPEN_NAMESPACE
 class TagIndex
 {
 public:
-    TagIndex(size_t tagId, size_t tagStart, size_t tagEnd, TagBuffer buffer) BOOST_NOEXCEPT;
+    TagIndex(const Tag& tag, size_t tagStart, size_t tagEnd) BOOST_NOEXCEPT;
 
     TagIndex(const TagIndex& rhs) BOOST_NOEXCEPT;
     TagIndex& operator=(const TagIndex& rhs) BOOST_NOEXCEPT;
@@ -41,69 +41,58 @@ public:
     TagIndex(TagIndex&& rhs) BOOST_NOEXCEPT;
     TagIndex& operator=(TagIndex&& rhs) BOOST_NOEXCEPT;
 
+    const Tag& GetTag(void) const BOOST_NOEXCEPT;
+    size_t GetStart(void) const BOOST_NOEXCEPT;
+    size_t GetEnd(void) const BOOST_NOEXCEPT;
+
+    bool HasTaggedByte(size_t bufferStart, size_t bufferEnd) const BOOST_NOEXCEPT;
+
+    static bool HasTaggedByte(size_t tagStart, size_t tagEnd,
+                              size_t bufferStart, size_t bufferEnd) BOOST_NOEXCEPT;
+
+    void swap(Tag& rhs) BOOST_NOEXCEPT;
+
 private:
-    size_t  tagId_;       ///< The id of the tag.
-    size_t  tagStart_;    ///< The start of tagged bytes (inclusive).
-    size_t  tagEnd_;      ///< The end of tagged bytes (exclusive).
-    TagBuffer buffer_;    ///< The storage of the tag.
+    Tag     tag_;      ///< The tag.
+    size_t  tagStart_; ///< The start of tagged bytes (inclusive).
+    size_t  tagEnd_;   ///< The end of tagged bytes (exclusive).
 };
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/**
- * @ingroup Network.
- * @brief The tag index array (POD).
- * @internal
- */
-struct TagIndexArray
-{
-    refcount_t refCount_;  ///< The reference count of the tag index.
-    size_t  capacity_;     ///< Number of tag indices.
-    size_t  dirty_;        ///< Number of used tag indices.
-    TagIndex indices_[1];  ///< The tag indices.
-
-    // Helper functions.
-    static TagIndexArray* Allocate(size_t capacity);
-    static void AddRef(TagIndexArray* tia) BOOST_NOEXCEPT;
-    static void Release(TagIndexArray* tia);
-};
+void swap(Tag& lhs, Tag& rhs) BOOST_NOEXCEPT;
 
 
 ////////////////////////////////////////////////////////////////////////////////
-inline TagIndex::TagIndex(size_t tagId, size_t tagStart,
-                          size_t tagEnd, TagBuffer buffer) BOOST_NOEXCEPT :
-    tagId_(tagId),
+inline TagIndex::TagIndex(const Tag& tag, size_t tagStart, size_t tagEnd) BOOST_NOEXCEPT :
+    tag_(tag),
     tagStart_(tagStart),
     tagEnd_(tagEnd),
-    buffer_(buffer)
 {
 }
 
 inline TagIndex::TagIndex(const TagIndex& rhs) BOOST_NOEXCEPT :
-    tagId_(rhs.tagId),
+    tag_(rhs.tag),
     tagStart_(rhs.tagStart),
-    tagEnd_(rhs.tagEnd),
-    buffer_(rhs.buffer)
+    tagEnd_(rhs.tagEnd)
 {
 }
 
-inline TagIndex& operatorTagIndex::=(const TagIndex& rhs) BOOST_NOEXCEPT
+inline TagIndex& TagIndex::operator=(const TagIndex& rhs) BOOST_NOEXCEPT
 {
     if (this != &rhs)
     {
-        tagId_    = rhs.tagId_;
+        tag_      = rhs.tag_;
         tagStart_ = rhs.tagStart_;
         tagEnd_   = rhs.tagEnd_;
-        buffer_   = rhs.buffer_;
     }
     return *this;
 }
 
 inline TagIndex::TagIndex(TagIndex&& rhs) BOOST_NOEXCEPT :
-    tagId_(rhs.tagId),
+    tag_(std::move(rhs.tag)),
     tagStart_(rhs.tagStart),
-    tagEnd_(rhs.tagEnd),
-    buffer_(std::move(rhs.buffer))
+    tagEnd_(rhs.tagEnd)
 {
 }
 
@@ -111,76 +100,38 @@ inline TagIndex& TagIndex::operator=(TagIndex&& rhs) BOOST_NOEXCEPT
 {
     if (this != &rhs)
     {
-        tagId_    = rhs.tagId_;
+        tag_      = std::move(rhs.tag_);
         tagStart_ = rhs.tagStart_;
         tagEnd_   = rhs.tagEnd_;
-        buffer_   = rhs.buffer_;
     }
     return *this;
 }
 
-
-////////////////////////////////////////////////////////////////////////////////
-inline void TagIndex::Ctor(TagIndex* idx, size_t tagId, size_t tagStart,
-                           size_t tagEnd, TagBufferStorage* storage) BOOST_NOEXCEPT
+inline void TagIndex::swap(Tag& rhs) BOOST_NOEXCEPT
 {
-    BOOST_ASSERT(idx);
-    idx->tagId_    = tagId;
-    idx->tagStart_ = tagStart;
-    idx->tagEnd_   = tagEnd;
-    idx->storage_  = storage;
+    boost::swap(tag_, rhs.tag_);
+    boost::swap(tagStart_, rhs.tagStart_);
+    boost::swap(tagEnd_, rhs.tagEnd_);
 }
 
-inline void TagIndex::CopyCtor(TagIndex* lhs, const TagIndex* rhs) BOOST_NOEXCEPT
+inline const Tag& TagIndex::GetTag(void) const BOOST_NOEXCEPT
 {
-    BOOST_ASSERT(lhs);
-    BOOST_ASSERT(rhs);
-    BOOST_ASSERT(lhs != rhs);
-    *lhs = *rhs;
-    if (lhs->storage_)
-    {
-        TagBufferStorage::AddRef(lhs->storage_);
-    }
+    return tag_;
 }
 
-inline void TagIndex::CopyAssign(TagIndex* lhs, const TagIndex* rhs)
+inline size_t TagIndex::GetStart(void) const BOOST_NOEXCEPT
 {
-    BOOST_ASSERT(lhs);
-    BOOST_ASSERT(rhs);
-    if (lhs != rhs)
-    {
-        TagBufferStorage* tmp = lhs->storage_;
-        *lhs = *rhs;
-        if (lhs->storage_)
-        {
-            TagBufferStorage::AddRef(lhs->storage_);
-        }
-        if (tmp)
-        {
-            TagBufferStorage::Release(tmp);
-        }
-    }
+    return tagStart_;
 }
 
-inline void TagIndex::Release(TagIndex* idx)
+inline size_t TagIndex::GetEnd(void) const BOOST_NOEXCEPT
 {
-    BOOST_ASSERT(idx);
-    if (idx->storage_)
-    {
-        TagBufferStorage::Release(idx->storage_);
-    }
+    return tagEnd_;
 }
 
-inline void TagIndex::Swap(TagIndex* lhs, TagIndex* rhs) BOOST_NOEXCEPT
+inline bool TagIndex::HasTaggedByte(size_t bufferStart, size_t bufferEnd) const BOOST_NOEXCEPT
 {
-    BOOST_ASSERT(lhs);
-    BOOST_ASSERT(rhs);
-    if (lhs != rhs)
-    {
-        TagIndex tmp = *lhs;
-        *lhs = *rhs;
-        *rhs = tmp;
-    }
+    return HasTaggedByte(tagStart_, tagEnd_, bufferStart, bufferEnd);
 }
 
 inline bool TagIndex::HasTaggedByte(size_t tagStart, size_t tagEnd,
@@ -190,49 +141,11 @@ inline bool TagIndex::HasTaggedByte(size_t tagStart, size_t tagEnd,
             tagEnd   > bufferStart);
 }
 
-inline bool TagIndex::HasTaggedByte(const TagIndex* idx,
-                                    size_t bufferStart, size_t bufferEnd) BOOST_NOEXCEPT
-{
-    return HasTaggedByte(idx->tagStart_, idx->tagEnd_, bufferStart, bufferEnd);
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////
-inline TagIndexArray* TagIndexArray::Allocate(size_t capacity)
+inline void swap(TagIndex& lhs, TagIndex& rhs) BOOST_NOEXCEPT
 {
-    BOOST_ASSERT_MSG(capacity, "Cannot allocate an empty tag index array.");
-    size_t size = sizeof (TagIndexArray) + sizeof (TagIndex) * capacity;
-    TagIndexArray* tia = reinterpret_cast<TagIndexArray*>(new uint8_t[size]);
-    tia->refCount_ = 1;
-    tia->capacity_ = capacity;
-    tia->dirty_    = 0;
-    return tia;
-}
-
-inline void TagIndexArray::AddRef(TagIndexArray* tia) BOOST_NOEXCEPT
-{
-    BOOST_ASSERT(tia);
-    BOOST_ASSERT(tia->refCount_ >= 0);
-    ++tia->refCount_;
-}
-
-inline void TagIndexArray::Release(TagIndexArray* tia)
-{
-    BOOST_ASSERT(tia);
-    BOOST_ASSERT(tia->refCount_ > 0);
-    if (--tia->refCount_ == 0)
-    {
-        TagIndex* idx = tia->indices_ + (tia->dirty_ - 1);
-        TagIndex* end = tia->indices_;
-        while (idx >= end)
-        {
-            --tia->dirty_;
-            TagIndex::Release(idx);
-            --idx;
-        }
-        uint8_t* p = reinterpret_cast<uint8_t*>(tia);
-        delete[] p;
-    }
+    lhs.swap(rhs);
 }
 
 

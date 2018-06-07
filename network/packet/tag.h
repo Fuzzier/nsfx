@@ -18,9 +18,7 @@
 
 
 #include <nsfx/network/config.h>
-#include <nsfx/network/buffer/tag-buffer-storage.h>
-#include <nsfx/network/packet/tag-index.h>
-#include <boost/type_index.hpp>
+#include <nsfx/network/buffer/tag-buffer.h>
 
 
 NSFX_OPEN_NAMESPACE
@@ -30,6 +28,9 @@ NSFX_OPEN_NAMESPACE
 /**
  * @ingroup Network
  * @brief A free tag that is not associated with any bytes.
+ *
+ *  A tag has an id and a value.
+ *  The value of a tag is a buffer.
  */
 class Tag
 {
@@ -38,18 +39,15 @@ public:
     /**
      * @brief Create a tag.
      *
-     * @param[in] tagId   The id of the tag.
-     * @param[in] storage The storage of the tag.
+     * @param[in] id     The id of the tag.
+     * @param[in] buffer The tag buffer.
      */
-    Tag(size_t tagId, TagBufferStorage* storage) BOOST_NOEXCEPT;
-
-public:
-    ~Tag(void);
+    Tag(size_t id, TagBuffer&& buffer);
 
     // Copyable.
 public:
     Tag(const Tag& rhs) BOOST_NOEXCEPT;
-    Tag& operator=(const Tag& rhs);
+    Tag& operator=(const Tag& rhs) BOOST_NOEXCEPT;
 
 public:
     /**
@@ -58,54 +56,40 @@ public:
     size_t GetId(void) const BOOST_NOEXCEPT;
 
     /**
-     * @brief Get the buffer of the tag.
+     * @brief Get a read-only iterator of the tag buffer.
      */
-    template<class T>
-    TagBuffer GetBuffer(void) const BOOST_NOEXCEPT;
+    ConstTagBufferIterator GetBufferBegin(void) const BOOST_NOEXCEPT;
 
-private:
     /**
-     * @brief Make a tag index.
+     * @brief Get a read-only iterator of the tag buffer.
      */
-    TagIndex MakeTagIndex(size_t tagStart, size_t tagEnd) const BOOST_NOEXCEPT;
+    ConstTagBufferIterator GetBufferEnd(void) const BOOST_NOEXCEPT;
 
 private:
     size_t id_;
     TagBuffer buffer_;
-
-    // Required to access the constructor and MakeTagIndex().
-    friend class TagList;
 };
 
 
 ////////////////////////////////////////////////////////////////////////////////
-inline Tag::Tag(size_t tagId, TagBufferStorage* storage) BOOST_NOEXCEPT :
-    id_(tagId),
-    storage_(storage)
+inline Tag::Tag(size_t id, TagBuffer&& buffer) :
+    id_(id),
+    buffer_(std::move(buffer))
 {
-}
-
-inline Tag::~Tag(void)
-{
-    TagBufferStorage::Release(storage_);
 }
 
 inline Tag::Tag(const Tag& rhs) BOOST_NOEXCEPT :
     id_(rhs.id_),
-    storage_(rhs.storage_)
+    buffer_(rhs.buffer_)
 {
-    TagBufferStorage::AddRef(storage_);
 }
 
-inline Tag& Tag::operator=(const Tag& rhs)
+inline Tag& Tag::operator=(const Tag& rhs) BOOST_NOEXCEPT
 {
     if (this != &rhs)
     {
-        TagBufferStorage* tmp = storage_;
         id_ = rhs.id_;
-        storage_ = rhs.storage_;
-        TagBufferStorage::AddRef(storage_);
-        TagBufferStorage::Release(tmp);
+        buffer_ = rhs.buffer_;
     }
     return *this;
 }
@@ -113,6 +97,16 @@ inline Tag& Tag::operator=(const Tag& rhs)
 inline size_t Tag::GetId(void) const BOOST_NOEXCEPT
 {
     return id_;
+}
+
+inline ConstTagBufferIterator Tag::GetBufferBegin(void) const BOOST_NOEXCEPT
+{
+    return buffer_.cbegin();
+}
+
+inline ConstTagBufferIterator Tag::GetBufferEnd(void) const BOOST_NOEXCEPT
+{
+    return buffer_.cend();
 }
 
 

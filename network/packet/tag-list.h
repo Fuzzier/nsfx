@@ -18,9 +18,8 @@
 
 
 #include <nsfx/network/config.h>
-#include <nsfx/network/packet/tag-index.h>
-#include <nsfx/network/packet/tag-storage.h>
 #include <nsfx/network/packet/tag.h>
+#include <nsfx/network/packet/tag-index-array.h>
 #include <nsfx/network/packet/exception.h>
 #include <boost/type_index.hpp>
 #include <boost/preprocessor/repetition/enum.hpp>
@@ -39,14 +38,13 @@ NSFX_OPEN_NAMESPACE
  * @brief The tag list.
  *
  * # Overview
- *  A tag is a user-defined value that are associated with a range of bytes in
- *  the current buffer.
- *  A tag consists of a tag id, a tag value and the range of tagged bytes.
- *  A byte may be tagged by multiple tags.
+ *  A tag has an id and a value.
+ *  A tag may be attached to multiple bytes.
+ *  A byte may also have multiple tags.
  *
  *  A packet uses a tag list to hold the set of tags.
  *  When a packet is duplicated, fragmented or reassembled, the tags are
- *  carried along with its tagged bytes.
+ *  carried along with the tagged bytes.
  *  i.e., when a byte is transferred to a packet, all of its tags are also
  *  carried by the packet.
  *
@@ -113,14 +111,11 @@ NSFX_OPEN_NAMESPACE
  *   To avoid memory allocation and deallocation, the tag values are shared
  *   among packets.
  *
- * ## Tag storage
- *    A tag value is stored in a \c TagBufferStorage.
- *    A tag storage is responsible to store the tag value, and provides a
- *    reference count for lifetime management.
- *
- *    The tag storage is designed to construct a tag value 'emplace'.
- *    Thus, tag storages are able to hold non-copyable, non-movable tag values.
- *    The tag values are created once, read-only, and destroyed once.
+ * ## Tag value
+ *    The value of a tag is a \c TagBuffer.
+ *    A tag value is created once and read-only.
+ *    A tag value is removed automatically when the attaches bytes are removed
+ *    from the buffer.
  *
  * ## Tag index
  *    A \c TagIndex holds a pointer to the tag storage, and is responsible to
@@ -152,11 +147,11 @@ NSFX_OPEN_NAMESPACE
  *      remove tags in other tag lists that share the array.
  *
  *    @code
- *    TagList          [list]
- *                       |
- *    TagIndexArray    [idx1   idx2   idx3  ...]   (shared, copy-on-write)
- *                       |      |      |
- *    TagBufferStorage [tag1] [tag2] [tag3] ...    (shared, store value)
+ *    TagList        [list]
+ *                     |
+ *    TagIndexArray  [idx1   idx2   idx3  ...]   (shared, copy-on-write)
+ *                     |      |      |
+ *    TagBuffer      [tag1] [tag2] [tag3] ...    (shared, store value)
  *    @endcode
  *
  * ## Coordinate transformation
@@ -250,8 +245,6 @@ class TagList
 public:
     /**
      * @brief Create an empty tag list.
-     *
-     * The current size of the buffer is assumed to be \c 0.
      */
     TagList(void) BOOST_NOEXCEPT;
 
@@ -259,8 +252,6 @@ public:
      * @brief Create an empty tag list.
      *
      * @param[in] capacity The initial capacity of the tag list.
-     *
-     * The current size of the buffer is assumed to be \c 0.
      */
     explicit TagList(size_t capacity);
 
@@ -344,6 +335,9 @@ public:
      * @param[in] offset The offset of the byte, relative to the start of
      *                   the buffer.
      *
+     * @remarks If multiple tags with the same id are attached to the byte,
+     *          one of the tag is returned.
+     *
      * @throw TagNotFound
      */
     Tag Get(size_t tagId, size_t offset) const;
@@ -402,7 +396,7 @@ private:
      *
      * If the tag is already in the list, it is not inserted.
      */
-    void InsertTag(size_t tagId, size_t tagStart, size_t tagEnd, TagBufferStorage* storage);
+    void AddTag(const Tag& tag, size_t tagStart, size_t tagEnd);
 
 public:
     enum
@@ -491,7 +485,7 @@ inline TagList& TagList::operator=(const TagList& rhs)
 
 inline void TagList::AddAtStart(size_t size)
 {
-    BOOST_ASSERT_MSG(bufferStart_ >= size,
+    BOOST_ASSERT_MSG(size <= bufferStart_,
                      "The buffer grows too large that the start position of "
                      "the buffer tracked by the tag list would be negative.");
     ExpandBuffer(size, 0);
@@ -506,14 +500,14 @@ inline void TagList::AddAtStart(const TagList& rhs)
     const TagIndex* end = rhs.tia_->indices_ + rhs.size_;
     while (idx != end)
     {
-        size_t newTagStart = idx->tagStart_ + (bufferStart_ - rhs.bufferStart_);
-        size_t newTagEnd   = idx->tagEnd_   + (bufferStart_ - rhs.bufferStart_);
+        size_t newTagStart = idx->GetStart() + (bufferStart_ - rhs.bufferStart_);
+        size_t newTagEnd   = idx->GetEnd()   + (bufferStart_ - rhs.bufferStart_);
         // Shall obtain the same result if (rhs.bufferStart_ > bufferStart_).
         BOOST_ASSERT(newTagStart ==
-                     idx->tagStart_ - (rhs.bufferStart_ - bufferStart_));
+                     idx->GetStart() - (rhs.bufferStart_ - bufferStart_));
         BOOST_ASSERT(newTagEnd ==
-                     idx->tagEnd_   - (rhs.bufferStart_ - bufferStart_));
-        InsertTag(idx->tagId_, newTagStart, newTagEnd, idx->storage_);
+                     idx->GetEnd()   - (rhs.bufferStart_ - bufferStart_));
+        AddTag(idx->GetTag(), newTagStart, newTagEnd);
         ++idx;
     }
 }
@@ -542,14 +536,14 @@ inline void TagList::AddAtEnd(const TagList& rhs)
     const TagIndex* end = rhs.tia_->indices_ + rhs.size_;
     while (idx != end)
     {
-        size_t newTagStart = idx->tagStart_ + (bufferEnd_ - rhs.bufferEnd_);
-        size_t newTagEnd   = idx->tagEnd_   + (bufferEnd_ - rhs.bufferEnd_);
+        size_t newTagStart = idx->GetStart() + (bufferEnd_ - rhs.bufferEnd_);
+        size_t newTagEnd   = idx->GetEnd()   + (bufferEnd_ - rhs.bufferEnd_);
         // Shall obtain the same result if (rhs.bufferEnd_ > bufferEnd_).
         BOOST_ASSERT(newTagStart ==
-                     idx->tagStart_ - (rhs.bufferEnd_ - bufferEnd_));
+                     idx->GetStart() - (rhs.bufferEnd_ - bufferEnd_));
         BOOST_ASSERT(newTagEnd ==
-                     idx->tagEnd_   - (rhs.bufferEnd_ - bufferEnd_));
-        InsertTag(idx->tagId_, newTagStart, newTagEnd, idx->storage_);
+                     idx->GetEnd()   - (rhs.bufferEnd_ - bufferEnd_));
+        AddTag(idx->GetTag(), newTagStart, newTagEnd);
         ++idx;
     }
 }
@@ -569,7 +563,7 @@ inline void TagList::Insert(const Tag& tag, size_t start, size_t size)
     TagIndex* idx   = tia_->indices_ + size_;
     size_t tagStart = bufferStart_ + start;
     size_t tagEnd   = bufferStart_ + start + size;
-    *idx = tag.MakeTagIndex(tagStart, tagEnd);
+    new (idx) TagIndex(tag, tagStart, tagEnd);
     // Increase the size after the construction succeeded.
     ++size_;
     ++tia_->dirty_;
@@ -585,8 +579,8 @@ inline bool TagList::Exists(size_t tagId, size_t offset) const BOOST_NOEXCEPT
     TagIndex* end = tia_->indices_ + size_;
     while (idx != end)
     {
-        if (idx->tagId_ == tagId &&
-            idx->tagStart_ <= pos && pos < idx->tagEnd_)
+        if (idx->GetTag().GetId() == tagId &&
+            idx->GetStart() <= pos && pos < idx->GetEnd())
         {
             found = true;
             break;
@@ -605,11 +599,10 @@ inline Tag TagList::Get(size_t tagId, size_t offset) const
     TagIndex* end = tia_->indices_ + size_;
     while (idx != end)
     {
-        if (idx->tagId_ == tagId &&
-            idx->tagStart_ <= pos && pos < idx->tagEnd_)
+        if (idx->GetTag().GetId() == tagId &&
+            idx->GetStart() <= pos && pos < idx->GetEnd())
         {
-            TagBufferStorage::AddRef(idx->storage_);
-            return Tag(tagId, idx->storage_);
+            return Tag;
         }
         ++idx;
     }
@@ -625,7 +618,7 @@ inline size_t TagList::GetSize(void) const BOOST_NOEXCEPT
     TagIndex* end = tia_->indices_ + size_;
     while (idx != end)
     {
-        if (TagIndex::HasTaggedByte(idx, bufferStart_, bufferEnd_))
+        if (idx->HasTaggedByte(bufferStart_, bufferEnd_))
         {
             ++count;
         }
@@ -652,14 +645,6 @@ inline size_t TagList::GetBufferEnd(void) const BOOST_NOEXCEPT
 inline const TagIndexArray* TagList::GetTagIndexArray(void) const BOOST_NOEXCEPT
 {
     return tia_;
-}
-
-inline void TagList::swap(TagList& rhs) BOOST_NOEXCEPT
-{
-    boost::swap(bufferStart_, rhs.bufferStart_);
-    boost::swap(bufferEnd_, rhs.bufferEnd_);
-    boost::swap(size_, rhs.size_);
-    boost::swap(tia_, rhs.tia_);
 }
 
 inline void TagList::PrepareToInsert(void)
@@ -727,7 +712,6 @@ inline void TagList::Compact(void)
     BOOST_ASSERT(tia_->refCount_ == 1);
     // Compact the array from the tail.
     // i.e., remove elements from the tail of the array.
-    TagIndex* head = tia_->indices_;
     TagIndex* tail = tia_->indices_ + (tia_->dirty_ - 1);
     // Release the elements that are not held by the list.
     while (tia_->dirty_ > size_)
@@ -735,47 +719,35 @@ inline void TagList::Compact(void)
         // Reduce the size of the array before releasing the tag index.
         // Even if the release operation throws, the array is still valid.
         --tia_->dirty_;
-        TagIndex::Release(tail);
+        tail->~TagIndex();
         --tail;
     }
-    // The remaining number of tag indices to examine.
-    size_t count = size_;
     // Preserve the elements at the head of the list.
-    while (count)
+    TagIndex* head = tia_->indices_;
+    while (head <= tail && head->HasTaggedByte(bufferStart_, bufferEnd_))
     {
-        if (TagIndex::HasTaggedByte(head, bufferStart_, bufferEnd_))
-        {
-            ++head;
-            --count;
-        }
-        else
-        {
-            TagIndex::Swap(tail, head);
-            --size_;
-            --tia_->dirty_;
-            TagIndex::Release(tail);
-            --tail;
-            --count;
-            break;
-        }
+        ++head;
     }
-    while (count)
+    // Now, head is the first index that does not belong to the tag list.
+    // Find the next valid element.
+    TagIndex* next = head + 1;
+    while (next <= tail)
     {
-        if (TagIndex::HasTaggedByte(tail, bufferStart_, bufferEnd_))
+        if (next->HasTaggedByte(bufferStart_, bufferEnd_))
         {
-            // The tail is swapped to the head, and preserved.
-            TagIndex::Swap(tail, head);
-            ++head;
-            --count;
-        }
-        else
-        {
-            --size_;
             --tia_->dirty_;
-            TagIndex::Release(tail);
-            --tail;
-            --count;
+            --size_;
+            *head = std::move(*next);
+            ++head;
         }
+        ++next;
+    }
+    while (head <= tail)
+    {
+        --tia_->dirty_;
+        --size_;
+        head->~TagIndex();
+        ++head;
     }
     BOOST_ASSERT(size_ == tia_->dirty_);
 }
@@ -899,6 +871,14 @@ inline void TagList::InsertTag(size_t tagId, size_t tagStart,
         ++size_;
         ++tia_->dirty_;
     }
+}
+
+inline void TagList::swap(TagList& rhs) BOOST_NOEXCEPT
+{
+    boost::swap(bufferStart_, rhs.bufferStart_);
+    boost::swap(bufferEnd_, rhs.bufferEnd_);
+    boost::swap(size_, rhs.size_);
+    boost::swap(tia_, rhs.tia_);
 }
 
 
