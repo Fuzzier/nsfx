@@ -19,6 +19,8 @@
 
 #include <nsfx/network/config.h>
 #include <nsfx/network/buffer/tag-buffer.h>
+#include <nsfx/network/buffer/const-tag-buffer.h>
+#include <boost/core/swap.hpp>
 
 
 NSFX_OPEN_NAMESPACE
@@ -42,12 +44,17 @@ public:
      * @param[in] id     The id of the tag.
      * @param[in] buffer The tag buffer.
      */
-    Tag(size_t id, TagBuffer&& buffer);
+    Tag(size_t id, const ConstTagBuffer& buffer);
 
     // Copyable.
 public:
     Tag(const Tag& rhs) BOOST_NOEXCEPT;
     Tag& operator=(const Tag& rhs) BOOST_NOEXCEPT;
+
+    // Movable.
+public:
+    Tag(Tag&& rhs) BOOST_NOEXCEPT;
+    Tag& operator=(Tag&& rhs) BOOST_NOEXCEPT;
 
 public:
     /**
@@ -58,23 +65,25 @@ public:
     /**
      * @brief Get a read-only iterator of the tag buffer.
      */
-    ConstTagBufferIterator GetBufferBegin(void) const BOOST_NOEXCEPT;
+    const ConstTagBuffer& GetBuffer(void) const BOOST_NOEXCEPT;
 
-    /**
-     * @brief Get a read-only iterator of the tag buffer.
-     */
-    ConstTagBufferIterator GetBufferEnd(void) const BOOST_NOEXCEPT;
+public:
+    void swap(Tag& rhs) BOOST_NOEXCEPT;
 
 private:
     size_t id_;
-    TagBuffer buffer_;
+    ConstTagBuffer buffer_;
 };
 
 
 ////////////////////////////////////////////////////////////////////////////////
-inline Tag::Tag(size_t id, TagBuffer&& buffer) :
+void swap(Tag& lhs, Tag& rhs) BOOST_NOEXCEPT;
+
+
+////////////////////////////////////////////////////////////////////////////////
+inline Tag::Tag(size_t id, const ConstTagBuffer& buffer) :
     id_(id),
-    buffer_(std::move(buffer))
+    buffer_(buffer)
 {
 }
 
@@ -94,19 +103,46 @@ inline Tag& Tag::operator=(const Tag& rhs) BOOST_NOEXCEPT
     return *this;
 }
 
+inline Tag::Tag(Tag&& rhs) BOOST_NOEXCEPT :
+    id_(rhs.id_),
+    buffer_(std::move(rhs.buffer_))
+{
+}
+
+inline Tag& Tag::operator=(Tag&& rhs) BOOST_NOEXCEPT
+{
+    if (this != &rhs)
+    {
+        id_ = rhs.id_;
+        buffer_ = std::move(rhs.buffer_);
+    }
+    return *this;
+}
+
 inline size_t Tag::GetId(void) const BOOST_NOEXCEPT
 {
     return id_;
 }
 
-inline ConstTagBufferIterator Tag::GetBufferBegin(void) const BOOST_NOEXCEPT
+inline const ConstTagBuffer& Tag::GetBuffer(void) const BOOST_NOEXCEPT
 {
-    return buffer_.cbegin();
+    return buffer_;
 }
 
-inline ConstTagBufferIterator Tag::GetBufferEnd(void) const BOOST_NOEXCEPT
+inline void Tag::swap(Tag& rhs) BOOST_NOEXCEPT
 {
-    return buffer_.cend();
+    if (this != &rhs)
+    {
+        boost::swap(id_, rhs.id_);
+        boost::swap(buffer_, rhs.buffer_);
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+inline void swap(Tag& lhs, Tag& rhs) BOOST_NOEXCEPT
+{
+    lhs.swap(rhs);
 }
 
 

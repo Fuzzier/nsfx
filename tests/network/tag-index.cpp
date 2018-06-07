@@ -22,140 +22,171 @@ NSFX_TEST_SUITE(TagIndex)
 {
     NSFX_TEST_CASE(Ctor)
     {
-        nsfx::TagBufferStorage* storage = nsfx::TagBufferStorage::Allocate(16);
-        nsfx::TagIndex idx;
-        size_t tagId = 4;
-        size_t tagStart = 5;
-        size_t tagEnd = 6;
-        nsfx::TagIndex::Ctor(&idx, tagId, tagStart, tagEnd, storage);
-        NSFX_TEST_EXPECT_EQ(idx.tagId_, tagId);
-        NSFX_TEST_EXPECT_EQ(idx.tagStart_, tagStart);
-        NSFX_TEST_EXPECT_EQ(idx.tagEnd_, tagEnd);
-        NSFX_TEST_EXPECT_EQ(idx.storage_, storage);
+        size_t tagId1 = 4;
+        size_t tagStart1 = 5;
+        size_t tagEnd1 = 6;
+        nsfx::TagBuffer b1(16);
+        b1.begin().Write<uint8_t>(0xfe);
+        nsfx::Tag tag1(tagId1, b1);
 
-        nsfx::TagBufferStorage::AddRef(storage);
-        NSFX_TEST_EXPECT_EQ(storage->refCount_, 2);
-        nsfx::TagIndex::Release(&idx);
-        NSFX_TEST_EXPECT_EQ(storage->refCount_, 1);
-        nsfx::TagBufferStorage::Release(storage);
+        nsfx::TagIndex idx1(tag1, tagStart1, tagEnd1);
+
+        NSFX_TEST_EXPECT_EQ(idx1.GetTag().GetId(), tagId1);
+        NSFX_TEST_EXPECT_EQ(idx1.GetStart(), tagStart1);
+        NSFX_TEST_EXPECT_EQ(idx1.GetEnd(), tagEnd1);
+        NSFX_TEST_EXPECT_EQ(idx1.GetTag().GetBuffer().GetSize(), 16);
+        NSFX_TEST_EXPECT_EQ(idx1.GetTag().GetBuffer().cbegin().Read<uint8_t>(), 0xfe);
     }
 
     NSFX_TEST_CASE(CopyCtor)
     {
-        nsfx::TagBufferStorage* storage = nsfx::TagBufferStorage::Allocate(16);
-        nsfx::TagIndex idx1;
-        size_t tagId = 4;
-        size_t tagStart = 5;
-        size_t tagEnd = 6;
-        nsfx::TagIndex::Ctor(&idx1, tagId, tagStart, tagEnd, storage);
+        size_t tagId1 = 4;
+        size_t tagStart1 = 5;
+        size_t tagEnd1 = 6;
+        nsfx::TagBuffer b1(16);
+        b1.begin().Write<uint8_t>(0xfe);
+        nsfx::Tag tag1(tagId1, b1);
+        nsfx::TagIndex idx1(tag1, tagStart1, tagEnd1);
 
-        nsfx::TagIndex idx2;
-        nsfx::TagIndex::CopyCtor(&idx2, &idx1);
+        nsfx::TagIndex idx2(idx1);
 
-        NSFX_TEST_EXPECT_EQ(idx1.tagId_, tagId);
-        NSFX_TEST_EXPECT_EQ(idx1.tagStart_, tagStart);
-        NSFX_TEST_EXPECT_EQ(idx1.tagEnd_, tagEnd);
-        NSFX_TEST_EXPECT_EQ(idx1.storage_, storage);
-
-        NSFX_TEST_EXPECT_EQ(idx2.tagId_, tagId);
-        NSFX_TEST_EXPECT_EQ(idx2.tagStart_, tagStart);
-        NSFX_TEST_EXPECT_EQ(idx2.tagEnd_, tagEnd);
-        NSFX_TEST_EXPECT_EQ(idx2.storage_, storage);
-
-        NSFX_TEST_EXPECT_EQ(storage->refCount_, 2);
-
-        nsfx::TagIndex::Release(&idx1);
-        NSFX_TEST_EXPECT_EQ(storage->refCount_, 1);
-        nsfx::TagIndex::Release(&idx2);
+        NSFX_TEST_EXPECT_EQ(idx2.GetTag().GetId(), tagId1);
+        NSFX_TEST_EXPECT_EQ(idx2.GetStart(), tagStart1);
+        NSFX_TEST_EXPECT_EQ(idx2.GetEnd(), tagEnd1);
+        NSFX_TEST_EXPECT_EQ(idx2.GetTag().GetBuffer().GetSize(), 16);
+        NSFX_TEST_EXPECT_EQ(idx2.GetTag().GetBuffer().cbegin().Read<uint8_t>(), 0xfe);
     }
 
     NSFX_TEST_CASE(CopyAssign)
     {
-        nsfx::TagBufferStorage* storage1 = nsfx::TagBufferStorage::Allocate(16);
-        nsfx::TagBufferStorage* storage2 = nsfx::TagBufferStorage::Allocate(16);
+        size_t tagId1 = 4;
+        size_t tagStart1 = 5;
+        size_t tagEnd1 = 6;
+        nsfx::TagBuffer b1(16);
+        b1.begin().Write<uint8_t>(0xfe);
+        nsfx::Tag tag1(tagId1, b1);
+        nsfx::TagIndex idx1(tag1, tagStart1, tagEnd1);
 
-        nsfx::TagIndex idx1;
-        size_t tagId1 = 7;
-        size_t tagStart1 = 8;
-        size_t tagEnd1 = 9;
-        nsfx::TagIndex::Ctor(&idx1, tagId1, tagStart1, tagEnd1, storage1);
+        size_t tagId2 = 7;
+        size_t tagStart2 = 8;
+        size_t tagEnd2 = 9;
+        nsfx::TagBuffer b2(32);
+        b2.begin().Write<uint8_t>(0x31);
+        nsfx::Tag tag2(tagId2, b2);
+        nsfx::TagIndex idx2(tag2, tagStart2, tagEnd2);
 
-        nsfx::TagIndex idx2;
-        size_t tagId2 = 10;
-        size_t tagStart2 = 11;
-        size_t tagEnd2 = 12;
-        nsfx::TagIndex::Ctor(&idx2, tagId2, tagStart2, tagEnd2, storage2);
+        idx2 = idx1;
 
-        nsfx::TagBufferStorage::AddRef(storage2);
-        nsfx::TagIndex::CopyAssign(&idx2, &idx1);
-        // The storage2 is released by idx2.
-        NSFX_TEST_EXPECT_EQ(storage2->refCount_, 1);
-        // The storage1 is addref by idx2.
-        NSFX_TEST_EXPECT_EQ(storage1->refCount_, 2);
-        // Release storage2, since it will not be used.
-        nsfx::TagBufferStorage::Release(storage2);
+        NSFX_TEST_EXPECT_EQ(idx2.GetTag().GetId(), tagId1);
+        NSFX_TEST_EXPECT_EQ(idx2.GetStart(), tagStart1);
+        NSFX_TEST_EXPECT_EQ(idx2.GetEnd(), tagEnd1);
+        NSFX_TEST_EXPECT_EQ(idx2.GetTag().GetBuffer().GetSize(), 16);
+        NSFX_TEST_EXPECT_EQ(idx2.GetTag().GetBuffer().cbegin().Read<uint8_t>(), 0xfe);
+    }
 
-        NSFX_TEST_EXPECT_EQ(idx1.tagId_, tagId1);
-        NSFX_TEST_EXPECT_EQ(idx1.tagStart_, tagStart1);
-        NSFX_TEST_EXPECT_EQ(idx1.tagEnd_, tagEnd1);
-        NSFX_TEST_EXPECT_EQ(idx1.storage_, storage1);
+    NSFX_TEST_CASE(MoveCtor)
+    {
+        size_t tagId1 = 4;
+        size_t tagStart1 = 5;
+        size_t tagEnd1 = 6;
+        nsfx::TagBuffer b1(16);
+        b1.begin().Write<uint8_t>(0xfe);
+        nsfx::Tag tag1(tagId1, b1);
+        nsfx::TagIndex idx1(tag1, tagStart1, tagEnd1);
 
-        NSFX_TEST_EXPECT_EQ(idx2.tagId_, tagId1);
-        NSFX_TEST_EXPECT_EQ(idx2.tagStart_, tagStart1);
-        NSFX_TEST_EXPECT_EQ(idx2.tagEnd_, tagEnd1);
-        NSFX_TEST_EXPECT_EQ(idx2.storage_, storage1);
+        nsfx::TagIndex idx2(std::move(idx1));
 
-        nsfx::TagIndex::Release(&idx1);
-        nsfx::TagIndex::Release(&idx2);
+        NSFX_TEST_EXPECT_EQ(idx1.GetTag().GetId(), tagId1);
+        NSFX_TEST_EXPECT_EQ(idx1.GetStart(), tagStart1);
+        NSFX_TEST_EXPECT_EQ(idx1.GetEnd(), tagEnd1);
+        NSFX_TEST_EXPECT_EQ(idx1.GetTag().GetBuffer().GetSize(), 0);
+
+        NSFX_TEST_EXPECT_EQ(idx2.GetTag().GetId(), tagId1);
+        NSFX_TEST_EXPECT_EQ(idx2.GetStart(), tagStart1);
+        NSFX_TEST_EXPECT_EQ(idx2.GetEnd(), tagEnd1);
+        NSFX_TEST_EXPECT_EQ(idx2.GetTag().GetBuffer().GetSize(), 16);
+        NSFX_TEST_EXPECT_EQ(idx2.GetTag().GetBuffer().cbegin().Read<uint8_t>(), 0xfe);
+    }
+
+    NSFX_TEST_CASE(MoveAssign)
+    {
+        size_t tagId1 = 4;
+        size_t tagStart1 = 5;
+        size_t tagEnd1 = 6;
+        nsfx::TagBuffer b1(16);
+        b1.begin().Write<uint8_t>(0xfe);
+        nsfx::Tag tag1(tagId1, b1);
+        nsfx::TagIndex idx1(tag1, tagStart1, tagEnd1);
+
+        size_t tagId2 = 7;
+        size_t tagStart2 = 8;
+        size_t tagEnd2 = 9;
+        nsfx::TagBuffer b2(32);
+        b2.begin().Write<uint8_t>(0x31);
+        nsfx::Tag tag2(tagId2, b2);
+        nsfx::TagIndex idx2(tag2, tagStart2, tagEnd2);
+
+        idx2 = std::move(idx1);
+
+        NSFX_TEST_EXPECT_EQ(idx1.GetTag().GetId(), tagId1);
+        NSFX_TEST_EXPECT_EQ(idx1.GetStart(), tagStart1);
+        NSFX_TEST_EXPECT_EQ(idx1.GetEnd(), tagEnd1);
+        NSFX_TEST_EXPECT_EQ(idx1.GetTag().GetBuffer().GetSize(), 0);
+
+        NSFX_TEST_EXPECT_EQ(idx2.GetTag().GetId(), tagId1);
+        NSFX_TEST_EXPECT_EQ(idx2.GetStart(), tagStart1);
+        NSFX_TEST_EXPECT_EQ(idx2.GetEnd(), tagEnd1);
+        NSFX_TEST_EXPECT_EQ(idx2.GetTag().GetBuffer().GetSize(), 16);
+        NSFX_TEST_EXPECT_EQ(idx2.GetTag().GetBuffer().cbegin().Read<uint8_t>(), 0xfe);
     }
 
     NSFX_TEST_CASE(Swap)
     {
-        nsfx::TagBufferStorage* storage1 = nsfx::TagBufferStorage::Allocate(16);
-        nsfx::TagBufferStorage* storage2 = nsfx::TagBufferStorage::Allocate(16);
-
-        nsfx::TagIndex idx1;
         size_t tagId1 = 4;
         size_t tagStart1 = 5;
         size_t tagEnd1 = 6;
-        nsfx::TagIndex::Ctor(&idx1, tagId1, tagStart1, tagEnd1, storage1);
+        nsfx::TagBuffer b1(16);
+        b1.begin().Write<uint8_t>(0xfe);
+        nsfx::Tag tag1(tagId1, b1);
+        nsfx::TagIndex idx1(tag1, tagStart1, tagEnd1);
 
-        nsfx::TagIndex idx2;
         size_t tagId2 = 7;
         size_t tagStart2 = 8;
         size_t tagEnd2 = 9;
-        nsfx::TagIndex::Ctor(&idx2, tagId2, tagStart2, tagEnd2, storage2);
+        nsfx::TagBuffer b2(32);
+        b2.begin().Write<uint8_t>(0x31);
+        nsfx::Tag tag2(tagId2, b2);
+        nsfx::TagIndex idx2(tag2, tagStart2, tagEnd2);
 
-        nsfx::TagIndex::Swap(&idx1, &idx2);
+        boost::swap(idx1, idx2);
 
-        NSFX_TEST_EXPECT_EQ(idx2.tagId_, tagId1);
-        NSFX_TEST_EXPECT_EQ(idx2.tagStart_, tagStart1);
-        NSFX_TEST_EXPECT_EQ(idx2.tagEnd_, tagEnd1);
-        NSFX_TEST_EXPECT_EQ(idx2.storage_, storage1);
+        NSFX_TEST_EXPECT_EQ(idx1.GetTag().GetId(), tagId2);
+        NSFX_TEST_EXPECT_EQ(idx1.GetStart(), tagStart2);
+        NSFX_TEST_EXPECT_EQ(idx1.GetEnd(), tagEnd2);
+        NSFX_TEST_EXPECT_EQ(idx1.GetTag().GetBuffer().GetSize(), 32);
+        NSFX_TEST_EXPECT_EQ(idx1.GetTag().GetBuffer().cbegin().Read<uint8_t>(), 0x31);
 
-        NSFX_TEST_EXPECT_EQ(idx1.tagId_, tagId2);
-        NSFX_TEST_EXPECT_EQ(idx1.tagStart_, tagStart2);
-        NSFX_TEST_EXPECT_EQ(idx1.tagEnd_, tagEnd2);
-        NSFX_TEST_EXPECT_EQ(idx1.storage_, storage2);
-
-        nsfx::TagIndex::Release(&idx1);
-        nsfx::TagIndex::Release(&idx2);
+        NSFX_TEST_EXPECT_EQ(idx2.GetTag().GetId(), tagId1);
+        NSFX_TEST_EXPECT_EQ(idx2.GetStart(), tagStart1);
+        NSFX_TEST_EXPECT_EQ(idx2.GetEnd(), tagEnd1);
+        NSFX_TEST_EXPECT_EQ(idx2.GetTag().GetBuffer().GetSize(), 16);
+        NSFX_TEST_EXPECT_EQ(idx2.GetTag().GetBuffer().cbegin().Read<uint8_t>(), 0xfe);
     }
 
     NSFX_TEST_CASE(HasTaggedByte)
     {
-        nsfx::TagBufferStorage* storage = nsfx::TagBufferStorage::Allocate(16);
-        nsfx::TagIndex idx;
-        size_t tagId = 4;
-        size_t tagStart = 5;
-        size_t tagEnd = 6;
-        nsfx::TagIndex::Ctor(&idx, tagId, tagStart, tagEnd, storage);
+        size_t tagId1 = 4;
+        size_t tagStart1 = 5;
+        size_t tagEnd1 = 6;
+        nsfx::TagBuffer b1(16);
+        b1.begin().Write<uint8_t>(0xfe);
+        nsfx::Tag tag1(tagId1, b1);
+        nsfx::TagIndex idx1(tag1, tagStart1, tagEnd1);
 
-        NSFX_TEST_EXPECT(!nsfx::TagIndex::HasTaggedByte(&idx, 0, tagStart));
-        NSFX_TEST_EXPECT(nsfx::TagIndex::HasTaggedByte(&idx, tagStart, tagEnd));
-        NSFX_TEST_EXPECT(!nsfx::TagIndex::HasTaggedByte(&idx, tagEnd, static_cast<size_t>(-1)));
-
-        nsfx::TagIndex::Release(&idx);
+        NSFX_TEST_EXPECT(!idx1.HasTaggedByte(tagStart1, tagStart1));
+        NSFX_TEST_EXPECT(idx1.HasTaggedByte(tagStart1, tagStart1 + 1));
+        NSFX_TEST_EXPECT(idx1.HasTaggedByte(tagEnd1 - 1, tagEnd1));
+        NSFX_TEST_EXPECT(!idx1.HasTaggedByte(tagEnd1, tagEnd1));
     }
 }
 

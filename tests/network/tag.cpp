@@ -18,57 +18,30 @@
 #include <iostream>
 
 
-int k = 0;
-struct Test
-{
-    Test(int i, double j) : i_(i), j_(j) { ++k; }
-    ~Test(void) { --k; }
-    int i_;
-    double j_;
-};
-
-
 NSFX_TEST_SUITE(Tag)
 {
-    NSFX_TEST_CASE(MakeTag)
+    NSFX_TEST_CASE(Ctor)
     {
+        nsfx::TagBuffer b(16);
         {
-            size_t tagId = 1;
-            nsfx::Tag tag = nsfx::MakeTag<Test>(tagId, 2, 3.4);
-            // Test::Test() is called.
-            NSFX_TEST_EXPECT_EQ(k, 1);
-            NSFX_TEST_EXPECT_EQ(tag.GetId(), tagId);
-            NSFX_TEST_EXPECT(tag.GetTypeId() ==
-                             boost::typeindex::type_id<Test>());
-            const Test& t = tag.GetValue<Test>();
-            NSFX_TEST_EXPECT_EQ(t.i_, 2);
-            NSFX_TEST_EXPECT_EQ(t.j_, 3.4);
+            auto it = b.begin();
+            for (size_t i = 0; i < 16; ++i)
+            {
+                uint8_t v = 0xfe + i;
+                it.Write<uint8_t>(v);
+            }
         }
-        // Test::~Test() is called.
-        NSFX_TEST_EXPECT_EQ(k, 0);
+        size_t tagId = 1;
+        nsfx::Tag tag(tagId, b);
+        NSFX_TEST_EXPECT_EQ(tag.GetId(), tagId);
+        NSFX_TEST_EXPECT_EQ(tag.GetBuffer().GetSize(), 16);
+        auto it = tag.GetBuffer().cbegin();
+        for (size_t i = 0; i < 16; ++i)
+        {
+            uint8_t v = 0xfe + i;
+            NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), v);
+        }
     }
-
-    // NSFX_TEST_CASE(MakeTagIndex)
-    // {
-    //     {
-    //         size_t tagId = 1;
-    //         nsfx::Tag tag = nsfx::MakeTag<Test>(tagId, 2, 3.4);
-    //         size_t tagStart = 5;
-    //         size_t tagEnd   = 6;
-    //         nsfx::TagIndex idx = tag.MakeTagIndex(tagStart, tagEnd);
-    //         NSFX_TEST_EXPECT_EQ(idx.tagId_, tagId);
-    //         NSFX_TEST_EXPECT_EQ(idx.tagStart_, tagStart);
-    //         NSFX_TEST_EXPECT_EQ(idx.tagEnd_, tagEnd);
-    //         NSFX_TEST_EXPECT(nsfx::TagStorage::GetTypeId(idx.tag_) ==
-    //                          boost::typeindex::type_id<Test>());
-    //         NSFX_TEST_EXPECT_EQ(idx.tag_->refCount_, 2);
-    //         const Test& t = nsfx::TagStorage::GetValue<Test>(idx.tag_);
-    //         NSFX_TEST_EXPECT_EQ(t.i_, 2);
-    //         NSFX_TEST_EXPECT_EQ(t.j_, 3.4);
-    //         nsfx::TagIndex::Release(&idx);
-    //     }
-    //     NSFX_TEST_EXPECT_EQ(k, 0);
-    // }
 }
 
 
