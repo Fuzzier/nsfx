@@ -14,7 +14,7 @@
  */
 
 #include <nsfx/test.h>
-#include <nsfx/network/packet/tag-index.h>
+#include <nsfx/network/packet/tag-index-array.h>
 #include <iostream>
 
 
@@ -45,24 +45,23 @@ NSFX_TEST_SUITE(TagIndexArray)
         NSFX_TEST_EXPECT_EQ(tia->refCount_, 1);
 
         // Add elements.
-        nsfx::TagBufferStorage* storage = nsfx::TagBufferStorage::Allocate(16);
+        nsfx::TagBuffer b(16);
         nsfx::TagIndex* idx = tia->indices_;
         for (size_t i = 0; i < tia->capacity_; ++i)
         {
             size_t tagId = 4;
             size_t tagStart = 5;
             size_t tagEnd = 6;
-            nsfx::TagBufferStorage::AddRef(storage);
-            nsfx::TagIndex::Ctor(idx, tagId, tagStart, tagEnd, storage);
+            nsfx::Tag tag(tagId, b);
+            new (idx) nsfx::TagIndex(tag, tagStart, tagEnd);
             ++tia->dirty_;
             ++idx;
         }
-        NSFX_TEST_EXPECT_EQ(storage->refCount_, tia->capacity_ + 1);
+        NSFX_TEST_EXPECT_EQ(b.GetStorage()->refCount_, tia->capacity_ + 1);
         // Release.
         nsfx::TagIndexArray::Release(tia);
         // All array indices are released.
-        NSFX_TEST_EXPECT_EQ(storage->refCount_, 1);
-        nsfx::TagBufferStorage::Release(storage);
+        NSFX_TEST_EXPECT_EQ(b.GetStorage()->refCount_, 1);
     }
 }
 

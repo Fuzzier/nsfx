@@ -39,6 +39,7 @@ NSFX_TEST_SUITE(TagList)
     {
         NSFX_TEST_CASE(FromEmpty)
         {
+            nsfx::TagBuffer b(16);
             {
                 // Create an empty list.
                 nsfx::TagList tl1(4, 100);
@@ -47,25 +48,26 @@ NSFX_TEST_SUITE(TagList)
                 // Fill the array.
                 do
                 {
-                    tl1.Insert<Test>(tagId++, 0, 100, 1, 2.3);
+                    tl1.Insert(tagId++, b, 0, 100);
                     tia1 = tl1.GetTagIndexArray();
                     NSFX_TEST_ASSERT(tia1);
                     NSFX_TEST_EXPECT_EQ(tia1->refCount_, 1);
                     NSFX_TEST_EXPECT_EQ(tia1->dirty_, tl1.GetInternalSize());
-                    NSFX_TEST_EXPECT_EQ(k, tia1->dirty_);
+                    NSFX_TEST_EXPECT_EQ(b.GetStorage()->refCount_, tia1->dirty_ + 1);
                 }
                 while (tia1->dirty_ < tia1->capacity_);
                 // Examine the array.
                 NSFX_TEST_EXPECT_EQ(tia1->refCount_, 1);
                 NSFX_TEST_EXPECT_EQ(tia1->dirty_, tia1->capacity_);
-                NSFX_TEST_EXPECT_EQ(k, tia1->dirty_);
+                NSFX_TEST_EXPECT_EQ(b.GetStorage()->refCount_, tia1->dirty_ + 1);
             }
             // Release the tag list also releases all tags.
-            NSFX_TEST_EXPECT_EQ(k, 0);
+            NSFX_TEST_EXPECT_EQ(b.GetStorage()->refCount_, 1);
         }
 
         NSFX_TEST_CASE(FromFreeTag)
         {
+            nsfx::TagBuffer b(16);
             {
                 // Create an empty list.
                 nsfx::TagList tl1(4, 100);
@@ -75,34 +77,32 @@ NSFX_TEST_SUITE(TagList)
                 do
                 {
                     // Create a free tag.
-                    nsfx::Tag tag = nsfx::MakeTag<Test>(tagId++, 1, 2.3);
-                    tl1.Insert(tag, 0, 100);
+                    tl1.Insert(tagId++, b, 0, 100);
                     tia1 = tl1.GetTagIndexArray();
                     NSFX_TEST_ASSERT(tia1);
                     NSFX_TEST_EXPECT_EQ(tia1->refCount_, 1);
                     NSFX_TEST_EXPECT_EQ(tia1->dirty_, tl1.GetInternalSize());
-                    NSFX_TEST_EXPECT_EQ(k, tia1->dirty_);
+                    NSFX_TEST_EXPECT_EQ(b.GetStorage()->refCount_, tia1->dirty_ + 1);
                     // Test.
                     NSFX_TEST_EXPECT(tl1.Exists(tagId-1, 0));
                     NSFX_TEST_EXPECT(tl1.Exists(tagId-1, 100-1));
-                    tag = tl1.Get(tagId-1, 0);
-                    NSFX_TEST_EXPECT(tag.GetTypeId() ==
-                                     boost::typeindex::type_id<Test>());
+                    nsfx::Tag tag = tl1.Get(tagId-1, 0);
                 }
                 while (tia1->dirty_ < tia1->capacity_);
                 // Examine the array.
                 NSFX_TEST_EXPECT_EQ(tia1->refCount_, 1);
                 NSFX_TEST_EXPECT_EQ(tia1->dirty_, tia1->capacity_);
-                NSFX_TEST_EXPECT_EQ(k, tia1->dirty_);
+                NSFX_TEST_EXPECT_EQ(b.GetStorage()->refCount_, tia1->dirty_ + 1);
             }
             // Release the tag list also releases all tags.
-            NSFX_TEST_EXPECT_EQ(k, 0);
+            NSFX_TEST_EXPECT_EQ(b.GetStorage()->refCount_, 1);
         }
 
         NSFX_TEST_SUITE(NonShared)
         {
             NSFX_TEST_CASE(Compact)
             {
+                nsfx::TagBuffer b(16);
                 // Create an empty list.
                 nsfx::TagList tl1(6, 400);
                 size_t tagId = 1;
@@ -112,10 +112,10 @@ NSFX_TEST_SUITE(TagList)
                 // |--------|--------|--------|--------|
                 // |<-tag1->|                 |<-tag4->|
                 // |<------tag2----->|<------tag3----->|
-                tl1.Insert<Test>(tagId++,   0, 100, 1, 2.3);
-                tl1.Insert<Test>(tagId++,   0, 200, 1, 2.3);
-                tl1.Insert<Test>(tagId++, 200, 200, 1, 2.3);
-                tl1.Insert<Test>(tagId++, 300, 100, 1, 2.3);
+                tl1.Insert(tagId++, b,   0, 100);
+                tl1.Insert(tagId++, b,   0, 200);
+                tl1.Insert(tagId++, b, 200, 200);
+                tl1.Insert(tagId++, b, 300, 100);
                 // Shrink the buffer.
                 //          |<-----buffer---->|
                 //          0        100      200
@@ -133,12 +133,12 @@ NSFX_TEST_SUITE(TagList)
                 // Then release 'tl2'.
                 {
                     nsfx::TagList tl2(tl1);
-                    tl2.Insert<Test>(tagId++, 0, 100, 1, 2.3);
-                    tl2.Insert<Test>(tagId++, 0, 100, 1, 2.3);
+                    tl2.Insert(tagId++, b, 0, 100);
+                    tl2.Insert(tagId++, b, 0, 100);
                 }
                 size_t num1 = tia1->dirty_;
                 // Add tag7 to trigger compaction.
-                tl1.Insert<Test>(tagId++, 0, 200, 1, 2.3);
+                tl1.Insert(tagId++, b, 0, 200);
                 // The array is not reallocated.
                 const nsfx::TagIndexArray* tia2 = tl1.GetTagIndexArray();
                 NSFX_TEST_EXPECT_EQ(tia1, tia2);
@@ -161,6 +161,7 @@ NSFX_TEST_SUITE(TagList)
 
             NSFX_TEST_CASE(Reallocate)
             {
+                nsfx::TagBuffer b(16);
                 // Create an empty list.
                 nsfx::TagList tl1(4, 400);
                 size_t tagId = 1;
@@ -170,13 +171,13 @@ NSFX_TEST_SUITE(TagList)
                 // |--------|--------|--------|--------|
                 // |<-tag1->|                 |<-tag4->|
                 // |<------tag2----->|<------tag3----->|
-                tl1.Insert<Test>(tagId++,   0, 100, 1, 2.3);
-                tl1.Insert<Test>(tagId++,   0, 200, 1, 2.3);
-                tl1.Insert<Test>(tagId++, 200, 200, 1, 2.3);
-                tl1.Insert<Test>(tagId++, 300, 100, 1, 2.3);
+                tl1.Insert(tagId++, b,   0, 100);
+                tl1.Insert(tagId++, b,   0, 200);
+                tl1.Insert(tagId++, b, 200, 200);
+                tl1.Insert(tagId++, b, 300, 100);
                 const nsfx::TagIndexArray* tia1 = tl1.GetTagIndexArray();
                 // Add tag5 to trigger reallocation.
-                tl1.Insert<Test>(tagId++, 0, 400, 1, 2.3);
+                tl1.Insert(tagId++, b, 0, 400);
                 // The array is reallocated.
                 const nsfx::TagIndexArray* tia2 = tl1.GetTagIndexArray();
                 NSFX_TEST_EXPECT_NE(tia1, tia2);
@@ -206,6 +207,7 @@ NSFX_TEST_SUITE(TagList)
         {
             NSFX_TEST_CASE(ArrayIsFull)
             {
+                nsfx::TagBuffer b(16);
                 // Create an empty list.
                 nsfx::TagList tl1(4, 400);
                 size_t tagId = 1;
@@ -215,10 +217,10 @@ NSFX_TEST_SUITE(TagList)
                 // |--------|--------|--------|--------|
                 // |<-tag1->|                 |<-tag4->|
                 // |<------tag2----->|<------tag3----->|
-                tl1.Insert<Test>(tagId++,   0, 100, 1, 2.3);
-                tl1.Insert<Test>(tagId++,   0, 200, 1, 2.3);
-                tl1.Insert<Test>(tagId++, 200, 200, 1, 2.3);
-                tl1.Insert<Test>(tagId++, 300, 100, 1, 2.3);
+                tl1.Insert(tagId++, b,   0, 100);
+                tl1.Insert(tagId++, b,   0, 200);
+                tl1.Insert(tagId++, b, 200, 200);
+                tl1.Insert(tagId++, b, 300, 100);
                 // Shrink the buffer.
                 // The bytes of tag1 and tag4 are outside of the buffer.
                 // The bytes of tag2 and tag3 are partially inside of the buffer.
@@ -233,7 +235,7 @@ NSFX_TEST_SUITE(TagList)
                 // Share the array with 'tl2'.
                 nsfx::TagList tl2(tl1);
                 // Add tag5 to trigger reallocation.
-                tl1.Insert<Test>(tagId++, 0, 200, 1, 2.3);
+                tl1.Insert(tagId++, b, 0, 200);
                 // The array is reallocated.
                 const nsfx::TagIndexArray* tia2 = tl1.GetTagIndexArray();
                 NSFX_TEST_EXPECT_NE(tia1, tia2);
@@ -256,6 +258,7 @@ NSFX_TEST_SUITE(TagList)
             {
                 NSFX_TEST_CASE(NotReallocate)
                 {
+                    nsfx::TagBuffer b(16);
                     // Create an empty list.
                     nsfx::TagList tl1(5, 400);
                     size_t tagId = 1;
@@ -265,10 +268,10 @@ NSFX_TEST_SUITE(TagList)
                     // |--------|--------|--------|--------|
                     // |<-tag1->|                 |<-tag4->|
                     // |<------tag2----->|<------tag3----->|
-                    tl1.Insert<Test>(tagId++,   0, 100, 1, 2.3);
-                    tl1.Insert<Test>(tagId++,   0, 200, 1, 2.3);
-                    tl1.Insert<Test>(tagId++, 200, 200, 1, 2.3);
-                    tl1.Insert<Test>(tagId++, 300, 100, 1, 2.3);
+                    tl1.Insert(tagId++, b,   0, 100);
+                    tl1.Insert(tagId++, b,   0, 200);
+                    tl1.Insert(tagId++, b, 200, 200);
+                    tl1.Insert(tagId++, b, 300, 100);
                     // Share the array with 'tl2'.
                     nsfx::TagList tl2(tl1);
                     // Shrink the buffer.
@@ -283,7 +286,7 @@ NSFX_TEST_SUITE(TagList)
                     tl1.RemoveAtEnd(100);
                     const nsfx::TagIndexArray* tia1 = tl1.GetTagIndexArray();
                     // Add tag5 to 'tl1'.
-                    tl1.Insert<Test>(tagId++, 0, 200, 1, 2.3);
+                    tl1.Insert(tagId++, b, 0, 200);
                     // The array is not reallocated.
                     const nsfx::TagIndexArray* tia2 = tl1.GetTagIndexArray();
                     NSFX_TEST_EXPECT_EQ(tia1, tia2);
@@ -312,6 +315,7 @@ NSFX_TEST_SUITE(TagList)
 
                 NSFX_TEST_CASE(Reallocate)
                 {
+                    nsfx::TagBuffer b(16);
                     // Create an empty list.
                     nsfx::TagList tl1(6, 400);
                     size_t tagId = 1;
@@ -321,10 +325,10 @@ NSFX_TEST_SUITE(TagList)
                     // |--------|--------|--------|--------|
                     // |<-tag1->|                 |<-tag4->|
                     // |<------tag2----->|<------tag3----->|
-                    tl1.Insert<Test>(tagId++,   0, 100, 1, 2.3);
-                    tl1.Insert<Test>(tagId++,   0, 200, 1, 2.3);
-                    tl1.Insert<Test>(tagId++, 200, 200, 1, 2.3);
-                    tl1.Insert<Test>(tagId++, 300, 100, 1, 2.3);
+                    tl1.Insert(tagId++, b,   0, 100);
+                    tl1.Insert(tagId++, b,   0, 200);
+                    tl1.Insert(tagId++, b, 200, 200);
+                    tl1.Insert(tagId++, b, 300, 100);
                     // Shrink the buffer.
                     // The bytes of tag1 and tag4 are outside of the buffer.
                     // The bytes of tag2 and tag3 are partially inside of the buffer.
@@ -339,9 +343,9 @@ NSFX_TEST_SUITE(TagList)
                     // Share the array with 'tl2'.
                     nsfx::TagList tl2(tl1);
                     // Add tag5 to 'tl2', which is not in 'tl1'.
-                    tl2.Insert<Test>(tagId++, 0, 200, 1, 2.3);
+                    tl2.Insert(tagId++, b, 0, 200);
                     // Add tag6 to 'tl1' to trigger reallocation.
-                    tl1.Insert<Test>(tagId++, 0, 200, 1, 2.3);
+                    tl1.Insert(tagId++, b, 0, 200);
                     // The array is reallocated, even if the array has free elements.
                     const nsfx::TagIndexArray* tia2 = tl1.GetTagIndexArray();
                     NSFX_TEST_EXPECT_NE(tia1, tia2);
@@ -376,6 +380,7 @@ NSFX_TEST_SUITE(TagList)
 
         NSFX_TEST_CASE(NotShared)
         {
+            nsfx::TagBuffer b(16);
             // Create an empty list.
             nsfx::TagList tl1(4, 400);
             size_t tagId = 1;
@@ -385,10 +390,10 @@ NSFX_TEST_SUITE(TagList)
             // |--------|--------|--------|--------|
             // |<-tag1->|                 |<-tag4->|
             // |<------tag2----->|<------tag3----->|
-            tl1.Insert<Test>(tagId++,   0, 100, 1, 2.3);
-            tl1.Insert<Test>(tagId++,   0, 200, 1, 2.3);
-            tl1.Insert<Test>(tagId++, 200, 200, 1, 2.3);
-            tl1.Insert<Test>(tagId++, 300, 100, 1, 2.3);
+            tl1.Insert(tagId++, b,   0, 100);
+            tl1.Insert(tagId++, b,   0, 200);
+            tl1.Insert(tagId++, b, 200, 200);
+            tl1.Insert(tagId++, b, 300, 100);
             // Shrink the buffer.
             //          |<-----buffer---->|
             //          0        100      200
@@ -420,6 +425,7 @@ NSFX_TEST_SUITE(TagList)
 
         NSFX_TEST_CASE(Shared)
         {
+            nsfx::TagBuffer b(16);
             // Create an empty list.
             nsfx::TagList tl1(4, 400);
             size_t tagId = 1;
@@ -429,10 +435,10 @@ NSFX_TEST_SUITE(TagList)
             // |--------|--------|--------|--------|
             // |<-tag1->|                 |<-tag4->|
             // |<------tag2----->|<------tag3----->|
-            tl1.Insert<Test>(tagId++,   0, 100, 1, 2.3);
-            tl1.Insert<Test>(tagId++,   0, 200, 1, 2.3);
-            tl1.Insert<Test>(tagId++, 200, 200, 1, 2.3);
-            tl1.Insert<Test>(tagId++, 300, 100, 1, 2.3);
+            tl1.Insert(tagId++, b,   0, 100);
+            tl1.Insert(tagId++, b,   0, 200);
+            tl1.Insert(tagId++, b, 200, 200);
+            tl1.Insert(tagId++, b, 300, 100);
             // Shrink the buffer.
             //          |<-----buffer---->|
             //          0        100      200
@@ -478,6 +484,7 @@ NSFX_TEST_SUITE(TagList)
 
         NSFX_TEST_CASE(NotShared)
         {
+            nsfx::TagBuffer b(16);
             // Create an empty list.
             nsfx::TagList tl1(4, 400);
             size_t tagId = 1;
@@ -487,10 +494,10 @@ NSFX_TEST_SUITE(TagList)
             // |--------|--------|--------|--------|
             // |<-tag1->|                 |<-tag4->|
             // |<------tag2----->|<------tag3----->|
-            tl1.Insert<Test>(tagId++,   0, 100, 1, 2.3);
-            tl1.Insert<Test>(tagId++,   0, 200, 1, 2.3);
-            tl1.Insert<Test>(tagId++, 200, 200, 1, 2.3);
-            tl1.Insert<Test>(tagId++, 300, 100, 1, 2.3);
+            tl1.Insert(tagId++, b,   0, 100);
+            tl1.Insert(tagId++, b,   0, 200);
+            tl1.Insert(tagId++, b, 200, 200);
+            tl1.Insert(tagId++, b, 300, 100);
             // Shrink the buffer.
             //          |<-----buffer---->|
             //          0        100      200
@@ -522,6 +529,7 @@ NSFX_TEST_SUITE(TagList)
 
         NSFX_TEST_CASE(Shared)
         {
+            nsfx::TagBuffer b(16);
             // Create an empty list.
             nsfx::TagList tl1(4, 400);
             size_t tagId = 1;
@@ -531,10 +539,10 @@ NSFX_TEST_SUITE(TagList)
             // |--------|--------|--------|--------|
             // |<-tag1->|                 |<-tag4->|
             // |<------tag2----->|<------tag3----->|
-            tl1.Insert<Test>(tagId++,   0, 100, 1, 2.3);
-            tl1.Insert<Test>(tagId++,   0, 200, 1, 2.3);
-            tl1.Insert<Test>(tagId++, 200, 200, 1, 2.3);
-            tl1.Insert<Test>(tagId++, 300, 100, 1, 2.3);
+            tl1.Insert(tagId++, b,   0, 100);
+            tl1.Insert(tagId++, b,   0, 200);
+            tl1.Insert(tagId++, b, 200, 200);
+            tl1.Insert(tagId++, b, 300, 100);
             // Shrink the buffer.
             //          |<-----buffer---->|
             //          0        100      200
@@ -571,6 +579,7 @@ NSFX_TEST_SUITE(TagList)
     {
         NSFX_TEST_CASE(Test)
         {
+            nsfx::TagBuffer b(16);
             {
                 // Create an empty list.
                 nsfx::TagList tl1(4, 400);
@@ -581,10 +590,10 @@ NSFX_TEST_SUITE(TagList)
                 // |--------|--------|--------|--------|
                 // |<-tag1->|                 |<-tag4->|
                 // |<------tag2----->|<------tag3----->|
-                tl1.Insert<Test>(tagId++,   0, 100, 1, 2.3);
-                tl1.Insert<Test>(tagId++,   0, 200, 1, 2.3);
-                tl1.Insert<Test>(tagId++, 200, 200, 1, 2.3);
-                tl1.Insert<Test>(tagId++, 300, 100, 1, 2.3);
+                tl1.Insert(tagId++, b,   0, 100);
+                tl1.Insert(tagId++, b,   0, 200);
+                tl1.Insert(tagId++, b, 200, 200);
+                tl1.Insert(tagId++, b, 300, 100);
                 // Create fragments.
                 // | f1 |
                 // 0    50
@@ -673,7 +682,7 @@ NSFX_TEST_SUITE(TagList)
                     NSFX_TEST_EXPECT(r.Exists(4, 400-1));
                 }
             }
-            NSFX_TEST_EXPECT_EQ(k, 0);
+            NSFX_TEST_EXPECT_EQ(b.GetStorage()->refCount_, 1);
         }
     }/*}}}*/
 }

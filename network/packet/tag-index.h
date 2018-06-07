@@ -19,6 +19,7 @@
 
 #include <nsfx/network/config.h>
 #include <nsfx/network/packet/tag.h>
+#include <boost/core/swap.hpp>
 
 
 NSFX_OPEN_NAMESPACE
@@ -50,7 +51,7 @@ public:
     static bool HasTaggedByte(size_t tagStart, size_t tagEnd,
                               size_t bufferStart, size_t bufferEnd) BOOST_NOEXCEPT;
 
-    void swap(Tag& rhs) BOOST_NOEXCEPT;
+    void swap(TagIndex& rhs) BOOST_NOEXCEPT;
 
 private:
     Tag     tag_;      ///< The tag.
@@ -67,14 +68,14 @@ void swap(Tag& lhs, Tag& rhs) BOOST_NOEXCEPT;
 inline TagIndex::TagIndex(const Tag& tag, size_t tagStart, size_t tagEnd) BOOST_NOEXCEPT :
     tag_(tag),
     tagStart_(tagStart),
-    tagEnd_(tagEnd),
+    tagEnd_(tagEnd)
 {
 }
 
 inline TagIndex::TagIndex(const TagIndex& rhs) BOOST_NOEXCEPT :
-    tag_(rhs.tag),
-    tagStart_(rhs.tagStart),
-    tagEnd_(rhs.tagEnd)
+    tag_(rhs.tag_),
+    tagStart_(rhs.tagStart_),
+    tagEnd_(rhs.tagEnd_)
 {
 }
 
@@ -90,9 +91,9 @@ inline TagIndex& TagIndex::operator=(const TagIndex& rhs) BOOST_NOEXCEPT
 }
 
 inline TagIndex::TagIndex(TagIndex&& rhs) BOOST_NOEXCEPT :
-    tag_(std::move(rhs.tag)),
-    tagStart_(rhs.tagStart),
-    tagEnd_(rhs.tagEnd)
+    tag_(std::move(rhs.tag_)),
+    tagStart_(rhs.tagStart_),
+    tagEnd_(rhs.tagEnd_)
 {
 }
 
@@ -107,7 +108,7 @@ inline TagIndex& TagIndex::operator=(TagIndex&& rhs) BOOST_NOEXCEPT
     return *this;
 }
 
-inline void TagIndex::swap(Tag& rhs) BOOST_NOEXCEPT
+inline void TagIndex::swap(TagIndex& rhs) BOOST_NOEXCEPT
 {
     boost::swap(tag_, rhs.tag_);
     boost::swap(tagStart_, rhs.tagStart_);
