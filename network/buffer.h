@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Packet buffer for Network Simulation Frameworks.
+ * @brief Buffer for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
