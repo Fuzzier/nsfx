@@ -37,6 +37,21 @@ NSFX_OPEN_NAMESPACE
 typedef int64_t  packet_id_t;
 
 
+#if !defined(NSFX_PACKET_USES_SOLID_BUFFER)
+typedef ZcBuffer               PacketBuffer;
+typedef ConstZcBuffer          ConstPacketBuffer;
+typedef ZcBufferIterator       PacketBufferIterator;
+typedef ConstZcBufferIterator  ConstPacketBufferIterator;
+
+#else // defined(NSFX_PACKET_USES_SOLID_BUFFER)
+typedef Buffer                 PacketBuffer;
+typedef ConstBuffer            ConstPacketBuffer;
+typedef BufferIterator         PacketBufferIterator;
+typedef ConstBufferIterator    ConstPacketBufferIterator;
+
+#endif // !defined(NSFX_PACKET_USES_SOLID_BUFFER)
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // Packet.
 /**
@@ -288,7 +303,7 @@ public:
     /**
      * @brief Create a packet from a buffer.
      */
-    explicit Packet(const Buffer& buffer) BOOST_NOEXCEPT;
+    explicit Packet(const PacketBuffer& buffer) BOOST_NOEXCEPT;
 
     // Copyable.
 public:
@@ -312,6 +327,11 @@ public:
     size_t GetSize(void) const BOOST_NOEXCEPT;
 
     /**
+     * @brief Get the read-only buffer of the packet.
+     */
+    ConstPacketBuffer GetBuffer(void) const BOOST_NOEXCEPT;
+
+    /**
      * @brief Add a header to the packet.
      *
      * @param[in] size The byte size of the header.
@@ -319,7 +339,7 @@ public:
      * @return A writable buffer of the header.
      *         The buffer is valid until the size of the packet is changed.
      */
-    Buffer AddHeader(size_t size);
+    PacketBuffer AddHeader(size_t size);
 
     /**
      * @brief Add a trailer to the packet.
@@ -329,24 +349,7 @@ public:
      * @return A writable buffer of the trailer.
      *         The buffer is valid until the size of the packet is changed.
      */
-    Buffer AddTrailer(size_t size);
-
-    /**
-     * @brief Get the read-only buffer iterator of the packet.
-     *
-     * @return A read-only buffer iterator that points to the start of the
-     *         buffer.
-     *         The iterator is valid until the size of the packet is changed.
-     */
-    ConstBufferIterator GetBufferBegin(void) const BOOST_NOEXCEPT;
-
-    /**
-     * @brief Get the read-only buffer iterator of the packet.
-     *
-     * @return A read-only buffer iterator that points to the end of the buffer.
-     *         The iterator is valid until the size of the packet is changed.
-     */
-    ConstBufferIterator GetBufferEnd(void) const BOOST_NOEXCEPT;
+    PacketBuffer AddTrailer(size_t size);
 
     /**
      * @brief Remove the header from the packet.
@@ -399,7 +402,7 @@ public:
      * @param[in] start The start of the bytes.
      * @param[in] size  The number of bytes.
      */
-    Packet MakeFragment(size_t start, size_t size) BOOST_NOEXCEPT;
+    Packet MakeFragment(size_t start, size_t size) const BOOST_NOEXCEPT;
 
     // Reassembly.
 public:
@@ -411,8 +414,8 @@ public:
 
 private:
     packet_id_t  id_;
-    Buffer  buffer_;
-    TagList tagList_;
+    PacketBuffer buffer_;
+    TagList      tagList_;
 };
 
 
@@ -423,11 +426,11 @@ inline packet_id_t Packet::GetNextId(void) BOOST_NOEXCEPT
     return ++id;
 }
 
-inline Packet::Packet(const Buffer& buffer) BOOST_NOEXCEPT :
+inline Packet::Packet(const PacketBuffer& buffer) BOOST_NOEXCEPT :
     id_(GetNextId()),
     buffer_(buffer)
 {
-    // Will not throw.
+    // Will not throw for an empty tag list.
     tagList_.AddAtEnd(buffer.GetSize());
 }
 
@@ -481,28 +484,23 @@ inline size_t Packet::GetSize(void) const BOOST_NOEXCEPT
     return buffer_.GetSize();
 }
 
-inline Buffer Packet::AddHeader(size_t size)
+inline ConstPacketBuffer Packet::GetBuffer(void) const BOOST_NOEXCEPT
+{
+    return buffer_;
+}
+
+inline PacketBuffer Packet::AddHeader(size_t size)
 {
     buffer_.AddAtStart(size);
     tagList_.AddAtStart(size);
     return buffer_.MakeFragment(0, size);
 }
 
-inline Buffer Packet::AddTrailer(size_t size)
+inline PacketBuffer Packet::AddTrailer(size_t size)
 {
     buffer_.AddAtEnd(size);
     tagList_.AddAtEnd(size);
     return buffer_.MakeFragment(buffer_.GetSize() - size, size);
-}
-
-inline ConstBufferIterator Packet::GetBufferBegin(void) const BOOST_NOEXCEPT
-{
-    return buffer_.cbegin();
-}
-
-inline ConstBufferIterator Packet::GetBufferEnd(void) const BOOST_NOEXCEPT
-{
-    return buffer_.cend();
 }
 
 inline void Packet::RemoveHeader(size_t size) BOOST_NOEXCEPT
@@ -532,7 +530,7 @@ inline Tag Packet::GetTag(size_t tagId, size_t offset) const BOOST_NOEXCEPT
     return tagList_.Get(tagId, offset);
 }
 
-inline Packet Packet::MakeFragment(size_t start, size_t size) BOOST_NOEXCEPT
+inline Packet Packet::MakeFragment(size_t start, size_t size) const BOOST_NOEXCEPT
 {
     Packet fragment(*this);
     fragment.RemoveHeader(start);

@@ -469,11 +469,11 @@ inline ZcBuffer& ZcBuffer::operator=(const ZcBuffer& rhs) BOOST_NOEXCEPT
 }
 
 inline ZcBuffer::ZcBuffer(ZcBuffer&& rhs) BOOST_NOEXCEPT :
-        storage_(rhs.storage_),
-        start_(rhs.start_),
-        zeroStart_(rhs.zeroStart_),
-        zeroEnd_(rhs.zeroEnd_),
-        end_(rhs.end_)
+    storage_(rhs.storage_),
+    start_(rhs.start_),
+    zeroStart_(rhs.zeroStart_),
+    zeroEnd_(rhs.zeroEnd_),
+    end_(rhs.end_)
 {
     rhs.storage_   = nullptr;
     rhs.start_     = 0;
