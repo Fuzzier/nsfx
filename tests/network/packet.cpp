@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Test Buffer.
+ * @brief Test Packet.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -22,7 +22,7 @@ NSFX_TEST_SUITE(Packet)
 {
     NSFX_TEST_CASE(Ctor)/*{{{*/
     {
-        nsfx::Buffer b0(1000, 700, 300);
+        nsfx::PacketBuffer b0(1000, 700, 300);
         // [700 s zs 300 ze e 300]
         b0.AddAtStart(100);
         // [600 s 100 zs 300 ze e 300]
@@ -30,17 +30,17 @@ NSFX_TEST_SUITE(Packet)
         // [600 s 100 zs 300 ze 100 e 200]
         nsfx::Packet p0(b0);
         NSFX_TEST_EXPECT_EQ(p0.GetSize(), 500);
-        NSFX_TEST_EXPECT(b0.cbegin() == p0.GetBufferBegin());
-        NSFX_TEST_EXPECT(b0.cend() == p0.GetBufferEnd());
+        NSFX_TEST_EXPECT(b0.cbegin() == p0.GetBuffer().cbegin());
+        NSFX_TEST_EXPECT(b0.cend() == p0.GetBuffer().cend());
     }/*}}}*/
 
     NSFX_TEST_CASE(Add)/*{{{*/
     {
-        nsfx::Buffer b0(1000, 700, 300);
+        nsfx::PacketBuffer b0(1000, 700, 300);
         // [700 s zs 300 ze e 300]
         nsfx::Packet p0(b0);
         // Add header.
-        nsfx::Buffer h = p0.AddHeader(100);
+        nsfx::PacketBuffer h = p0.AddHeader(100);
         auto it = h.begin();
         for (size_t i = 0; i < 100; ++i)
         {
@@ -48,7 +48,7 @@ NSFX_TEST_SUITE(Packet)
             it.Write<uint8_t>(v);
         }
         // Add trailer.
-        nsfx::Buffer t = p0.AddTrailer(100);
+        nsfx::PacketBuffer t = p0.AddTrailer(100);
         it = t.begin();
         for (size_t i = 0; i < 100; ++i)
         {
@@ -56,7 +56,7 @@ NSFX_TEST_SUITE(Packet)
             it.Write<uint8_t>(v);
         }
         // Test
-        auto it1 = p0.GetBufferBegin();
+        auto it1 = p0.GetBuffer().cbegin();
         for (size_t i = 0; i < 100; ++i)
         {
             uint8_t v = 0xfe + i;
@@ -72,11 +72,11 @@ NSFX_TEST_SUITE(Packet)
 
     NSFX_TEST_CASE(Remove)/*{{{*/
     {
-        nsfx::Buffer b0(1000, 700, 300);
+        nsfx::PacketBuffer b0(1000, 700, 300);
         // [700 s zs 300 ze e 300]
         nsfx::Packet p0(b0);
         // Add header.
-        nsfx::Buffer h = p0.AddHeader(100);
+        nsfx::PacketBuffer h = p0.AddHeader(100);
         auto it = h.begin();
         for (size_t i = 0; i < 100; ++i)
         {
@@ -84,7 +84,7 @@ NSFX_TEST_SUITE(Packet)
             it.Write<uint8_t>(v);
         }
         // Add trailer.
-        nsfx::Buffer t = p0.AddTrailer(100);
+        nsfx::PacketBuffer t = p0.AddTrailer(100);
         it = t.begin();
         for (size_t i = 0; i < 100; ++i)
         {
@@ -96,7 +96,7 @@ NSFX_TEST_SUITE(Packet)
         // Remove trailer.
         p0.RemoveTrailer(50);
         // Test
-        auto it1 = p0.GetBufferBegin();
+        auto it1 = p0.GetBuffer().cbegin();
         for (size_t i = 0; i < 50; ++i)
         {
             uint8_t v = 0xfe + 50 + i;
@@ -115,11 +115,11 @@ NSFX_TEST_SUITE(Packet)
 
     NSFX_TEST_CASE(ReassembleFragments)/*{{{*/
     {
-        nsfx::Buffer b0(1000, 700, 300);
+        nsfx::PacketBuffer b0(1000, 700, 300);
         // [700 s zs 300 ze e 300]
         nsfx::Packet p0(b0);
         // Add header.
-        nsfx::Buffer h = p0.AddHeader(100);
+        nsfx::PacketBuffer h = p0.AddHeader(100);
         auto it = h.begin();
         for (size_t i = 0; i < 100; ++i)
         {
@@ -127,7 +127,7 @@ NSFX_TEST_SUITE(Packet)
             it.Write<uint8_t>(v);
         }
         // Add trailer.
-        nsfx::Buffer t = p0.AddTrailer(100);
+        nsfx::PacketBuffer t = p0.AddTrailer(100);
         it = t.begin();
         for (size_t i = 0; i < 100; ++i)
         {
@@ -138,7 +138,7 @@ NSFX_TEST_SUITE(Packet)
         nsfx::Packet f0 = p0.MakeFragment(50, 200);
         nsfx::Packet f1 = p0.MakeFragment(250, 200);
         // Test
-        auto it1 = f0.GetBufferBegin();
+        auto it1 = f0.GetBuffer().cbegin();
         for (size_t i = 0; i < 50; ++i)
         {
             uint8_t v = 0xfe + 50 + i;
@@ -148,7 +148,7 @@ NSFX_TEST_SUITE(Packet)
         {
             NSFX_TEST_EXPECT_EQ(it1.Read<uint8_t>(), 0);
         }
-        it1 = f1.GetBufferBegin();
+        it1 = f1.GetBuffer().cbegin();
         for (size_t i = 0; i < 150; ++i)
         {
             NSFX_TEST_EXPECT_EQ(it1.Read<uint8_t>(), 0);
@@ -162,7 +162,7 @@ NSFX_TEST_SUITE(Packet)
         nsfx::Packet p1(f1);
         p1.AddHeader(f0);
         // Test
-        it1 = p1.GetBufferBegin();
+        it1 = p1.GetBuffer().cbegin();
         for (size_t i = 0; i < 50; ++i)
         {
             uint8_t v = 0xfe + 50 + i;
@@ -181,7 +181,7 @@ NSFX_TEST_SUITE(Packet)
         nsfx::Packet p2(f0);
         p2.AddTrailer(f1);
         // Test
-        it1 = p2.GetBufferBegin();
+        it1 = p2.GetBuffer().cbegin();
         for (size_t i = 0; i < 50; ++i)
         {
             uint8_t v = 0xfe + 50 + i;
@@ -200,18 +200,11 @@ NSFX_TEST_SUITE(Packet)
 
     NSFX_TEST_CASE(Tag)/*{{{*/
     {
-        static size_t k = 0;
-        struct Test
+        nsfx::TagBuffer tb(16);
         {
-            Test(int i, double j) : i_(i), j_(j) { ++k; }
-            ~Test(void) { --k; }
-            int i_;
-            double j_;
-        };
-        {
-            nsfx::Buffer b0(1000, 700, 400);
-            // [700 s zs 400 ze e 300]
+            nsfx::PacketBuffer b0(1000, 700, 400);
             nsfx::Packet p0(b0);
+            // [700 s zs 400 ze e 300]
             size_t tagId = 1;
             // Add 4 tags.
             // |<--------------buffer------------->|
@@ -219,10 +212,10 @@ NSFX_TEST_SUITE(Packet)
             // |--------|--------|--------|--------|
             // |<-tag1->|                 |<-tag4->|
             // |<------tag2----->|<------tag3----->|
-            p0.AddTag(nsfx::MakeTag<Test>(tagId++, 1, 2.3),   0, 100);
-            p0.AddTag(nsfx::MakeTag<Test>(tagId++, 1, 2.3),   0, 200);
-            p0.AddTag(nsfx::MakeTag<Test>(tagId++, 1, 2.3), 200, 200);
-            p0.AddTag(nsfx::MakeTag<Test>(tagId++, 1, 2.3), 300, 100);
+            p0.AddTag(nsfx::Tag(tagId++, tb),   0, 100);
+            p0.AddTag(nsfx::Tag(tagId++, tb),   0, 200);
+            p0.AddTag(nsfx::Tag(tagId++, tb), 200, 200);
+            p0.AddTag(nsfx::Tag(tagId++, tb), 300, 100);
             // Create fragments.
             // | f1 |
             // 0    50
@@ -276,8 +269,7 @@ NSFX_TEST_SUITE(Packet)
                 NSFX_TEST_EXPECT(r.HasTag(4, 400-1));
                 nsfx::Tag tag4 = r.GetTag(4, 300);
                 NSFX_TEST_EXPECT_EQ(tag4.GetId(), 4);
-                NSFX_TEST_EXPECT(tag4.GetTypeId() ==
-                                 boost::typeindex::type_id<Test>());
+                NSFX_TEST_EXPECT_EQ(tag4.GetBuffer().GetSize(), 16);
             }
             // Reassemble the fragments.
             {
@@ -299,11 +291,10 @@ NSFX_TEST_SUITE(Packet)
                 NSFX_TEST_EXPECT(r.HasTag(4, 400-1));
                 nsfx::Tag tag4 = r.GetTag(4, 400-1);
                 NSFX_TEST_EXPECT_EQ(tag4.GetId(), 4);
-                NSFX_TEST_EXPECT(tag4.GetTypeId() ==
-                                 boost::typeindex::type_id<Test>());
+                NSFX_TEST_EXPECT_EQ(tag4.GetBuffer().GetSize(), 16);
             }
         }
-        NSFX_TEST_EXPECT_EQ(k, 0);
+        NSFX_TEST_EXPECT_EQ(tb.GetStorage()->refCount_, 1);
     }/*}}}*/
 }
 

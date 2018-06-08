@@ -428,9 +428,9 @@ inline Buffer& Buffer::operator=(const Buffer& rhs) BOOST_NOEXCEPT
 }
 
 inline Buffer::Buffer(Buffer&& rhs) BOOST_NOEXCEPT :
-        storage_(rhs.storage_),
-        start_(rhs.start_),
-        end_(rhs.end_)
+    storage_(rhs.storage_),
+    start_(rhs.start_),
+    end_(rhs.end_)
 {
     rhs.storage_ = nullptr;
     rhs.start_   = 0;
