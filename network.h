@@ -19,6 +19,7 @@
 
 #include <nsfx/network/config.h>
 #include <nsfx/network/buffer.h>
+#include <nsfx/network/packet.h>
 
 
 #endif // NETWORK_H__02054161_34C3_440E_9F00_D02DF34B4452
