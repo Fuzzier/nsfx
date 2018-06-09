@@ -207,6 +207,19 @@ inline void RegisterClassFactory(const Uid& cid, Ptr<IClassFactory> factory)
 
 /**
  * @ingroup Component
+ * @brief Register a class.
+ *
+ * @see \c IClassRegistry::Register().
+ */
+inline void UnregisterClassFactory(const Uid& cid)
+{
+    IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
+    BOOST_ASSERT(registry);
+    registry->Unregister(cid);
+}
+
+/**
+ * @ingroup Component
  * @brief Create an uninitialized object.
  *
  * @tparam I  The type of interface to query.<br/>
