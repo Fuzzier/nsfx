@@ -84,58 +84,72 @@ NSFX_TEST_SUITE(ClassFactory)
         }
     }
 
-    NSFX_TEST_CASE(AggObject)
+    struct Foo : public nsfx::IObject
     {
-        struct Foo : public nsfx::IObject
+        Foo(void)
         {
-            Foo(void)
+            typedef nsfx::ClassFactory<Test>  TestFactory;
+            typedef nsfx::Object<TestFactory> TestFactoryClass;
+            nsfx::Ptr<nsfx::IClassFactory> factory(new TestFactoryClass);
+            try
             {
-                typedef nsfx::ClassFactory<Test>  TestFactory;
-                typedef nsfx::Object<TestFactory> TestFactoryClass;
-                nsfx::Ptr<nsfx::IClassFactory> factory(new TestFactoryClass);
-                try
-                {
-                    // Create an aggregable object via class factory.
-                    t = static_cast<nsfx::IObject*>(
-                        factory->CreateObject(nsfx::uid_of<nsfx::IObject>(),
-                                              this));
-                }
-                catch (boost::exception& e)
-                {
-                    std::cerr << diagnostic_information(e) << std::endl;
-                }
-                catch (std::exception& e)
-                {
-                    std::cerr << e.what() << std::endl;
-                }
-
-                try
-                {
-                    // Create an aggregable object via class factory:
-                    // throw nsfx::BadAggregation.
-                    t = static_cast<ITest*>(
-                        factory->CreateObject(nsfx::uid_of<ITest>(),
-                                              this));
-                    NSFX_TEST_EXPECT(false);
-                }
-                catch (nsfx::BadAggregation& )
-                {
-                    // Should come here.
-                }
-                catch (std::exception& e)
-                {
-                    NSFX_TEST_EXPECT(false) << e.what() << std::endl;
-                }
+                // Create an aggregable object via class factory.
+                t = static_cast<nsfx::IObject*>(
+                    factory->CreateObject(nsfx::uid_of<nsfx::IObject>(),
+                                          this));
+            }
+            catch (boost::exception& e)
+            {
+                std::cerr << diagnostic_information(e) << std::endl;
+            }
+            catch (std::exception& e)
+            {
+                std::cerr << e.what() << std::endl;
             }
 
-            virtual ~Foo(void) {}
+            try
+            {
+                // Create an aggregable object via class factory:
+                // throw nsfx::BadAggregation.
+                t = static_cast<ITest*>(
+                    factory->CreateObject(nsfx::uid_of<ITest>(),
+                                          this));
+                NSFX_TEST_EXPECT(false);
+            }
+            catch (nsfx::BadAggregation& )
+            {
+                // Should come here.
+            }
+            catch (std::exception& e)
+            {
+                NSFX_TEST_EXPECT(false) << e.what() << std::endl;
+            }
+        }
 
-            NSFX_INTERFACE_MAP_BEGIN(Foo)
-                NSFX_INTERFACE_AGGREGATED_ENTRY(ITest, t)
-            NSFX_INTERFACE_MAP_END()
+        virtual ~Foo(void) {}
 
-            nsfx::Ptr<IObject> t;
+        NSFX_INTERFACE_MAP_BEGIN(Foo)
+            NSFX_INTERFACE_AGGREGATED_ENTRY(ITest, &*t)
+        NSFX_INTERFACE_MAP_END()
 
+        nsfx::Ptr<IObject> t;
+    };
+
+    template<class C>
+    struct Visitor
+    {
+        bool Visit(int);
+        bool Visit(double);
+
+        template<class V>
+        void Visit(V&& v) {}
+    };
+
+    NSFX_TEST_CASE(AggObject)
+    {
+        struct Test
+        {
+            typedef Visitor<Test>  V;
         };
 
         typedef nsfx::ClassFactory<Foo>  FooFactory;
