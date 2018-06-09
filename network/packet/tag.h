@@ -31,8 +31,19 @@ NSFX_OPEN_NAMESPACE
  * @ingroup Network
  * @brief A free tag that is not associated with any bytes.
  *
+ *  A tag is considered as a virtual header or trailer that provides side
+ *  information to supplement the physical header or trailer in a packet.
+ *
  *  A tag has an id and a value.
  *  The value of a tag is a buffer.
+ *
+ *  Originally, a tag value is implemented via a type-erased interface that
+ *  supports any C++ type, including non-copyable, non-movable types.
+ *  However, in distributed simulations, such tag values are not easily
+ *  transmitted across machine boundaries.
+ *  Use a buffer as the tag value is more direct.
+ *  Moreover, since a header or trailer is modeled as a buffer, modeling a tag
+ *  value as a buffer is also sound.
  */
 class Tag
 {

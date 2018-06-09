@@ -30,17 +30,48 @@ NSFX_OPEN_NAMESPACE
 
 ////////////////////////////////////////////////////////////////////////////////
 // Types.
+#if !defined(NSFX_PACKET_USES_SOLID_BUFFER)
 /**
  * @ingroup Network
- * @brief The type of packet id.
+ * @brief The buffer of a packet.
+ *
+ * @remarks By default, this is \c ZcBuffer.
+ *          <p>
+ *          If \c NSFX_PACKET_USES_SOLID_BUFFER is defined, this is \c Buffer.
  */
-typedef int64_t  packet_id_t;
+typedef ZcBuffer  PacketBuffer;
 
+/**
+ * @ingroup Network
+ * @brief The read-only buffer of a packet.
+ *
+ * @remarks By default, this is \c ConstZcBuffer.
+ *          <p>
+ *          If \c NSFX_PACKET_USES_SOLID_BUFFER is defined, this is
+ *          \c ConstBuffer.
+ */
+typedef ConstZcBuffer  ConstPacketBuffer;
 
-#if !defined(NSFX_PACKET_USES_SOLID_BUFFER)
-typedef ZcBuffer               PacketBuffer;
-typedef ConstZcBuffer          ConstPacketBuffer;
-typedef ZcBufferIterator       PacketBufferIterator;
+/**
+ * @ingroup Network
+ * @brief The iterator of a packet buffer.
+ *
+ * @remarks By default, this is \c ZcBufferIterator.
+ *          <p>
+ *          If \c NSFX_PACKET_USES_SOLID_BUFFER is defined, this is
+ *          \c BufferIterator.
+ */
+typedef ZcBufferIterator  PacketBufferIterator;
+
+/**
+ * @ingroup Network
+ * @brief The read-only iterator of a packet buffer.
+ *
+ * @remarks By default, this is \c ConstZcBufferIterator.
+ *          <p>
+ *          If \c NSFX_PACKET_USES_SOLID_BUFFER is defined, this is
+ *          \c ConstBufferIterator.
+ */
 typedef ConstZcBufferIterator  ConstPacketBufferIterator;
 
 #else // defined(NSFX_PACKET_USES_SOLID_BUFFER)
@@ -250,7 +281,7 @@ typedef ConstBufferIterator    ConstPacketBufferIterator;
  *
  * ## Usage of tags
  *    The recommended approach to use tag is to adopt the existing rules of
- *    thumb in practice.
+ *    communication in practice.
  *
  *    First, tags <b>shall</b> only be transferred to peer entities across node
  *    boundary, as side information that cannot be transferred by packets in
@@ -258,17 +289,30 @@ typedef ConstBufferIterator    ConstPacketBufferIterator;
  *
  *    Second, tags <b>must</b> not carry information that <i>impractically</i>
  *    affects the behavior of an entity.
- *    Tags shall only carry side information that helps collecting performance
- *    statistics.
+ *    Tags shall be used to help debugging and collecting statistics, etc.
  *
  *    Third, tags <b>shall</b> not be used to coordinate local entities within
  *    a node.
- *    The cooperation among local entities <b>shall</b> be done via well-defined
- *    interfaces.
+ *    The cooperations among local entities <b>shall</b> be done via
+ *    well-defined interfaces.
+ *
+ *    For example, unlike OPNET, OMNET++ or NS3, the library does not provide
+ *    a unique integer id for each packet.
+ *    For debugging purpose, tracing a packet via its id is not always useful,
+ *    since the id of a packet will change via duplication, fragmentation and
+ *    reassembly.
+ *    OPNET and OMNET++ even provide a tree id to trace the duplicates of
+ *    a packet.
+ *    However, the id is useless to trace a packet during fragmention and
+ *    reassembly.
+ *    The id only tells that two packets are different.
+ *    It loss information during duplication, fragmentation and reassembly.
+ *    Tags are more suitable to trace the transmission and processing of the
+ *    bytes of a packet.
  *
  * ### Placement of tags
  *     A tag can be considered as a virtual header or trailer that carries side
- *     information as a supplement to the physical header or trailer in the
+ *     information as a supplement to the physical header or trailer in a
  *     packet.
  *     Thus, a tag is associated with the header or trailer installed by an
  *     entity.
@@ -296,10 +340,12 @@ typedef ConstBufferIterator    ConstPacketBufferIterator;
  */
 class Packet
 {
-private:
-    static packet_id_t GetNextId(void) BOOST_NOEXCEPT;
-
 public:
+    /**
+     * @brief Create an empty packet.
+     */
+    Packet(void) BOOST_NOEXCEPT;
+
     /**
      * @brief Create a packet from a buffer.
      */
@@ -314,10 +360,6 @@ public:
 public:
     Packet(Packet&& rhs) BOOST_NOEXCEPT;
     Packet& operator=(Packet&& rhs) BOOST_NOEXCEPT;
-
-    // Methods.
-public:
-    packet_id_t GetId(void) const BOOST_NOEXCEPT;
 
     // Buffer.
 public:
@@ -413,21 +455,17 @@ public:
     void swap(Packet& rhs) BOOST_NOEXCEPT;
 
 private:
-    packet_id_t  id_;
     PacketBuffer buffer_;
     TagList      tagList_;
 };
 
 
 ////////////////////////////////////////////////////////////////////////////////
-inline packet_id_t Packet::GetNextId(void) BOOST_NOEXCEPT
+inline Packet::Packet(void) BOOST_NOEXCEPT
 {
-    static packet_id_t id = 0;
-    return ++id;
 }
 
 inline Packet::Packet(const PacketBuffer& buffer) BOOST_NOEXCEPT :
-    id_(GetNextId()),
     buffer_(buffer)
 {
     // Will not throw for an empty tag list.
@@ -435,7 +473,6 @@ inline Packet::Packet(const PacketBuffer& buffer) BOOST_NOEXCEPT :
 }
 
 inline Packet::Packet(const Packet& rhs) :
-    id_(GetNextId()),
     buffer_(rhs.buffer_),
     tagList_(rhs.tagList_)
 {
@@ -445,7 +482,6 @@ inline Packet& Packet::operator=(const Packet& rhs)
 {
     if (this != &rhs)
     {
-        id_      = GetNextId();;
         buffer_  = rhs.buffer_;
         tagList_ = rhs.tagList_;
     }
@@ -453,11 +489,9 @@ inline Packet& Packet::operator=(const Packet& rhs)
 }
 
 inline Packet::Packet(Packet&& rhs) BOOST_NOEXCEPT :
-    id_(rhs.id_),
     buffer_(std::move(rhs.buffer_)),
     tagList_(rhs.tagList_)
 {
-    rhs.id_ = 0;
     rhs.tagList_ = TagList();
 }
 
@@ -465,18 +499,11 @@ inline Packet& Packet::operator=(Packet&& rhs) BOOST_NOEXCEPT
 {
     if (this != &rhs)
     {
-        id_      = rhs.id_;
         buffer_  = std::move(rhs.buffer_);
         tagList_ = rhs.tagList_;
-        rhs.id_ = 0;
         rhs.tagList_ = TagList();
     }
     return *this;
-}
-
-inline packet_id_t Packet::GetId(void) const BOOST_NOEXCEPT
-{
-    return id_;
 }
 
 inline size_t Packet::GetSize(void) const BOOST_NOEXCEPT
@@ -552,7 +579,6 @@ inline void Packet::AddTrailer(const Packet& packet)
 
 inline void Packet::swap(Packet& rhs) BOOST_NOEXCEPT
 {
-    boost::swap(id_, rhs.id_);
     boost::swap(buffer_, rhs.buffer_);
     boost::swap(tagList_, rhs.tagList_);
 }
