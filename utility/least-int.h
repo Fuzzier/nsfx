@@ -21,6 +21,7 @@
 #include <nsfx/exception/exception.h>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/conditional.hpp>
+#include <boost/type_traits/make_signed.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/core/swap.hpp>
 #include <iostream>
@@ -50,10 +51,21 @@ struct LeastInt /*{{{*/
                     bits >= 33 && bits <= 64, uint64_t, void>::type
                 >::type
             >::type
-        >::type Type;
+        >::type  UintType;
 
-    static_assert(!boost::is_same<Type, void>::value,
+    static_assert(!boost::is_same<UintType, void>::value,
                   "The number of bits is too large.");
+
+    typedef typename boost::make_signed<UintType>::type  IntType;
+
+    typedef typename boost::conditional<
+        bits >= 0 && bits <= 32, uint32_t,
+        typename boost::conditional<
+            bits >= 33 && bits <= 64, uint64_t, void>::type
+        >::type  UintOpType;
+
+    typedef typename boost::make_signed<UintOpType>::type  IntOpType;
+
 };/*}}}*/
 
 

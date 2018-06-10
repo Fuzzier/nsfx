@@ -18,47 +18,6 @@
 #include <iostream>
 
 
-NSFX_TEST_SUITE(LeastInt)/*{{{*/
-{
-    NSFX_TEST_CASE(0)
-    {
-        typedef nsfx::LeastInt<0>::Type Type;
-        NSFX_TEST_EXPECT((std::is_same<Type, nsfx::uint8_t>::value));
-    }
-
-    NSFX_TEST_CASE(8)
-    {
-        typedef nsfx::LeastInt<8>::Type Type;
-        NSFX_TEST_EXPECT((std::is_same<Type, nsfx::uint8_t>::value));
-    }
-
-    NSFX_TEST_CASE(17)
-    {
-        typedef nsfx::LeastInt<17>::Type Type;
-        NSFX_TEST_EXPECT((std::is_same<Type, nsfx::uint32_t>::value));
-    }
-
-    NSFX_TEST_CASE(32)
-    {
-        typedef nsfx::LeastInt<32>::Type Type;
-        NSFX_TEST_EXPECT((std::is_same<Type, nsfx::uint32_t>::value));
-    }
-
-    NSFX_TEST_CASE(33)
-    {
-        typedef nsfx::LeastInt<33>::Type Type;
-        NSFX_TEST_EXPECT((std::is_same<Type, nsfx::uint64_t>::value));
-    }
-
-    NSFX_TEST_CASE(64)
-    {
-        typedef nsfx::LeastInt<64>::Type Type;
-        NSFX_TEST_EXPECT((std::is_same<Type, nsfx::uint64_t>::value));
-    }
-
-}/*}}}*/
-
-
 NSFX_TEST_SUITE(CircularSequenceNumberTraits)/*{{{*/
 {
     NSFX_TEST_CASE(2)
