@@ -29,6 +29,7 @@
 #include <boost/type_traits/common_type.hpp>
 #include <sstream>
 #include <iomanip>
+#include <locale> // locale, isprint
 
 
 /**
@@ -96,9 +97,17 @@ struct ValueFormatter<T, true>
         T value, typename boost::integral_constant<size_t, 1>::type) const
     {
         std::ostringstream oss;
-        oss << value << " (0x"
+        if (std::isprint(value, std::locale()))
+        {
+            oss << value;
+        }
+        else
+        {
+            oss << ' ';
+        }
+        oss << " (0x"
             << std::setw(sizeof (T) * 2) << std::setfill('0') << std::hex
-            << std::nouppercase << (static_cast<ptrdiff_t>(value) & 0xff)
+            << std::nouppercase << (static_cast<size_t>(value) & 0xff)
             << ")";
         return oss.str();
     }
@@ -109,7 +118,7 @@ struct ValueFormatter<T, true>
         std::ostringstream oss;
         oss << value << " (0x"
             << std::setw(sizeof (T) * 2) << std::setfill('0') << std::hex
-            << std::nouppercase << (static_cast<ptrdiff_t>(value) & 0xffff)
+            << std::nouppercase << (static_cast<size_t>(value) & 0xffff)
             << ")";
         return oss.str();
     }
