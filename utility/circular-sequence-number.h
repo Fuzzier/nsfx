@@ -45,7 +45,7 @@ class CircularSequenceNumberTraits/*{{{*/
                   "Invalid number of bits for CircularSequenceNumber.");
 
 public:
-    typedef typename LeastInt<bits>::Type ValueType;
+    typedef typename LeastInt<bits>::UintType ValueType;
 
     BOOST_STATIC_CONSTANT(ValueType, MAX_GAP =
         static_cast<ValueType>(~(static_cast<ValueType>(-1) << (bits - 1)))
@@ -207,7 +207,7 @@ private:
     std::string ToString(boost::true_type /* 8-bit */) const
     {
         std::ostringstream oss;
-        oss << static_cast<typename LeastInt<32>::Type>(value_);
+        oss << static_cast<typename LeastInt<32>::UintType>(value_);
         oss << value_;
         return oss.str();
     }
