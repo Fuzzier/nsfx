@@ -19,6 +19,7 @@
 
 #include <nsfx/utility/config.h>
 #include <nsfx/utility/least-int.h>
+#include <boost/concept_check.hpp>
 #include <boost/type_traits/is_copy_constructible.hpp>
 #include <boost/type_traits/is_copy_assignable.hpp>
 #include <boost/type_traits/has_equal_to.hpp>
@@ -27,14 +28,6 @@
 #include <boost/type_traits/has_less_equal.hpp>
 #include <boost/type_traits/has_greater.hpp>
 #include <boost/type_traits/has_greater_equal.hpp>
-#include <boost/type_traits/has_pre_increment.hpp>
-#include <boost/type_traits/has_post_increment.hpp>
-#include <boost/type_traits/has_pre_decrement.hpp>
-#include <boost/type_traits/has_post_decrement.hpp>
-#include <boost/type_traits/has_plus.hpp>
-#include <boost/type_traits/has_plus_assign.hpp>
-#include <boost/type_traits/has_minus.hpp>
-#include <boost/type_traits/has_minus_assign.hpp>
 #include <boost/functional/hash.hpp>
 
 
