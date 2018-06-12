@@ -27,6 +27,9 @@
 NSFX_OPEN_NAMESPACE
 
 
+class ConstBuffer;
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // Buffer.
 /**
@@ -201,7 +204,7 @@ public:
      *
      * @remarks Invalidates existing iterators of the buffer.
      */
-    void AddAtStart(const Buffer& src);
+    void AddAtStart(const ConstBuffer& src);
 
 private:
     void InternalAddAtStart(size_t size, AdjustOffsetTag) BOOST_NOEXCEPT;
@@ -229,7 +232,7 @@ public:
      *
      * @remarks Invalidates existing iterators of the buffer.
      */
-    void AddAtEnd(const Buffer& src);
+    void AddAtEnd(const ConstBuffer& src);
 
 private:
     void InternalAddAtEnd(size_t size, size_t dataSize, AdjustOffsetTag) BOOST_NOEXCEPT;
@@ -331,6 +334,14 @@ private:
     size_t end_;
 
 };
+
+NSFX_CLOSE_NAMESPACE
+
+
+#include <nsfx/network/buffer/const-buffer.h>
+
+
+NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -639,7 +650,7 @@ inline void Buffer::AddAtStart(const uint8_t* src, size_t size)
     }
 }
 
-inline void Buffer::AddAtStart(const Buffer& src)
+inline void Buffer::AddAtStart(const ConstBuffer& src)
 {
     size_t size = src.GetSize();
     if (size)
@@ -800,7 +811,7 @@ inline void Buffer::AddAtEnd(const uint8_t* src, size_t size)
     }
 }
 
-inline void Buffer::AddAtEnd(const Buffer& src)
+inline void Buffer::AddAtEnd(const ConstBuffer& src)
 {
     size_t size = src.GetSize();
     if (size)

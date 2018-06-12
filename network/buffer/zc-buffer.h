@@ -27,6 +27,9 @@
 NSFX_OPEN_NAMESPACE
 
 
+class ConstZcBuffer;
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // ZcBuffer.
 /**
@@ -215,7 +218,7 @@ public:
      *
      * @remarks Invalidates existing iterators of the buffer.
      */
-    void AddAtStart(const ZcBuffer& src);
+    void AddAtStart(const ConstZcBuffer& src);
 
 private:
     void InternalAddAtStart(size_t size, AdjustOffsetTag) BOOST_NOEXCEPT;
@@ -243,7 +246,7 @@ public:
      *
      * @remarks Invalidates existing iterators of the buffer.
      */
-    void AddAtEnd(const ZcBuffer& src);
+    void AddAtEnd(const ConstZcBuffer& src);
 
 private:
     void InternalAddAtEnd(size_t size, size_t dataSize, AdjustOffsetTag) BOOST_NOEXCEPT;
@@ -355,6 +358,15 @@ private:
     size_t end_;
 
 };
+
+
+NSFX_CLOSE_NAMESPACE
+
+
+#include <nsfx/network/buffer/const-zc-buffer.h>
+
+
+NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -733,7 +745,7 @@ inline void ZcBuffer::AddAtStart(const uint8_t* src, size_t size)
     }
 }
 
-inline void ZcBuffer::AddAtStart(const ZcBuffer& src)
+inline void ZcBuffer::AddAtStart(const ConstZcBuffer& src)
 {
     size_t size = src.GetSize();
     if (size)
@@ -898,7 +910,7 @@ inline void ZcBuffer::AddAtEnd(const uint8_t* src, size_t size)
     }
 }
 
-inline void ZcBuffer::AddAtEnd(const ZcBuffer& src)
+inline void ZcBuffer::AddAtEnd(const ConstZcBuffer& src)
 {
     size_t size = src.GetSize();
     if (size)
