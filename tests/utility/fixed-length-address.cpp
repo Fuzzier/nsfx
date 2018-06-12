@@ -23,7 +23,6 @@ NSFX_TEST_SUITE(FixedLengthAddress)
     NSFX_TEST_SUITE(4)/*{{{*/
     {
         typedef nsfx::FixedLengthAddress<4>  Address;
-        BOOST_CONCEPT_ASSERT((nsfx::FixedLengthAddressConcept<Address>));
 
         NSFX_TEST_CASE(Ctor0)
         {
@@ -121,7 +120,6 @@ NSFX_TEST_SUITE(FixedLengthAddress)
     NSFX_TEST_SUITE(8)/*{{{*/
     {
         typedef nsfx::FixedLengthAddress<8>  Address;
-        BOOST_CONCEPT_ASSERT((nsfx::FixedLengthAddressConcept<Address>));
 
         NSFX_TEST_CASE(Ctor0)
         {
@@ -219,7 +217,6 @@ NSFX_TEST_SUITE(FixedLengthAddress)
     NSFX_TEST_SUITE(32)/*{{{*/
     {
         typedef nsfx::FixedLengthAddress<32>  Address;
-        BOOST_CONCEPT_ASSERT((nsfx::FixedLengthAddressConcept<Address>));
 
         NSFX_TEST_CASE(Ctor0)
         {
@@ -317,7 +314,6 @@ NSFX_TEST_SUITE(FixedLengthAddress)
     NSFX_TEST_SUITE(63)/*{{{*/
     {
         typedef nsfx::FixedLengthAddress<63>  Address;
-        BOOST_CONCEPT_ASSERT((nsfx::FixedLengthAddressConcept<Address>));
 
         NSFX_TEST_CASE(Ctor0)
         {

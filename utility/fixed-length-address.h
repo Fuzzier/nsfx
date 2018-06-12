@@ -19,16 +19,9 @@
 
 #include <nsfx/utility/config.h>
 #include <nsfx/utility/least-int.h>
-#include <boost/concept_check.hpp>
-#include <boost/type_traits/is_copy_constructible.hpp>
-#include <boost/type_traits/is_copy_assignable.hpp>
-#include <boost/type_traits/has_equal_to.hpp>
-#include <boost/type_traits/has_not_equal_to.hpp>
-#include <boost/type_traits/has_less.hpp>
-#include <boost/type_traits/has_less_equal.hpp>
-#include <boost/type_traits/has_greater.hpp>
-#include <boost/type_traits/has_greater_equal.hpp>
+#include <nsfx/utility/address-concept.h>
 #include <boost/functional/hash.hpp>
+#include <boost/core/swap.hpp>
 
 
 NSFX_OPEN_NAMESPACE
@@ -48,6 +41,8 @@ class FixedLengthAddress
     static_assert(bits >= 1 && bits <= 64,
                   "Invalid number of bits for FixedLengthAddress.");
 
+    BOOST_CONCEPT_ASSERT((AddressConcept<FixedLengthAddress<bits> >));
+
 public:
     /**
      * @brief The type of underlying value.
@@ -65,10 +60,9 @@ public:
     typedef typename LeastInt<bits>::UintOpType UintOpType;
 
 private:
-    static const ValueType MASK =
-        static_cast<ValueType>(
-            static_cast<ValueType>(-1) >>
-                (sizeof (ValueType) * 8 - bits));
+    static const ValueType MASK = static_cast<ValueType>(
+                                    static_cast<ValueType>(-1) >>
+                                        (sizeof (ValueType) * 8 - bits));
 
     // LengthTag
 private:
@@ -217,6 +211,11 @@ public:
     }
 
 public:
+    BOOST_CONSTEXPR size_t GetBitSize(void) const BOOST_NOEXCEPT
+    {
+        return bits;
+    }
+
     BOOST_CONSTEXPR ValueType GetValue(void) const BOOST_NOEXCEPT
     {
         return value_;
@@ -291,74 +290,6 @@ private:
 
 private:
     ValueType  value_;
-};
-
-
-////////////////////////////////////////////////////////////////////////////////
-template<class FixedLengthAddress>
-class FixedLengthAddressConcept;
-
-template<size_t bits>
-class FixedLengthAddressConcept<FixedLengthAddress<bits> >
-{
-    typedef FixedLengthAddress<bits>  Type;
-
-    static_assert(boost::is_copy_constructible<Type>::value, "");
-    static_assert(boost::is_copy_assignable<Type>::value, "");
-    static_assert(boost::has_equal_to<Type>::value, "");
-    static_assert(boost::has_not_equal_to<Type>::value, "");
-    static_assert(boost::has_less<Type>::value, "");
-    static_assert(boost::has_less_equal<Type>::value, "");
-    static_assert(boost::has_greater<Type>::value, "");
-    static_assert(boost::has_greater_equal<Type>::value, "");
-
-public:
-    BOOST_CONCEPT_USAGE(FixedLengthAddressConcept)
-    {
-        IsDefaultConstructible();
-        Algorithms();
-        Hashable();
-        Swappable();
-    }
-
-    void IsDefaultConstructible(void)
-    {
-        Type address;
-    }
-
-    void Algorithms(void)
-    {
-        Type* address = nullptr;
-
-        ++(*address);
-        (*address)++;
-
-        --(*address);
-        (*address)--;
-
-        *address += 1;
-        *address -= 1;
-
-        *address = *address + 1;
-        *address = 1 + *address;
-        *address = *address - 1;
-
-        ptrdiff_t n = *address - *address;
-    }
-
-    void Hashable(void)
-    {
-        const Type* address = nullptr;
-        size_t hash = boost::hash<Type>()(*address);
-    }
-
-    void Swappable(void)
-    {
-        Type* a = nullptr;
-        Type* b = nullptr;
-        boost::swap(*a, *b);
-    }
-
 };
 
 
