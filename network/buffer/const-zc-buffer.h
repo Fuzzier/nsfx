@@ -13,13 +13,13 @@
  *            All rights reserved.
  */
 
-#ifndef CONST_ZC_BUFFER_H__DC7C0CA7_7AB5_4BBF_A16C_5F6516BF1E83
-#define CONST_ZC_BUFFER_H__DC7C0CA7_7AB5_4BBF_A16C_5F6516BF1E83
-
-
 #include <nsfx/network/config.h>
 #include <nsfx/network/buffer/zc-buffer.h>
 #include <nsfx/network/buffer/zc-buffer-iterator.h>
+
+
+#ifndef CONST_ZC_BUFFER_H__DC7C0CA7_7AB5_4BBF_A16C_5F6516BF1E83
+#define CONST_ZC_BUFFER_H__DC7C0CA7_7AB5_4BBF_A16C_5F6516BF1E83
 
 
 NSFX_OPEN_NAMESPACE

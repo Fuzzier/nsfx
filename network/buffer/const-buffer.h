@@ -13,13 +13,13 @@
  *            All rights reserved.
  */
 
-#ifndef CONST_BUFFER_H__7944BA7C_20BF_40B5_92C5_05564EB81C32
-#define CONST_BUFFER_H__7944BA7C_20BF_40B5_92C5_05564EB81C32
-
-
 #include <nsfx/network/config.h>
 #include <nsfx/network/buffer/buffer.h>
 #include <boost/core/swap.hpp>
+
+
+#ifndef CONST_BUFFER_H__7944BA7C_20BF_40B5_92C5_05564EB81C32
+#define CONST_BUFFER_H__7944BA7C_20BF_40B5_92C5_05564EB81C32
 
 
 NSFX_OPEN_NAMESPACE

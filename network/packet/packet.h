@@ -394,6 +394,20 @@ public:
     PacketBuffer AddTrailer(size_t size);
 
     /**
+     * @brief Add a header to the packet.
+     *
+     * @param[in] buffer The buffer of the header.
+     */
+    void AddHeader(const ConstPacketBuffer& buffer);
+
+    /**
+     * @brief Add a trailer to the packet.
+     *
+     * @param[in] buffer The buffer of the trailer.
+     */
+    void AddTrailer(const ConstPacketBuffer& buffer);
+
+    /**
      * @brief Remove the header from the packet.
      *
      * @param[in] size The byte size of the header.
@@ -528,6 +542,16 @@ inline PacketBuffer Packet::AddTrailer(size_t size)
     buffer_.AddAtEnd(size);
     tagList_.AddAtEnd(size);
     return buffer_.MakeFragment(buffer_.GetSize() - size, size);
+}
+
+inline void Packet::AddHeader(const ConstPacketBuffer& buffer)
+{
+    buffer_.AddAtStart(buffer);
+}
+
+inline void Packet::AddTrailer(const ConstPacketBuffer& buffer)
+{
+    buffer_.AddAtEnd(buffer);
 }
 
 inline void Packet::RemoveHeader(size_t size) BOOST_NOEXCEPT

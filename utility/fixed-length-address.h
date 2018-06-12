@@ -211,14 +211,14 @@ public:
     }
 
 public:
-    BOOST_CONSTEXPR size_t GetBitSize(void) const BOOST_NOEXCEPT
-    {
-        return bits;
-    }
-
     BOOST_CONSTEXPR ValueType GetValue(void) const BOOST_NOEXCEPT
     {
         return value_;
+    }
+
+    static BOOST_CONSTEXPR size_t GetBitSize(void) const BOOST_NOEXCEPT
+    {
+        return bits;
     }
 
     static BOOST_CONSTEXPR FixedLengthAddress Zero(void) BOOST_NOEXCEPT

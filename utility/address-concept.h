@@ -19,14 +19,6 @@
 
 #include <nsfx/utility/config.h>
 #include <boost/concept_check.hpp>
-#include <boost/type_traits/is_copy_constructible.hpp>
-#include <boost/type_traits/is_copy_assignable.hpp>
-#include <boost/type_traits/has_equal_to.hpp>
-#include <boost/type_traits/has_not_equal_to.hpp>
-#include <boost/type_traits/has_less.hpp>
-#include <boost/type_traits/has_less_equal.hpp>
-#include <boost/type_traits/has_greater.hpp>
-#include <boost/type_traits/has_greater_equal.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/core/swap.hpp>
 
@@ -47,6 +39,7 @@ public:
         Arithmetic();
         Hashable();
         Swappable();
+        Methods();
     }
 
     void DefaultConstructible(void)
@@ -106,6 +99,14 @@ public:
         Address* a = nullptr;
         Address* b = nullptr;
         boost::swap(*a, *b);
+    }
+
+    void Methods(void)
+    {
+        size_t bits = Address::GetBitSize();
+
+        Address* a = nullptr;
+        *a = Address::Zero();
     }
 
 };
