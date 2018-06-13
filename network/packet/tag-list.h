@@ -568,6 +568,8 @@ inline void TagList::Insert(const Tag& tag, size_t start, size_t size)
 {
     BOOST_ASSERT_MSG(start + size <= bufferEnd_ - bufferStart_,
                      "Cannot tag bytes that are outside of the buffer.");
+    BOOST_ASSERT_MSG(size > 0,
+                     "Cannot tag bytes, since the number of bytes is zero.");
     PrepareToInsert();
     TagIndex* idx   = tia_->indices_ + size_;
     size_t tagStart = bufferStart_ + start;
