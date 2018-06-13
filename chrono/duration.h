@@ -42,51 +42,51 @@ class Duration
 {
     // Typedefs./*{{{*/
 public:
-    typedef int64_t  Rep;
+    typedef int64_t  ValueType;
 
-    BOOST_STATIC_CONSTANT(Rep,  NANO_SECOND =                1    );
-    BOOST_STATIC_CONSTANT(Rep, MICRO_SECOND =  NANO_SECOND * 1000 );
-    BOOST_STATIC_CONSTANT(Rep, MILLI_SECOND = MICRO_SECOND * 1000 );
-    BOOST_STATIC_CONSTANT(Rep,       SECOND = MILLI_SECOND * 1000 );
-    BOOST_STATIC_CONSTANT(Rep,       MINUTE =       SECOND * 60   );
-    BOOST_STATIC_CONSTANT(Rep,         HOUR =       MINUTE * 60   );
-    BOOST_STATIC_CONSTANT(Rep,          DAY =         HOUR * 24   );
+    BOOST_STATIC_CONSTANT(ValueType,  NANO_SECOND =                1    );
+    BOOST_STATIC_CONSTANT(ValueType, MICRO_SECOND =  NANO_SECOND * 1000 );
+    BOOST_STATIC_CONSTANT(ValueType, MILLI_SECOND = MICRO_SECOND * 1000 );
+    BOOST_STATIC_CONSTANT(ValueType,       SECOND = MILLI_SECOND * 1000 );
+    BOOST_STATIC_CONSTANT(ValueType,       MINUTE =       SECOND * 60   );
+    BOOST_STATIC_CONSTANT(ValueType,         HOUR =       MINUTE * 60   );
+    BOOST_STATIC_CONSTANT(ValueType,          DAY =         HOUR * 24   );
 
     /*}}}*/
 
     // Constructors. /*{{{*/
 public:
     BOOST_CONSTEXPR Duration(void) BOOST_NOEXCEPT :
-        rep_(0) {}
+        value_(0) {}
 
-    explicit BOOST_CONSTEXPR Duration(const Rep& ns) BOOST_NOEXCEPT :
-        rep_(ns) {}
+    explicit BOOST_CONSTEXPR Duration(const ValueType& ns) BOOST_NOEXCEPT :
+        value_(ns) {}
 
-    BOOST_CONSTEXPR Duration(const Rep& us, const Rep& ns) BOOST_NOEXCEPT :
-        rep_(us * MICRO_SECOND + ns) {}
+    BOOST_CONSTEXPR Duration(const ValueType& us, const ValueType& ns) BOOST_NOEXCEPT :
+        value_(us * MICRO_SECOND + ns) {}
 
-    BOOST_CONSTEXPR Duration(const Rep& ms, const Rep& us, const Rep& ns) BOOST_NOEXCEPT :
-        rep_(ms * MILLI_SECOND + us * MICRO_SECOND + ns) {}
+    BOOST_CONSTEXPR Duration(const ValueType& ms, const ValueType& us, const ValueType& ns) BOOST_NOEXCEPT :
+        value_(ms * MILLI_SECOND + us * MICRO_SECOND + ns) {}
 
-    BOOST_CONSTEXPR Duration(const Rep& sc,
-                             const Rep& ms, const Rep& us, const Rep& ns) BOOST_NOEXCEPT :
-        rep_(sc * SECOND +
+    BOOST_CONSTEXPR Duration(const ValueType& sc,
+                             const ValueType& ms, const ValueType& us, const ValueType& ns) BOOST_NOEXCEPT :
+        value_(sc * SECOND +
              ms * MILLI_SECOND + us * MICRO_SECOND + ns) {}
 
-    BOOST_CONSTEXPR Duration(const Rep& mn, const Rep& sc,
-                             const Rep& ms, const Rep& us, const Rep& ns) BOOST_NOEXCEPT :
-        rep_(mn * MINUTE + sc * SECOND +
+    BOOST_CONSTEXPR Duration(const ValueType& mn, const ValueType& sc,
+                             const ValueType& ms, const ValueType& us, const ValueType& ns) BOOST_NOEXCEPT :
+        value_(mn * MINUTE + sc * SECOND +
              ms * MILLI_SECOND + us * MICRO_SECOND + ns) {}
 
-    BOOST_CONSTEXPR Duration(const Rep& hr, const Rep& mn, const Rep& sc,
-                             const Rep& ms, const Rep& us, const Rep& ns) BOOST_NOEXCEPT :
-        rep_(hr * HOUR + mn * MINUTE + sc * SECOND +
+    BOOST_CONSTEXPR Duration(const ValueType& hr, const ValueType& mn, const ValueType& sc,
+                             const ValueType& ms, const ValueType& us, const ValueType& ns) BOOST_NOEXCEPT :
+        value_(hr * HOUR + mn * MINUTE + sc * SECOND +
              ms * MILLI_SECOND + us * MICRO_SECOND + ns) {}
 
-    BOOST_CONSTEXPR Duration(const Rep& dy,
-                             const Rep& hr, const Rep& mn, const Rep& sc,
-                             const Rep& ms, const Rep& us, const Rep& ns) BOOST_NOEXCEPT :
-        rep_(dy * DAY +
+    BOOST_CONSTEXPR Duration(const ValueType& dy,
+                             const ValueType& hr, const ValueType& mn, const ValueType& sc,
+                             const ValueType& ms, const ValueType& us, const ValueType& ns) BOOST_NOEXCEPT :
+        value_(dy * DAY +
              hr * HOUR + mn * MINUTE + sc * SECOND +
              ms * MILLI_SECOND + us * MICRO_SECOND + ns) {}
 
@@ -121,72 +121,80 @@ public:
      * The remaining value the duration represents HH:MM:SS.mmm,uuu,nnn,
      * and D is returned.
      */
-    BOOST_CONSTEXPR Rep ModuloDay(void) BOOST_NOEXCEPT;
+    BOOST_CONSTEXPR ValueType ModuloDay(void) BOOST_NOEXCEPT;
 
-    friend BOOST_CONSTEXPR Duration operator+ (const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT;
-    friend BOOST_CONSTEXPR Duration operator- (const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT;
-    friend BOOST_CONSTEXPR Duration operator* (const Duration& lhs, const Rep& n       ) BOOST_NOEXCEPT;
-    friend BOOST_CONSTEXPR Duration operator* (const Rep& n,        const Duration& rhs) BOOST_NOEXCEPT;
-    friend BOOST_CONSTEXPR Rep      operator/ (const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT;
-    friend BOOST_CONSTEXPR Duration operator/ (const Duration& lhs, const Rep& n       ) BOOST_NOEXCEPT;
-    friend BOOST_CONSTEXPR Duration operator% (const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT;
+    friend BOOST_CONSTEXPR Duration  operator+(const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT;
+    friend BOOST_CONSTEXPR Duration  operator-(const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT;
+    friend BOOST_CONSTEXPR Duration  operator*(const Duration& lhs, const ValueType& n ) BOOST_NOEXCEPT;
+    friend BOOST_CONSTEXPR Duration  operator*(const ValueType& n,  const Duration& rhs) BOOST_NOEXCEPT;
+    friend BOOST_CONSTEXPR ValueType operator/(const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT;
+    friend BOOST_CONSTEXPR Duration  operator/(const Duration& lhs, const ValueType& n ) BOOST_NOEXCEPT;
+    friend BOOST_CONSTEXPR Duration  operator%(const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT;
 
     BOOST_CONSTEXPR Duration& operator+=(const Duration& rhs) BOOST_NOEXCEPT
     {
-        rep_ += rhs.rep_;
+        value_ += rhs.value_;
         return *this;
     }
 
     BOOST_CONSTEXPR Duration& operator-=(const Duration& rhs) BOOST_NOEXCEPT
     {
-        rep_ -= rhs.rep_;
+        value_ -= rhs.value_;
         return *this;
     }
 
-    BOOST_CONSTEXPR Duration& operator*=(const Rep& n) BOOST_NOEXCEPT
+    BOOST_CONSTEXPR Duration& operator*=(const ValueType& n) BOOST_NOEXCEPT
     {
-        rep_ *= n;
+        value_ *= n;
         return *this;
     }
 
-    BOOST_CONSTEXPR Duration& operator/=(const Rep& n) BOOST_NOEXCEPT
+    BOOST_CONSTEXPR Duration& operator/=(const ValueType& n) BOOST_NOEXCEPT
     {
-        rep_ /= n;
+        value_ /= n;
         return *this;
     }
 
     BOOST_CONSTEXPR Duration& operator%=(const Duration& rhs) BOOST_NOEXCEPT
     {
-        rep_ %= rhs.rep_;
+        value_ %= rhs.value_;
         return *this;
     }
 
     BOOST_CONSTEXPR Duration operator-(void) BOOST_NOEXCEPT
     {
-        return Duration(-rep_);
+        return Duration(-value_);
     }
 
     BOOST_CONSTEXPR bool operator!(void) BOOST_NOEXCEPT
     {
-        return !rep_;
+        return !value_;
     }
 
     /*}}}*/
 
     // Methods./*{{{*/
     /**
+     * @brief Get the internal value.
+     */
+    BOOST_CONSTEXPR ValueType GetValue(void) const BOOST_NOEXCEPT
+    {
+        return value_;
+    }
+
+    /**
      * @brief Convert to nanoseconds.
      */
-    BOOST_CONSTEXPR Rep ToNanoSeconds(void) const
+    BOOST_CONSTEXPR ValueType ToNanoSeconds(void) const BOOST_NOEXCEPT
     {
-        return rep_;
+        return value_;
     }
 
     friend size_t hash_value(const Duration& d) BOOST_NOEXCEPT;
 
     void swap(Duration& rhs) BOOST_NOEXCEPT
     {
-        boost::swap(rep_, rhs.rep_);
+        boost::swap(value_, rhs.value_);
     }
 
     /*}}}*/
@@ -215,18 +223,18 @@ public:
 
     static Duration Min(void) BOOST_NOEXCEPT
     {
-        return Duration(std::numeric_limits<Rep>::min());
+        return Duration(std::numeric_limits<ValueType>::min());
     }
 
     static Duration Max(void) BOOST_NOEXCEPT
     {
-        return Duration(std::numeric_limits<Rep>::max());
+        return Duration(std::numeric_limits<ValueType>::max());
     }
 
     /*}}}*/
 
 private:
-    Rep rep_;
+    ValueType value_;
 };
 
 
@@ -235,60 +243,60 @@ private:
 inline BOOST_CONSTEXPR bool
 operator< (const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT
 {
-    return lhs.rep_ < rhs.rep_;
+    return lhs.value_ < rhs.value_;
 }
 
 inline BOOST_CONSTEXPR bool
 operator<=(const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT
 {
-    return lhs.rep_ <= rhs.rep_;
+    return lhs.value_ <= rhs.value_;
 }
 
 inline BOOST_CONSTEXPR bool
 operator==(const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT
 {
-    return lhs.rep_ == rhs.rep_;
+    return lhs.value_ == rhs.value_;
 }
 
 inline BOOST_CONSTEXPR bool
 operator!=(const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT
 {
-    return lhs.rep_ != rhs.rep_;
+    return lhs.value_ != rhs.value_;
 }
 
 inline BOOST_CONSTEXPR bool
 operator> (const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT
 {
-    return lhs.rep_ > rhs.rep_;
+    return lhs.value_ > rhs.value_;
 }
 
 inline BOOST_CONSTEXPR bool
 operator>=(const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT
 {
-    return lhs.rep_ >= rhs.rep_;
+    return lhs.value_ >= rhs.value_;
 }
 /*}}}*/
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // Algorithms./*{{{*/
-inline BOOST_CONSTEXPR Duration::Rep
+inline BOOST_CONSTEXPR Duration::ValueType
 Duration::ModuloDay(void) BOOST_NOEXCEPT
 {
-    Rep days = 0;
-    if (rep_ >= DAY)
+    ValueType days = 0;
+    if (value_ >= DAY)
     {
-        days = static_cast<Rep>(rep_ / DAY);
-        rep_ %= DAY;
+        days = static_cast<ValueType>(value_ / DAY);
+        value_ %= DAY;
     }
-    else if (rep_ < 0)
+    else if (value_ < 0)
     {
-        days = static_cast<Rep>(rep_ / DAY);
-        rep_ -= days * DAY;
-        if (rep_ < 0)
+        days = static_cast<ValueType>(value_ / DAY);
+        value_ -= days * DAY;
+        if (value_ < 0)
         {
             --days;
-            rep_ += DAY;
+            value_ += DAY;
         }
     }
     return days;
@@ -297,43 +305,43 @@ Duration::ModuloDay(void) BOOST_NOEXCEPT
 inline BOOST_CONSTEXPR Duration
 operator+ (const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT
 {
-return Duration(lhs.rep_ + rhs.rep_);
+return Duration(lhs.value_ + rhs.value_);
 }
 
 inline BOOST_CONSTEXPR Duration
 operator- (const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT
 {
-    return Duration(lhs.rep_ - rhs.rep_);
+    return Duration(lhs.value_ - rhs.value_);
 }
 
 inline BOOST_CONSTEXPR Duration
-operator* (const Duration& lhs, const Duration::Rep& n) BOOST_NOEXCEPT
+operator* (const Duration& lhs, const Duration::ValueType& n) BOOST_NOEXCEPT
 {
-    return Duration(lhs.rep_ * n);
+    return Duration(lhs.value_ * n);
 }
 
 inline BOOST_CONSTEXPR Duration
-operator* (const Duration::Rep& n, const Duration& rhs) BOOST_NOEXCEPT
+operator* (const Duration::ValueType& n, const Duration& rhs) BOOST_NOEXCEPT
 {
-    return Duration(n * rhs.rep_);
+    return Duration(n * rhs.value_);
 }
 
 inline BOOST_CONSTEXPR Duration
-operator/ (const Duration& lhs, const Duration::Rep& n) BOOST_NOEXCEPT
+operator/ (const Duration& lhs, const Duration::ValueType& n) BOOST_NOEXCEPT
 {
-    return Duration(lhs.rep_ / n);
+    return Duration(lhs.value_ / n);
 }
 
-inline BOOST_CONSTEXPR Duration::Rep
+inline BOOST_CONSTEXPR Duration::ValueType
 operator/ (const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT
 {
-    return lhs.rep_ / rhs.rep_;
+    return lhs.value_ / rhs.value_;
 }
 
 inline BOOST_CONSTEXPR Duration
 operator% (const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT
 {
-    return Duration(lhs.rep_ % rhs.rep_);
+    return Duration(lhs.value_ % rhs.value_);
 }
 /*}}}*/
 
@@ -346,7 +354,7 @@ operator% (const Duration& lhs, const Duration& rhs) BOOST_NOEXCEPT
 inline size_t
 hash_value(const Duration& d) BOOST_NOEXCEPT
 {
-    return boost::hash<Duration::Rep>()(d.rep_);
+    return boost::hash<Duration::ValueType>()(d.value_);
 }
 
 inline void
@@ -364,20 +372,20 @@ inline std::string
 Duration::ToString(void) const
 {
     std::stringstream oss;
-    Rep rep = rep_;
+    ValueType rep = value_;
     bool neg = rep < 0;
     if (neg)
     {
         oss << '-';
     }
 
-    Rep dy =  rep / DAY;
-    Rep hr = (rep % DAY) / HOUR;
-    Rep mn = (rep % HOUR) / MINUTE;
-    Rep sc = (rep % MINUTE) / SECOND;
-    Rep ms = (rep % SECOND) / MILLI_SECOND;
-    Rep us = (rep % MILLI_SECOND) / MICRO_SECOND;
-    Rep ns = (rep % MICRO_SECOND) / NANO_SECOND;
+    ValueType dy =  rep / DAY;
+    ValueType hr = (rep % DAY) / HOUR;
+    ValueType mn = (rep % HOUR) / MINUTE;
+    ValueType sc = (rep % MINUTE) / SECOND;
+    ValueType ms = (rep % SECOND) / MILLI_SECOND;
+    ValueType us = (rep % MILLI_SECOND) / MICRO_SECOND;
+    ValueType ns = (rep % MICRO_SECOND) / NANO_SECOND;
 
     if (dy)
     {
@@ -404,43 +412,43 @@ operator<<(std::basic_ostream<CharT, TraitsT>& os, const Duration& rhs)
 ////////////////////////////////////////////////////////////////////////////////
 // Makers./*{{{*/
 inline BOOST_CONSTEXPR Duration
-NanoSeconds(Duration::Rep n) BOOST_NOEXCEPT
+NanoSeconds(Duration::ValueType n) BOOST_NOEXCEPT
 {
     return Duration(n * Duration::NANO_SECOND);
 }
 
 inline BOOST_CONSTEXPR Duration
-MicroSeconds(Duration::Rep n) BOOST_NOEXCEPT
+MicroSeconds(Duration::ValueType n) BOOST_NOEXCEPT
 {
     return Duration(n * Duration::MICRO_SECOND);
 }
 
 inline BOOST_CONSTEXPR Duration
-MilliSeconds(Duration::Rep n) BOOST_NOEXCEPT
+MilliSeconds(Duration::ValueType n) BOOST_NOEXCEPT
 {
     return Duration(n * Duration::MILLI_SECOND);
 }
 
 inline BOOST_CONSTEXPR Duration
-Seconds(Duration::Rep n) BOOST_NOEXCEPT
+Seconds(Duration::ValueType n) BOOST_NOEXCEPT
 {
     return Duration(n * Duration::SECOND);
 }
 
 inline BOOST_CONSTEXPR Duration
-Minutes(Duration::Rep n) BOOST_NOEXCEPT
+Minutes(Duration::ValueType n) BOOST_NOEXCEPT
 {
     return Duration(n * Duration::MINUTE);
 }
 
 inline BOOST_CONSTEXPR Duration
-Hours(Duration::Rep n) BOOST_NOEXCEPT
+Hours(Duration::ValueType n) BOOST_NOEXCEPT
 {
     return Duration(n * Duration::HOUR);
 }
 
 inline BOOST_CONSTEXPR Duration
-Days(Duration::Rep n) BOOST_NOEXCEPT
+Days(Duration::ValueType n) BOOST_NOEXCEPT
 {
     return Duration(n * Duration::DAY);
 }
