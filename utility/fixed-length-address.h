@@ -216,7 +216,7 @@ public:
         return value_;
     }
 
-    static BOOST_CONSTEXPR size_t GetBitSize(void) const BOOST_NOEXCEPT
+    static BOOST_CONSTEXPR size_t GetBitSize(void) BOOST_NOEXCEPT
     {
         return bits;
     }
