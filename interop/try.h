@@ -38,16 +38,125 @@ public:
     NSFX_METHOD_MAP_END()
 };
 
-
 template<class T>
-struct TypeInfo
+struct ArgumentTypeTraits
 {
-    static const boost::typeindex::type_info&
-    GetTypeInfo(void)
-    {
-        return boost::typeindex::type_id<T>().type_info();
-    }
+    static const bool supported = false;
+    static const vartype_t type = VT_EMPTY;
 };
+
+template<>
+struct ArgumentType<bool>
+{
+    static const bool supported = true;
+    static const vartype_t type = VT_BOOL;
+};
+
+template<>
+struct ArgumentType<int8_t>
+{
+    static const bool supported = true;
+    static const vartype_t type = VT_INT8;
+};
+
+template<>
+struct ArgumentType<uint8_t>
+{
+    static const bool supported = true;
+    static const vartype_t type = VT_UINT8;
+};
+
+template<>
+struct ArgumentType<int16_t>
+{
+    static const bool supported = true;
+    static const vartype_t type = VT_INT16;
+};
+
+template<>
+struct ArgumentType<uint16_t>
+{
+    static const bool supported = true;
+    static const vartype_t type = VT_UINT16;
+};
+
+template<>
+struct ArgumentType<int32_t>
+{
+    static const bool supported = true;
+    static const vartype_t type = VT_INT32;
+};
+
+template<>
+struct ArgumentType<uint32_t>
+{
+    static const bool supported = true;
+    static const vartype_t type = VT_UINT32;
+};
+
+template<>
+struct ArgumentType<int64_t>
+{
+    static const bool supported = true;
+    static const vartype_t type = VT_INT64;
+};
+
+template<>
+struct ArgumentType<uint64_t>
+{
+    static const bool supported = true;
+    static const vartype_t type = VT_UINT64;
+};
+
+template<>
+struct ArgumentType<float>
+{
+    static const bool supported = true;
+    static const vartype_t type = VT_INT8;
+};
+
+template<>
+struct ArgumentType<double>
+{
+    static const bool supported = true;
+    static const vartype_t type = VT_INT8;
+};
+
+template<>
+struct ArgumentType<std::string>
+{
+    static const bool supported = true;
+    static const vartype_t type = VT_STRING;
+};
+
+template<>
+struct ArgumentType<Duration>
+{
+    static const bool supported = true;
+    static const vartype_t type = VT_DURATION;
+};
+
+template<>
+struct ArgumentType<TimePoint>
+{
+    static const bool supported = true;
+    static const vartype_t type = VT_TIME_POINT;
+};
+
+template<class I>
+struct ArgumentType<Ptr<I> >
+{
+    static const bool supported = true;
+    static const vartype_t type = VT_OBJECT;
+};
+
+template<>
+struct ArgumentType<Ptr<IInterfaceInfo> >
+{
+    static const bool supported = true;
+    static const vartype_t type = VT_INTERFACE;
+};
+
 
 
 #define NSFX_DECLARE_METHOD(name)
@@ -94,12 +203,19 @@ struct TypeInfo
         }
 
         virtual void Invoke(Variant returnValue,
-                            size_t numArguments,
-                            Variant* arguments)
+                            Variant a1,
+                            Variant a2,
+                            Variant a3,
+                            Variant a4,
+                            Variant a5,
+                            Variant a6)
         {
             if (numArguments != sizeof...(Args))
             {
                 BOOST_THROW_EXCEPTION(InvalidArgument());
+            }
+            if (!ArgumentTypeTraits<typename boost::mpl::at<ArgVector, 0>::type>::supported)
+            {
             }
         }
 
