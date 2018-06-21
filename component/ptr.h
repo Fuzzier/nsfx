@@ -22,7 +22,6 @@
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_index.hpp>
 #include <boost/core/swap.hpp>
-#include <utility>
 #include <iostream>
 
 
@@ -373,6 +372,11 @@ public:
         return *this;
     }
 
+    T** operator&() BOOST_NOEXCEPT
+    {
+        return &p_;
+    }
+
     T& operator*() const
     {
 #if !defined(NDEBUG)
@@ -601,6 +605,14 @@ operator<<(std::basic_ostream<CharT, TraitsT>& os, const Ptr<T>& rhs)
 {
     return os << "0x" << rhs.Get();
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+template<class T>
+struct IsPtr : boost::false_type {};
+
+template<class T>
+struct IsPtr<Ptr<T> > : boost::true_type {};
 
 
 NSFX_CLOSE_NAMESPACE

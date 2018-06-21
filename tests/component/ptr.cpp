@@ -637,6 +637,24 @@ NSFX_TEST_SUITE(Ptr)
         }
     }
 
+    NSFX_TEST_CASE(address_of_op)
+    {
+        // operator&
+        try
+        {
+            nsfx::Ptr<Object> p(new Object);
+            NSFX_TEST_EXPECT_EQ(*&p, p.Get());
+        }
+        catch (boost::exception& e)
+        {
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
+        }
+        catch (std::exception& e)
+        {
+            NSFX_TEST_EXPECT(false) << e.what() << std::endl;
+        }
+    }
+
     NSFX_TEST_CASE(deref_op)
     {
         // operator*
@@ -1033,6 +1051,13 @@ NSFX_TEST_SUITE(Ptr)
         {
             NSFX_TEST_EXPECT(false) << e.what() << std::endl;
         }
+    }
+
+    NSFX_TEST_CASE(IsPtr)
+    {
+        NSFX_TEST_EXPECT(nsfx::IsPtr<nsfx::Ptr<nsfx::IObject> >::value);
+        NSFX_TEST_EXPECT(nsfx::IsPtr<nsfx::Ptr<ITest> >::value);
+        NSFX_TEST_EXPECT(nsfx::IsPtr<nsfx::Ptr<Test> >::value);
     }
 
 }
