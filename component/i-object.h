@@ -140,6 +140,11 @@ public:
 }; // class HasUidConcept /*}}}*/
 
 
+////////////////////////////////////////////////////////////////////////////////
+template<class T>
+struct IsObject : boost::is_base_of<IObject, T> {};
+
+
 NSFX_CLOSE_NAMESPACE
 
 

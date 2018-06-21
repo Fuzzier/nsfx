@@ -111,6 +111,13 @@ NSFX_TEST_SUITE(Object)
         return result;
     }/*}}}*/
 
+    NSFX_TEST_CASE(IsObject)
+    {
+        NSFX_TEST_EXPECT(nsfx::IsObject<nsfx::IObject>::value);
+        NSFX_TEST_EXPECT(nsfx::IsObject<ITest>::value);
+        NSFX_TEST_EXPECT(nsfx::IsObject<Test>::value);
+    }
+
     NSFX_TEST_CASE(Object)/*{{{*/
     {
         try
