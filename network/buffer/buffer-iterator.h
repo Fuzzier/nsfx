@@ -21,9 +21,8 @@
 #include <nsfx/network/buffer/buffer-storage.h>
 #include <nsfx/utility/endian.h>
 #include <boost/core/swap.hpp>
-#include <boost/type_traits/make_unsigned.hpp>
-#include <boost/type_traits/is_integral.hpp>
 #include <boost/type_traits/type_identity.hpp>
+#include <type_traits> // is_integral, is_floating_point, make_unsigned
 
 
 NSFX_OPEN_NAMESPACE
@@ -79,7 +78,7 @@ private:
     struct InSolidAreaTag {};
 
     // Read tag.
-    template<size_t numBytes, class areaTag>
+    template<class T, class areaTag>
     struct ReadTag {};
 
     // Xtructors.
@@ -148,11 +147,15 @@ private:
     void InternalWrite(uint16_t value, size_t offset, KeepEndianTag) BOOST_NOEXCEPT;
     void InternalWrite(uint32_t value, size_t offset, KeepEndianTag) BOOST_NOEXCEPT;
     void InternalWrite(uint64_t value, size_t offset, KeepEndianTag) BOOST_NOEXCEPT;
+    void InternalWrite(float    value, size_t offset, KeepEndianTag) BOOST_NOEXCEPT;
+    void InternalWrite(double   value, size_t offset, KeepEndianTag) BOOST_NOEXCEPT;
 
     void InternalWrite(uint8_t  value, size_t offset, ReverseEndianTag) BOOST_NOEXCEPT;
     void InternalWrite(uint16_t value, size_t offset, ReverseEndianTag) BOOST_NOEXCEPT;
     void InternalWrite(uint32_t value, size_t offset, ReverseEndianTag) BOOST_NOEXCEPT;
     void InternalWrite(uint64_t value, size_t offset, ReverseEndianTag) BOOST_NOEXCEPT;
+    void InternalWrite(float    value, size_t offset, ReverseEndianTag) BOOST_NOEXCEPT;
+    void InternalWrite(double   value, size_t offset, ReverseEndianTag) BOOST_NOEXCEPT;
 
     // Read data.
 public:
@@ -189,15 +192,19 @@ private:
     template<class T, endian::Order order>
     T ReadInOrder(void) BOOST_NOEXCEPT;
 
-    uint8_t  InternalRead(size_t offset, ReadTag<1, InSolidAreaTag>, KeepEndianTag) BOOST_NOEXCEPT;
-    uint16_t InternalRead(size_t offset, ReadTag<2, InSolidAreaTag>, KeepEndianTag) BOOST_NOEXCEPT;
-    uint32_t InternalRead(size_t offset, ReadTag<4, InSolidAreaTag>, KeepEndianTag) BOOST_NOEXCEPT;
-    uint64_t InternalRead(size_t offset, ReadTag<8, InSolidAreaTag>, KeepEndianTag) BOOST_NOEXCEPT;
+    uint8_t  InternalRead(size_t offset, ReadTag<uint8_t,  InSolidAreaTag>, KeepEndianTag) BOOST_NOEXCEPT;
+    uint16_t InternalRead(size_t offset, ReadTag<uint16_t, InSolidAreaTag>, KeepEndianTag) BOOST_NOEXCEPT;
+    uint32_t InternalRead(size_t offset, ReadTag<uint32_t, InSolidAreaTag>, KeepEndianTag) BOOST_NOEXCEPT;
+    uint64_t InternalRead(size_t offset, ReadTag<uint64_t, InSolidAreaTag>, KeepEndianTag) BOOST_NOEXCEPT;
+    float    InternalRead(size_t offset, ReadTag<float,    InSolidAreaTag>, KeepEndianTag) BOOST_NOEXCEPT;
+    double   InternalRead(size_t offset, ReadTag<double,   InSolidAreaTag>, KeepEndianTag) BOOST_NOEXCEPT;
 
-    uint8_t  InternalRead(size_t offset, ReadTag<1, InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT;
-    uint16_t InternalRead(size_t offset, ReadTag<2, InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT;
-    uint32_t InternalRead(size_t offset, ReadTag<4, InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT;
-    uint64_t InternalRead(size_t offset, ReadTag<8, InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT;
+    uint8_t  InternalRead(size_t offset, ReadTag<uint8_t,  InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT;
+    uint16_t InternalRead(size_t offset, ReadTag<uint16_t, InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT;
+    uint32_t InternalRead(size_t offset, ReadTag<uint32_t, InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT;
+    uint64_t InternalRead(size_t offset, ReadTag<uint64_t, InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT;
+    float    InternalRead(size_t offset, ReadTag<float,    InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT;
+    double   InternalRead(size_t offset, ReadTag<double,   InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT;
 
     // Boundary check.
 private:
@@ -352,12 +359,15 @@ inline void BufferIterator::WriteB(typename boost::type_identity<T>::type  data)
 template<class T, endian::Order order>
 inline void BufferIterator::WriteInOrder(T data) BOOST_NOEXCEPT
 {
-    static_assert(boost::is_integral<T>::value, "Invalid data type.");
+    static_assert(std::is_integral<T>::value ||
+                  std::is_floating_point<T>::value,
+                  "Invalid data type.");
     WritableCheck(sizeof (T));
     typedef typename MakeEndianTag<order>::Type  E;
-    InternalWrite(static_cast<typename boost::make_unsigned<T>::type>(data),
-                  cursor_,
-                  E());
+    typedef typename std::conditional<
+        std::is_floating_point<T>::value, T,
+        typename std::make_unsigned<T>::type>::type  V;
+    InternalWrite(static_cast<V>(data), cursor_, E());
 }
 
 inline void
@@ -407,6 +417,46 @@ BufferIterator::InternalWrite(uint64_t value, size_t offset, KeepEndianTag) BOOS
     {
         uint8_t  b[8];
         uint64_t v;
+    };
+    v = value;
+    uint8_t* data = bytes_;
+    data[offset++] = b[0];
+    data[offset++] = b[1];
+    data[offset++] = b[2];
+    data[offset++] = b[3];
+    data[offset++] = b[4];
+    data[offset++] = b[5];
+    data[offset++] = b[6];
+    data[offset++] = b[7];
+    cursor_ += 8;
+}
+
+inline void
+BufferIterator::InternalWrite(float value, size_t offset, KeepEndianTag) BOOST_NOEXCEPT
+{
+    static_assert(sizeof (float) == 4, "Unsupported size of float.");
+    union
+    {
+        uint8_t  b[4];
+        float    v;
+    };
+    v = value;
+    uint8_t* data = bytes_;
+    data[offset++] = b[0];
+    data[offset++] = b[1];
+    data[offset++] = b[2];
+    data[offset++] = b[3];
+    cursor_ += 4;
+}
+
+inline void
+BufferIterator::InternalWrite(double value, size_t offset, KeepEndianTag) BOOST_NOEXCEPT
+{
+    static_assert(sizeof (double) == 8, "Unsupported size of double.");
+    union
+    {
+        uint8_t  b[8];
+        double   v;
     };
     v = value;
     uint8_t* data = bytes_;
@@ -482,6 +532,46 @@ BufferIterator::InternalWrite(uint64_t value, size_t offset, ReverseEndianTag) B
     cursor_ += 8;
 }
 
+inline void
+BufferIterator::InternalWrite(float value, size_t offset, ReverseEndianTag) BOOST_NOEXCEPT
+{
+    static_assert(sizeof (float) == 4, "Unsupported size of float.");
+    union
+    {
+        uint8_t  b[4];
+        float    v;
+    };
+    v = value;
+    uint8_t* data = bytes_;
+    data[offset++] = b[3];
+    data[offset++] = b[2];
+    data[offset++] = b[1];
+    data[offset++] = b[0];
+    cursor_ += 4;
+}
+
+inline void
+BufferIterator::InternalWrite(double value, size_t offset, ReverseEndianTag) BOOST_NOEXCEPT
+{
+    static_assert(sizeof (double) == 8, "Unsupported size of double.");
+    union
+    {
+        uint8_t  b[8];
+        double   v;
+    };
+    v = value;
+    uint8_t* data = bytes_;
+    data[offset++] = b[7];
+    data[offset++] = b[6];
+    data[offset++] = b[5];
+    data[offset++] = b[4];
+    data[offset++] = b[3];
+    data[offset++] = b[2];
+    data[offset++] = b[1];
+    data[offset++] = b[0];
+    cursor_ += 8;
+}
+
 template<class T>
 inline T BufferIterator::Read(void) BOOST_NOEXCEPT
 {
@@ -503,15 +593,20 @@ inline T BufferIterator::ReadB(void) BOOST_NOEXCEPT
 template<class T, endian::Order order>
 inline T BufferIterator::ReadInOrder(void) BOOST_NOEXCEPT
 {
-    static_assert(boost::is_integral<T>::value, "Invalid data type.");
+    static_assert(std::is_integral<T>::value ||
+                  std::is_floating_point<T>::value,
+                  "Invalid data type.");
     ReadableCheck(sizeof (T));
     typedef typename MakeEndianTag<order>::Type  E;
-    typedef ReadTag<sizeof (T), InSolidAreaTag>  R;
+    typedef typename std::conditional<
+        std::is_floating_point<T>::value, T,
+        typename std::make_unsigned<T>::type>::type  V;
+    typedef ReadTag<V, InSolidAreaTag>  R;
     return InternalRead(cursor_, R(), E());
 }
 
 inline uint8_t
-BufferIterator::InternalRead(size_t offset, ReadTag<1, InSolidAreaTag>, KeepEndianTag) BOOST_NOEXCEPT
+BufferIterator::InternalRead(size_t offset, ReadTag<uint8_t, InSolidAreaTag>, KeepEndianTag) BOOST_NOEXCEPT
 {
     uint8_t b;
     const uint8_t* data = bytes_;
@@ -521,7 +616,7 @@ BufferIterator::InternalRead(size_t offset, ReadTag<1, InSolidAreaTag>, KeepEndi
 }
 
 inline uint16_t
-BufferIterator::InternalRead(size_t offset, ReadTag<2, InSolidAreaTag>, KeepEndianTag) BOOST_NOEXCEPT
+BufferIterator::InternalRead(size_t offset, ReadTag<uint16_t, InSolidAreaTag>, KeepEndianTag) BOOST_NOEXCEPT
 {
     union
     {
@@ -536,7 +631,7 @@ BufferIterator::InternalRead(size_t offset, ReadTag<2, InSolidAreaTag>, KeepEndi
 }
 
 inline uint32_t
-BufferIterator::InternalRead(size_t offset, ReadTag<4, InSolidAreaTag>, KeepEndianTag) BOOST_NOEXCEPT
+BufferIterator::InternalRead(size_t offset, ReadTag<uint32_t, InSolidAreaTag>, KeepEndianTag) BOOST_NOEXCEPT
 {
     union
     {
@@ -553,7 +648,7 @@ BufferIterator::InternalRead(size_t offset, ReadTag<4, InSolidAreaTag>, KeepEndi
 }
 
 inline uint64_t
-BufferIterator::InternalRead(size_t offset, ReadTag<8, InSolidAreaTag>, KeepEndianTag) BOOST_NOEXCEPT
+BufferIterator::InternalRead(size_t offset, ReadTag<uint64_t, InSolidAreaTag>, KeepEndianTag) BOOST_NOEXCEPT
 {
     union
     {
@@ -573,8 +668,48 @@ BufferIterator::InternalRead(size_t offset, ReadTag<8, InSolidAreaTag>, KeepEndi
     return v;
 }
 
+inline float
+BufferIterator::InternalRead(size_t offset, ReadTag<float, InSolidAreaTag>, KeepEndianTag) BOOST_NOEXCEPT
+{
+    static_assert(sizeof (float) == 4, "Unsupported size of float.");
+    union
+    {
+        uint8_t  b[4];
+        float    v;
+    };
+    const uint8_t* data = bytes_;
+    b[0] = data[offset++];
+    b[1] = data[offset++];
+    b[2] = data[offset++];
+    b[3] = data[offset++];
+    cursor_ += 4;
+    return v;
+}
+
+inline double
+BufferIterator::InternalRead(size_t offset, ReadTag<double, InSolidAreaTag>, KeepEndianTag) BOOST_NOEXCEPT
+{
+    static_assert(sizeof (double) == 8, "Unsupported size of double.");
+    union
+    {
+        uint8_t  b[8];
+        double   v;
+    };
+    const uint8_t* data = bytes_;
+    b[0] = data[offset++];
+    b[1] = data[offset++];
+    b[2] = data[offset++];
+    b[3] = data[offset++];
+    b[4] = data[offset++];
+    b[5] = data[offset++];
+    b[6] = data[offset++];
+    b[7] = data[offset++];
+    cursor_ += 8;
+    return v;
+}
+
 inline uint8_t
-BufferIterator::InternalRead(size_t offset, ReadTag<1, InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT
+BufferIterator::InternalRead(size_t offset, ReadTag<uint8_t, InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT
 {
     uint8_t b;
     const uint8_t* data = bytes_;
@@ -584,7 +719,7 @@ BufferIterator::InternalRead(size_t offset, ReadTag<1, InSolidAreaTag>, ReverseE
 }
 
 inline uint16_t
-BufferIterator::InternalRead(size_t offset, ReadTag<2, InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT
+BufferIterator::InternalRead(size_t offset, ReadTag<uint16_t, InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT
 {
     union
     {
@@ -599,7 +734,7 @@ BufferIterator::InternalRead(size_t offset, ReadTag<2, InSolidAreaTag>, ReverseE
 }
 
 inline uint32_t
-BufferIterator::InternalRead(size_t offset, ReadTag<4, InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT
+BufferIterator::InternalRead(size_t offset, ReadTag<uint32_t, InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT
 {
     union
     {
@@ -616,12 +751,52 @@ BufferIterator::InternalRead(size_t offset, ReadTag<4, InSolidAreaTag>, ReverseE
 }
 
 inline uint64_t
-BufferIterator::InternalRead(size_t offset, ReadTag<8, InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT
+BufferIterator::InternalRead(size_t offset, ReadTag<uint64_t, InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT
 {
     union
     {
         uint8_t  b[8];
         uint64_t v;
+    };
+    const uint8_t* data = bytes_;
+    b[7] = data[offset++];
+    b[6] = data[offset++];
+    b[5] = data[offset++];
+    b[4] = data[offset++];
+    b[3] = data[offset++];
+    b[2] = data[offset++];
+    b[1] = data[offset++];
+    b[0] = data[offset++];
+    cursor_ += 8;
+    return v;
+}
+
+inline float
+BufferIterator::InternalRead(size_t offset, ReadTag<float, InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT
+{
+    static_assert(sizeof (float) == 4, "Unsupported size of float.");
+    union
+    {
+        uint8_t  b[4];
+        float    v;
+    };
+    const uint8_t* data = bytes_;
+    b[3] = data[offset++];
+    b[2] = data[offset++];
+    b[1] = data[offset++];
+    b[0] = data[offset++];
+    cursor_ += 4;
+    return v;
+}
+
+inline double
+BufferIterator::InternalRead(size_t offset, ReadTag<double, InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT
+{
+    static_assert(sizeof (double) == 8, "Unsupported size of double.");
+    union
+    {
+        uint8_t  b[8];
+        double   v;
     };
     const uint8_t* data = bytes_;
     b[7] = data[offset++];

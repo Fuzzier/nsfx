@@ -316,6 +316,8 @@ NSFX_TEST_SUITE(ZcBufferIterator)
             const uint16_t* p16 = reinterpret_cast<const uint16_t*>(storage->bytes_ + b0.GetStart());
             const uint32_t* p32 = reinterpret_cast<const uint32_t*>(storage->bytes_ + b0.GetStart());
             const uint64_t* p64 = reinterpret_cast<const uint64_t*>(storage->bytes_ + b0.GetStart());
+            const float*    pf  = reinterpret_cast<const float*   >(storage->bytes_ + b0.GetStart());
+            const double*   pd  = reinterpret_cast<const double*  >(storage->bytes_ + b0.GetStart());
             // n: native, r: reverse
             uint8_t  n8  = 0xfe;
             uint8_t  r8  = 0xfe;
@@ -325,6 +327,10 @@ NSFX_TEST_SUITE(ZcBufferIterator)
             uint32_t r32 = 0x98badcfeUL;
             uint64_t n64 = 0xfedcba9876543210ULL;
             uint64_t r64 = 0x1032547698badcfeULL;
+            float    nf  = *(reinterpret_cast<float*>(&n32));
+            float    rf  = *(reinterpret_cast<float*>(&r32));
+            double   nd  = *(reinterpret_cast<double*>(&n64));
+            double   rd  = *(reinterpret_cast<double*>(&r64));
             // l: little, b: big
 #if defined(BOOST_LITTLE_ENDIAN)
             uint8_t  l8  = n8;
@@ -335,6 +341,10 @@ NSFX_TEST_SUITE(ZcBufferIterator)
             uint32_t b32 = r32;
             uint64_t l64 = n64;
             uint64_t b64 = r64;
+            float    lf  = nf;
+            float    bf  = rf;
+            double   ld  = nd;
+            double   bd  = rd;
 #else // if defined(BOOST_BIG_ENDIAN)
             uint8_t  l8  = r8;
             uint8_t  b8  = n8;
@@ -344,6 +354,10 @@ NSFX_TEST_SUITE(ZcBufferIterator)
             uint32_t b32 = n32;
             uint64_t l64 = r64;
             uint64_t b64 = n64;
+            float    lf  = rf;
+            float    bf  = nf;
+            double   ld  = rd;
+            double   bd  = nd;
 #endif // defined(BOOST_LITTLE_ENDIAN)
 
             // native
@@ -395,6 +409,18 @@ NSFX_TEST_SUITE(ZcBufferIterator)
             it -= sizeof (uint64_t);
             NSFX_TEST_EXPECT_EQ(*p64, n64);
 
+            it.Write<float>(nf);
+            it -= sizeof (float);
+            NSFX_TEST_EXPECT_EQ(it.Read<float>(), nf);
+            it -= sizeof (float);
+            NSFX_TEST_EXPECT_EQ(*pf, nf);
+
+            it.Write<double>(nd);
+            it -= sizeof (double);
+            NSFX_TEST_EXPECT_EQ(it.Read<double>(), nd);
+            it -= sizeof (double);
+            NSFX_TEST_EXPECT_EQ(*pd, nd);
+
             // little
             it.WriteL<int8_t>(n8);
             it -= sizeof (int8_t);
@@ -444,6 +470,18 @@ NSFX_TEST_SUITE(ZcBufferIterator)
             it -= sizeof (uint64_t);
             NSFX_TEST_EXPECT_EQ(*p64, l64);
 
+            it.WriteL<float>(nf);
+            it -= sizeof (float);
+            NSFX_TEST_EXPECT_EQ(it.ReadL<float>(), nf);
+            it -= sizeof (float);
+            NSFX_TEST_EXPECT_EQ(*pf, lf);
+
+            it.WriteL<double>(nd);
+            it -= sizeof (double);
+            NSFX_TEST_EXPECT_EQ(it.ReadL<double>(), nd);
+            it -= sizeof (double);
+            NSFX_TEST_EXPECT_EQ(*pd, ld);
+
             // big
             it.WriteB<int8_t>(n8);
             it -= sizeof (int8_t);
@@ -492,6 +530,18 @@ NSFX_TEST_SUITE(ZcBufferIterator)
             NSFX_TEST_EXPECT_EQ(it.ReadB<uint64_t>(), n64);
             it -= sizeof (uint64_t);
             NSFX_TEST_EXPECT_EQ(*p64, b64);
+
+            it.WriteB<float>(nf);
+            it -= sizeof (float);
+            NSFX_TEST_EXPECT_EQ(it.ReadB<float>(), nf);
+            it -= sizeof (float);
+            NSFX_TEST_EXPECT_EQ(*pf, bf);
+
+            it.WriteB<double>(nd);
+            it -= sizeof (double);
+            NSFX_TEST_EXPECT_EQ(it.ReadB<double>(), nd);
+            it -= sizeof (double);
+            NSFX_TEST_EXPECT_EQ(*pd, bd);
         }
 
         NSFX_TEST_CASE(AroundZcBuffer)
@@ -814,6 +864,8 @@ NSFX_TEST_SUITE(ConstZcBufferIterator)
             const uint16_t* p16 = reinterpret_cast<const uint16_t*>(storage->bytes_ + b0.GetStart());
             const uint32_t* p32 = reinterpret_cast<const uint32_t*>(storage->bytes_ + b0.GetStart());
             const uint64_t* p64 = reinterpret_cast<const uint64_t*>(storage->bytes_ + b0.GetStart());
+            const float*    pf  = reinterpret_cast<const float*   >(storage->bytes_ + b0.GetStart());
+            const double*   pd  = reinterpret_cast<const double*  >(storage->bytes_ + b0.GetStart());
             // n: native, r: reverse
             uint8_t  n8  = 0xfe;
             uint8_t  r8  = 0xfe;
@@ -823,6 +875,10 @@ NSFX_TEST_SUITE(ConstZcBufferIterator)
             uint32_t r32 = 0x98badcfeUL;
             uint64_t n64 = 0xfedcba9876543210ULL;
             uint64_t r64 = 0x1032547698badcfeULL;
+            float    nf  = *(reinterpret_cast<float*>(&n32));
+            float    rf  = *(reinterpret_cast<float*>(&r32));
+            double   nd  = *(reinterpret_cast<double*>(&n64));
+            double   rd  = *(reinterpret_cast<double*>(&r64));
             // l: little, b: big
 #if defined(BOOST_LITTLE_ENDIAN)
             uint8_t  l8  = n8;
@@ -833,6 +889,10 @@ NSFX_TEST_SUITE(ConstZcBufferIterator)
             uint32_t b32 = r32;
             uint64_t l64 = n64;
             uint64_t b64 = r64;
+            float    lf  = nf;
+            float    bf  = rf;
+            double   ld  = nd;
+            double   bd  = rd;
 #else // if defined(BOOST_BIG_ENDIAN)
             uint8_t  l8  = r8;
             uint8_t  b8  = n8;
@@ -842,6 +902,10 @@ NSFX_TEST_SUITE(ConstZcBufferIterator)
             uint32_t b32 = n32;
             uint64_t l64 = r64;
             uint64_t b64 = n64;
+            float    lf  = rf;
+            float    bf  = nf;
+            double   ld  = rd;
+            double   bd  = nd;
 #endif // defined(BOOST_LITTLE_ENDIAN)
 
             // native
@@ -893,6 +957,18 @@ NSFX_TEST_SUITE(ConstZcBufferIterator)
             it1 -= sizeof (int64_t);
             NSFX_TEST_EXPECT_EQ(*p64, n64);
 
+            it.Write<float>(nf);
+            NSFX_TEST_EXPECT_EQ(it1.Read<float>(), nf);
+            it -= sizeof (float);
+            it1 -= sizeof (float);
+            NSFX_TEST_EXPECT_EQ(*pf, nf);
+
+            it.Write<double>(nd);
+            NSFX_TEST_EXPECT_EQ(it1.Read<double>(), nd);
+            it -= sizeof (double);
+            it1 -= sizeof (double);
+            NSFX_TEST_EXPECT_EQ(*pd, nd);
+
             // little
             it.WriteL<int8_t>(n8);
             NSFX_TEST_EXPECT_EQ(it1.ReadL<int8_t>(), (int8_t)(n8));
@@ -942,6 +1018,18 @@ NSFX_TEST_SUITE(ConstZcBufferIterator)
             it1 -= sizeof (uint64_t);
             NSFX_TEST_EXPECT_EQ(*p64, l64);
 
+            it.WriteL<float>(nf);
+            NSFX_TEST_EXPECT_EQ(it1.ReadL<float>(), nf);
+            it -= sizeof (float);
+            it1 -= sizeof (float);
+            NSFX_TEST_EXPECT_EQ(*pf, lf);
+
+            it.WriteL<double>(nd);
+            NSFX_TEST_EXPECT_EQ(it1.ReadL<double>(), nd);
+            it -= sizeof (double);
+            it1 -= sizeof (double);
+            NSFX_TEST_EXPECT_EQ(*pd, ld);
+
             // big
             it.WriteB<int8_t>(n8);
             NSFX_TEST_EXPECT_EQ(it1.ReadB<int8_t>(), (int8_t)(n8));
@@ -990,6 +1078,18 @@ NSFX_TEST_SUITE(ConstZcBufferIterator)
             it -= sizeof (uint64_t);
             it1 -= sizeof (uint64_t);
             NSFX_TEST_EXPECT_EQ(*p64, b64);
+
+            it.WriteB<float>(nf);
+            NSFX_TEST_EXPECT_EQ(it1.ReadB<float>(), nf);
+            it -= sizeof (float);
+            it1 -= sizeof (float);
+            NSFX_TEST_EXPECT_EQ(*pf, bf);
+
+            it.WriteB<double>(nd);
+            NSFX_TEST_EXPECT_EQ(it1.ReadB<double>(), nd);
+            it -= sizeof (double);
+            it1 -= sizeof (double);
+            NSFX_TEST_EXPECT_EQ(*pd, bd);
         }
 
         NSFX_TEST_CASE(AroundZcBuffer)
