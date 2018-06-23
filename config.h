@@ -228,22 +228,22 @@ NSFX_CLOSE_NAMESPACE
 /**
  * @brief The assert statement.
  *
- * ## About \c assert().<br/>
- * ### Goodness.<br/>
- *     \c assert() costs nothing in a release code that defines \c NDEBUG macro.<br/>
+ * ## About \c assert().
+ * ### Goodness.
+ *     \c assert() costs nothing in a release code that defines \c NDEBUG macro.
  *
- * ### Badness.<br/>
- *     \c assert() terminates the program with little information.<br/>
+ * ### Badness.
+ *     \c assert() terminates the program with little information.
  *
- * ## When to use \c assert()?<br/>
- * ### 1. Functions with \c noexcept.<br/>
+ * ## When to use \c assert()?
+ * ### 1. Functions with \c noexcept.
  *     If a function is specified as \c noexcept, then use \c assert() as the
- *     last resort.<br/>
+ *     last resort.
  *
- * ### 2. Singleton failure.<br/>
+ * ### 2. Singleton failure.
  *     If a user retrieves a pointer to a singleton, use \c assert() to check
- *     the returned pointer is not \c nullptr.<br/>
- *     Usually, the program is beyond redemption in such condition.<br/>
+ *     the returned pointer is not \c nullptr.
+ *     Usually, the program is beyond redemption in such condition.
  *
  */
 #include <boost/assert.hpp>

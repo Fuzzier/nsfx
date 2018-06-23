@@ -19,9 +19,9 @@
 
 #include <nsfx/component/config.h>
 #include <nsfx/component/i-object.h>
-#include <boost/type_traits/is_same.hpp>
 #include <boost/type_index.hpp>
 #include <boost/core/swap.hpp>
+#include <type_traits> // true_type, false_type, is_same
 #include <iostream>
 
 
@@ -39,9 +39,9 @@ NSFX_OPEN_NAMESPACE
  *
  * @tparam T A type that conforms to \c IObjectConcept.
  *
- * \c boost::true_type is used in methods when the operand pointer is of the
+ * \c std::true_type is used in methods when the operand pointer is of the
  * same type as \c T.<br/>
- * While \c boost::false_type is used in methods when the operand pointer is of
+ * While \c std::false_type is used in methods when the operand pointer is of
  * a different type than \c T.<br/>
  */
 template<class T>
@@ -61,7 +61,7 @@ protected:
     {
     }
 
-    PtrBase(T* p, bool takeRefCount, boost::true_type) :
+    PtrBase(T* p, bool takeRefCount, std::true_type) :
         p_(p)
     {
         if (p_ && !takeRefCount)
@@ -71,12 +71,12 @@ protected:
     }
 
     template<class U>
-    PtrBase(U* p, bool takeRefCount, boost::false_type) :
+    PtrBase(U* p, bool takeRefCount, std::false_type) :
         p_(nullptr)
     {
         BOOST_CONCEPT_ASSERT((HasUidConcept<T>));
         BOOST_CONCEPT_ASSERT((IObjectConcept<U>));
-        static_assert(!boost::is_same<T, U>::value, "");
+        static_assert(!std::is_same<T, U>::value, "");
         if (p)
         {
             try
@@ -118,7 +118,7 @@ protected:
         }
     }
 
-    void Reset(T* p, bool takeRefCount, boost::true_type)
+    void Reset(T* p, bool takeRefCount, std::true_type)
     {
         Reset();
         p_ = p;
@@ -129,11 +129,11 @@ protected:
     }
 
     template<class U>
-    void Reset(U* p, bool takeRefCount, boost::false_type)
+    void Reset(U* p, bool takeRefCount, std::false_type)
     {
         BOOST_CONCEPT_ASSERT((HasUidConcept<T>));
         BOOST_CONCEPT_ASSERT((IObjectConcept<U>));
-        static_assert(!boost::is_same<T, U>::value, "");
+        static_assert(!std::is_same<T, U>::value, "");
         Reset();
         if (p)
         {
@@ -162,21 +162,21 @@ protected:
         }
     }
 
-    bool IsSameObject(T* p, boost::true_type) const BOOST_NOEXCEPT
+    bool IsSameObject(T* p, std::true_type) const BOOST_NOEXCEPT
     {
         return (p_ == p);
     }
 
     template<class U>
-    bool IsSameObject(U* p, boost::false_type) const
+    bool IsSameObject(U* p, std::false_type) const
     {
         BOOST_CONCEPT_ASSERT((HasUidConcept<T>));
         BOOST_CONCEPT_ASSERT((IObjectConcept<U>));
-        static_assert(!boost::is_same<T, U>::value, "");
+        static_assert(!std::is_same<T, U>::value, "");
         // Query the IObject interface.
         // Do not query other interfaces, since an object may not support them.
-        PtrBase<IObject> lhs(p_, false, boost::is_same<IObject, T>::type());
-        PtrBase<IObject> rhs(p,  false, boost::is_same<IObject, U>::type());
+        PtrBase<IObject> lhs(p_, false, std::is_same<IObject, T>::type());
+        PtrBase<IObject> rhs(p,  false, std::is_same<IObject, U>::type());
         return (lhs.p_ == rhs.p_);
     }
 
@@ -265,7 +265,7 @@ public:
      *           pointer.
      */
     Ptr(T* p) :
-        BaseType(p, false, boost::is_same<T, T>::type())
+        BaseType(p, false, std::is_same<T, T>::type())
     {
     }
 
@@ -278,7 +278,7 @@ public:
      */
     template<class U>
     explicit Ptr(U* p) :
-        BaseType(p, false, boost::is_same<T, U>::type())
+        BaseType(p, false, std::is_same<T, U>::type())
     {
     }
 
@@ -300,30 +300,30 @@ public:
      */
     template<class U>
     Ptr(U* p, bool takeRefCount) :
-        BaseType(p, takeRefCount, boost::is_same<T, U>::type())
+        BaseType(p, takeRefCount, std::is_same<T, U>::type())
     {
     }
 
     Ptr(const Ptr& rhs) :
-        BaseType(rhs.p_, false, boost::is_same<T, T>::type())
+        BaseType(rhs.p_, false, std::is_same<T, T>::type())
     {
     }
 
     template<class U>
     Ptr(const Ptr<U>& rhs) :
-        BaseType(rhs.p_, false, boost::is_same<T, U>::type())
+        BaseType(rhs.p_, false, std::is_same<T, U>::type())
     {
     }
 
     Ptr(Ptr<T>&& rhs) :
-        BaseType(rhs.p_, true, boost::is_same<T, T>::type())
+        BaseType(rhs.p_, true, std::is_same<T, T>::type())
     {
         rhs.p_ = nullptr;
     }
 
     template<class U>
     Ptr(Ptr<U>&& rhs) :
-        BaseType(rhs.p_, true, boost::is_same<T, U>::type())
+        BaseType(rhs.p_, true, std::is_same<T, U>::type())
     {
         rhs.p_ = nullptr;
     }
@@ -340,26 +340,26 @@ public:
     template<class U>
     Ptr& operator=(U* rhs)
     {
-        BaseType::Reset(rhs, false, boost::is_same<T, U>::type());
+        BaseType::Reset(rhs, false, std::is_same<T, U>::type());
         return *this;
     }
 
     Ptr& operator=(const Ptr& rhs)
     {
-        BaseType::Reset(rhs.p_, false, boost::is_same<T, T>::type());
+        BaseType::Reset(rhs.p_, false, std::is_same<T, T>::type());
         return *this;
     }
 
     template<class U>
     Ptr& operator=(const Ptr<U>& rhs)
     {
-        BaseType::Reset(rhs.p_, false, boost::is_same<T, U>::type());
+        BaseType::Reset(rhs.p_, false, std::is_same<T, U>::type());
         return *this;
     }
 
     Ptr& operator=(Ptr&& rhs)
     {
-        BaseType::Reset(rhs.p_, true, boost::is_same<T, T>::type());
+        BaseType::Reset(rhs.p_, true, std::is_same<T, T>::type());
         rhs.p_ = nullptr;
         return *this;
     }
@@ -367,7 +367,7 @@ public:
     template<class U>
     Ptr& operator=(Ptr<U>&& rhs)
     {
-        BaseType::Reset(rhs.p_, true, boost::is_same<T, U>::type());
+        BaseType::Reset(rhs.p_, true, std::is_same<T, U>::type());
         rhs.p_ = nullptr;
         return *this;
     }
@@ -430,7 +430,7 @@ public:
      */
     bool operator==(T* rhs) const BOOST_NOEXCEPT
     {
-        return BaseType::IsSameObject(rhs, boost::is_same<T, T>::type());
+        return BaseType::IsSameObject(rhs, std::is_same<T, T>::type());
     }
 
     /**
@@ -439,13 +439,13 @@ public:
     template<class U>
     bool operator==(U* rhs) const
     {
-        return BaseType::IsSameObject(rhs, boost::is_same<T, U>::type());
+        return BaseType::IsSameObject(rhs, std::is_same<T, U>::type());
     }
 
     template<class U>
     bool operator==(const Ptr<U>& rhs)
     {
-        return BaseType::IsSameObject(rhs.p_, boost::is_same<T, U>::type());
+        return BaseType::IsSameObject(rhs.p_, std::is_same<T, U>::type());
     }
 
     /**
@@ -453,7 +453,7 @@ public:
      */
     bool operator!=(T* rhs) const BOOST_NOEXCEPT
     {
-        return !BaseType::IsSameObject(rhs, boost::is_same<T, T>::type());
+        return !BaseType::IsSameObject(rhs, std::is_same<T, T>::type());
     }
 
     /**
@@ -462,13 +462,13 @@ public:
     template<class U>
     bool operator!=(U* rhs) const
     {
-        return !BaseType::IsSameObject(rhs, boost::is_same<T, U>::type());
+        return !BaseType::IsSameObject(rhs, std::is_same<T, U>::type());
     }
 
     template<class U>
     bool operator!=(const Ptr<U>& rhs)
     {
-        return !BaseType::IsSameObject(rhs.p_, boost::is_same<T, U>::type());
+        return !BaseType::IsSameObject(rhs.p_, std::is_same<T, U>::type());
     }
 
     /*}}}*/
@@ -498,7 +498,7 @@ public:
      */
     void Reset(T* p)
     {
-        BaseType::Reset(p, false, boost::is_same<T, T>::type());
+        BaseType::Reset(p, false, std::is_same<T, T>::type());
     }
 
     /**
@@ -506,7 +506,7 @@ public:
      */
     void Reset(T* p, bool takeRefCount)
     {
-        BaseType::Reset(p, takeRefCount, boost::is_same<T, T>::type());
+        BaseType::Reset(p, takeRefCount, std::is_same<T, T>::type());
     }
 
     /**
@@ -515,7 +515,7 @@ public:
     template<class U>
     void Reset(U* p)
     {
-        BaseType::Reset(p, false, boost::is_same<T, U>::type());
+        BaseType::Reset(p, false, std::is_same<T, U>::type());
     }
 
     /**
@@ -524,7 +524,7 @@ public:
     template<class U>
     void Reset(U* p, bool takeRefCount)
     {
-        BaseType::Reset(p, takeRefCount, boost::is_same<T, U>::type());
+        BaseType::Reset(p, takeRefCount, std::is_same<T, U>::type());
     }
 
     /**
@@ -609,10 +609,10 @@ operator<<(std::basic_ostream<CharT, TraitsT>& os, const Ptr<T>& rhs)
 
 ////////////////////////////////////////////////////////////////////////////////
 template<class T>
-struct IsPtr : boost::false_type {};
+struct IsPtr : std::false_type {};
 
 template<class T>
-struct IsPtr<Ptr<T> > : boost::true_type {};
+struct IsPtr<Ptr<T> > : std::true_type {};
 
 
 NSFX_CLOSE_NAMESPACE

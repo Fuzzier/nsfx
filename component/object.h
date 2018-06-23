@@ -21,8 +21,8 @@
 #include <nsfx/component/i-object.h>
 #include <nsfx/component/exception.h>
 #include <boost/type_index.hpp>
-#include <boost/type_traits/is_base_of.hpp>
 #include <boost/preprocessor/iterate.hpp>
+#include <type_traits> // is_base_of
 #include <functional>
 
 
@@ -330,7 +330,7 @@ struct AggregatedTag {};
 template<class T>
 struct ObjectImplConcept/*{{{*/
 {
-    static_assert(!boost::is_base_of<ObjectBase, T>::value,
+    static_assert(!std::is_base_of<ObjectBase, T>::value,
                   "An envelopable class must not derive from ObjectBase.");
 
     BOOST_CONCEPT_ASSERT((IObjectConcept<T>));
@@ -1006,7 +1006,7 @@ NSFX_CLOSE_NAMESPACE
             do                                                                \
             {                                                                 \
                 static_assert(                                                \
-                    ::boost::is_base_of<::nsfx::IObject, ThisClass_>::value,  \
+                    ::std::is_base_of<::nsfx::IObject, ThisClass_>::value,    \
                     "Cannot expose an unimplemented interface");              \
                 if (visitor(::nsfx::uid_of<::nsfx::IObject>(),                \
                             static_cast<::nsfx::IObject*>(this),              \
@@ -1026,7 +1026,7 @@ NSFX_CLOSE_NAMESPACE
  */
 #define NSFX_INTERFACE_ENTRY(Intf)                                 \
                 static_assert(                                     \
-                    ::boost::is_base_of<Intf, ThisClass_>::value,  \
+                    ::std::is_base_of<Intf, ThisClass_>::value,    \
                     "Cannot expose an unimplemented interface");   \
                 if (visitor(::nsfx::uid_of<Intf>(),                \
                             static_cast<Intf*>(this),              \

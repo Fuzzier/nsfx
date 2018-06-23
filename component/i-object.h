@@ -20,8 +20,8 @@
 #include <nsfx/component/config.h>
 #include <nsfx/component/uid.h>
 #include <nsfx/component/exception.h>
-#include <boost/type_traits/is_base_of.hpp>
 #include <boost/concept_check.hpp>
+#include <type_traits> // is_base_of
 
 
 NSFX_OPEN_NAMESPACE
@@ -92,7 +92,7 @@ template<class T>
 class IObjectConcept/*{{{*/
 {
 public:
-    static_assert(boost::is_base_of<IObject, T>::value,
+    static_assert(std::is_base_of<IObject, T>::value,
                   "The type does not conform to IObjectConcept since it is not "
                   "derived from IObject");
 
@@ -142,7 +142,7 @@ public:
 
 ////////////////////////////////////////////////////////////////////////////////
 template<class T>
-struct IsObject : boost::is_base_of<IObject, T> {};
+struct IsObject : std::is_base_of<IObject, T> {};
 
 
 NSFX_CLOSE_NAMESPACE

@@ -24,12 +24,10 @@
 #include <nsfx/test/case.h>
 #include <nsfx/test/suite.h>
 #include <nsfx/test/runner.h>
-#include <boost/type_traits/is_integral.hpp>
-#include <boost/type_traits/is_same.hpp>
-#include <boost/type_traits/common_type.hpp>
 #include <sstream>
 #include <iomanip>
 #include <locale> // locale, isprint
+#include <type_traits> // integral_constant, is_same, common_type, is_integral
 
 
 /**
@@ -61,7 +59,7 @@
  * @endcode
  */
 
-template<class T, bool integral = boost::is_integral<T>::value>
+template<class T, bool integral = std::is_integral<T>::value>
 struct ValueFormatter
 {
     std::string operator()(T value) const
@@ -90,11 +88,11 @@ struct ValueFormatter<T, true>
     {
         return operator()(
             value,
-            typename boost::integral_constant<size_t, sizeof (T)>::type());
+            typename std::integral_constant<size_t, sizeof (T)>::type());
     }
 
     std::string operator()(
-        T value, typename boost::integral_constant<size_t, 1>::type) const
+        T value, typename std::integral_constant<size_t, 1>::type) const
     {
         std::ostringstream oss;
         if (std::isprint(value, std::locale()))
@@ -113,7 +111,7 @@ struct ValueFormatter<T, true>
     }
 
     std::string operator()(
-        T value, typename boost::integral_constant<size_t, 2>::type) const
+        T value, typename std::integral_constant<size_t, 2>::type) const
     {
         std::ostringstream oss;
         oss << value << " (0x"
@@ -124,7 +122,7 @@ struct ValueFormatter<T, true>
     }
 
     std::string operator()(
-        T value, typename boost::integral_constant<size_t, 4>::type) const
+        T value, typename std::integral_constant<size_t, 4>::type) const
     {
         std::ostringstream oss;
         oss << value << " (0x"
@@ -134,7 +132,7 @@ struct ValueFormatter<T, true>
     }
 
     std::string operator()(
-        T value, typename boost::integral_constant<size_t, 8>::type) const
+        T value, typename std::integral_constant<size_t, 8>::type) const
     {
         std::ostringstream oss;
         oss << value << " (0x"
@@ -864,7 +862,7 @@ public:
      */
     std::string GetTolerance(void) const
     {
-        typedef typename boost::common_type<Limit, Tol>::type  CommonType;
+        typedef typename std::common_type<Limit, Tol>::type  CommonType;
 # if (NSFX_TEST_TOOL_OPERATOR == 0) // Absolute closeness
         return TestFormatValue((tol_));
 # else // !(NSFX_TEST_TOOL_OPERATOR == 0) // Relative closeness

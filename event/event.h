@@ -22,8 +22,7 @@
 #include <nsfx/event/exception.h>
 #include <nsfx/component/object.h>
 #include <nsfx/component/ptr.h>
-#include <boost/type_traits/decay.hpp>
-#include <boost/limits.hpp>
+#include <type_traits> // decay
 
 
 NSFX_OPEN_NAMESPACE
@@ -53,7 +52,7 @@ public:
     void Test(void)
     {
         ISink* sink = nullptr;
-        typename boost::decay<Visitor>::type* visitor = nullptr;
+        typename std::decay<Visitor>::type* visitor = nullptr;
         (*visitor)(sink);
     }
 };

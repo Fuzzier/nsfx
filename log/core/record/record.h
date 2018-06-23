@@ -21,8 +21,8 @@
 #include <nsfx/log/core/record/attribute-value-info.h>
 #include <nsfx/log/core/attribute-value/attribute-value.h>
 #include <nsfx/log/core/exception.h>
-#include <boost/type_traits/decay.hpp>
 #include <string>
+#include <type_traits> // decay
 
 
 NSFX_LOG_OPEN_NAMESPACE
@@ -101,7 +101,7 @@ public:
     public:
         BOOST_CONCEPT_USAGE(AttributeValueVisitorConcept)
         {
-            typename boost::decay<Visitor>::type* visitor = nullptr;
+            typename std::decay<Visitor>::type* visitor = nullptr;
             const AttributeValue* value = nullptr;
             (*visitor)(*value);
         }

@@ -18,11 +18,11 @@
 
 
 #include <nsfx/log/config.h>
-#include <boost/type_traits/integral_constant.hpp>
+#include <type_traits> // true_type, false_type
 
 
 template<class T>
-class NsfxIsAttributeValueInfo : public ::boost::false_type {};
+class NsfxIsAttributeValueInfo : public ::std::false_type {};
 
 
 /**
@@ -45,7 +45,7 @@ class NsfxIsAttributeValueInfo : public ::boost::false_type {};
     };                                                       \
     template<>                                               \
     class ::NsfxIsAttributeValueInfo<Class> :                \
-        public ::boost::true_type {}
+        public ::std::true_type {}
 
 
 #endif // ATTRIBUTE_VALUE_INFO_H__FBD60529_FF16_48B6_A1AB_937B2C4D79BA

@@ -20,9 +20,9 @@
 #include <nsfx/log/config.h>
 #include <nsfx/log/core/formatter/i-stream-formatter.h>
 #include <nsfx/component/object.h>
-#include <boost/type_traits/decay.hpp>
 #include <ostream>
 #include <memory> // shared_ptr
+#include <type_traits> // decay
 
 
 NSFX_LOG_OPEN_NAMESPACE
@@ -47,7 +47,7 @@ class StreamFormatterFunctorConcept
 public:
     BOOST_CONCEPT_USAGE(StreamFormatterFunctorConcept)
     {
-        typename boost::decay<Functor>::type* functor = nullptr;
+        typename std::decay<Functor>::type* functor = nullptr;
         std::ostream* os = nullptr;
         std::shared_ptr<Record>* record = nullptr;
         (*functor)(*os, *record);

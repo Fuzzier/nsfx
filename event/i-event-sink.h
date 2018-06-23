@@ -26,11 +26,8 @@
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_binary_params.hpp>
 #include <boost/preprocessor/iteration/iterate.hpp>
-#include <boost/type_traits/remove_pointer.hpp>
-#include <boost/type_traits/is_same.hpp>
-#include <boost/type_traits/is_base_of.hpp>
-#include <boost/type_traits/is_function.hpp>
 #include <boost/concept_check.hpp>
+#include <type_traits> // remove_pointer, is_same, is_base_of, is_function
 
 
 NSFX_OPEN_NAMESPACE
@@ -225,7 +222,7 @@ NSFX_OPEN_NAMESPACE
  *                              &f, &Functor::Foo));
  *      @endcode
  */
-template<class Proto = typename boost::remove_pointer<void(void)>::type>
+template<class Proto = typename std::remove_pointer<void(void)>::type>
 class IEventSink;
 
 
@@ -315,15 +312,15 @@ struct IEventSinkConcept
                   "does not have a nested 'Prototype'.");
 
     // The nested Prototype is a function type.
-    static_assert(boost::is_function<typename ISink::Prototype>::value,
+    static_assert(std::is_function<typename ISink::Prototype>::value,
                   "The type does not conform to IEventSinkConcept, since it has "
                   "an invalid nested 'Prototype' that is not a function type.");
 
     // Is IEventSink<void(void)> or derived from IEventSink<> class template.
     typedef IEventSink<typename ISink::Prototype>  BaseType;
     static_assert(
-        boost::is_same<IEventSink<>, ISink>::value ||
-        boost::is_base_of<BaseType, ISink>::value,
+        std::is_same<IEventSink<>, ISink>::value ||
+        std::is_base_of<BaseType, ISink>::value,
         "The type does not conform to IEventSinkConcept since, it is neither "
         "IEventSink<void(void)>, nor derived from IEventSink<> class template.");
 };
@@ -341,7 +338,7 @@ struct IEventSinkPrototypeConcept
 {
     BOOST_CONCEPT_ASSERT((IEventSinkConcept<ISink>));
 
-    static_assert(boost::is_same<typename ISink::Prototype, Proto>::value,
+    static_assert(std::is_same<typename ISink::Prototype, Proto>::value,
                   "The type does not conform to IEventSinkPrototypeConcept "
                   "since it has a matching 'Prototype'.");
 };

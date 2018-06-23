@@ -20,12 +20,11 @@
 #include <nsfx/utility/config.h>
 #include <nsfx/utility/least-int.h>
 #include <nsfx/exception/exception.h>
-#include <boost/type_traits/is_same.hpp>
-#include <boost/type_traits/conditional.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/core/swap.hpp>
 #include <iostream>
 #include <sstream>
+#include <type_traits> // integral_constant, is_same, conditional
 
 
 NSFX_OPEN_NAMESPACE
@@ -200,11 +199,11 @@ public:
     std::string ToString(void) const
     {
         return ToString(
-            boost::integral_constant<bool, sizeof (ValueType) == 1>());
+            std::integral_constant<bool, sizeof (ValueType) == 1>());
     }
 
 private:
-    std::string ToString(boost::true_type /* 8-bit */) const
+    std::string ToString(std::true_type /* 8-bit */) const
     {
         std::ostringstream oss;
         oss << static_cast<typename LeastInt<32>::UintType>(value_);
@@ -212,7 +211,7 @@ private:
         return oss.str();
     }
 
-    std::string ToString(boost::false_type /* larger than 8-bit */) const
+    std::string ToString(std::false_type /* larger than 8-bit */) const
     {
         std::ostringstream oss;
         oss << value_;

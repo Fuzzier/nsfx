@@ -18,9 +18,9 @@
 
 
 #include <nsfx/component/config.h>
-#include <cstring>
-#include <boost/type_traits/type_identity.hpp>
 #include <boost/functional/hash.hpp>
+#include <type_traits> // add_pointer
+#include <cstring> // strlen, strcmp
 
 
 NSFX_OPEN_NAMESPACE
@@ -175,7 +175,7 @@ NSFX_OPEN_NAMESPACE
  *
  * @tparam T A class that has a UID.
  *
- * @remarks \c boost::mpl::identity is used here to prevent automatical template
+ * @remarks \c std::add_pointer is used here to prevent automatical template
  *          argument deduction.<br/>
  *          Users have to explicitly specialize this function template in order
  *          to use it.
@@ -183,7 +183,7 @@ NSFX_OPEN_NAMESPACE
  * @see \c NSFX_DEFINE_CLASS_UID.
  */
 template<class T>
-inline const Uid& uid_of(typename ::boost::type_identity<T>::type* = nullptr)
+inline const Uid& uid_of(typename std::add_pointer<T>::type = nullptr)
 {
     return ::NsfxClassTraits<T>::GetUid();
 }
