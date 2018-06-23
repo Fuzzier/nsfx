@@ -20,7 +20,7 @@
 #include <nsfx/log/config.h>
 #include <nsfx/log/core/filter/i-filter.h>
 #include <nsfx/component/object.h>
-#include <boost/type_traits/decay.hpp>
+#include <type_traits> // decay
 
 
 NSFX_LOG_OPEN_NAMESPACE
@@ -46,7 +46,7 @@ class FilterFunctorConcept
 public:
     BOOST_CONCEPT_USAGE(FilterFunctorConcept)
     {
-        typename ::boost::decay<Functor>::type* functor = nullptr;
+        typename std::decay<Functor>::type* functor = nullptr;
         std::shared_ptr<Record>* record = nullptr;
         FilterDecision decision = (*functor)(*record);
     }

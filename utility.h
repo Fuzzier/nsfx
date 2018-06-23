@@ -18,6 +18,7 @@
 
 
 #include <nsfx/utility/config.h>
+#include <nsfx/utility/ratio.h>
 #include <nsfx/utility/endian.h>
 #include <nsfx/utility/least-int.h>
 #include <nsfx/utility/circular-sequence-number.h>

@@ -20,7 +20,7 @@
 #include <nsfx/log/config.h>
 #include <nsfx/log/core/attribute/i-attribute-set.h>
 #include <nsfx/component/object.h>
-#include <boost/type_traits/decay.hpp>
+#include <type_traits> // decay
 
 
 NSFX_LOG_OPEN_NAMESPACE
@@ -51,7 +51,7 @@ public:
     public:
         BOOST_CONCEPT_USAGE(NamedAttributeVisitorConcept)
         {
-            typename boost::decay<Visitor>::type* visitor = nullptr;
+            typename std::decay<Visitor>::type* visitor = nullptr;
             const std::string* name = nullptr;
             const Attribute* attribute = nullptr;
             (*visitor)(*name, *attribute);
