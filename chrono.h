@@ -21,7 +21,7 @@
 
 #include <nsfx/chrono/config.h>
 #include <nsfx/chrono/duration.h>
-#include <nsfx/chrono/time-point-concept.h>
+#include <nsfx/chrono/time-point.h>
 #include <nsfx/chrono/virtual-time-point.h>
 
 

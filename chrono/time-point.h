@@ -29,13 +29,10 @@ NSFX_CHRONO_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Chrono
- * @brief The primary class template for defining time point.
- *
- * Users must not use it, since it doesn't match the time point concept.<br/>
- * It is only meant to be a primary class template.
+ * @brief The primary class template for defining a time point class.
  */
 template<class Clock, class Duration = typename Clock::Duration>
-class TimePoint {};
+class TimePoint;
 
 
 ////////////////////////////////////////////////////////////////////////////////
