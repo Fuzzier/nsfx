@@ -80,7 +80,7 @@ struct MakeSmallerUnit<Unit, factor, false>
 template<intmax_t A, intmax_t B>
 struct SafeMultiply
 {
-    static const bool value = (A <= (INTMAX_MAX / B));
+    static const bool value = (A <= (INT64_MAX / B));
 };
 
 template<class Res1, class Res2>
@@ -169,7 +169,7 @@ struct MakeBiggerUnit<Unit, factor, false>
  * @internal
  */
 template<intmax_t N, intmax_t D>
-inline void RatioDivide(intmax_t& x, intmax_t& u, intmax_t& v, ratio<N, D>) BOOST_NOEXCEPT
+inline void RatioDivide(count_t& x, count_t& u, count_t& v, ratio<N, D>) BOOST_NOEXCEPT
 {
     BOOST_ASSERT(u >= 0);
     BOOST_ASSERT(v >  0);
@@ -178,12 +178,12 @@ inline void RatioDivide(intmax_t& x, intmax_t& u, intmax_t& v, ratio<N, D>) BOOS
     v =  D * v;
 }
 
-inline void RatioDivide(intmax_t& x, intmax_t& u, intmax_t& v, OverflowTag) BOOST_NOEXCEPT
+inline void RatioDivide(count_t& x, count_t& u, count_t& v, OverflowTag) BOOST_NOEXCEPT
 {
     x = 0;
 }
 
-inline void RatioDivide(intmax_t& x, intmax_t& u, intmax_t& v, UnderflowTag) BOOST_NOEXCEPT
+inline void RatioDivide(count_t& x, count_t& u, count_t& v, UnderflowTag) BOOST_NOEXCEPT
 {
     x = 0;
 }
@@ -195,21 +195,21 @@ struct PrecisionUpTag   {};
 struct PrecisionDownTag {};
 
 template<class Rs, class Rd>
-inline BOOST_CONSTEXPR intmax_t
-ConvertCount(const intmax_t& count, PrecisionUpTag) BOOST_NOEXCEPT
+inline BOOST_CONSTEXPR count_t
+ConvertCount(const count_t& count, PrecisionUpTag) BOOST_NOEXCEPT
 {
     // Source resolution is wider.
     typedef typename ratio_divide<Rs, Rd>::type  Rx;
-    BOOST_ASSERT_MSG(count <=  INTMAX_MAX / Rx::num &&
-                     count >=  INTMAX_MIN / Rx::num,
+    BOOST_ASSERT_MSG(count <=  INT64_MAX / Rx::num &&
+                     count >=  INT64_MIN / Rx::num,
                      "Cannot convert the count, "
                      "since the conversion overflows.");
     return count * Rx::num;
 }
 
 template<class Rs, class Rd>
-inline BOOST_CONSTEXPR intmax_t
-ConvertCount(const intmax_t& count, PrecisionDownTag) BOOST_NOEXCEPT
+inline BOOST_CONSTEXPR count_t
+ConvertCount(const count_t& count, PrecisionDownTag) BOOST_NOEXCEPT
 {
     // Destination resolution is wider.
     typedef typename ratio_divide<Rd, Rs>::type  Rx;
@@ -218,8 +218,8 @@ ConvertCount(const intmax_t& count, PrecisionDownTag) BOOST_NOEXCEPT
 }
 
 template<class Rs, class Rd>
-inline BOOST_CONSTEXPR intmax_t
-ConvertCount(const intmax_t& count) BOOST_NOEXCEPT
+inline BOOST_CONSTEXPR count_t
+ConvertCount(const count_t& count) BOOST_NOEXCEPT
 {
     typedef typename std::conditional<
         ratio_greater<Rs, Rd>::value,
@@ -249,59 +249,59 @@ struct WhichIsFiner
 
 template<class Res1, class Res2>
 BOOST_CONSTEXPR bool
-Equal(const intmax_t& lhs, const intmax_t& rhs, EquallyFineTag) BOOST_NOEXCEPT;
+Equal(const count_t& lhs, const count_t& rhs, EquallyFineTag) BOOST_NOEXCEPT;
 
 template<class Res1, class Res2>
 BOOST_CONSTEXPR bool
-Equal(const intmax_t& lhs, const intmax_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT;
+Equal(const count_t& lhs, const count_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT;
 
 template<class Res1, class Res2>
 BOOST_CONSTEXPR bool
-Equal(const intmax_t& lhs, const intmax_t& rhs, RightIsFinerTag) BOOST_NOEXCEPT;
+Equal(const count_t& lhs, const count_t& rhs, RightIsFinerTag) BOOST_NOEXCEPT;
 
 template<class Res1, class Res2>
 BOOST_CONSTEXPR bool
-Less(const intmax_t& lhs, const intmax_t& rhs, EquallyFineTag) BOOST_NOEXCEPT;
+Less(const count_t& lhs, const count_t& rhs, EquallyFineTag) BOOST_NOEXCEPT;
 
 template<class Res1, class Res2>
 BOOST_CONSTEXPR bool
-Less(const intmax_t& lhs, const intmax_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT;
+Less(const count_t& lhs, const count_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT;
 
 template<class Res1, class Res2>
 BOOST_CONSTEXPR bool
-Less(const intmax_t& lhs, const intmax_t& rhs, RightIsFinerTag) BOOST_NOEXCEPT;
+Less(const count_t& lhs, const count_t& rhs, RightIsFinerTag) BOOST_NOEXCEPT;
 
 template<class Res1, class Res2>
 BOOST_CONSTEXPR bool
-LessEqual(const intmax_t& lhs, const intmax_t& rhs, EquallyFineTag) BOOST_NOEXCEPT;
+LessEqual(const count_t& lhs, const count_t& rhs, EquallyFineTag) BOOST_NOEXCEPT;
 
 template<class Res1, class Res2>
 BOOST_CONSTEXPR bool
-LessEqual(const intmax_t& lhs, const intmax_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT;
+LessEqual(const count_t& lhs, const count_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT;
 
 template<class Res1, class Res2>
 BOOST_CONSTEXPR bool
-LessEqual(const intmax_t& lhs, const intmax_t& rhs, RightIsFinerTag) BOOST_NOEXCEPT;
+LessEqual(const count_t& lhs, const count_t& rhs, RightIsFinerTag) BOOST_NOEXCEPT;
 
 
 ////////////////////////////////////////
 template<class Res1, class Res2>
 inline BOOST_CONSTEXPR bool
-Equal(const intmax_t& lhs, const intmax_t& rhs, EquallyFineTag) BOOST_NOEXCEPT
+Equal(const count_t& lhs, const count_t& rhs, EquallyFineTag) BOOST_NOEXCEPT
 {
     return lhs == rhs;
 }
 
 template<class Res1, class Res2>
 inline BOOST_CONSTEXPR bool
-Equal(const intmax_t& lhs, const intmax_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT
+Equal(const count_t& lhs, const count_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT
 {
     typedef ratio_divide<Res2, Res1>::type  Rx;
-    if (rhs > INTMAX_MAX / Rx::num)
+    if (rhs > INT64_MAX / Rx::num)
     {
         return false;
     }
-    else if (rhs < INTMAX_MIN / Rx::num)
+    else if (rhs < INT64_MIN / Rx::num)
     {
         return false;
     }
@@ -313,28 +313,28 @@ Equal(const intmax_t& lhs, const intmax_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT
 
 template<class Res1, class Res2>
 inline BOOST_CONSTEXPR bool
-Equal(const intmax_t& lhs, const intmax_t& rhs, RightIsFinerTag) BOOST_NOEXCEPT
+Equal(const count_t& lhs, const count_t& rhs, RightIsFinerTag) BOOST_NOEXCEPT
 {
     return Equal<Res2, Res1>(rhs, lhs, LeftIsFinerTag());
 }
 
 template<class Res1, class Res2>
 inline BOOST_CONSTEXPR bool
-Less(const intmax_t& lhs, const intmax_t& rhs, EquallyFineTag) BOOST_NOEXCEPT
+Less(const count_t& lhs, const count_t& rhs, EquallyFineTag) BOOST_NOEXCEPT
 {
     return lhs < rhs;
 }
 
 template<class Res1, class Res2>
 inline BOOST_CONSTEXPR bool
-Less(const intmax_t& lhs, const intmax_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT
+Less(const count_t& lhs, const count_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT
 {
     typedef ratio_divide<Res2, Res1>::type  Rx;
-    if (rhs > INTMAX_MAX / Rx::num)
+    if (rhs > INT64_MAX / Rx::num)
     {
         return false;
     }
-    else if (rhs < INTMAX_MIN / Rx::num)
+    else if (rhs < INT64_MIN / Rx::num)
     {
         return true;
     }
@@ -346,28 +346,28 @@ Less(const intmax_t& lhs, const intmax_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT
 
 template<class Res1, class Res2>
 inline BOOST_CONSTEXPR bool
-Less(const intmax_t& lhs, const intmax_t& rhs, RightIsFinerTag) BOOST_NOEXCEPT
+Less(const count_t& lhs, const count_t& rhs, RightIsFinerTag) BOOST_NOEXCEPT
 {
     return !LessEqual<Res2, Res1>(rhs, lhs, LeftIsFinerTag());
 }
 
 template<class Res1, class Res2>
 inline BOOST_CONSTEXPR bool
-LessEqual(const intmax_t& lhs, const intmax_t& rhs, EquallyFineTag) BOOST_NOEXCEPT
+LessEqual(const count_t& lhs, const count_t& rhs, EquallyFineTag) BOOST_NOEXCEPT
 {
     return lhs <= rhs;
 }
 
 template<class Res1, class Res2>
 inline BOOST_CONSTEXPR bool
-LessEqual(const intmax_t& lhs, const intmax_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT
+LessEqual(const count_t& lhs, const count_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT
 {
     typedef ratio_divide<Res2, Res1>::type  Rx;
-    if (rhs > INTMAX_MAX / Rx::num)
+    if (rhs > INT64_MAX / Rx::num)
     {
         return false;
     }
-    else if (rhs < INTMAX_MIN / Rx::num)
+    else if (rhs < INT64_MIN / Rx::num)
     {
         return true;
     }
@@ -379,7 +379,7 @@ LessEqual(const intmax_t& lhs, const intmax_t& rhs, LeftIsFinerTag) BOOST_NOEXCE
 
 template<class Res1, class Res2>
 inline BOOST_CONSTEXPR bool
-LessEqual(const intmax_t& lhs, const intmax_t& rhs, RightIsFinerTag) BOOST_NOEXCEPT
+LessEqual(const count_t& lhs, const count_t& rhs, RightIsFinerTag) BOOST_NOEXCEPT
 {
     return !Less<Res2, Res1>(rhs, lhs, LeftIsFinerTag());
 }
@@ -409,8 +409,9 @@ struct Common
  *              * It must be a non-positive power of \c 10.
  *
  * A time duration is represented by the number of fundamental periods.
- * The number is a signed integer value of type \c intmax_t.
- * If \c intmax_t is 64-bit, then \c Res can be as small as \c atto.
+ * The number is a signed integer value of type \c count_t, which is an alias
+ * for \c int64_t.
+ * \c Res can be as small as \c atto.
  *
  * e.g., if \c Res is \c nano, the time resolution is \c 1 nanosecond, the
  * Duration can represent about -106,751 to +106,751 days, or -292 to 292 years.
@@ -428,8 +429,8 @@ private:
                   "The time resolution must be a non-positive power of 10.");
 
 public:
-    typedef Res        Resolution;
-    typedef intmax_t   Rep;
+    typedef Res      Resolution;
+    typedef count_t  Rep;
 
 private:
     template<class Res>
@@ -783,12 +784,12 @@ public:
 
     static Duration Min(void) BOOST_NOEXCEPT
     {
-        return Duration(INTMAX_MIN);
+        return Duration(INT64_MIN);
     }
 
     static Duration Max(void) BOOST_NOEXCEPT
     {
-        return Duration(INTMAX_MAX);
+        return Duration(INT64_MAX);
     }
 
     /*}}}*/

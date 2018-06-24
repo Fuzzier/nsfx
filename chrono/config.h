@@ -81,5 +81,13 @@
     NSFX_CLOSE_NAMESPACE
 
 
+////////////////////////////////////////////////////////////////////////////////
+NSFX_CHRONO_OPEN_NAMESPACE
+
+typedef int64_t  count_t;
+
+NSFX_CHRONO_CLOSE_NAMESPACE
+
+
 #endif // CONFIG_H__8B760702_A321_4446_BC5D_DABB064B77BB
 
