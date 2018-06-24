@@ -34,7 +34,7 @@ NSFX_CHRONO_OPEN_NAMESPACE
  * Users must not use it, since it doesn't match the time point concept.<br/>
  * It is only meant to be a primary class template.
  */
-template<class Epoch>
+template<class Clock, class Duration = typename Clock::Duration>
 class TimePoint {};
 
 
@@ -47,8 +47,8 @@ template<class TimePoint>
 class TimePointConcept
 {
 private:
-    typedef typename TimePoint::DurationType DurationType;
-    typedef typename TimePoint::EpochType    EpochType;
+    typedef typename TimePoint::Duration Duration;
+    typedef typename TimePoint::Clock    Clock;
 
     BOOST_CONCEPT_ASSERT((boost::Assignable<TimePoint>));
     BOOST_CONCEPT_ASSERT((boost::DefaultConstructible<TimePoint>));
@@ -71,7 +71,7 @@ public:
 private:
     void FromDuration(void)
     {
-        DurationType dt;
+        Duration dt;
         TimePoint t(dt);
     }
 
@@ -90,7 +90,7 @@ private:
     void GetDuration(void)
     {
         TimePoint t;
-        DurationType dt = t.GetDuration();
+        Duration dt = t.GetDuration();
     }
 
     void Hashable(void)
@@ -125,11 +125,12 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 // ostream <<./*{{{*/
-template<class CharT, class TraitsT, class Epoch>
+template<class CharT, class TraitsT, class Clock, class Duration>
 inline std::basic_ostream<CharT, TraitsT>&
-operator<<(std::basic_ostream<CharT, TraitsT>& os, const TimePoint<Epoch>& rhs)
+operator<<(std::basic_ostream<CharT, TraitsT>& os,
+           const TimePoint<Clock, Duration>& rhs)
 {
-    return (os << rhs.ToString());
+    return os << rhs.ToString();
 }
 /*}}}*/
 

@@ -21,13 +21,13 @@
 
 NSFX_TEST_SUITE(VirtualTimePoint)
 {
-    typedef nsfx::chrono::VirtualTimePoint TimePoint;
-    typedef nsfx::chrono::Duration         Duration;
+    typedef nsfx::chrono::VirtualTimePoint  TimePoint;
+    typedef TimePoint::Duration             Duration;
 
     NSFX_TEST_CASE(Ctor0)
     {
         TimePoint t;
-        NSFX_TEST_EXPECT_EQ(t.GetDuration().ToNanoSeconds(), 0);
+        NSFX_TEST_EXPECT_EQ(t.GetDuration().GetCount(), 0);
     }
 
     NSFX_TEST_CASE(Ctor1)

@@ -18,6 +18,7 @@
 
 
 #include <nsfx/config.h>
+#include <boost/ratio.hpp>
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -40,6 +41,7 @@
  *
  * <b>Time Resolution</b>: </br>
  *    The smallest representable duration.
+ *    It is also called the fundamental time period.
  *
  * <b>Time Epoch</b>: </br>
  *    The referred starting time point.
