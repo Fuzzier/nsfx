@@ -43,7 +43,7 @@ NSFX_TEST_SUITE(Duration)
         NSFX_TEST_EXPECT_EQ(dt.GetCount(), 1);
         NSFX_TEST_EXPECT_EQ(dt.GetResolution(), 1e-6);
         Duration dt2 = dt;
-        NSFX_TEST_EXPECT_EQ(dt2.GetCount(), 1);
+        NSFX_TEST_EXPECT_EQ(dt2.GetCount(), 1000);
     }
 
     NSFX_TEST_CASE(MilliSeconds)
@@ -52,7 +52,7 @@ NSFX_TEST_SUITE(Duration)
         NSFX_TEST_EXPECT_EQ(dt.GetCount(), 1);
         NSFX_TEST_EXPECT_EQ(dt.GetResolution(), 1e-3);
         Duration dt2 = dt;
-        NSFX_TEST_EXPECT_EQ(dt2.GetCount(), 1);
+        NSFX_TEST_EXPECT_EQ(dt2.GetCount(), 1000000);
     }
 
     NSFX_TEST_CASE(Seconds)
@@ -61,7 +61,7 @@ NSFX_TEST_SUITE(Duration)
         NSFX_TEST_EXPECT_EQ(dt.GetCount(), 1);
         NSFX_TEST_EXPECT_EQ(dt.GetResolution(), 1);
         Duration dt2 = dt;
-        NSFX_TEST_EXPECT_EQ(dt2.GetCount(), 1);
+        NSFX_TEST_EXPECT_EQ(dt2.GetCount(), 1000000000);
     }
 
     NSFX_TEST_CASE(Minutes)
@@ -70,7 +70,7 @@ NSFX_TEST_SUITE(Duration)
         NSFX_TEST_EXPECT_EQ(dt.GetCount(), 60);
         NSFX_TEST_EXPECT_EQ(dt.GetResolution(), 1);
         Duration dt2 = dt;
-        NSFX_TEST_EXPECT_EQ(dt2.GetCount(), 60);
+        NSFX_TEST_EXPECT_EQ(dt2.GetCount(), 60000000000LL);
     }
 
     NSFX_TEST_CASE(Hours)
@@ -79,7 +79,7 @@ NSFX_TEST_SUITE(Duration)
         NSFX_TEST_EXPECT_EQ(dt.GetCount(), 3600);
         NSFX_TEST_EXPECT_EQ(dt.GetResolution(), 1);
         Duration dt2 = dt;
-        NSFX_TEST_EXPECT_EQ(dt2.GetCount(), 3600);
+        NSFX_TEST_EXPECT_EQ(dt2.GetCount(), 3600000000000LL);
     }
 
     NSFX_TEST_CASE(Days)
@@ -88,10 +88,10 @@ NSFX_TEST_SUITE(Duration)
         NSFX_TEST_EXPECT_EQ(dt.GetCount(), 86400);
         NSFX_TEST_EXPECT_EQ(dt.GetResolution(), 1);
         Duration dt2 = dt;
-        NSFX_TEST_EXPECT_EQ(dt2.GetCount(), 86400);
+        NSFX_TEST_EXPECT_EQ(dt2.GetCount(), 86400000000000LL);
     }
 
-    NSFX_TEST_CASE(Comparisons)
+    NSFX_TEST_CASE(Comparison)
     {
         nsfx::chrono::Duration<nsfx::nano> dt1(1);
         nsfx::chrono::Duration<nsfx::nano> dt2(3);
@@ -105,7 +105,7 @@ NSFX_TEST_SUITE(Duration)
         NSFX_TEST_EXPECT(dt2 > dt1);
         NSFX_TEST_EXPECT(dt2 >= dt1);
 
-        nsfx::chrono::Duration<nsfx::milli> dt3(1);
+        nsfx::chrono::Duration<nsfx::micro> dt3(999);
         NSFX_TEST_EXPECT(!(dt1 == dt3));
         NSFX_TEST_EXPECT(dt1 != dt3);
         NSFX_TEST_EXPECT(dt1 <= dt3);
@@ -119,10 +119,9 @@ NSFX_TEST_SUITE(Duration)
         NSFX_TEST_EXPECT(dt3 > dt1);
         NSFX_TEST_EXPECT(!(dt3 <= dt1));
         NSFX_TEST_EXPECT(!(dt3 < dt1));
-
     }
 
-    NSFX_TEST_CASE(Algorithms)
+    NSFX_TEST_CASE(Arithmetic)
     {
         Duration dt1(5);
         Duration dt2(7);
@@ -166,14 +165,61 @@ NSFX_TEST_SUITE(Duration)
         NSFX_TEST_EXPECT_EQ(dt3, nsfx::chrono::NanoSeconds(1));
 
         NSFX_TEST_EXPECT_EQ(-dt1, Duration(-5));
+    }
 
-        // Duration dt5 = nsfx::chrono::Days(2)
-        //              + nsfx::chrono::Hours(2)
-        //              + nsfx::chrono::Minutes(2)
-        //              + nsfx::chrono::Seconds(2)
-        //              + nsfx::chrono::MilliSeconds(2)
-        //              + nsfx::chrono::MicroSeconds(2)
-        //              + nsfx::chrono::NanoSeconds(2);
+    NSFX_TEST_CASE(Conversion)
+    {
+        auto dt1 = nsfx::chrono::Days(2)
+                 + nsfx::chrono::Hours(2)
+                 + nsfx::chrono::Minutes(2)
+                 + nsfx::chrono::Seconds(2);
+        NSFX_TEST_EXPECT_EQ(dt1,
+                            nsfx::chrono::Duration<nsfx::nano>(
+                                172800000000000LL +
+                                  7200000000000LL +
+                                   120000000000LL +
+                                     2000000000LL
+                            ));
+
+        auto dt2 = nsfx::chrono::Days(2)
+                 + nsfx::chrono::MilliSeconds(2);
+        NSFX_TEST_EXPECT_EQ(dt2,
+                            nsfx::chrono::Duration<nsfx::nano>(
+                                172800000000000LL +
+                                        2000000LL
+                            ));
+
+        auto dt3 = nsfx::chrono::Days(2)
+                 + nsfx::chrono::Hours(2)
+                 + nsfx::chrono::Minutes(2)
+                 + nsfx::chrono::Seconds(2)
+                 + nsfx::chrono::MilliSeconds(2)
+                 + nsfx::chrono::MicroSeconds(2)
+                 + nsfx::chrono::NanoSeconds(2);
+        NSFX_TEST_EXPECT_EQ(dt3,
+                            nsfx::chrono::Duration<nsfx::nano>(
+                                172800000000000LL +
+                                  7200000000000LL +
+                                   120000000000LL +
+                                     2000000000LL +
+                                        2000000LL +
+                                           2000LL +
+                                              2LL
+                            ));
+
+        auto dt4 = nsfx::chrono::NanoSeconds(2)
+                 + nsfx::chrono::PicoSeconds(2)
+                 + nsfx::chrono::FemtoSeconds(2)
+                 + nsfx::chrono::AttoSeconds(2);
+        NSFX_TEST_EXPECT_EQ(dt4,
+                            nsfx::chrono::Duration<nsfx::atto>(
+                             2000000000 +
+                                2000000 +
+                                   2000 +
+                                      2
+                                ));
+        Duration dt5 = dt4;
+        NSFX_TEST_EXPECT_EQ(dt5, nsfx::chrono::Duration<nsfx::nano>(2));
     }
 
     NSFX_TEST_CASE(Hash)
