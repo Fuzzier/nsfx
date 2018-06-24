@@ -37,7 +37,10 @@ NSFX_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 // Chrono.
 typedef chrono::VirtualTimePoint  TimePoint;
-using chrono::Duration;
+typedef TimePoint::Duration       Duration;
+using chrono::AttoSeconds;
+using chrono::FemtoSeconds;
+using chrono::PicoSeconds;
 using chrono::NanoSeconds;
 using chrono::MilliSeconds;
 using chrono::MicroSeconds;
