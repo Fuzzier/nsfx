@@ -18,22 +18,28 @@
 
 
 #include <nsfx/config.h>
-#include <nsfx/exception/exception.h>
+#include <nsfx/interop/exception.h>
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
+ * @ingroup Interop
  * @defgroup Variant
  *
- * @brief Variant support.
+ * @brief Union-based type-safe value.
  *
  * # Motivation
  *   To enable interoperability, variant are provided.
  *
  *   A variant is a union-based type-safe value.
- *   It models the "multi-type, single value" paradigm.
+ *   It provides type-erasure feature, without resort to virtual inheritance.
+ *
+ *   The type-safety is guaranteed, since a variant has a single-type and a
+ *   single-value during its lifetime.
+ *   The type of a variant is described by a member variable \c vartype.
  *
  *   The set of supported types are limited.
+ *   The library forbids to change the vartype of a variant
  *
  */
 

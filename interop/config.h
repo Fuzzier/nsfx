@@ -311,6 +311,30 @@
  *      method->Invoke(s2.MakeRef(), ...);
  *      @endcode
  *
+ * #### Duration and TimePoint
+ *      The following return types are supported.
+ *      @code
+ *      chrono::Duration<>
+ *      chrono::TimePoint<>
+ *      @endcode
+ *
+ *      The library allocates a buffer to hold the returned string, and buffer
+ *      is carried back by a variant with its \c vartype set to
+ *      <code>VT_STRING | VT_BYREF</code>.
+ *
+ *      e.g.,
+ *      @code
+ *      // Refer to a value directly.
+ *      const char* s1 = nullptr;
+ *      method->Invoke(Variant(&s1), ...);
+ *      // Users are responsible to deallocate the string buffer!
+ *      VariantDeallocate(s1);
+ *
+ *      // Pass a variant 'ByRef'.
+ *      Variant s2("");
+ *      method->Invoke(s2.MakeRef(), ...);
+ *      @endcode
+ *
  * #### Interface
  *      The following return types are supported.
  *      @code
