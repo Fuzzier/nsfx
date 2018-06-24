@@ -17,7 +17,7 @@
 #define EXCEPTION_H__101BD45F_7684_4913_8438_F87EC6288DC8
 
 
-#include <nsfx/variant/config.h>
+#include <nsfx/interop/config.h>
 #include <nsfx/exception/exception.h>
 
 
@@ -26,9 +26,23 @@ NSFX_OPEN_NAMESPACE
 
 /**
  * @ingroup Exception
- * @brief Invalid variant.
+ * @brief The supplied type mismatches the type of the variant.
  */
-struct InvalidVariant : Exception {};
+struct VariantTypeMismatch : Exception {};
+
+/**
+ * @ingroup Exception
+ * @brief Invalid return value.
+ */
+struct InvalidReturnVariant : Exception {};
+
+struct InvalidArgumentVariant : Exception {};
+
+struct InvalidNumberOfArguments : Exception {};
+
+typedef boost::error_info<struct tag_InvalidArgumentIndex, size_t>  InvalidArgumentIndex;
+typedef boost::error_info<struct tag_ExpectedNumberOfArguments, size_t>  ExpectedNumberOfArguments;
+typedef boost::error_info<struct tag_SuppliedNumberOfArguments, size_t>  SuppliedNumberOfArguments;
 
 
 NSFX_CLOSE_NAMESPACE
