@@ -33,8 +33,6 @@ typedef uint32_t  vartype_t;
 ////////////////////////////////////////////////////////////////////////////////
 enum VariantType
 {
-    VT_BYREF  = 0x01000000,
-
     VT_EMPTY  = 0,
     VT_BOOL   = 0x0001,
     VT_INT8   = 0x0002,
@@ -79,11 +77,11 @@ enum VariantType
 };
 
 
-static_assert(std::is_same<chrono::count_t, int64_t>::value,
-              "Unsupported type of nsfx::chrono::count_t, which must be int64_t.");
-
-
 ////////////////////////////////////////////////////////////////////////////////
+/**
+ * @ingroup Variant
+ * @brief The union-based variant.
+ */
 struct variant_t
 {
     vartype_t type_;
@@ -106,24 +104,12 @@ struct variant_t
         int64_t     t0;   ///< \c nsfx::chrono::count_t.
         IObject*    obj;  ///< Owns a reference count if it is not \c nullptr.
 
-        bool*        pb;
-        int8_t*      pi8;
-        uint8_t*     pu8;
-        int16_t*     pi16;
-        uint16_t*    pu16;
-        int32_t*     pi32;
-        uint32_t*    pu32;
-        int64_t*     pi64;
-        uint64_t*    pu64;
-        float*       pd32;
-        double*      pd64;
-        const char** pstr;
-        int64_t*     pdt;
-        int64_t*     pt0;
-        IObject**    pobj;
-
     } value_;
 };
+
+
+static_assert(std::is_same<chrono::count_t, int64_t>::value,
+              "Unsupported type of nsfx::chrono::count_t, which must be int64_t.");
 
 
 NSFX_CLOSE_NAMESPACE

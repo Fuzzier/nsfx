@@ -219,6 +219,36 @@
  *      std::cout << s2.Get<const char*>() << std::endl;
  *      @endcode
  *
+ * #### Duration and TimePoint
+ *      The following return types are supported.
+ *      @code
+ *      chrono::Duration<>
+ *      chrono::TimePoint<>
+ *      @endcode
+ *
+ *      The library uses an \c int64_t to store the value, which represents
+ *      the number of fundamental periods in a duration.
+ *      The \c vartype of the variant is \c VT_DURATION for duration, and
+ *      \c VT_TIME_POINT for time point.
+ *
+ *      e.g.,
+ *      @code
+ *      // Method prototype.
+ *      chrono::Duration<nano>   Foo(...);
+ *      chrono::VirtualTimePoint Bar(...);
+ *
+ *      // Refer to a C-string directly.
+ *      const char* s1 = nullptr;
+ *      method->Invoke(Variant(&s1), ...);
+ *      // Users are responsible to deallocate the string!
+ *      VariantDeallocateString(s1);
+ *
+ *      // Pass a variant 'ByRef'.
+ *      Variant s2("");
+ *      method->Invoke(s2.MakeRef(), ...);
+ *      std::cout << s2.Get<const char*>() << std::endl;
+ *      @endcode
+ *
  * #### Interface
  *      The following return types are supported.
  *      @code
@@ -375,6 +405,18 @@
  *   * Exceptions and error codes.
  *
  */
+
+
+NSFX_OPEN_NAMESPACE
+namespace aux
+{
+
+
+
+} // namespace aux
+
+
+NSFX_CLOSE_NAMESPACE
 
 
 #endif // CONFIG_H__F32D83F7_C5B4_435C_8E5E_EBF5A39E0068
