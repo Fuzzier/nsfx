@@ -26,6 +26,7 @@ NSFX_TEST_SUITE(Duration)
     {
         Duration dt;
         NSFX_TEST_EXPECT_EQ(dt.GetCount(), 0);
+        NSFX_TEST_EXPECT(!dt);
     }
 
     NSFX_TEST_CASE(NanoSeconds)
@@ -35,6 +36,7 @@ NSFX_TEST_SUITE(Duration)
         NSFX_TEST_EXPECT_EQ(dt.GetResolution(), 1e-9);
         Duration dt2 = dt;
         NSFX_TEST_EXPECT_EQ(dt2.GetCount(), 1);
+        NSFX_TEST_EXPECT(dt);
     }
 
     NSFX_TEST_CASE(MicroSeconds)
