@@ -40,7 +40,7 @@ struct InvalidArgumentVariant : Exception {};
 
 struct InvalidNumberOfArguments : Exception {};
 
-typedef boost::error_info<struct tag_InvalidArgumentIndex, size_t>  InvalidArgumentIndex;
+typedef boost::error_info<struct tag_ArgumentIndex, size_t>  ArgumentIndex;
 typedef boost::error_info<struct tag_ExpectedNumberOfArguments, size_t>  ExpectedNumberOfArguments;
 typedef boost::error_info<struct tag_SuppliedNumberOfArguments, size_t>  SuppliedNumberOfArguments;
 

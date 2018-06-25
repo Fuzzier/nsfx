@@ -23,7 +23,10 @@
 #include <nsfx/component/object.h>
 #include <nsfx/component/ptr.h>
 #include <boost/mpl/is_sequence.hpp>
+#include <boost/mpl/vector_c.hpp>
 #include <boost/mpl/vector.hpp>
+#include <boost/mpl/range_c.hpp>
+#include <boost/mpl/insert_range.hpp>
 #include <boost/mpl/at.hpp>
 #include <boost/mpl/size.hpp>
 #include <boost/mpl/size_t.hpp>
@@ -267,6 +270,11 @@ struct Invoker<1>
                        Variant& ret, Variant* args, NoReturnTag)
     {
         typedef typename std::decay<A0>::type   Arg0;
+        Arg0 a0;
+        if (!(VariantTraits<Arg0>::type & VT_BYREF))
+        {
+            a0 = args[0].GetValue<Arg0>();
+        }
         (o->*ptmf)(args[0].GetValue<Arg0>());
     }
 
