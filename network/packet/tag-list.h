@@ -318,14 +318,14 @@ public:
     /**
      * @brief Insert a tag for a range of bytes in the buffer.
      *
-     * @param[in] tagId  The id of the tag.
-     * @param[in] buffer The buffer of the tag.
-     * @param[in] start  The start of the byte, relative to the start of
-     *                   the buffer.
-     * @param[in] size   The number of bytes to tag.
-     *                   All bytes <b>must</b> be within the current buffer.
+     * @param[in] tagId     The id of the tag.
+     * @param[in] tagBuffer The buffer of the tag.
+     * @param[in] start     The start of the byte, relative to the start of
+     *                      the buffer.
+     * @param[in] size      The number of bytes to tag.
+     *                      All bytes <b>must</b> be within the current buffer.
      */
-    void Insert(size_t tagId, const ConstTagBuffer& buffer,
+    void Insert(size_t tagId, const ConstTagBuffer& tagBuffer,
                 size_t start, size_t size);
 
     /**
@@ -580,10 +580,10 @@ inline void TagList::Insert(const Tag& tag, size_t start, size_t size)
     ++tia_->dirty_;
 }
 
-inline void TagList::Insert(size_t tagId, const ConstTagBuffer& buffer,
+inline void TagList::Insert(size_t tagId, const ConstTagBuffer& tagBuffer,
                             size_t start, size_t size)
 {
-    Insert(Tag(tagId, buffer), start, size);
+    Insert(Tag(tagId, tagBuffer), start, size);
 }
 
 inline bool TagList::Exists(size_t tagId, size_t offset) const BOOST_NOEXCEPT
