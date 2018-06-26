@@ -1271,7 +1271,7 @@ public:
     ConstZcBufferIterator(const ConstZcBufferIterator& rhs) BOOST_NOEXCEPT;
     ConstZcBufferIterator& operator=(const ConstZcBufferIterator& rhs) BOOST_NOEXCEPT;
 
-    // Emplicit conversion from ZcBufferIterator.
+    // Implicit conversion from ZcBufferIterator.
 public:
     ConstZcBufferIterator(const ZcBufferIterator& rhs) BOOST_NOEXCEPT;
     ConstZcBufferIterator& operator=(const ZcBufferIterator& rhs) BOOST_NOEXCEPT;

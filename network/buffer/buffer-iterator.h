@@ -974,7 +974,7 @@ public:
     ConstBufferIterator(const ConstBufferIterator& rhs) BOOST_NOEXCEPT;
     ConstBufferIterator& operator=(const ConstBufferIterator& rhs) BOOST_NOEXCEPT;
 
-    // Emplicit conversion from BufferIterator.
+    // Implicit conversion from BufferIterator.
 public:
     ConstBufferIterator(const BufferIterator& rhs) BOOST_NOEXCEPT;
     ConstBufferIterator& operator=(const BufferIterator& rhs) BOOST_NOEXCEPT;
