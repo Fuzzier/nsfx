@@ -24,19 +24,26 @@
  * @defgroup Component
  * @brief Support for component-based programming.
  *
- * Depends upon Exception module.<br/>
- *
- * A component is an object that provides and uses various interfaces.<br/>
+ * Depends upon Exception module.
+ */
+
+
+/**
+ * @page Component Component-based programming
+ * A component is an object that provides and uses various interfaces.
  * The behavior of a component is defined by the interfaces it provides and uses.
  *
- * # Component, object and interface.<br/>
- *   An interface always represents the object that implements it.<br/>
- *   A component can be an aggregation of objects.<br/>
+ * ===============================
+ * Component, object and interface
+ * ===============================
+ *
+ *   An interface always represents the object that implements it.
+ *   A component can be an aggregation of objects.
  *   The relationship between a component and an interface can be either
- *   <b>`is-a'</b> or <b>`has-a'</b>.<br/>
- *   `is-a' means the component is the object that implements the interface.<br/>
+ *   <b>`is-a'</b> or <b>`has-a'</b>.
+ *   `is-a' means the component is the object that implements the interface.
  *   `has-a' means the component aggregates an object that implements the
- *   interface.<br/>
+ *   interface.
  *   @code
  *   interface
  *      | implemented by
@@ -51,104 +58,97 @@
  *   @endcode
  *
  *   For convenience, a user can <b>always</b> assume that a component
- *   `is' an \c IObject, and `has' other interfaces.<br/>
+ *   `is' an \c IObject, and `has' other interfaces.
  *   i.e., a component implements \c IObject itself, and all other interfaces
- *   are implemented by internally aggregated objects.<br/>
+ *   are implemented by internally aggregated objects.
  *
  *   When a unique object implements an interface, the component can expose the
- *   interface directly.<br/>
+ *   interface directly.
  *   When multiple objects implements the same interface, the component can
- *   expose an enumerator interface for users to obtain the required objects.<br/>
- */
-
-/**
- * @ingroup Component
- * @brief Interface navigability
+ *   expose an enumerator interface for users to obtain the required objects.
  *
- * # Interface navigability
+ * ======================
+ * Interface navigability
+ * ======================
  *
- * ## 1. How to obtain different interfaces on a component?<br/>
+ * ## 1. How to obtain different interfaces on a component?
  *
  * ### 1.1 Use concrete class and downcast
  *     The primary form of interface implementation is to create a concrete
- *     class that inherits from pure abstract bases, and implements the methods.<br/>
+ *     class that inherits from pure abstract bases, and implements the methods.
  *     Such classes can be large and heavy, since a class inherits from all
  *     interfaces it exposes, and presents to users a huge table of virtual
- *     functions, along with a set of non-virtual functions.<br/>
- *     The code of the class becomes hard to read or understand.<br/>
+ *     functions, along with a set of non-virtual functions.
+ *     The code of the class becomes hard to read or understand.
  *     It becomes unclear how interfaces are cohesive with each other, but they
- *     are just coupled tightly together within a class.<br/>
+ *     are just coupled tightly together within a class.
  *
- *     Another key problem is that this approach lacks <b>navigability</b>.<br/>
+ *     Another key problem is that this approach lacks <b>navigability</b>.
  *     If one holds a pointer to the object, one can safely upcast it to one of
- *     the interfaces it derives from.<br/>
+ *     the interfaces it derives from.
  *     However, if one holds a pointer to an interface on the object, one have
  *     to downcast the interface to the object, then downcast to obtain the
- *     other interfaces on that object.<br/>
+ *     other interfaces on that object.
  *
- *     The key is that interfaces are generally not aware of each other.<br/>
- *     i.e., they do not know whether they are on the same component or not.<br/>
+ *     The key is that interfaces are generally not aware of each other.
+ *     i.e., they do not know whether they are on the same component or not.
  *     The users generally have to know the concrete type of the object and use
- *     member functions or type casts to obtain the interfaces.<br/>
+ *     member functions or type casts to obtain the interfaces.
  *     When other objects want to use the object, they either have to know its
  *     concrete type, or the provider have to extract and pass all necessary
- *     interfaces.<br/>
+ *     interfaces.
  *
- *     It is very inconvenient and error prone.<br/>
- *     It emphasizes upon inheritance, and discourages encapsulation.<br/>
+ *     It is very inconvenient and error prone.
+ *     It emphasizes upon inheritance, and discourages encapsulation.
  *     Microsoft Component Model (COM) offers practical methods to solve these
- *     problems.<br/>
+ *     problems.
  *
  * ### 1.2 Hide objects behind a navigator interface
  *     A dictated navigator interface \c IObject is defined to query interfaces
- *     on a component.<br/>
- *     The method \c IObject::QueryInterface() is defined for this purpose.<br/>
- *     The \c IObject interface can be considered as the component itself.<br/>
+ *     on a component.
+ *     The method \c IObject::QueryInterface() is defined for this purpose.
+ *     The \c IObject interface can be considered as the component itself.
  *     There is no need to know the concrete type of the object behind an
  *     interface, and the usage of downcast (the dependency upon inheritance)
- *     is completely eliminated.<br/>
+ *     is completely eliminated.
  *
  *     Object factories can be used to obtain the \c IObject interface on
- *     components, which completely hides their implementations.<br/>
+ *     components, which completely hides their implementations.
  *     The users can query the required interfaces in a safe way, as an
- *     exception is thrown when an interface is not supported.<br/>
+ *     exception is thrown when an interface is not supported.
  *
  * ## 2. Make all interfaces navigable
  *    All interfaces inherit from the \c IObject interface, and provide
- *    navigability for the component.<br/>
+ *    navigability for the component.
  *
  *    Virtual inheritance has to be used, since all interfaces extends the
- *    \c IObject interface.<br/>
- */
-
-/**
- * @ingroup Component
- * @brief Interface identifier
+ *    \c IObject interface.
  *
+ * ---
  * # Interface identifier (IID)
- *   An interface is \c IObject or an interface that extends \c IObject.<br/>
- *   An interface <b>must</b> have a UID (unique identifier) that identifies it.<br/>
+ *   An interface is \c IObject or an interface that extends \c IObject.
+ *   An interface <b>must</b> have a UID (unique identifier) that identifies it.
  *   The UID that identifies an interface is the IID (interface identifier) of
- *   the interface.<br/>
+ *   the interface.
  *
  *   An IID is a human-readable string literal that describes the hierarchical
- *   namespaces where the interface is defined, and the name of the interface.<br/>
- *   The general format of UID is <code>"<organization>.<module>.<name>"</code>.<br/>
- *   e.g., <code>"edu.uestc.nsfx.IObject"</code> is the IID of \c IObject.<br/>
+ *   namespaces where the interface is defined, and the name of the interface.
+ *   The general format of UID is <code>"<organization>.<module>.<name>"</code>.
+ *   e.g., <code>"edu.uestc.nsfx.IObject"</code> is the IID of \c IObject.
  *
  * ## Define an interface identifier
- *    The library provides several tools to associate an interface with a UID.<br/>
+ *    The library provides several tools to associate an interface with a UID.
  *    In general, the class template <code>NsfxClassTraits<></code> is
  *    specialized for the interface, which provides a static member function
- *    that returns the IID of the interface.<br/>
+ *    that returns the IID of the interface.
  *
  * ## Obtain an interface identifier
- *    Once associated, users no longer have to write the whole IID.<br/>
+ *    Once associated, users no longer have to write the whole IID.
  *    Instead, users can use <code>uid_of<IXxx>()</code> to obtain the IID of
  *    the interface \c IXxx.
  *
  * ## Query an interface via IID
- *   The IID is passed to \c IObject::QueryInterface() to obtain the interface.<br/>
+ *   The IID is passed to \c IObject::QueryInterface() to obtain the interface.
  */
 
 /**
@@ -156,13 +156,13 @@
  * @brief Component class
  *
  * # Component class
- *   A component class is the C++ class that implements the \c IObject interface.<br/>
+ *   A component class is the C++ class that implements the \c IObject interface.
  *
  * ## Gray-box reuse
  *    If the type (C++ class) of the component class is visible, users can
- *    reuse the class as a gray-box.<br/>
+ *    reuse the class as a gray-box.
  *    i.e., users can access not only the interfaces provided by the component
- *    class, but also all public members of it.<br/>
+ *    class, but also all public members of it.
  *
  *    A gray-box reusable component class <b>can</b> have non-default
  *    constructors.
@@ -188,9 +188,9 @@
  *     via the class factory.
  *
  * ### Class identifier (CID)
- *     A component class <b>should</b> have a UID that identifies it.<br/>
+ *     A component class <b>should</b> have a UID that identifies it.
  *     The UID that identifies an component class is the CID (class identifier)
- *     of the component class.<br/>
+ *     of the component class.
  *     A CID is a string that has a similar format as an IID.
  *
  * ### Class factory
@@ -252,7 +252,7 @@
  *    * IID of the provided interfaces
  *
  *    The library do not provide tools to invoke the methods of interfaces in a
- *    type-neutral way.<br/>
+ *    type-neutral way.
  *    The reasons are as follows.
  *    * Interfaces are always visible to users.
  *    * Users can always obtain the \c IObject interface of a component.
@@ -271,7 +271,7 @@
  *
  * # Interoperability
  *   Interoperability is a allow users to invoke the methods of interfaces on
- *   a component in a type-neutral way.<br/>
+ *   a component in a type-neutral way.
  *
  * ## Internal to C++
  *    It is fairly easy to invoke a method of an interface on a component in C++.
@@ -293,126 +293,126 @@
  * @brief Lifetime management
  *
  * # Lifetime management
- *   Only deterministic methods are considered.<br/>
- *   A garbage collector is not considered right now.<br/>
+ *   Only deterministic methods are considered.
+ *   A garbage collector is not considered right now.
  *
  *   Please note that, if an object is created by the library, it must be freed
- *   by means provided by the library.<br/>
+ *   by means provided by the library.
  *   e.g., one cannot create an object via \c CreateObject() function, and free
  *   the object via \c delete.
  *
  * ## 2.1 Implicit transfer of responsibility
  *    Transfer the responsibility of deallocating an object when a raw-pointer
- *    is transferred.<br/>
+ *    is transferred.
  *
- *    This approach must <b>never</b> be used.<br/>
- *    Use \c std::unique_ptr to enforce the transfer of responsibility.<br/>
+ *    This approach must <b>never</b> be used.
+ *    Use \c std::unique_ptr to enforce the transfer of responsibility.
  *
  * ## 2.2 Creator-based management
  *    When an object is created, the creator is responsible to deallocate the
- *    object.<br/>
+ *    object.
  *    The creator must not be deallocated until the created object is no longer
- *    used.<br/>
+ *    used.
  *    It requires a careful pre-design of the software system to properly
- *    layout and manage the objects.<br/>
+ *    layout and manage the objects.
  *    An allocated object has one and only one allocator that is responsible
- *    to deallocate it.<br/>
+ *    to deallocate it.
  *    The allocation relationships must form directed trees, where the vertices
- *    are objects, and an edge starts from an allocator to an allocated.<br/>
+ *    are objects, and an edge starts from an allocator to an allocated.
  *    This way, a clear deallocation path is formed so that no object is
- *    deallocated more than once or leaked.<br/>
+ *    deallocated more than once or leaked.
  *    Therefore, hierarchical organization is commonly used in this management
  *    scheme.
  *
  * ### 2.3 Reference counting
  *     Use a reference count to manage object lifetime, either intrusively or
- *     non-intrusively.<br/>
+ *     non-intrusively.
  *     It eliminates the need to transfer the responsibility of deallocation,
- *     and formulates a distributed lifetime management scheme.<br/>
+ *     and formulates a distributed lifetime management scheme.
  *     Users can use \c std::shared_ptr and \c std::weak_ptr for non-intrusive
- *     reference counting.<br/>
+ *     reference counting.
  *
  *     The use of non-intrusive reference count provided by a smart pointer also
- *     has a problem.<br/>
+ *     has a problem.
  *     To manage the lifetime of <i>different</i> interfaces on a single object,
  *     a smart pointer must either know the concrete type of the object, or
- *     have a way to access the reference count.<br/>
+ *     have a way to access the reference count.
  *     If the interface held by a smart pointer doesn't provide lifetime
  *     management itself, the smart pointer has to store a variable or function
- *     pointer to access the reference count (cost memory).<br/>
+ *     pointer to access the reference count (cost memory).
  *     It may even have to query a dictated lifetime manager interface at
- *     runtime (cost CPU cycles).<br/>
+ *     runtime (cost CPU cycles).
  *
  *     To solve the problem, similar to Microsoft COM, every interface must
- *     provide methods to manage the reference count of the component.<br/>
- *     Virtual inheritance has to be used.<br/>
+ *     provide methods to manage the reference count of the component.
+ *     Virtual inheritance has to be used.
  *
  *     \c IObject::AddRef() and \c IObject::Release() are defined for this
- *     purpose.<br/>
+ *     purpose.
  *     And class template <code>Ptr<></code> is provided as smart pointers to
- *     manage the reference count of a component.<br/>
+ *     manage the reference count of a component.
  *
  *     Reference counting has a problem of cyclic reference counting, since
- *     deferencing is passive.<br/>
+ *     deferencing is passive.
  *     i.e., the intent to deallocate an object is not given to all holders of
- *     the object.<br/>
+ *     the object.
  *     It can be solved by actively/explicitly notify every client of a component
- *     to release the reference count they hold.<br/>
+ *     to release the reference count they hold.
  *
- * ### 2.4. Transfer of reference counts across functions.<br/>
+ * ### 2.4. Transfer of reference counts across functions.
  *     When a pointer to an object is passed into a function call, the caller
- *     must guarantee that the object remains valid until the function returns.<br/>
+ *     must guarantee that the object remains valid until the function returns.
  *     Usually, the caller increments the reference count by one before calling
- *     the function.<br/>
+ *     the function.
  *
- *     Should that one reference count be transferred to the callee?<br/>
+ *     Should that one reference count be transferred to the callee?
  *     Microsoft COM rules specify that there is no transferring, and the caller
- *     is responsible to release this reference count.<br/>
+ *     is responsible to release this reference count.
  *     Microsoft RCW (Runtime Caller Wrapper) rules specify that this reference
  *     count is transferred, and the callee is responsible to release this
- *     reference count.<br/>
+ *     reference count.
  *
  *     When a pointer to an object is passed out of a function call, the callee
- *     must guarantee that the caller obtains a valid object.<br/>
+ *     must guarantee that the caller obtains a valid object.
  *     Usually, the callee has to increment the reference count by one, and
- *     transfer that one reference count to the caller.<br/>
+ *     transfer that one reference count to the caller.
  *
  *     The intention whether to transfer a reference count must be stated
- *     explicitly.<br/>
+ *     explicitly.
  *     -# If a <b>smart pointer</b> is used, a reference count is transferred
- *        across the function call.<br/>
+ *        across the function call.
  *     -# If a <b>non-void raw pointer</b> is used, a reference count is <b>not</b>
- *        transferred across the function call.<br/>
+ *        transferred across the function call.
  *     -# If a <b>void raw pointer</b> is used, a reference count is transferred
- *        out of the function call.<br/>
+ *        out of the function call.
  *
  *     The 3rd case is only applied to methods that perform interface
- *     acquisition and object creation.<br/>
+ *     acquisition and object creation.
  *     Since a virtual function cannot have multiple return types, and function
  *     templates cannot be mixed with virtual funtions, the return type has to
- *     be \c void*, instead of a pointer to a specific interface.<br/>
- *     Examples are \c IObject::QueryInterface() and \c IFactory::CreateObject().<br/>
+ *     be \c void*, instead of a pointer to a specific interface.
+ *     Examples are \c IObject::QueryInterface() and \c IFactory::CreateObject().
  *     Such cases are handled by library-provided smart pointers and template
- *     functions (e.g., \c CreateObject()), and should not bother the users.<br/>
+ *     functions (e.g., \c CreateObject()), and should not bother the users.
  *     User-defined methods should avoid using void raw pointers as return
- *     values.<br/>
+ *     values.
  *
  *     The 2nd case can be applied when a container object holds a reference
  *     count of an internal object that <b>shares the same lifetime</b> as the
  *     container, a <b>free pointer</b> to the internal object can be returned
- *     as a non-void raw pointer.<br/>
- *     It is user's responsibility to ensure that the container remains valid.<br/>
+ *     as a non-void raw pointer.
+ *     It is user's responsibility to ensure that the container remains valid.
  *
- * ## 3. Conclusion.<br/>
- *    Performance and flexibility are conflicting aspects.<br/>
- *    To improve performance, more responsibilities are shifted to the users.<br/>
+ * ## 3. Conclusion.
+ *    Performance and flexibility are conflicting aspects.
+ *    To improve performance, more responsibilities are shifted to the users.
  *    And the code becomes more error-prone, since the users will almost always
- *    forget certain oral rules sometime somewhere.<br/>
+ *    forget certain oral rules sometime somewhere.
  *
- *    The library is not performance hunger.<br/>
- *    Try not to shift burdens to the users.<br/>
- *    Intrusive reference counting is welcome.<br/>
- *    Objects are hidden behind interfaces exposed by components.<br/>
+ *    The library is not performance hunger.
+ *    Try not to shift burdens to the users.
+ *    Intrusive reference counting is welcome.
+ *    Objects are hidden behind interfaces exposed by components.
  */
 
 /**
@@ -470,7 +470,7 @@
  * # Event
  * ## All-in-one event.
  *    The practice of providing an all-in-one event sink interface becomes quite
- *    frustrating.<br/>
+ *    frustrating.
  *    @code
  *    IXxxAllInOneEventSink
  *       | defines
@@ -483,13 +483,13 @@
  *
  *    In that way, users are expected to implement all callback methods on the
  *    interface, thus have to listen to all events, even if not all of the events
- *    are interested.<br/>
+ *    are interested.
  *
  * ## Many-to-one event.
  *    A workaround is to define an event sink interface with a single callback
- *    method, along with a set of bit flags that identify the events.<br/>
+ *    method, along with a set of bit flags that identify the events.
  *    Users can connect to interested events by giving the event source a bit
- *    mask, and the callback carries a bit flag that identifies the event.<br/>
+ *    mask, and the callback carries a bit flag that identifies the event.
  *    @code
  *    IXxxManyToOneEventSink
  *       | defines
@@ -501,18 +501,18 @@
  *    @endcode
  *
  *    This approach is not elegant, since users have to use 'if-else' or
- *    'switch-case' to filter and catch the events.<br/>
- *    Event processing is not in a one-to-one way, but in a many-to-one way.<br/>
- *    i.e., the callback is a centralized hot spot of conditional branches.<br/>
+ *    'switch-case' to filter and catch the events.
+ *    Event processing is not in a one-to-one way, but in a many-to-one way.
+ *    i.e., the callback is a centralized hot spot of conditional branches.
  *
  *    Another problem is that, the designers have to unify the arguments for
- *    different events.<br/>
+ *    different events.
  *
  * ## One-to-one event.
  *    To maximize flexibility, the granularity of event sink interfaces must be
- *    minimized.<br/>
+ *    minimized.
  *    i.e., each event sink interface exposes only one event, and contains only
- *    one callback method.<br/>
+ *    one callback method.
  *    @code
  *    IXxxEventSink
  *       | defines
@@ -523,29 +523,29 @@
  *          event sink component
  *    @endcode
  *
- *    This way, users can connect to any combination of events as they want.<br/>
+ *    This way, users can connect to any combination of events as they want.
  *    It consumes more memory, but provides a cleaner way to connect and process
- *    events.<br/>
+ *    events.
  *
  * ### Event and sinks.
  *     The responsibility of an event sink interface is to provide a virtual
- *     callback method for the event sinks (listeners) to implement.<br/>
+ *     callback method for the event sinks (listeners) to implement.
  *
  *     On the other hand, for each event sink interface, there is an associated
- *     event interface.<br/>
+ *     event interface.
  *     The responsibility of an event interface is to let an event sink connect
- *     to the event source.<br/>
+ *     to the event source.
  *
  *     An event interface provides two methods, <code>Connect()</code> and
- *     <code>Disconnect</code>.<br/>
- *     An event source component exposes a combination of event interfaces.<br/>
+ *     <code>Disconnect</code>.
+ *     An event source component exposes a combination of event interfaces.
  *     The event sink components query the event interfaces, and connect their
- *     event sinks.<br/>
+ *     event sinks.
  *
  *     An event sink component exposes a <i>'User'</i> interface to use the
- *     event source component.<br/>
- *     The wiring component provides the event source to the event sink.<br/>
- *     It is the event sink's responsibility to perform the connection.<br/>
+ *     event source component.
+ *     The wiring component provides the event source to the event sink.
+ *     It is the event sink's responsibility to perform the connection.
  *     @code
  *     IXxxEventSink                IXxxEvent
  *        | defines                    | defines
@@ -558,12 +558,12 @@
  *     @endcode
  *
  * ### Expose <i>`User'</i>, instead of <i>`Sink'</i>.
- *     A component shall not expose a <i>`Sink'</i> interface directly.<br/>
- *     Instead, it shall expose a <i>`User'</i> interface.<br/>
+ *     A component shall not expose a <i>`Sink'</i> interface directly.
+ *     Instead, it shall expose a <i>`User'</i> interface.
  *     When an interface is obtained from the <i>`User'</i> interface, it can
  *     query the <i>'Event'</i> interface of interest, and offer an event sink
- *     <i>internally</i>, and connect the event sink to the interface.<br/>
- *     A wiring component does not take care of the connections of sinks.<br/>
+ *     <i>internally</i>, and connect the event sink to the interface.
+ *     A wiring component does not take care of the connections of sinks.
  *
  */
 

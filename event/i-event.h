@@ -64,22 +64,22 @@ NSFX_OPEN_NAMESPACE
  *               to \c IEventSinkConcept.
  *
  * The responsibility of an event interface is to allow event listeners to
- * connect and disconnect their event sinks.<br/>
+ * connect and disconnect their event sinks.
  * An event source shall expose event interfaces for event listeners to query
- * them.<br/>
+ * them.
  *
- * An event interface has two methods \c Connect() and \c Disconnect().<br/>
- * It is associated with an event sink interface.<br/>
+ * An event interface has two methods \c Connect() and \c Disconnect().
+ * It is associated with an event sink interface.
  * It has a nested type \c IEventSinkType that is the type of the event sink
- * interface.<br/>
+ * interface.
  * It also has a nested \c Prototype that is the function type of the callback
  * of the event sink interface, and can be used to choose the correct template
- * specialization.<br/>
+ * specialization.
  *
  * Users shall <b>derive</b> their own event interfaces from this class
  * template, and associate the interfaces with UIDs so they can be queried by
- * their UIDs.<br/>
- * Users shall not use multiple inheritance to derive their own event interfaces.<br/>
+ * their UIDs.
+ * Users shall not use multiple inheritance to derive their own event interfaces.
  *
  * @code
  * Proto ---> IEventSink<> ---> user-defined event sink interface
@@ -93,7 +93,7 @@ NSFX_OPEN_NAMESPACE
  *    implementation.
  *
  * ### 1. Define an event interface.
- *     The macro \c NSFX_DEFINE_EVENT_INTERFACE() is provided.<br/>
+ *     The macro \c NSFX_DEFINE_EVENT_INTERFACE() is provided.
  *
  * ### 2. Implement an event interface.
  *     The library provides <code>Event<></code> class template.
@@ -212,10 +212,10 @@ public:
  * @ingroup Event
  * @brief The event interface concept.
  *
- * A class is an event if it satisfies the following conditions.<br/>
- * 1. It has a nested \c IEventSinkType that conforms to \c IEventSinkConcept.<br/>
- * 2. It is derived from <code>IEvent<></code> class template.<br/>
- * 3. It conforms to \c HasUidConcept.<br/>
+ * A class is an event if it satisfies the following conditions.
+ * 1. It has a nested \c IEventSinkType that conforms to \c IEventSinkConcept.
+ * 2. It is derived from <code>IEvent<></code> class template.
+ * 3. It conforms to \c HasUidConcept.
  *
  * Since <code>IEvent<></code> class template is derived from \c IObject,
  * the class also conforms to \c IObjectConcept.

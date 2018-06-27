@@ -41,7 +41,7 @@ public:
     /**
      * @brief Register a class factory.
      *
-     * @param[in] cid The UID of an object class.<br/>
+     * @param[in] cid The UID of an object class.
      *                The class must conform to \c EnvelopableConcept.
      * @param[in] factory The class factory.
      *
@@ -54,7 +54,7 @@ public:
     /**
      * @brief Unregister a class factory.
      *
-     * @param[in] cid The UID of an object class.<br/>
+     * @param[in] cid The UID of an object class.
      */
     virtual void Unregister(const Uid& cid) = 0;
 
@@ -66,7 +66,7 @@ public:
     /**
      * @brief Get a class factory.
      *
-     * @param[in] cid The UID of an object class.<br/>
+     * @param[in] cid The UID of an object class.
      *                The class must conform to \c EnvelopableConcept.
      *
      * @throw ClassNotRegistered The class is not registered.

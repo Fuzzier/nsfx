@@ -62,11 +62,11 @@ public:
      *
      * @param iid The UID of the interface.
      *
-     * @return A pointer to the interface that holds one reference count.<br/>
-     *         Users is responsible to release the reference count.<br/>
+     * @return A pointer to the interface that holds one reference count.
+     *         Users is responsible to release the reference count.
      *         Users must use \c static_cast to convert it to a pointer of the
-     *         actual interface type.<br/>
-     *         Users must make sure the interface type is correct.<br/>
+     *         actual interface type.
+     *         Users must make sure the interface type is correct.
      *         As a design pattern, the \c iid of an interface \c IXxx is
      *         equal to the return value of <code>uid_of<IXxx>()</code>.
      *

@@ -64,7 +64,7 @@ public:
      * @throw OutOfMemory
      * @throw Uninitialized   The scheduler is not initialized.
      * @throw InvalidPointer  The sink is \c nullptr.
-     * @throw InvalidArgument The duration is invalid.<br/>
+     * @throw InvalidArgument The duration is invalid.
      *                         e.g., it is negative.
      */
     virtual Ptr<IEventHandle> ScheduleIn(const Duration& dt,
@@ -87,7 +87,7 @@ public:
     /**
      * @brief Get the number of events in the scheduler.
      *
-     * The events may be pending or cancelled.<br/>
+     * The events may be pending or cancelled.
      * The currently running event is not counted.
      */
     virtual size_t GetNumEvents(void) = 0;
@@ -97,7 +97,7 @@ public:
      *
      * @return Return \c nullptr if there is no events in the scheduler.
      *
-     * The events may be pending or cancelled.<br/>
+     * The events may be pending or cancelled.
      *
      * This function <b>cannot</b> return a free pointer to \c IEventHandle,
      * since the \c IEventHandle does not share the same lifetime as the
@@ -108,7 +108,7 @@ public:
     /**
      * @brief Fire and remove the next event in the scheduler.
      *
-     * If the events has been cancelled, it is remove without being fired.<br/>
+     * If the events has been cancelled, it is remove without being fired.
      */
     virtual void FireAndRemoveNextEvent(void) = 0;
 

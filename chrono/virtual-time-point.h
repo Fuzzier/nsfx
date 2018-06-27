@@ -32,7 +32,7 @@ NSFX_CHRONO_OPEN_NAMESPACE
  * @ingroup Chrono
  * @brief Virtual time epoch.
  *
- * This time epoch can be used in discreet event simulations.<br/>
+ * This time epoch can be used in discreet event simulations.
  */
 struct VirtualClock
 {

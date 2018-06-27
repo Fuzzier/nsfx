@@ -40,13 +40,13 @@ NSFX_OPEN_NAMESPACE
  *
  * @param ISink The name of the user-defined event sink interface.
  * @param iid   The UID of the user-defined event sink interface.
- * @param Proto The prototype of the event callback.<br/>
- *              It <b>must</b> be placed within parenthesis.<br/>
+ * @param Proto The prototype of the event callback.
+ *              It <b>must</b> be placed within parenthesis.
  *
  * The event sink interface conforms to \c IEventSinkConcept.
  *
  * @remarks \c Proto must be placed <b>within parenthesis</b>, so commas can be
- *          used in the \c Proto.<br/>
+ *          used in the \c Proto.
  *          For example
  *          @code
  *          NSFX_DEFINE_EVENT_SINK_INTERFACE(
@@ -74,20 +74,20 @@ NSFX_OPEN_NAMESPACE
  *               \c Ret(A0, A1, ...).
  *
  * The responsibility of an event sink interface is to hold a callback that can
- * be invoked by an event source when the event is fired.<br/>
+ * be invoked by an event source when the event is fired.
  *
- * An event sink interface has a single method <code>Ret Fire(A0, A1, ...)</code>.<br/>
+ * An event sink interface has a single method <code>Ret Fire(A0, A1, ...)</code>.
  * It also has a nested \c Prototype that is the function type
  * <code>Ret(A0, A1, ...)</code>, and can be used to choose the correct template
- * specialization.<br/>
+ * specialization.
  *
  * <code>IEventSink<void(void)></code> is the <b>only</b> event sink interface
- * that has an associated UID defined by the library.<br/>
+ * that has an associated UID defined by the library.
  * Users shall <b>derive</b> their own event sink interfaces from this class
  * template, and associate the interfaces with UIDs to enable <code>Ptr<></code>
- * to manage their pointers.<br/>
+ * to manage their pointers.
  * Users shall not use multiple inheritance to derive their own event sink
- * interfaces.<br/>
+ * interfaces.
  *
  * @code
  * Proto IEventSink<> ---> user-defined event sink interface
@@ -98,10 +98,10 @@ NSFX_OPEN_NAMESPACE
  *
  * ## Event sink interface definition and implementation.
  *    The library provides several tools for event sink interface definition
- *    and implementation.<br/>
+ *    and implementation.
  *
  * ### 1. Define an event sink interface.
- *     The macro \c NSFX_DEFINE_EVENT_SINK_INTERFACE() is provided.<br/>
+ *     The macro \c NSFX_DEFINE_EVENT_SINK_INTERFACE() is provided.
  *
  * ### 2. Implement an event sink interface.
  *     The library provides three tiers of tools.
@@ -111,7 +111,7 @@ NSFX_OPEN_NAMESPACE
  *      \c FunctorBasedEventSink, \c FunctionPointerBasedEventSink and
  *      \c MemberFunctionBasedEventSink.
  *
- *      Users can specialize these class templates to fit their own needs.<br/>
+ *      Users can specialize these class templates to fit their own needs.
  *      The specialized templates conform to \c EnvelopableConcept, thus they
  *      can be enveloped in \c Object and \c AggObject.
  *
@@ -161,9 +161,9 @@ NSFX_OPEN_NAMESPACE
  *      @endcode
  *
  * #### 2.2 Maker class.
- *      The library provides \c EventSinkCreator class template.<br/>
+ *      The library provides \c EventSinkCreator class template.
  *      The class template supplies three overloaded function call operators
- *      that create event sink objects.<br/>
+ *      that create event sink objects.
  *
  *      For example
  *      @code
@@ -192,9 +192,9 @@ NSFX_OPEN_NAMESPACE
  *      @endcode
  *
  * #### 2.3 Maker function.
- *      The library provides \c CreateEventSink() function template.<br/>
+ *      The library provides \c CreateEventSink() function template.
  *      The function template supplies three overloaded functions that create
- *      event sink objects.<br/>
+ *      event sink objects.
  *
  *      For example
  *      @code
@@ -282,11 +282,11 @@ public:
  * @ingroup Event
  * @brief The event sink interface concept.
  *
- * A class is an event sink if it satisfies the following conditions.<br/>
+ * A class is an event sink if it satisfies the following conditions.
  * 1. It is <code>IEventSink<void(void)></code> or it is derived from
- *    <code>IEventSink<></code> class template.<br/>
- * 2. It is has nested type \c Prototype that is a function type.<br/>
- * 3. It conforms to \c HasUidConcept.<br/>
+ *    <code>IEventSink<></code> class template.
+ * 2. It is has nested type \c Prototype that is a function type.
+ * 3. It conforms to \c HasUidConcept.
  *
  * Since <code>IEventSink<></code> class template is derived from \c IObject,
  * the class also conforms to \c IObjectConcept.
@@ -330,8 +330,8 @@ struct IEventSinkConcept
  * @ingroup Event
  * @brief The event sink interface with prototype concept.
  *
- * 1. The \c ISink confoms to \c IEventSinkConcept.<br/>
- * 2. The nested \c Prototype of \c ISink is the same type as \c Proto.<br/>
+ * 1. The \c ISink confoms to \c IEventSinkConcept.
+ * 2. The nested \c Prototype of \c ISink is the same type as \c Proto.
  */
 template<class ISink, class Proto>
 struct IEventSinkPrototypeConcept
