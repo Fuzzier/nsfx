@@ -35,14 +35,14 @@ NSFX_OPEN_NAMESPACE
  * @brief Base class of \c Ptr.
  *
  * This class is intended to provide common methods to be used by \c Ptr,
- * thus its does not declare the member variable \c PtrBase::p_ to be private.<br/>
+ * thus its does not declare the member variable \c PtrBase::p_ to be private.
  *
  * @tparam T A type that conforms to \c IObjectConcept.
  *
  * \c std::true_type is used in methods when the operand pointer is of the
- * same type as \c T.<br/>
+ * same type as \c T.
  * While \c std::false_type is used in methods when the operand pointer is of
- * a different type than \c T.<br/>
+ * a different type than \c T.
  */
 template<class T>
 class PtrBase/*{{{*/
@@ -194,29 +194,29 @@ protected:
  *
  * @remarks If the smart pointer is constructed from or assigned to a pointer of
  *          a different type, then the template parameter \c T must also conform
- *          to \c HasUidConcept.<br/>
+ *          to \c HasUidConcept.
  *          Thus, the smart pointer is able to query an interface of type \c T
  *          from the source pointer.
  *
  * ### Strong exception safety.
- *     If the smart point fails to query the interface, \c NoInterface is thrown.<br/>
- *     The smart pointer is put into an empty state.<br/>
- *     However, the source pointer is intact.<br/>
- *     Especially, the reference count of the source pointer is <b>NOT</b> taken.<br/>
+ *     If the smart point fails to query the interface, \c NoInterface is thrown.
+ *     The smart pointer is put into an empty state.
+ *     However, the source pointer is intact.
+ *     Especially, the reference count of the source pointer is <b>NOT</b> taken.
  *     Thus, users are still <b>responsible to free the source pointer</b> to
- *     prevent memory leak, if the source pointer is not a smart pointer.<br/>
+ *     prevent memory leak, if the source pointer is not a smart pointer.
  *     <p>
  *     Caution must be taken when writing such code:
  *     @code
  *     Ptr<I>  p(new C);
  *     @endcode
  *     If \c C is different than \c I, then the smart pointer \c p will query
- *     an interface of type \c I from the newly allocated instance of type \c C.<br/>
+ *     an interface of type \c I from the newly allocated instance of type \c C.
  *     However, if the query fails, there is a memory leak that the instance of
- *     \c C is not deallocated.<br/>
+ *     \c C is not deallocated.
  *     <p>
  *     The above code is safe only if the user can make sure that \c C supplies
- *     an interface of \c I.<br/>
+ *     an interface of \c I.
  *     Otherwise, the following more secure code shall be used:
  *     @code
  *     C* c = new C;
@@ -292,10 +292,10 @@ public:
      *                     lifetime of the object.
      *
      * @remarks When \c U is not the same type as \c T, a pointer of type \c T*
-     *          is queried from the pointer \c p, and may result in \c nullptr.<br/>
+     *          is queried from the pointer \c p, and may result in \c nullptr.
      *          If \c takeRefCount is \c true at that time, then the pointer
      *          \c p loses one reference count, and the smart pointer under
-     *          construction holds also no reference count.<br/>
+     *          construction holds also no reference count.
      *          The user may lose the object completely.
      */
     template<class U>

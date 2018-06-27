@@ -30,7 +30,7 @@
 /**
  * @brief Register a class with a default class factory.
  *
- * @param C Must conform to \c HasUidConcept and \c ObjectImplConcept.<br/>
+ * @param C Must conform to \c HasUidConcept and \c ObjectImplConcept.
  *          Must not use qualified name.
  *
  * @see \c RegisterClass().
@@ -89,12 +89,12 @@ NSFX_OPEN_NAMESPACE
  *
  * ### 2.2 Free functions.
  *     If the class has been registered, users can use \c CreateObject()
- *     function template to create an object.<br/>
+ *     function template to create an object.
  *     Users just need to know UUID of the concrete class, and do not have to
- *     know the type of the concrete class.<br/>.
+ *     know the type of the concrete class..
  *     <p>
  *     Instead of \c CreateObject(), there are other free functions that create
- *     objects, such as \c CreateEventSink().<br/>
+ *     objects, such as \c CreateEventSink().
  */
 class ClassRegistry :/*{{{*/
     public IClassRegistry
@@ -176,7 +176,7 @@ NSFX_DEFINE_CLASS_UID(ClassRegistry, "edu.uestc.nsfx.ClassRegistry");
  * @ingroup Component
  * @brief Register a class with the default class factory.
  *
- * @param C The class to register.<br/>
+ * @param C The class to register.
  *          It must conform to \c HasUidConcept and \c ObjectImplConcept.
  *
  * @see \c IClassRegistry::Register().
@@ -222,7 +222,7 @@ inline void UnregisterClassFactory(const Uid& cid)
  * @ingroup Component
  * @brief Create an uninitialized object.
  *
- * @tparam I  The type of interface to query.<br/>
+ * @tparam I  The type of interface to query.
  *            It must conform to \c IObjectConcept and \c HasUidConcept.
  *
  * @param[in] cid        The UID of the class.

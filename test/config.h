@@ -25,20 +25,20 @@
  *
  * @brief The test library.
  *
- * Tests are organized in a tree structure.<br/>
- * The root of the tree is a master test suite.<br/>
- * A test suite contains test suites and test cases.<br/>
+ * Tests are organized in a tree structure.
+ * The root of the tree is a master test suite.
+ * A test suite contains test suites and test cases.
  * A test case is a leaf of the tree, i.e.,
  * test cases cannot contain test suites or cases.
  *
  * In a test case, users invoke test assertions to check the results of
- * their code.<br/>
- * If a test assertion fails, a test result is generated.<br/>
- * The test results are logged.<br/>
+ * their code.
+ * If a test assertion fails, a test result is generated.
+ * The test results are logged.
  *
  * @remarks The test library is made because of the convenient syntactic suger
  *          that allows trailing <code>operator<<</code>, instead of having to
- *          put them ugly within parenthesis.<br/>
+ *          put them ugly within parenthesis.
  *          For example,
  *          @code
  *          NSFX_TEST_EXPECT_EQ(a, b) << "trailing " << "message";

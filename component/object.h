@@ -35,19 +35,19 @@ NSFX_OPEN_NAMESPACE
  * @ingroup Component
  * @brief The base class for implementing \c IObject.
  *
- * ## 1. Introduction.<br/>
- *    Usually, an object provides a reference count for lifetime management.<br/>
+ * ## 1. Introduction.
+ *    Usually, an object provides a reference count for lifetime management.
  *    When an object wants to implement an interface, it may reuse an existing
- *    object that has already implemented the interface.<br/>
+ *    object that has already implemented the interface.
  *    The container creates an instance of the contained object, and delegates
- *    the calls on the interface to the contained object.<br/>
+ *    the calls on the interface to the contained object.
  *
  *    A container have to create <i>an extra layer of virtual function call</i>
- *    to delegate the calls to the interface on the contained object.<br/>
+ *    to delegate the calls to the interface on the contained object.
  *    i.e., the container derives from the pure abstract interface, and the
  *    virtual functions on the interface call the virtual functions implemented
- *    by the contained object.<br/>
- *    It places extra burden upon coding, memory and CPU cycles.<br/>
+ *    by the contained object.
+ *    It places extra burden upon coding, memory and CPU cycles.
  *    @code
  *    caller
  *       | virtual call
@@ -59,201 +59,201 @@ NSFX_OPEN_NAMESPACE
  *    @endcode
  *
  *    The problem is that the container cannot expose the interfaces on the
- *    contained object directly to the users.<br/>
+ *    contained object directly to the users.
  *    Because the contained object cannot know or expose other interfaces on
- *    the container object.<br/>
+ *    the container object.
  *    Also, from an interface on the contained object, a user cannot obtain
- *    other interfaces exposed by the container.<br/>
+ *    other interfaces exposed by the container.
  *
  *    This is the primary form of interface implementation: a concrete class
  *    inherits a pure abstract interface, and implements the methods on the
- *    interface.<br/>
+ *    interface.
  *    The main drawback of this approach is that, as the reuse depth goes deeper,
- *    more layers of virtual function calls are formed.<br/>
- *    Such indirection harms the performance of the software system.<br/>
- *    And designers may be forced to take an effort to limit the reuse depth.<br/>
+ *    more layers of virtual function calls are formed.
+ *    Such indirection harms the performance of the software system.
+ *    And designers may be forced to take an effort to limit the reuse depth.
  *
  *    Object aggregation allows a container (controller) object to expose the
- *    interfaces on the contained (aggregated) object directly to the users.<br/>
+ *    interfaces on the contained (aggregated) object directly to the users.
  *
  *    An interface exposed by an aggregated object <i>acts like</i> an interface
- *    implemented by its controller.<br/>
+ *    implemented by its controller.
  *    A user cannot distinguish whether the interface is implemented by an
- *    aggregated object or not.<br/>
+ *    aggregated object or not.
  *
  *    The key idea is to <b>separate the responsibility</b> of the aggregated
- *    object.<br/>
+ *    object.
  *    The aggregated object is responsible to implement interfaces, while the
  *    lifetime management and navigability functions of \c IObject are delegated
- *    to the \c IObject on its controller.<br/>
+ *    to the \c IObject on its controller.
  *    In order for the controller to query interfaces on the aggregated object,
  *    a separate navigator object is responsible to expose the interfaces on the
- *    aggregated object.<br/>
+ *    aggregated object.
  *
- * ## 2. Lifetime management.<br/>
- *    An aggregated object has the same lifetime as its controller.<br/>
- *    i.e., aggregated objects and its controller share a single reference count.<br/>
- *    The reference count is provided by the controller.<br/>
+ * ## 2. Lifetime management.
+ *    An aggregated object has the same lifetime as its controller.
+ *    i.e., aggregated objects and its controller share a single reference count.
+ *    The reference count is provided by the controller.
  *    An aggregated object holds a pointer to the \c IObject interface on the
- *    controller.<br/>
+ *    controller.
  *    Calls to \c IObject::AddRef() and \c IObject::Release() are delegated to
- *    the controller.<br/>
+ *    the controller.
  *
- * ## 3. Interface navigation.<br/>
- *    The interface exposed by an aggregated object is exposed directly to users.<br/>
+ * ## 3. Interface navigation.
+ *    The interface exposed by an aggregated object is exposed directly to users.
  *    This frees the controller from having to create an extra layer to access
-*    the aggregated object indirectly, which saves codes, memory and CPU cycles.<br/>
+*    the aggregated object indirectly, which saves codes, memory and CPU cycles.
  *
  *    The \c IObject interface on an aggregated object must be able to navigate
- *    all other interfaces exposed by the controller.<br/>
- *    However, only the controller knows the set of interfaces it exposes.<br/>
+ *    all other interfaces exposed by the controller.
+ *    However, only the controller knows the set of interfaces it exposes.
  *    So an aggregated object has to delegate calls to \c IObject::QueryInterface()
- *    to its controller's \c IObject::QueryInterface().<br/>
+ *    to its controller's \c IObject::QueryInterface().
  *    However, an aggregated object cannot distinguish who calls its
- *    \c IObject::QueryInterface(), whether it is a user or its controller.<br/>
+ *    \c IObject::QueryInterface(), whether it is a user or its controller.
  *    Therefore, the \c IObject on the aggregated object loses the ability to
- *    navigate its own interfaces.<br/>
+ *    navigate its own interfaces.
  *
- *    To solve this problem, an separate <b>navigator object</b> is created.<br/>
+ *    To solve this problem, an separate <b>navigator object</b> is created.
  *    It implements \c IObject that exposes the interfaces on the aggregated
- *    object.<br/>
+ *    object.
  *    The controller can use the navigator object to query the interfaces on the
- *    aggregated object.<br/>
- *    The controller never exposes this object to others.<br/>
+ *    aggregated object.
+ *    The controller never exposes this object to others.
  *
  *    For a user-defined aggregable class, its instance should be a navigator,
- *    not an aggregated object.<br/>
+ *    not an aggregated object.
  *    If it would be an aggregated object, then a user might mistakenly use the
- *    object directly without using a navigator.<br/>
+ *    object directly without using a navigator.
  *    e.g., a controller would be able to create an aggregated object by passing
- *    a pointer to its own \c IObject.<br/>
+ *    a pointer to its own \c IObject.
  *    Then the controller would query an interface directly from the aggregated
  *    object, which in turn queries the controller, causing an infinite call
- *    loop.<br/>
- *    Nevertheless, an aggregable object should always be a navigator.<br/>
- *    A user must not be able to create an aggregated object directly.<br/>
- *    An aggregated object can only be exposed by its navigator.<br/>
+ *    loop.
+ *    Nevertheless, an aggregable object should always be a navigator.
+ *    A user must not be able to create an aggregated object directly.
+ *    An aggregated object can only be exposed by its navigator.
  *
- *    This creates a coding problem.<br/>
+ *    This creates a coding problem.
  *    An object cannot be a navigator, and at the same time an aggregated object,
- *    since they have different implementations of \c IObject.<br/>
+ *    since they have different implementations of \c IObject.
  *    Traditionally, a library provides a base class, and let users derive a
  *    child class from it, and the child class provides implementations of
- *    interfaces.<br/>
- *    However, such child class cannot be both an implementor and a navigator.<br/>
- *    A navigator have to be a separate class, possibly provided by the library.<br/>
+ *    interfaces.
+ *    However, such child class cannot be both an implementor and a navigator.
+ *    A navigator have to be a separate class, possibly provided by the library.
  *    To prevent users from mis-using an aggregated class, the aggregated class
- *    can be nested within the navigator class with a non-public access right.<br/>
+ *    can be nested within the navigator class with a non-public access right.
  *    The library can provide a navigator class template that has user-defined
- *    aggregated class as a type parameter.<br/>
+ *    aggregated class as a type parameter.
  *
  *    The aggregated object is created alone with (by) the navigator, and
- *    exposed to the controller via the navigator's \c IObject.<br/>
+ *    exposed to the controller via the navigator's \c IObject.
  *    An aggregated object can be a member variable or smart pointer held by the
- *    navigator, thus they share the same lifetime.<br/>
+ *    navigator, thus they share the same lifetime.
  *    The navigator's \c IObject::QueryInterface() returns the navigator's own
- *    \c IObject if \c IObject is queried.<br/>
+ *    \c IObject if \c IObject is queried.
  *    If other interfaces are queried, the navigator exposes the interfaces on
- *    the aggregated object.<br/>
+ *    the aggregated object.
  *
  *    The user-defined class implements a non-public \c InternalQueryInterface()
- *    member function.<br/>
+ *    member function.
  *    The user-defined class derives from a specialized class template,
- *    and let the class template hold the type of user-defined class.<br/>
+ *    and let the class template hold the type of user-defined class.
  *    This way, the class template can call the \c InternalQueryInterface()
- *    member function implemented by the user-defined class.<br/>
+ *    member function implemented by the user-defined class.
  *
- * ## 5. Techniques.<br/>
+ * ## 5. Techniques.
  * ### 5.1 Template-based virtual function implmentation.
- *     A base class provides necessary data and non-virtual functions.<br/>
+ *     A base class provides necessary data and non-virtual functions.
  *     A dervied class implements its virtual functions by calling the
- *     appropriate non-virtual functions.<br/>
+ *     appropriate non-virtual functions.
  *
  * ### 5.2 Union-based data compression.
  *     When there are two pieces of data, and only one of them is used after
- *     creation, them can be compressed into a union.<br/>
+ *     creation, them can be compressed into a union.
  *     This is indeed the case here.
  *     When an object is not aggregated, it has a reference count; when it is
  *     aggregated, it has a pointer to the controller.
  *     Only one piece of data is used after creation, so they can be packed into
  *     a union.
  *
- *     A non-aggregated object has a reference count.<br/>
- *     An aggregated object has a pointer to the controller's \c IObject.<br/>
+ *     A non-aggregated object has a reference count.
+ *     An aggregated object has a pointer to the controller's \c IObject.
  *     A poly object uses one of the data according to whether a valid pointer
- *     to the controller is specified at creation.<br/>
+ *     to the controller is specified at creation.
  *
- * ## 6. \c ObjectBase.<br/>
+ * ## 6. \c ObjectBase.
  *    \c ObjectBase provides necessary data and non-virtual functions for
- *    implementing \c IObject.<br/>
+ *    implementing \c IObject.
  *    It provides compressed data that can be a reference count or a controller
- *    pointer.<br/>
- *    It provides non-virtual functions to manipulate the data.<br/>
+ *    pointer.
+ *    It provides non-virtual functions to manipulate the data.
  *
  *    User-defined classes can focus upon implementing dictated interfaces, and
- *    do not implement \c IObject themselves (remain abstract).<br/>
+ *    do not implement \c IObject themselves (remain abstract).
  *    The library provides <code>Object<></code> and <code>AggObject<></code>
  *    class templates to envelope the user-defined classes, arming user-defined
  *    classes with a reference count or a controller pointer, and implementing
- *    \c IObject as appropriate.<br/>
- *    \c ObjectBase is intended to be used by the class templates.<br/>
+ *    \c IObject as appropriate.
+ *    \c ObjectBase is intended to be used by the class templates.
  *    It is not intended to be constructed directly, thus its methods are not
- *    public.<br/>
+ *    public.
  *
  *    Users can use \c NSFX_INTERFACE_XXX() macros to ease the implementation of
- *    \c NavigatorQueryInterface().<br/>
+ *    \c NavigatorQueryInterface().
  *
  *    Such design does add extra layers of virtual function calls for
- *    \c IObject::QueryInterface().<br/>
+ *    \c IObject::QueryInterface().
  *    However, most calls to \c IObject::QueryInterface() happen at program or
  *    component initialization (component wiring and event sink connection),
  *    and it is not likely to cause performance problem.
  *
- * 7. Kinds of objects.<br/>
+ * 7. Kinds of objects.
  * 7.1 \c Object
- *     An \c Object has a dynamic lifetime, and is allocated on heap.<br/>
- *     It owns a reference count itself.<br/>
+ *     An \c Object has a dynamic lifetime, and is allocated on heap.
+ *     It owns a reference count itself.
  *     When \c IObject::Release() is called, and its reference count reaches
- *     \c 0, it is deallocated automatically.<br/>
+ *     \c 0, it is deallocated automatically.
  *     It is the most common kind of objects.
  *
  * 7.2 \c StaticObject
- *     The allocation and deallocation are not always desired.<br/>
+ *     The allocation and deallocation are not always desired.
  *     e.g., a singleton does not need a dynamic lifetime management, which
- *     should be defined as a \c static object.<br/>
- *     In such cases, the lifetime of the object is meaningless.<br/>
- *     \c StaticObject can be used for such use cases.<br/>
+ *     should be defined as a \c static object.
+ *     In such cases, the lifetime of the object is meaningless.
+ *     \c StaticObject can be used for such use cases.
  *
- *     A \c StaticObject does not have a reference count.<br/>
+ *     A \c StaticObject does not have a reference count.
  *     To prevent memory leak, a \c StaticObject must be defined as a \c static
  *     variable.
  *
  * 7.3 \c AggObject
- *     An \c AggObject is an aggregable object.<br/>
- *     i.e., the navigator of an aggregated object.<br/>
- *     It holds a pointer to its controller.<br/>
+ *     An \c AggObject is an aggregable object.
+ *     i.e., the navigator of an aggregated object.
+ *     It holds a pointer to its controller.
  *     The \c QueryInterface() method returns the navigator itself if \c IObject
- *     is queried, while delegates all other queries to its controller.<br/>
- *     It must not be deallocated until the controller's lifetime ends.<br/>
+ *     is queried, while delegates all other queries to its controller.
+ *     It must not be deallocated until the controller's lifetime ends.
  *     It holds an aggregated object that shares the same reference count with
- *     its controller.<br/>
+ *     its controller.
  *
  * 7.4 \c MemberAggObject
  *     The lifetime of an \c AggObject is quite similar to a member variable of
- *     its controller.<br/>
+ *     its controller.
  *     Actually, a member variable of type <code>Ptr<IObject></code> is used to
- *     manage the lifetime of an \c AggObject.<br/>
+ *     manage the lifetime of an \c AggObject.
  *     Allocating an \c AggObject on heap is a good way to encapsulate/hide the
- *     user-defined class away from the controller.<br/>
+ *     user-defined class away from the controller.
  *     However, it is not efficient when the user-defined class is known to the
- *     controller.<br/>
+ *     controller.
  *     \c MemberAggObject can be used for such use cases.
  *
- *     A \c MemberAggObject does not have a reference count.<br/>
+ *     A \c MemberAggObject does not have a reference count.
  *     A \c MemberAggObject must be defined as a member variable of a controller
- *     class.<br/>
+ *     class.
  *     The lifetime of a \c MemberAggObject is naturally the same as its
- *     controller.<br/>
+ *     controller.
  *
  * @see \c NSFX_INTERFACE_MAP_BEGIN,
  *      \c NSFX_INTERFACE_ENTRY,
@@ -322,10 +322,10 @@ struct AggregatedTag {};
  * @ingroup Component
  * @brief ObjectImpl concept.
  *
- * A class is envelopable if it satisfies the following conditions.<br/>
- * 1. It conforms to \c IObjectConcept.<br/>
- * 2. It has a non-private \c InternalQueryInterface() function.<br/>
- * 3. It is not derived from \c ObjectBase.<br/>
+ * A class is envelopable if it satisfies the following conditions.
+ * 1. It conforms to \c IObjectConcept.
+ * 2. It has a non-private \c InternalQueryInterface() function.
+ * 3. It is not derived from \c ObjectBase.
  */
 template<class T>
 struct ObjectImplConcept/*{{{*/
@@ -366,13 +366,13 @@ struct ObjectImplConcept/*{{{*/
  *
  * @tparam ObjectImpl A class that conforms to \c ObjectImplConcept.
  *
- * A non-aggretable object possesses a reference counter.<br/>
+ * A non-aggretable object possesses a reference counter.
  * However, it does not hold a pointer to a controller, thus it cannot be
- * managed by a controller.<br/>
+ * managed by a controller.
  *
- * An \c Object will deallocate itself when its reference count reaches \c 0.<br/>
+ * An \c Object will deallocate itself when its reference count reaches \c 0.
  * Therefore, do not define an \c Object as a static variable or a member
- * variable.<br/>
+ * variable.
  *
  * The \c ObjectImpl may implement \c ObjectBase::InternalQueryInterface() via
  * \c NSFX_INTERFACE_XXX() macros.
@@ -380,7 +380,7 @@ struct ObjectImplConcept/*{{{*/
  * ### When to use?
  *     \c Object can be used everywhere.
  * ### How to use?
- *     An \c Object must be allocated on heap.<br/>
+ *     An \c Object must be allocated on heap.
  *     i.e., <code>Ptr<></code> shall be used to hold an \c Object.
  */
 template<class ObjectImpl>
@@ -453,12 +453,12 @@ public:
  *
  * @tparam ObjectImpl A class that conforms to \c ObjectImplConcept.
  *
- * A \c StaticObject does not have a reference count.<br/>
+ * A \c StaticObject does not have a reference count.
  * Thus, do not allocate a \c StaticObject on heap, since <code>Ptr<></code>
- * cannot deallocate it automatically.<br/>
- * It must be defined as a static variable to prevent memory leak.<br/>
+ * cannot deallocate it automatically.
+ * It must be defined as a static variable to prevent memory leak.
  * e.g. a singleton can be defined as a static \c StaticObject, and there is
- * no need to allocate it on heap.<br/>
+ * no need to allocate it on heap.
  *
  * The \c ObjectImpl may implement \c ObjectBase::InternalQueryInterface() via
  * \c NSFX_INTERFACE_XXX() macros.
@@ -468,7 +468,7 @@ public:
  * ### How to use?
  *     A \c StaticObject must be defined as a \c static variable.
  * ### Benefits.
- *     It saves a <code>Ptr<></code> to manage lifetime.<br/>
+ *     It saves a <code>Ptr<></code> to manage lifetime.
  *     There is no need to allocate on heap.
  */
 template<class ObjectImpl>
@@ -621,15 +621,15 @@ public:
  *
  * @tparam ObjectImpl A class that conforms to \c ObjectImplConcept.
  *
- * The aggregated object has the same lifetime as the navigator.<br/>
- * So the navigator also has the same lifetime as the controller.<br/>
+ * The aggregated object has the same lifetime as the navigator.
+ * So the navigator also has the same lifetime as the controller.
  * Therefore, the controller must <b>not</b> deallocate the navigator until
- * the controller itself is deallocated.<br/>
+ * the controller itself is deallocated.
  *
  * A controller shall define a member varaible of type <code>Ptr<IObject></code>
- * to hold an \c AggObject, i.e., the navigator.<br/>
- * This smart pointer is never offer to other objects.<br/>
- * And it is deallocated along with the controller.<br/>
+ * to hold an \c AggObject, i.e., the navigator.
+ * This smart pointer is never offer to other objects.
+ * And it is deallocated along with the controller.
  *
  * The \c ObjectImpld may implement \c ObjectBase::InternalQueryInterface() via
  * \c NSFX_INTERFACE_XXX() macros.
@@ -637,17 +637,17 @@ public:
  * ### When to use?
  *     \c AggObject can be used by a controller to aggregate an object.
  * ### How to use?
- *     An \c AggObject must be allocated on heap.<br/>
+ *     An \c AggObject must be allocated on heap.
  *     The controller shall define a member variable of type
  *     <code>Ptr<IObject></code> or <code>Ptr<AggObject<ObjectImpl> ></code>
- *     to hold the allocated \c AggObject.<br/>
+ *     to hold the allocated \c AggObject.
  *     (The rule is that <code>Ptr<></code> that holds the allocated \c AggObject
- *     does NOT query any of its interfaces except for <code>IObject</code>.)<br/>
- *     This pointer must not be given to other objects.<br/>
+ *     does NOT query any of its interfaces except for <code>IObject</code>.)
+ *     This pointer must not be given to other objects.
  *     The \c AggObject lives until the controller is destructed.
  * ### Benefits.
  *     The interfaces on an aggregated object can be exposed directly by the
- *     controller.<br/>
+ *     controller.
  *
  * @code
  * aggregable object (navigator, Ptr<IObject>)
@@ -662,14 +662,14 @@ public:
  * @endcode
  *
  * @remarks The interfaces on an aggregated object must be queried from its
- *          navigator.<br/>
+ *          navigator.
  *          The interfaces on the controller shall be queried from 'this'
- *          pointer.<br/>
+ *          pointer.
  *          The rule of thumb is that a controller shall never query an
- *          interface from an <i>aggregated interface</i>.<br/>
+ *          interface from an <i>aggregated interface</i>.
  *          <p>
  *          The following example shows a pit-fall when trying to obtain
- *          interfaces on an aggregated object or on a controller.<br/>
+ *          interfaces on an aggregated object or on a controller.
  *          @code
  *          // MyObject exposes IXxx, IYyy and IZzz
  *          struct MyObject : IXxx, IYyy, IZzz
@@ -775,7 +775,7 @@ public:
      * @brief Query an interface from the navigator.
      *
      * @return If the \c iid is the UID of \c IObject, return the \c IObject
-     *         on the navigator itself.<br/>
+     *         on the navigator itself.
      *         Otherwise, return the interface on the aggregated object.
      */
     virtual void* QueryInterface(const Uid& iid) NSFX_FINAL NSFX_OVERRIDE
@@ -815,11 +815,11 @@ private:
  *
  * @tparam ObjectImpl A class that conforms to \c ObjectImplConcept.
  *
- * A member aggregable object does not have a reference count.<br/>
+ * A member aggregable object does not have a reference count.
  * Thus, do not allocate a \c MemberAggObject on heap, since <code>Ptr<></code>
- * cannot deallocate it automatically.<br/>
+ * cannot deallocate it automatically.
  * It must be defined as a member variable of the controller to prevent memory
- * leak.<br/>
+ * leak.
  *
  * The \c ObjectImpl may implement \c ObjectBase::InternalQueryInterface() via
  * \c NSFX_INTERFACE_XXX() macros.
@@ -828,13 +828,13 @@ private:
  *     \c MemberAggObject can be used by a controller to aggregate an object.
  * ### How to use?
  *     A \c MemberAggObject must be defined as a member variable of
- *     the controller class.<br/>
+ *     the controller class.
  * ### Benefits.
  *     The interfaces on an aggregated object can be exposed directly by the
- *     controller.<br/>
+ *     controller.
  *     A \c MemberAggObject naturally has the same lifetime as the controller,
- *     which is similar to an \c AggObject.<br/>
- *     It saves a <code>Ptr<></code> to manage lifetime.<br/>
+ *     which is similar to an \c AggObject.
+ *     It saves a <code>Ptr<></code> to manage lifetime.
  *     There is no need to allocate on heap.
  */
 template<class ObjectImpl>
@@ -882,7 +882,7 @@ public:
      * @brief Query an interface from the navigator.
      *
      * @return If the \c iid is the UID of \c IObject, return the \c IObject
-     *         on the navigator itself.<br/>
+     *         on the navigator itself.
      *         Otherwise, return the interface on the aggregated object.
      */
     virtual void* QueryInterface(const Uid& iid) NSFX_FINAL NSFX_OVERRIDE
@@ -964,11 +964,11 @@ NSFX_CLOSE_NAMESPACE
  * @ingroup Component
  * @brief Begin an interface map.
  *
- * @param ThisClass The class that defines the interface map.<br/>
+ * @param ThisClass The class that defines the interface map.
  *                  It is the class that implements or aggregates interfaces.
  *
  * @remarks The macros defines a public member function template
- *          \c InternalVisitInterfaceMap() for the component class.<br/>
+ *          \c InternalVisitInterfaceMap() for the component class.
  *          The template parameter \c Visitor must be a functor class that
  *          supports tag-based function dispatch.
  *          <p>
@@ -987,12 +987,12 @@ NSFX_CLOSE_NAMESPACE
  *          };
  *          @endcode
  *          <p>
- *          The functor (visitor) returns \c false to conitnue the visiting.<br/>
+ *          The functor (visitor) returns \c false to conitnue the visiting.
  *          Or it returns \c true to terminate the visiting.
  *          <p>
- *          The funtion template returns the return value of visitor.<br/>
+ *          The funtion template returns the return value of visitor.
  *          i.e., the function template returns \c true if the visiting is
- *          terminated by the visitor.<br/>
+ *          terminated by the visitor.
  *          Otherwise, it returns \c false.
  */
 #define NSFX_INTERFACE_MAP_BEGIN(ThisClass)                                   \
@@ -1019,9 +1019,9 @@ NSFX_CLOSE_NAMESPACE
  * @ingroup Component
  * @brief Expose an interface implemented by the \c ThisClass that defines the interface map.
  *
- * @param Intf The type of the interface.<br/>
+ * @param Intf The type of the interface.
  *             \c ThisClass that defines the interface map must derive from
- *             \c Intf.<br/>
+ *             \c Intf.
  *             It should <b>not</b> be \c IObject.
  */
 #define NSFX_INTERFACE_ENTRY(Intf)                                 \
@@ -1039,12 +1039,12 @@ NSFX_CLOSE_NAMESPACE
  * @ingroup Component
  * @brief Expose an interface implemented by an aggregated object.
  *
- * @param Intf The type of the interface.<br/>
+ * @param Intf The type of the interface.
  *             It should <b>not</b> be \c IObject.
  * @param navi It must be a <b>raw</b> poiner to an aggregable object that
- *             exposes the \c Intf interface.<br/>
+ *             exposes the \c Intf interface.
  *             i.e., the object implements \c IObject, and \c Intf can be
- *             queried from the object.<br/>
+ *             queried from the object.
  *             The object must be accessible within the component class.
  */
 #define NSFX_INTERFACE_AGGREGATED_ENTRY(Intf, navi)               \

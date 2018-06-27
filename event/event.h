@@ -34,7 +34,7 @@ NSFX_OPEN_NAMESPACE
  * @ingroup Event
  * @brief Event sink visitor concept.
  *
- * @tparam Visitor The type of a callable object.<br/>
+ * @tparam Visitor The type of a callable object.
  *                 The prototype is <code>void(ISink*)</code>.
  * @tparam ISink   The type of an event sink.
  */
@@ -68,10 +68,10 @@ public:
  *                    conforms to \c IEventSinkConcept.
  * @tparam limit The maximum number of connections.
  *
- * An event class implements <code>IEvent<></code> interface.<br/>
- * It implements the two methods \c Connect() and \c Disconnect().<br/>
+ * An event class implements <code>IEvent<></code> interface.
+ * It implements the two methods \c Connect() and \c Disconnect().
  * It also provides several non-virtual member functions that allow an event
- * source to access the event sinks.<br/>
+ * source to access the event sinks.
  *
  * Event classes conform to \c EnvelopableConcept, thus they can be enveloped
  * in \c Object and \c AggObject.

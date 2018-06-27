@@ -112,13 +112,13 @@ NSFX_CLOSE_NAMESPACE
  *
  * The class traits includes a UID (universal identifier).
  *
- * A UID is a string that identifies a class in a hierarchical namespace.<br/>
+ * A UID is a string that identifies a class in a hierarchical namespace.
  * The general form is <code>"<organization>.<module>.<class>"</code>.</br>
  * e.g., <code>"edu.uestc.nsfx.IObject"</code>.
  *
- * The primary template is left without a definition.<br/>
+ * The primary template is left without a definition.
  * Thus, if the template is used without been specialized for user-defined class,
- * the compiler reports errors.<br/>
+ * the compiler reports errors.
  *
  * The class template is defined in global namespace, since it is not legal
  * to specialize a class template in a parallel namespace (a namespace that
@@ -176,7 +176,7 @@ NSFX_OPEN_NAMESPACE
  * @tparam T A class that has a UID.
  *
  * @remarks \c std::add_pointer is used here to prevent automatical template
- *          argument deduction.<br/>
+ *          argument deduction.
  *          Users have to explicitly specialize this function template in order
  *          to use it.
  *
