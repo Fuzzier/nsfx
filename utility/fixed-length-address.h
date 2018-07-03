@@ -90,7 +90,7 @@ public:
      */
     FixedLengthAddress(void) BOOST_NOEXCEPT {}
 
-    BOOST_CONSTEXPR FixedLengthAddress(ValueType value) BOOST_NOEXCEPT :
+    explicit BOOST_CONSTEXPR FixedLengthAddress(ValueType value) BOOST_NOEXCEPT :
         value_(MakeValue(value))
     {}
 
