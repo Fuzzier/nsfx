@@ -372,11 +372,6 @@ public:
         return *this;
     }
 
-    T** operator&() BOOST_NOEXCEPT
-    {
-        return &p_;
-    }
-
     T& operator*() const
     {
 #if !defined(NDEBUG)
