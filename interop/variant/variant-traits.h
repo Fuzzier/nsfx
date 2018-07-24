@@ -142,6 +142,7 @@ NSFX_DEFINE_VARIANT_TRAITS(double*,       VT_DOUBLE,  false,  true,  "double*");
 NSFX_DEFINE_VARIANT_TRAITS(const char**,  VT_STRING,  false,  true,  "string*");
 NSFX_DEFINE_VARIANT_TRAITS(std::string*,  VT_STRING,  true,   true,  "string*");
 
+
 template<class Res>
 struct VariantTraits<chrono::Duration<Res>* >
 {
