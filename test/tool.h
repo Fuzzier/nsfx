@@ -694,7 +694,7 @@ inline std::string TestFormatValue(T value)
             ::nsfx::test::ToolType::RC,                                         \
             ::nsfx::test::ToolLevel::EXPECT,                                    \
             "|" #actual " - " #limit "| <= " #limit " * " #tolerance,           \
-            actual, limit, tolerance)
+            actual, limit, limit * tolerance)
 
 /**
  * @ingroup Test
@@ -710,7 +710,7 @@ inline std::string TestFormatValue(T value)
             ::nsfx::test::ToolType::RC,                                         \
             ::nsfx::test::ToolLevel::ASSERT,                                    \
             "|" #actual " - " #limit "| <= " #limit " * " #tolerance,           \
-            actual, limit, tolerance)
+            actual, limit, limit * tolerance)
 /*}}}*/
 
 
