@@ -14,6 +14,7 @@
  */
 
 #include <nsfx/test.h>
+#include <nsfx/network/buffer/buffer.h>
 #include <nsfx/network/buffer/const-buffer.h>
 #include <iostream>
 
