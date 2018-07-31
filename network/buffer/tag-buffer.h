@@ -18,150 +18,15 @@
 
 
 #include <nsfx/network/config.h>
-#include <nsfx/network/buffer/tag-buffer-storage.h>
-#include <nsfx/network/buffer/buffer-iterator.h>
-#include <nsfx/network/buffer/buffer.h>
-#include <nsfx/network/buffer/zc-buffer.h>
+#include <nsfx/network/buffer/tag-buffer-declare.h>
+#include <nsfx/network/buffer/const-buffer-declare.h>
+#include <nsfx/network/buffer/const-zc-buffer-declare.h>
+#include <nsfx/network/buffer/const-tag-buffer-declare.h>
 #include <boost/core/swap.hpp>
 #include <cstring> // memcpy, memmove, memset
 
 
 NSFX_OPEN_NAMESPACE
-
-
-////////////////////////////////////////////////////////////////////////////////
-typedef BufferIterator       TagBufferIterator;
-typedef ConstBufferIterator  ConstTagBufferIterator;
-
-
-////////////////////////////////////////////////////////////////////////////////
-// TagBuffer.
-/**
- * @ingroup Network
- * @brief A reference-counted fixed-size buffer.
- */
-class TagBuffer
-{
-public:
-    typedef TagBufferIterator      iterator;
-    typedef ConstTagBufferIterator const_iterator;
-
-    // Xtructors.
-public:
-    /**
-     * @brief Create an empty buffer.
-     */
-    TagBuffer(void) BOOST_NOEXCEPT;
-
-    /**
-     * @brief Create a buffer.
-     *
-     * @param[in] size The size of the buffer.
-     */
-    explicit TagBuffer(size_t size);
-
-    /**
-     * @brief Create a buffer.
-     *
-     * @param[in] size The size of the buffer.
-     * @param[in] zero Initialize the buffer to zeros.
-     */
-    TagBuffer(size_t size, bool zeroInit);
-
-    /**
-     * @brief Create a buffer.
-     *
-     * @param[in] buffer  The buffer whose content is to be copied.
-     */
-    explicit TagBuffer(const ConstBuffer& buffer);
-
-    /**
-     * @brief Create a buffer.
-     *
-     * @param[in] buffer  The buffer whose content is to be copied.
-     */
-    explicit TagBuffer(const ConstZcBuffer& buffer);
-
-public:
-    ~TagBuffer(void) BOOST_NOEXCEPT;
-
-    // Copyable.
-public:
-    /**
-     * @brief Make a shallow copy of the buffer.
-     */
-    TagBuffer(const TagBuffer& rhs) BOOST_NOEXCEPT;
-
-    /**
-     * @brief Make a shallow copy of the buffer.
-     */
-    TagBuffer& operator=(const TagBuffer& rhs) BOOST_NOEXCEPT;
-
-    // Movable.
-public:
-    /**
-     * @brief Move a buffer.
-     */
-    TagBuffer(TagBuffer&& rhs) BOOST_NOEXCEPT;
-
-    /**
-     * @brief Move a buffer.
-     */
-    TagBuffer& operator=(TagBuffer&& rhs) BOOST_NOEXCEPT;
-
-private:
-    void TagBuffer::Acquire(void) BOOST_NOEXCEPT;
-    void TagBuffer::Release(void) BOOST_NOEXCEPT;
-
-    // Methods.
-public:
-    /**
-     * @brief Get the size of the represented data.
-     */
-    size_t GetSize(void) const BOOST_NOEXCEPT;
-
-    const TagBufferStorage* GetStorage(void) const BOOST_NOEXCEPT;
-
-    /**
-     * @brief Copy data to a memory block.
-     * @return The number of bytes copied.
-     */
-    size_t CopyTo(uint8_t* dst, size_t size) const BOOST_NOEXCEPT;
-
-    // Iterator.
-public:
-    /**
-     * @brief Get an iterator that points to the first byte of the data.
-     */
-    TagBufferIterator begin(void) BOOST_NOEXCEPT;
-
-    /**
-     * @brief Get an iterator that points one byte after the last byte of the data area.
-     */
-    TagBufferIterator end(void) BOOST_NOEXCEPT;
-
-    /**
-     * @brief Get a const iterator that points to the first byte of the data.
-     */
-    ConstTagBufferIterator cbegin(void) const BOOST_NOEXCEPT;
-
-    /**
-     * @brief Get a const iterator that points one byte after the last byte of the data area.
-     */
-    ConstTagBufferIterator cend(void) const BOOST_NOEXCEPT;
-
-    // Swappable.
-public:
-    void swap(TagBuffer& rhs) BOOST_NOEXCEPT;
-
-    // Properties.
-private:
-    /**
-     * @brief The storage.
-     */
-    TagBufferStorage* storage_;
-
-};
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -185,21 +50,30 @@ inline TagBuffer::TagBuffer(size_t size, bool zeroInit) :
     }
 }
 
-TagBuffer::TagBuffer(const ConstBuffer& buffer) :
-    storage_(TagBufferStorage::Allocate(buffer.GetSize()))
+inline TagBuffer::TagBuffer(const ConstBuffer& rhs) :
+    storage_(TagBufferStorage::Allocate(rhs.GetSize()))
 {
     if (storage_)
     {
-        buffer.CopyTo(storage_->bytes_, storage_->capacity_);
+        rhs.CopyTo(storage_->bytes_, storage_->capacity_);
     }
 }
 
-TagBuffer::TagBuffer(const ConstZcBuffer& buffer) :
-    storage_(TagBufferStorage::Allocate(buffer.GetSize()))
+inline TagBuffer::TagBuffer(const ConstZcBuffer& rhs) :
+    storage_(TagBufferStorage::Allocate(rhs.GetSize()))
 {
     if (storage_)
     {
-        buffer.CopyTo(storage_->bytes_, storage_->capacity_);
+        rhs.CopyTo(storage_->bytes_, storage_->capacity_);
+    }
+}
+
+inline TagBuffer::TagBuffer(const ConstTagBuffer& rhs) :
+    storage_(TagBufferStorage::Allocate(rhs.GetSize()))
+{
+    if (storage_)
+    {
+        rhs.CopyTo(storage_->bytes_, storage_->capacity_);
     }
 }
 

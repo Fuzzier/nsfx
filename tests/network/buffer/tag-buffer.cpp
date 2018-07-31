@@ -14,7 +14,7 @@
  */
 
 #include <nsfx/test.h>
-#include <nsfx/network/buffer/tag-buffer.h>
+#include <nsfx/network/buffer.h>
 #include <iostream>
 
 
@@ -51,7 +51,7 @@ NSFX_TEST_SUITE(TagBuffer)
             }
         }
 
-        NSFX_TEST_CASE(FromBuffer)
+        NSFX_TEST_CASE(FromConstBuffer)
         {
             nsfx::Buffer b0(300);
             b0.AddAtStart(300);
@@ -72,7 +72,7 @@ NSFX_TEST_SUITE(TagBuffer)
             }
         }
 
-        NSFX_TEST_CASE(FromZcBuffer)
+        NSFX_TEST_CASE(FromConstZcBuffer)
         {
             nsfx::ZcBuffer b0(300);
             b0.AddAtStart(300);
@@ -85,6 +85,27 @@ NSFX_TEST_SUITE(TagBuffer)
             it0 = b0.begin();
 
             nsfx::TagBuffer b1(b0);
+            auto it1 = b1.cbegin();
+            for (size_t i = 0; i < 300; ++i)
+            {
+                uint8_t v = 0xfe + i;
+                NSFX_TEST_EXPECT_EQ(it1.Read<uint8_t>(), v);
+            }
+        }
+
+        NSFX_TEST_CASE(FromConstTagBuffer)
+        {
+            nsfx::TagBuffer b0(300);
+            auto it0 = b0.begin();
+            for (size_t i = 0; i < 300; ++i)
+            {
+                uint8_t v = 0xfe + i;
+                it0.Write<uint8_t>(v);
+            }
+            it0 = b0.begin();
+
+            nsfx::ConstTagBuffer cb0(b0);
+            nsfx::TagBuffer b1(cb0);
             auto it1 = b1.cbegin();
             for (size_t i = 0; i < 300; ++i)
             {
