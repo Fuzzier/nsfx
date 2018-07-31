@@ -20,6 +20,8 @@
 #include <nsfx/network/config.h>
 #include <nsfx/network/buffer/tag-buffer-storage.h>
 #include <nsfx/network/buffer/buffer-iterator.h>
+#include <nsfx/network/buffer/buffer.h>
+#include <nsfx/network/buffer/zc-buffer.h>
 #include <boost/core/swap.hpp>
 #include <cstring> // memcpy, memmove, memset
 
@@ -65,6 +67,20 @@ public:
      * @param[in] zero Initialize the buffer to zeros.
      */
     TagBuffer(size_t size, bool zeroInit);
+
+    /**
+     * @brief Create a buffer.
+     *
+     * @param[in] buffer  The buffer whose content is to be copied.
+     */
+    explicit TagBuffer(const ConstBuffer& buffer);
+
+    /**
+     * @brief Create a buffer.
+     *
+     * @param[in] buffer  The buffer whose content is to be copied.
+     */
+    explicit TagBuffer(const ConstZcBuffer& buffer);
 
 public:
     ~TagBuffer(void) BOOST_NOEXCEPT;
@@ -166,6 +182,24 @@ inline TagBuffer::TagBuffer(size_t size, bool zeroInit) :
     if (zeroInit && storage_)
     {
         std::memset(storage_->bytes_, 0, storage_->capacity_);
+    }
+}
+
+TagBuffer::TagBuffer(const ConstBuffer& buffer) :
+    storage_(TagBufferStorage::Allocate(buffer.GetSize()))
+{
+    if (storage_)
+    {
+        buffer.CopyTo(storage_->bytes_, storage_->capacity_);
+    }
+}
+
+TagBuffer::TagBuffer(const ConstZcBuffer& buffer) :
+    storage_(TagBufferStorage::Allocate(buffer.GetSize()))
+{
+    if (storage_)
+    {
+        buffer.CopyTo(storage_->bytes_, storage_->capacity_);
     }
 }
 
