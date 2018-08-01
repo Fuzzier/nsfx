@@ -100,6 +100,15 @@ public:
         {
             BOOST_THROW_EXCEPTION(InvalidPointer());
         }
+        if (t < clock_->Now())
+        {
+            BOOST_THROW_EXCEPTION(
+                InvalidArgument() <<
+                ErrorMessage("Cannot schedule an event that "
+                             "happens before the current time.") <<
+                CurrentTimeErrorInfo(clock_->Now()) <<
+                ScheduledTimeErrorInfo(t));
+        }
         Ptr<EventHandleClass> handle(new EventHandleClass(t, std::move(sink)));
         if (!list_.size())
         {
@@ -123,6 +132,7 @@ public:
                 list_.push_back(handle);
             }
         }
+        // BOOST_ASSERT(IsOrdered());
         return std::move(handle);
     }
 
@@ -163,6 +173,18 @@ private:
             list_.pop_front();
         }
         return result;
+    }
+
+    bool IsOrdered(void) const
+    {
+        bool ordered = true;
+        TimePoint t0;
+        for (auto it = list_.cbegin(); it != list_.cend() && ordered; ++it)
+        {
+            ordered = (t0 <= (*it)->GetTimePoint());
+            t0 = (*it)->GetTimePoint();
+        }
+        return ordered;
     }
 
     /*}}}*/
