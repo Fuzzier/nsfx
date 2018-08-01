@@ -28,6 +28,12 @@ NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// Error info.
+typedef boost::error_info<struct tag_CurrentTime,   TimePoint>  CurrentTimeErrorInfo;
+typedef boost::error_info<struct tag_ScheduledTime, TimePoint>  ScheduledTimeErrorInfo;
+
+
+////////////////////////////////////////////////////////////////////////////////
 // Types.
 class IEventScheduler;
 class IEventSchedulerUser;
