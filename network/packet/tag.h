@@ -81,6 +81,9 @@ public:
 public:
     void swap(Tag& rhs) BOOST_NOEXCEPT;
 
+public:
+    static size_t AllocateTagId(void) BOOST_NOEXCEPT;
+
 private:
     size_t id_;
     ConstTagBuffer buffer_;
@@ -147,6 +150,12 @@ inline void Tag::swap(Tag& rhs) BOOST_NOEXCEPT
         boost::swap(id_, rhs.id_);
         boost::swap(buffer_, rhs.buffer_);
     }
+}
+
+inline size_t Tag::AllocateTagId(void) BOOST_NOEXCEPT
+{
+    static size_t tagId = 0;
+    return ++tagId;
 }
 
 
