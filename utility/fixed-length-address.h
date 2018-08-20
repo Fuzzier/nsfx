@@ -196,11 +196,30 @@ public:
         return value_ - rhs.value_;
     }
 
+private:
+    template<bool simple = (sizeof (ValueType) <= sizeof (size_t))>
+    struct Hash
+    {
+        size_t operator()(ValueType v) const BOOST_NOEXCEPT
+        {
+            return v;
+        }
+    };
+
+    template<>
+    struct Hash<false>
+    {
+        size_t operator()(ValueType v) const BOOST_NOEXCEPT
+        {
+            return boost::hash_value<ValueType>(v);
+        }
+    };
+
 public:
     // Hashable
     size_t hash_value(void) const BOOST_NOEXCEPT
     {
-        return boost::hash_value<ValueType>(value_);
+        return Hash<>()(value_);
     }
 
 public:
