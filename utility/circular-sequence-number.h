@@ -89,6 +89,16 @@ public:
         return value_;
     }
 
+    static BOOST_CONSTEXPR size_t GetBitSize(void) BOOST_NOEXCEPT
+    {
+        return bits;
+    }
+
+    static BOOST_CONSTEXPR size_t GetSize(void) BOOST_NOEXCEPT
+    {
+        return (bits + 7) >> 3;
+    }
+
     // Operators.
 public:
     BOOST_CONSTEXPR ThisType& operator++(void) BOOST_NOEXCEPT
