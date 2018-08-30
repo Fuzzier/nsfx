@@ -197,6 +197,8 @@ public:
     }
 
 private:
+    // If ValueType is no larger than size_t, the hash value of the address is
+    // its raw value.
     template<bool simple = (sizeof (ValueType) <= sizeof (size_t))>
     struct Hash
     {
@@ -206,6 +208,8 @@ private:
         }
     };
 
+    // If ValueType is larger than size_t, the hash value of the address is
+    // calculated.
     template<>
     struct Hash<false>
     {
@@ -238,6 +242,11 @@ public:
     static BOOST_CONSTEXPR size_t GetBitSize(void) BOOST_NOEXCEPT
     {
         return bits;
+    }
+
+    static BOOST_CONSTEXPR size_t GetSize(void) BOOST_NOEXCEPT
+    {
+        return (bits + 7) >> 3;
     }
 
     static BOOST_CONSTEXPR FixedLengthAddress Zero(void) BOOST_NOEXCEPT

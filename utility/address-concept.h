@@ -103,10 +103,12 @@ public:
 
     void Methods(void)
     {
-        size_t bits = Address::GetBitSize();
-
         Address* a = nullptr;
         *a = Address::Zero();
+
+        size_t bits  = a->GetBitSize();
+        size_t bytes = a->GetSize();
+
     }
 
 };
