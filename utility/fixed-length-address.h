@@ -86,9 +86,11 @@ private:
     // Xtructors
 public:
     /**
-     * @brief Construct an uninitialized address.
+     * @brief Construct a zero-value address.
      */
-    FixedLengthAddress(void) BOOST_NOEXCEPT {}
+    BOOST_CONSTEXPR FixedLengthAddress(void) BOOST_NOEXCEPT :
+        value_(0)
+    {}
 
     explicit BOOST_CONSTEXPR FixedLengthAddress(ValueType value) BOOST_NOEXCEPT :
         value_(MakeValue(value))
