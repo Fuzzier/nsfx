@@ -113,6 +113,9 @@ public:
      */
     void MoveBackward(size_t numBytes) BOOST_NOEXCEPT;
 
+private:
+    size_t CursorToOffset(void) const BOOST_NOEXCEPT;
+
     // Write data.
 public:
     /**
@@ -161,6 +164,30 @@ private:
     void InternalWrite(uint64_t value, size_t offset, ReverseEndianTag) BOOST_NOEXCEPT;
     void InternalWrite(float    value, size_t offset, ReverseEndianTag) BOOST_NOEXCEPT;
     void InternalWrite(double   value, size_t offset, ReverseEndianTag) BOOST_NOEXCEPT;
+
+    // Write bytes.
+public:
+    /**
+     * @brief Write bytes in native endian order.
+     */
+    void Write(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Write bytes in little endian order.
+     */
+    void WriteL(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Write bytes in big endian order.
+     */
+    void WriteB(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+
+private:
+    template<endian::Order order>
+    void WriteInOrder(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+
+    void InternalWrite(const uint8_t* bytes, size_t size, size_t offset, KeepEndianTag) BOOST_NOEXCEPT;
+    void InternalWrite(const uint8_t* bytes, size_t size, size_t offset, ReverseEndianTag) BOOST_NOEXCEPT;
 
     // Read data.
 public:
@@ -212,7 +239,6 @@ private:
     double   InternalRead(size_t offset, ReadTag<double,   InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT;
 
     uint8_t  InternalRead(ReadTag<uint8_t, CheckAreaTag>) BOOST_NOEXCEPT;
-    size_t   CursorToOffset(void) const BOOST_NOEXCEPT;
 
     uint8_t  InternalRead(ReadTag<uint8_t,  CrossZeroAreaTag>, KeepEndianTag) BOOST_NOEXCEPT;
     uint16_t InternalRead(ReadTag<uint16_t, CrossZeroAreaTag>, KeepEndianTag) BOOST_NOEXCEPT;
@@ -227,6 +253,33 @@ private:
     uint64_t InternalRead(ReadTag<uint64_t, CrossZeroAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT;
     float    InternalRead(ReadTag<float,    CrossZeroAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT;
     double   InternalRead(ReadTag<double,   CrossZeroAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT;
+
+    // Read bytes.
+public:
+    /**
+     * @brief Read bytes in native endian order.
+     */
+    void Read(uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Read bytes in little endian order.
+     */
+    void ReadL(uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Read bytes in big endian order.
+     */
+    void ReadB(uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+
+private:
+    template<endian::Order order>
+    void ReadInOrder(uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+
+    void InternalRead(uint8_t* bytes, size_t size, size_t offset, InSolidAreaTag, KeepEndianTag) BOOST_NOEXCEPT;
+    void InternalRead(uint8_t* bytes, size_t size, size_t offset, InSolidAreaTag, ReverseEndianTag) BOOST_NOEXCEPT;
+
+    void InternalRead(uint8_t* bytes, size_t size, CrossZeroAreaTag, KeepEndianTag) BOOST_NOEXCEPT;
+    void InternalRead(uint8_t* bytes, size_t size, CrossZeroAreaTag, ReverseEndianTag) BOOST_NOEXCEPT;
 
     // Boundary check.
 private:
@@ -386,6 +439,24 @@ inline void ZcBufferIterator::MoveBackward(size_t numBytes) BOOST_NOEXCEPT
 {
     BackwardCheck(numBytes);
     cursor_ -= numBytes;
+}
+
+inline size_t
+ZcBufferIterator::CursorToOffset(void) const BOOST_NOEXCEPT
+{
+    BOOST_ASSERT_MSG(!InZeroArea(),
+                     "Cannot convert the current cursor to offset since "
+                     "the current cursor is in the zero-compressed area.");
+    size_t offset;
+    if (cursor_ < zeroStart_)
+    {
+        offset = cursor_;
+    }
+    else
+    {
+        offset = cursor_ - (zeroEnd_ - zeroStart_);
+    }
+    return offset;
 }
 
 template<class T>
@@ -620,6 +691,50 @@ ZcBufferIterator::InternalWrite(double value, size_t offset, ReverseEndianTag) B
     data[offset++] = b[1];
     data[offset++] = b[0];
     cursor_ += 8;
+}
+
+inline void ZcBufferIterator::Write(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+{
+    WriteInOrder<endian::native>(bytes, size);
+}
+
+inline void ZcBufferIterator::WriteL(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+{
+    WriteInOrder<endian::little>(bytes, size);
+}
+
+inline void ZcBufferIterator::WriteB(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+{
+    WriteInOrder<endian::big>(bytes, size);
+}
+
+template<endian::Order order>
+inline void ZcBufferIterator::WriteInOrder(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+{
+    BOOST_ASSERT(bytes);
+    WritableCheck(size);
+    typedef typename MakeEndianTag<order>::Type  E;
+    InternalWrite(bytes, size, CursorToOffset(), E());
+}
+
+inline void
+ZcBufferIterator::InternalWrite(const uint8_t* bytes, size_t size, size_t offset, KeepEndianTag) BOOST_NOEXCEPT
+{
+    while (size--)
+    {
+        bytes_[offset++] = *bytes++;
+        ++cursor_;
+    }
+}
+
+inline void
+ZcBufferIterator::InternalWrite(const uint8_t* bytes, size_t size, size_t offset, ReverseEndianTag) BOOST_NOEXCEPT
+{
+    while (size--)
+    {
+        bytes_[offset++] = bytes[size];
+        ++cursor_;
+    }
 }
 
 template<class T>
@@ -896,24 +1011,6 @@ ZcBufferIterator::InternalRead(ReadTag<uint8_t, CheckAreaTag>) BOOST_NOEXCEPT
     return b;
 }
 
-inline size_t
-ZcBufferIterator::CursorToOffset(void) const BOOST_NOEXCEPT
-{
-    BOOST_ASSERT_MSG(!InZeroArea(),
-                     "Cannot convert the current cursor to offset since "
-                     "the current cursor is in the zero-compressed area.");
-    size_t offset;
-    if (cursor_ < zeroStart_)
-    {
-        offset = cursor_;
-    }
-    else
-    {
-        offset = cursor_ - (zeroEnd_ - zeroStart_);
-    }
-    return offset;
-}
-
 inline uint8_t
 ZcBufferIterator::InternalRead(ReadTag<uint8_t, CrossZeroAreaTag>, KeepEndianTag) BOOST_NOEXCEPT
 {
@@ -1089,6 +1186,88 @@ ZcBufferIterator::InternalRead(ReadTag<double, CrossZeroAreaTag>, ReverseEndianT
     b[1] = InternalRead(ReadTag<uint8_t, CheckAreaTag>());
     b[0] = InternalRead(ReadTag<uint8_t, CheckAreaTag>());
     return v;
+}
+
+inline void ZcBufferIterator::Read(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+{
+    ReadInOrder<endian::native>(bytes, size);
+}
+
+inline void ZcBufferIterator::ReadL(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+{
+    ReadInOrder<endian::little>(bytes, size);
+}
+
+inline void ZcBufferIterator::ReadB(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+{
+    ReadInOrder<endian::big>(bytes, size);
+}
+
+template<endian::Order order>
+inline void ZcBufferIterator::ReadInOrder(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+{
+    ReadableCheck(size);
+    typedef typename MakeEndianTag<order>::Type  E;
+    // Read in header area.
+    if (cursor_ + size <= zeroStart_)
+    {
+        return InternalRead(bytes, size, cursor_, InSolidAreaTag(), E());
+    }
+    // Read in trailer area.
+    else if (zeroEnd_ <= cursor_)
+    {
+        return InternalRead(
+            bytes, size, cursor_ - (zeroEnd_ - zeroStart_), InSolidAreaTag(), E());
+    }
+    // Read in zero-compressed area.
+    else if (zeroStart_ <= cursor_ && cursor_ + size <= zeroEnd_)
+    {
+        std::memset(bytes, 0, size);
+        cursor_ += size;
+    }
+    // Read across zero-compressed area.
+    else
+    {
+        return InternalRead(bytes, size, CrossZeroAreaTag(), E());
+    }
+}
+
+inline void
+ZcBufferIterator::InternalRead(uint8_t* bytes, size_t size, size_t offset, InSolidAreaTag, KeepEndianTag) BOOST_NOEXCEPT
+{
+    while (size--)
+    {
+        *bytes++ = bytes_[offset++];
+        ++cursor_;
+    }
+}
+
+inline void
+ZcBufferIterator::InternalRead(uint8_t* bytes, size_t size, size_t offset, InSolidAreaTag, ReverseEndianTag) BOOST_NOEXCEPT
+{
+    while (size--)
+    {
+        bytes[size] = bytes_[offset++];
+        ++cursor_;
+    }
+}
+
+inline void
+ZcBufferIterator::InternalRead(uint8_t* bytes, size_t size, CrossZeroAreaTag, KeepEndianTag) BOOST_NOEXCEPT
+{
+    while (size--)
+    {
+        *bytes++ = InternalRead(ReadTag<uint8_t, CheckAreaTag>());
+    }
+}
+
+inline void
+ZcBufferIterator::InternalRead(uint8_t* bytes, size_t size, CrossZeroAreaTag, ReverseEndianTag) BOOST_NOEXCEPT
+{
+    while (size--)
+    {
+        bytes[size] = InternalRead(ReadTag<uint8_t, CheckAreaTag>());
+    }
 }
 
 inline bool ZcBufferIterator::CanMoveForward(size_t numBytes) const BOOST_NOEXCEPT
@@ -1319,6 +1498,23 @@ public:
     template<class T>
     T ReadB(void) BOOST_NOEXCEPT;
 
+    // Read bytes.
+public:
+    /**
+     * @brief Read bytes in native endian order.
+     */
+    void Read(uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Read bytes in little endian order.
+     */
+    void ReadL(uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Read bytes in big endian order.
+     */
+    void ReadB(uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+
     // Operators.
 public:
     ConstZcBufferIterator& operator++(void) BOOST_NOEXCEPT;
@@ -1422,6 +1618,21 @@ template<class T>
 inline T ConstZcBufferIterator::ReadB(void) BOOST_NOEXCEPT
 {
     return it_.ReadB<T>();
+}
+
+inline void ConstZcBufferIterator::Read(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+{
+    it_.Read(bytes, size);
+}
+
+inline void ConstZcBufferIterator::ReadL(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+{
+    it_.ReadL(bytes, size);
+}
+
+inline void ConstZcBufferIterator::ReadB(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+{
+    it_.ReadB(bytes, size);
 }
 
 inline ConstZcBufferIterator& ConstZcBufferIterator::operator++(void) BOOST_NOEXCEPT

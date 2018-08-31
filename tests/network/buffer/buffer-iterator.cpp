@@ -172,6 +172,19 @@ NSFX_TEST_SUITE(BufferIterator)
                 it -= 8;
                 it.Read<uint64_t>();
                 NSFX_TEST_EXPECT_EQ(cursor, it.GetCursor());
+
+                it -= 4;
+                it.Read<float>();
+                NSFX_TEST_EXPECT_EQ(cursor, it.GetCursor());
+
+                it -= 8;
+                it.Read<double>();
+                NSFX_TEST_EXPECT_EQ(cursor, it.GetCursor());
+
+                uint64_t t64;
+                it -= 8;
+                it.Read(reinterpret_cast<uint8_t*>(&t64), sizeof (uint64_t));
+                NSFX_TEST_EXPECT_EQ(cursor, it.GetCursor());
             }
 
             NSFX_TEST_CASE(HeaderToZeroArea)
@@ -199,6 +212,19 @@ NSFX_TEST_SUITE(BufferIterator)
 
                 it -= 8;
                 it.Read<uint64_t>();
+                NSFX_TEST_EXPECT_EQ(cursor, it.GetCursor());
+
+                it -= 4;
+                it.Read<float>();
+                NSFX_TEST_EXPECT_EQ(cursor, it.GetCursor());
+
+                it -= 8;
+                it.Read<double>();
+                NSFX_TEST_EXPECT_EQ(cursor, it.GetCursor());
+
+                uint64_t t64;
+                it -= 8;
+                it.Read(reinterpret_cast<uint8_t*>(&t64), sizeof (uint64_t));
                 NSFX_TEST_EXPECT_EQ(cursor, it.GetCursor());
             }
 
@@ -228,6 +254,19 @@ NSFX_TEST_SUITE(BufferIterator)
                 it -= 8;
                 it.Read<uint64_t>();
                 NSFX_TEST_EXPECT_EQ(cursor, it.GetCursor());
+
+                it -= 4;
+                it.Read<float>();
+                NSFX_TEST_EXPECT_EQ(cursor, it.GetCursor());
+
+                it -= 8;
+                it.Read<double>();
+                NSFX_TEST_EXPECT_EQ(cursor, it.GetCursor());
+
+                uint64_t t64;
+                it -= 8;
+                it.Read(reinterpret_cast<uint8_t*>(&t64), sizeof (uint64_t));
+                NSFX_TEST_EXPECT_EQ(cursor, it.GetCursor());
             }
 
             NSFX_TEST_CASE(ZeroToTrailingArea)
@@ -255,6 +294,19 @@ NSFX_TEST_SUITE(BufferIterator)
 
                 it -= 8;
                 it.Read<uint64_t>();
+                NSFX_TEST_EXPECT_EQ(cursor, it.GetCursor());
+
+                it -= 4;
+                it.Read<float>();
+                NSFX_TEST_EXPECT_EQ(cursor, it.GetCursor());
+
+                it -= 8;
+                it.Read<double>();
+                NSFX_TEST_EXPECT_EQ(cursor, it.GetCursor());
+
+                uint64_t t64;
+                it -= 8;
+                it.Read(reinterpret_cast<uint8_t*>(&t64), sizeof (uint64_t));
                 NSFX_TEST_EXPECT_EQ(cursor, it.GetCursor());
             }
 
@@ -299,6 +351,19 @@ NSFX_TEST_SUITE(BufferIterator)
 
                 it -= 8;
                 it.Read<uint64_t>();
+                NSFX_TEST_EXPECT_EQ(cursor, it.GetCursor());
+
+                it -= 4;
+                it.Read<float>();
+                NSFX_TEST_EXPECT_EQ(cursor, it.GetCursor());
+
+                it -= 8;
+                it.Read<double>();
+                NSFX_TEST_EXPECT_EQ(cursor, it.GetCursor());
+
+                uint64_t t64;
+                it -= 8;
+                it.Read(reinterpret_cast<uint8_t*>(&t64), sizeof (uint64_t));
                 NSFX_TEST_EXPECT_EQ(cursor, it.GetCursor());
             }
 
@@ -421,6 +486,14 @@ NSFX_TEST_SUITE(BufferIterator)
             it -= sizeof (double);
             NSFX_TEST_EXPECT_EQ(*pd, nd);
 
+            uint64_t t64;
+            it.Write(reinterpret_cast<const uint8_t*>(&n64), sizeof (uint64_t));
+            it -= sizeof (uint64_t);
+            it.Read(reinterpret_cast<uint8_t*>(&t64), sizeof (uint64_t));
+            it -= sizeof (uint64_t);
+            NSFX_TEST_EXPECT_EQ(t64, n64);
+            NSFX_TEST_EXPECT_EQ(*p64, n64);
+
             // little
             it.WriteL<int8_t>(n8);
             it -= sizeof (int8_t);
@@ -482,6 +555,19 @@ NSFX_TEST_SUITE(BufferIterator)
             it -= sizeof (double);
             NSFX_TEST_EXPECT_EQ(*pd, ld);
 
+            it.WriteL(reinterpret_cast<const uint8_t*>(&n64), sizeof (uint64_t));
+            it -= sizeof (uint64_t);
+            NSFX_TEST_EXPECT_EQ(it.ReadL<uint64_t>(), n64);
+            it -= sizeof (uint64_t);
+            NSFX_TEST_EXPECT_EQ(*p64, l64);
+
+            it.WriteL(reinterpret_cast<const uint8_t*>(&n64), sizeof (uint64_t));
+            it -= sizeof (uint64_t);
+            it.ReadL(reinterpret_cast<uint8_t*>(&t64), sizeof (uint64_t));
+            it -= sizeof (uint64_t);
+            NSFX_TEST_EXPECT_EQ(t64, n64);
+            NSFX_TEST_EXPECT_EQ(*p64, l64);
+
             // big
             it.WriteB<int8_t>(n8);
             it -= sizeof (int8_t);
@@ -542,6 +628,20 @@ NSFX_TEST_SUITE(BufferIterator)
             NSFX_TEST_EXPECT_EQ(it.ReadB<double>(), nd);
             it -= sizeof (double);
             NSFX_TEST_EXPECT_EQ(*pd, bd);
+
+            it.WriteB(reinterpret_cast<const uint8_t*>(&n64), sizeof (uint64_t));
+            it -= sizeof (uint64_t);
+            NSFX_TEST_EXPECT_EQ(it.ReadB<uint64_t>(), n64);
+            it -= sizeof (uint64_t);
+            NSFX_TEST_EXPECT_EQ(*p64, b64);
+
+            it.WriteB(reinterpret_cast<const uint8_t*>(&n64), sizeof (uint64_t));
+            it -= sizeof (uint64_t);
+            it.ReadB(reinterpret_cast<uint8_t*>(&t64), sizeof (uint64_t));
+            it -= sizeof (uint64_t);
+            NSFX_TEST_EXPECT_EQ(t64, n64);
+            NSFX_TEST_EXPECT_EQ(*p64, b64);
+
         }
 
         NSFX_TEST_CASE(AroundBuffer)
@@ -970,6 +1070,14 @@ NSFX_TEST_SUITE(ConstBufferIterator)
             it1 -= sizeof (double);
             NSFX_TEST_EXPECT_EQ(*pd, nd);
 
+            uint64_t t64;
+            it.Write(reinterpret_cast<const uint8_t*>(&n64), sizeof (uint64_t));
+            it1.Read(reinterpret_cast<uint8_t*>(&t64), sizeof (uint64_t));
+            it -= sizeof (uint64_t);
+            it1 -= sizeof (uint64_t);
+            NSFX_TEST_EXPECT_EQ(t64, n64);
+            NSFX_TEST_EXPECT_EQ(*p64, n64);
+
             // little
             it.WriteL<int8_t>(n8);
             NSFX_TEST_EXPECT_EQ(it1.ReadL<int8_t>(), (int8_t)(n8));
@@ -1031,6 +1139,13 @@ NSFX_TEST_SUITE(ConstBufferIterator)
             it1 -= sizeof (double);
             NSFX_TEST_EXPECT_EQ(*pd, ld);
 
+            it.WriteL(reinterpret_cast<const uint8_t*>(&n64), sizeof (uint64_t));
+            it1.ReadL(reinterpret_cast<uint8_t*>(&t64), sizeof (uint64_t));
+            it -= sizeof (uint64_t);
+            it1 -= sizeof (uint64_t);
+            NSFX_TEST_EXPECT_EQ(t64, n64);
+            NSFX_TEST_EXPECT_EQ(*p64, l64);
+
             // big
             it.WriteB<int8_t>(n8);
             NSFX_TEST_EXPECT_EQ(it1.ReadB<int8_t>(), (int8_t)(n8));
@@ -1091,6 +1206,14 @@ NSFX_TEST_SUITE(ConstBufferIterator)
             it -= sizeof (double);
             it1 -= sizeof (double);
             NSFX_TEST_EXPECT_EQ(*pd, bd);
+
+            it.WriteB(reinterpret_cast<const uint8_t*>(&n64), sizeof (uint64_t));
+            it1.ReadB(reinterpret_cast<uint8_t*>(&t64), sizeof (uint64_t));
+            it -= sizeof (uint64_t);
+            it1 -= sizeof (uint64_t);
+            NSFX_TEST_EXPECT_EQ(t64, n64);
+            NSFX_TEST_EXPECT_EQ(*p64, b64);
+
         }
 
         NSFX_TEST_CASE(AroundBuffer)

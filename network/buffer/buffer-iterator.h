@@ -157,6 +157,30 @@ private:
     void InternalWrite(float    value, size_t offset, ReverseEndianTag) BOOST_NOEXCEPT;
     void InternalWrite(double   value, size_t offset, ReverseEndianTag) BOOST_NOEXCEPT;
 
+    // Write bytes.
+public:
+    /**
+     * @brief Write bytes in native endian order.
+     */
+    void Write(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Write bytes in little endian order.
+     */
+    void WriteL(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Write bytes in big endian order.
+     */
+    void WriteB(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+
+private:
+    template<endian::Order order>
+    void WriteInOrder(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+
+    void InternalWrite(const uint8_t* bytes, size_t size, size_t offset, KeepEndianTag) BOOST_NOEXCEPT;
+    void InternalWrite(const uint8_t* bytes, size_t size, size_t offset, ReverseEndianTag) BOOST_NOEXCEPT;
+
     // Read data.
 public:
     /**
@@ -205,6 +229,30 @@ private:
     uint64_t InternalRead(size_t offset, ReadTag<uint64_t, InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT;
     float    InternalRead(size_t offset, ReadTag<float,    InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT;
     double   InternalRead(size_t offset, ReadTag<double,   InSolidAreaTag>, ReverseEndianTag) BOOST_NOEXCEPT;
+
+    // Read bytes.
+public:
+    /**
+     * @brief Read bytes in native endian order.
+     */
+    void Read(uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Read bytes in little endian order.
+     */
+    void ReadL(uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Read bytes in big endian order.
+     */
+    void ReadB(uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+
+private:
+    template<endian::Order order>
+    void ReadInOrder(uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+
+    void InternalRead(uint8_t* bytes, size_t size, size_t offset, InSolidAreaTag, KeepEndianTag) BOOST_NOEXCEPT;
+    void InternalRead(uint8_t* bytes, size_t size, size_t offset, InSolidAreaTag, ReverseEndianTag) BOOST_NOEXCEPT;
 
     // Boundary check.
 private:
@@ -572,6 +620,48 @@ BufferIterator::InternalWrite(double value, size_t offset, ReverseEndianTag) BOO
     cursor_ += 8;
 }
 
+inline void BufferIterator::Write(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+{
+    WriteInOrder<endian::native>(bytes, size);
+}
+
+inline void BufferIterator::WriteL(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+{
+    WriteInOrder<endian::little>(bytes, size);
+}
+
+inline void BufferIterator::WriteB(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+{
+    WriteInOrder<endian::big>(bytes, size);
+}
+
+template<endian::Order order>
+inline void BufferIterator::WriteInOrder(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+{
+    BOOST_ASSERT(bytes);
+    WritableCheck(size);
+    typedef typename MakeEndianTag<order>::Type  E;
+    InternalWrite(bytes, size, cursor_, E());
+}
+
+inline void BufferIterator::InternalWrite(const uint8_t* bytes, size_t size, size_t offset, KeepEndianTag) BOOST_NOEXCEPT
+{
+    while (size--)
+    {
+        bytes_[offset++] = *bytes++;
+        ++cursor_;
+    }
+}
+
+inline void BufferIterator::InternalWrite(const uint8_t* bytes, size_t size, size_t offset, ReverseEndianTag) BOOST_NOEXCEPT
+{
+    while (size--)
+    {
+        bytes_[offset++] = bytes[size];
+        ++cursor_;
+    }
+}
+
 template<class T>
 inline T BufferIterator::Read(void) BOOST_NOEXCEPT
 {
@@ -811,6 +901,48 @@ BufferIterator::InternalRead(size_t offset, ReadTag<double, InSolidAreaTag>, Rev
     return v;
 }
 
+inline void BufferIterator::Read(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+{
+    ReadInOrder<endian::native>(bytes, size);
+}
+
+inline void BufferIterator::ReadL(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+{
+    ReadInOrder<endian::little>(bytes, size);
+}
+
+inline void BufferIterator::ReadB(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+{
+    ReadInOrder<endian::big>(bytes, size);
+}
+
+template<endian::Order order>
+inline void BufferIterator::ReadInOrder(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+{
+    BOOST_ASSERT(bytes);
+    ReadableCheck(size);
+    typedef typename MakeEndianTag<order>::Type  E;
+    InternalRead(bytes, size, cursor_, InSolidAreaTag(), E());
+}
+
+inline void BufferIterator::InternalRead(uint8_t* bytes, size_t size, size_t offset, InSolidAreaTag, KeepEndianTag) BOOST_NOEXCEPT
+{
+    while (size--)
+    {
+        *bytes++ = bytes_[offset++];
+        ++cursor_;
+    }
+}
+
+inline void BufferIterator::InternalRead(uint8_t* bytes, size_t size, size_t offset, InSolidAreaTag, ReverseEndianTag) BOOST_NOEXCEPT
+{
+    while (size--)
+    {
+        bytes[size] = bytes_[offset++];
+        ++cursor_;
+    }
+}
+
 inline bool BufferIterator::CanMoveForward(size_t numBytes) const BOOST_NOEXCEPT
 {
     return cursor_ + numBytes <= end_;
@@ -1022,6 +1154,23 @@ public:
     template<class T>
     T ReadB(void) BOOST_NOEXCEPT;
 
+    // Read bytes.
+public:
+    /**
+     * @brief Read bytes in native endian order.
+     */
+    void Read(uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Read bytes in little endian order.
+     */
+    void ReadL(uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Read bytes in big endian order.
+     */
+    void ReadB(uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+
     // Operators.
 public:
     ConstBufferIterator& operator++(void) BOOST_NOEXCEPT;
@@ -1123,6 +1272,21 @@ template<class T>
 inline T ConstBufferIterator::ReadB(void) BOOST_NOEXCEPT
 {
     return it_.ReadB<T>();
+}
+
+inline void ConstBufferIterator::Read(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+{
+    it_.Read(bytes, size);
+}
+
+inline void ConstBufferIterator::ReadL(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+{
+    it_.ReadL(bytes, size);
+}
+
+inline void ConstBufferIterator::ReadB(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+{
+    it_.ReadB(bytes, size);
 }
 
 inline ConstBufferIterator& ConstBufferIterator::operator++(void) BOOST_NOEXCEPT
