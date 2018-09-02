@@ -306,7 +306,7 @@ typedef ConstBufferIterator    ConstPacketBufferIterator;
  *    However, the id is useless to trace a packet during fragmention and
  *    reassembly.
  *    The id only tells that two packets are different.
- *    It loss information during duplication, fragmentation and reassembly.
+ *    It losses information during duplication, fragmentation and reassembly.
  *    Tags are more suitable to trace the transmission and processing of the
  *    bytes of a packet.
  *
@@ -337,6 +337,22 @@ typedef ConstBufferIterator    ConstPacketBufferIterator;
  *    Thus, a tag is inserted once, and is read-only.
  *    A tag is removed automatically when the tagged bytes are removed from
  *    the packet.
+ *
+ * ## On complex transformation of bytes
+ *    When the bytes of the packet is transformed in a complex way, there is
+ *    problem.
+ *    e.g., when the bytes of the packet are encoded, the original bytes are
+ *    mixed with other bytes, and spread across the entire encoded packet,
+ *    the range of associated bytes are no longer clear.
+ *
+ *    The tags of the original packet shall be preserved, until the original
+ *    packet is recovered.
+ *    Sometimes, it is also convenient to preverse the original packet.
+ *
+ *    To avoid duplication of the orignal packet or its tags, the simplest way
+ *    is to treat the original packet as a tag, which is associated with
+ *    the entire bytes of the encoded packet.
+ *
  */
 class Packet
 {
@@ -364,7 +380,7 @@ public:
     // Buffer.
 public:
     /**
-     * @brief Get the size of the packet.
+     * @brief Get the size of the packet in bytes.
      */
     size_t GetSize(void) const BOOST_NOEXCEPT;
 
