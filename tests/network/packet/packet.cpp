@@ -212,7 +212,7 @@ NSFX_TEST_SUITE(Packet)
             // |--------|--------|--------|--------|
             // |<-tag1->|                 |<-tag4->|
             // |<------tag2----->|<------tag3----->|
-            p0.AddTag(nsfx::Tag(tagId++, tb),   0, 100);
+            p0.AddTag(          tagId++, tb,    0, 100);
             p0.AddTag(nsfx::Tag(tagId++, tb),   0, 200);
             p0.AddTag(nsfx::Tag(tagId++, tb), 200, 200);
             p0.AddTag(nsfx::Tag(tagId++, tb), 300, 100);

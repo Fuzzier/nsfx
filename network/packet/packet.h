@@ -449,6 +449,17 @@ public:
     void AddTag(const Tag& tag, size_t start, size_t size);
 
     /**
+     * @brief Tag a range of bytes.
+     *
+     * @param[in] tagId     The id of the tag.
+     * @param[in] tagBuffer The buffer of the tag.
+     * @param[in] start     The start of the tagged bytes.
+     * @param[in] size      The number of tagged bytes.
+     */
+    void AddTag(size_t tagId, const ConstTagBuffer& tagBuffer,
+                size_t start, size_t size);
+
+    /**
      * @brief Is the byte tagged?
      *
      * @param[in] tagId  The id of the tag.
@@ -585,6 +596,12 @@ inline void Packet::RemoveTrailer(size_t size) BOOST_NOEXCEPT
 inline void Packet::AddTag(const Tag& tag, size_t start, size_t size)
 {
     tagList_.Insert(tag, start, size);
+}
+
+inline void Packet::AddTag(size_t tagId, const ConstTagBuffer& tagBuffer,
+                           size_t start, size_t size)
+{
+    tagList_.Insert(tagId, tagBuffer, start, size);
 }
 
 inline bool Packet::HasTag(size_t tagId, size_t offset) const BOOST_NOEXCEPT
