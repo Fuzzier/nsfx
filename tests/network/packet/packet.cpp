@@ -269,7 +269,7 @@ NSFX_TEST_SUITE(Packet)
                 NSFX_TEST_EXPECT(r.HasTag(4, 400-1));
                 nsfx::Tag tag4 = r.GetTag(4, 300);
                 NSFX_TEST_EXPECT_EQ(tag4.GetId(), 4);
-                NSFX_TEST_EXPECT_EQ(tag4.GetBuffer().GetSize(), 16);
+                NSFX_TEST_EXPECT_EQ(tag4.GetValue().GetSize(), 16);
             }
             // Reassemble the fragments.
             {
@@ -291,7 +291,7 @@ NSFX_TEST_SUITE(Packet)
                 NSFX_TEST_EXPECT(r.HasTag(4, 400-1));
                 nsfx::Tag tag4 = r.GetTag(4, 400-1);
                 NSFX_TEST_EXPECT_EQ(tag4.GetId(), 4);
-                NSFX_TEST_EXPECT_EQ(tag4.GetBuffer().GetSize(), 16);
+                NSFX_TEST_EXPECT_EQ(tag4.GetValue().GetSize(), 16);
             }
         }
         NSFX_TEST_EXPECT_EQ(tb.GetStorage()->refCount_, 1);
