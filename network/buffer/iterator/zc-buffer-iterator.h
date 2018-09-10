@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Zero-compressed packet buffer for Network Simulation Frameworks.
+ * @brief Buffer for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -18,8 +18,8 @@
 
 
 #include <nsfx/network/config.h>
+#include <nsfx/network/buffer/iterator/basic-buffer-iterator.h>
 #include <nsfx/utility/endian.h>
-#include <boost/core/swap.hpp>
 #include <boost/type_traits/type_identity.hpp>
 #include <type_traits> // is_integral, is_floating_point, make_unsigned
 
@@ -31,25 +31,19 @@ NSFX_OPEN_NAMESPACE
 // ZcBufferIterator.
 /**
  * @ingroup Network
- * @brief The iterator for accessing the buffer data.
+ * @brief The iterator for accessing zero-compressed buffer data.
  *
- * A buffer iterator is not associated with a buffer, but associated with the
- * underlying memory block that is shared among buffers and iterators.
+ * A specialization of <code>BasicBufferIterator<></code>.
  *
- * ### Supported methods:
- * * copyable
- * * operator ++, --
- * * operator +, +=, -, -=
- * * operator >, >=, ==, !=, <=, <
- * * Write<T>(T data)
- * * WriteL<T>(T data)
- * * WriteB<T>(T data)
- * * T Read<T>()
- * * T ReadL<T>()
- * * T ReadB<T>()
+ * This buffer iterator operates on a zero-compressed buffer.
+ * i.e., it does not support common buffer.
  */
-class ZcBufferIterator
+template<>
+class BasicBufferIterator</*readOnly=*/false, /*zcAware=*/true>
 {
+public:
+    typedef BasicBufferIterator<false, true>  ZcBufferIterator;
+
 private:
     // Endian tag.
     struct ReverseEndianTag {};
@@ -84,17 +78,17 @@ private:
 
     // Xtructors.
 public:
-    ZcBufferIterator(uint8_t* bytes,
-                     size_t start,
-                     size_t zeroStart,
-                     size_t zeroEnd,
-                     size_t end,
-                     size_t cursor) BOOST_NOEXCEPT;
+    BasicBufferIterator(uint8_t* bytes,
+                        size_t start,
+                        size_t zeroStart,
+                        size_t zeroEnd,
+                        size_t end,
+                        size_t cursor) BOOST_NOEXCEPT;
 
     // Copyable.
 public:
-    ZcBufferIterator(const ZcBufferIterator& rhs) BOOST_NOEXCEPT;
-    ZcBufferIterator& operator=(const ZcBufferIterator& rhs) BOOST_NOEXCEPT;
+    BasicBufferIterator(const ZcBufferIterator& rhs) BOOST_NOEXCEPT;
+    BasicBufferIterator& operator=(const ZcBufferIterator& rhs) BOOST_NOEXCEPT;
 
 public:
     size_t GetStart(void) const BOOST_NOEXCEPT;
@@ -373,13 +367,19 @@ private:
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// Typedef.
+typedef BasicBufferIterator</*readOnly=*/false, /*zcAware=*/true>
+        ZcBufferIterator;
+
+
+////////////////////////////////////////////////////////////////////////////////
 // ZcBufferIterator.
-inline ZcBufferIterator::ZcBufferIterator(uint8_t* bytes,
-                                          size_t start,
-                                          size_t zeroStart,
-                                          size_t zeroEnd,
-                                          size_t end,
-                                          size_t cursor) BOOST_NOEXCEPT :
+inline ZcBufferIterator::BasicBufferIterator(uint8_t* bytes,
+                                             size_t start,
+                                             size_t zeroStart,
+                                             size_t zeroEnd,
+                                             size_t end,
+                                             size_t cursor) BOOST_NOEXCEPT :
     bytes_(bytes),
     start_(start),
     zeroStart_(zeroStart),
@@ -389,7 +389,7 @@ inline ZcBufferIterator::ZcBufferIterator(uint8_t* bytes,
 {
 }
 
-inline ZcBufferIterator::ZcBufferIterator(const ZcBufferIterator& rhs) BOOST_NOEXCEPT :
+inline ZcBufferIterator::BasicBufferIterator(const ZcBufferIterator& rhs) BOOST_NOEXCEPT :
     bytes_(rhs.bytes_),
     start_(rhs.start_),
     zeroStart_(rhs.zeroStart_),
@@ -414,28 +414,33 @@ ZcBufferIterator::operator=(const ZcBufferIterator& rhs) BOOST_NOEXCEPT
     return *this;
 }
 
-inline size_t ZcBufferIterator::GetStart(void) const BOOST_NOEXCEPT
+inline size_t
+ZcBufferIterator::GetStart(void) const BOOST_NOEXCEPT
 {
     return start_;
 }
 
-inline size_t ZcBufferIterator::GetEnd(void) const BOOST_NOEXCEPT
+inline size_t
+ZcBufferIterator::GetEnd(void) const BOOST_NOEXCEPT
 {
     return end_;
 }
 
-inline size_t ZcBufferIterator::GetCursor(void) const BOOST_NOEXCEPT
+inline size_t
+ZcBufferIterator::GetCursor(void) const BOOST_NOEXCEPT
 {
     return cursor_;
 }
 
-inline void ZcBufferIterator::MoveForward(size_t numBytes) BOOST_NOEXCEPT
+inline void
+ZcBufferIterator::MoveForward(size_t numBytes) BOOST_NOEXCEPT
 {
     ForwardCheck(numBytes);
     cursor_ += numBytes;
 }
 
-inline void ZcBufferIterator::MoveBackward(size_t numBytes) BOOST_NOEXCEPT
+inline void
+ZcBufferIterator::MoveBackward(size_t numBytes) BOOST_NOEXCEPT
 {
     BackwardCheck(numBytes);
     cursor_ -= numBytes;
@@ -460,25 +465,29 @@ ZcBufferIterator::CursorToOffset(void) const BOOST_NOEXCEPT
 }
 
 template<class T>
-inline void ZcBufferIterator::Write(typename boost::type_identity<T>::type  data) BOOST_NOEXCEPT
+inline void
+ZcBufferIterator::Write(typename boost::type_identity<T>::type  data) BOOST_NOEXCEPT
 {
     WriteInOrder<T, endian::native>(data);
 }
 
 template<class T>
-inline void ZcBufferIterator::WriteL(typename boost::type_identity<T>::type  data) BOOST_NOEXCEPT
+inline void
+ZcBufferIterator::WriteL(typename boost::type_identity<T>::type  data) BOOST_NOEXCEPT
 {
     WriteInOrder<T, endian::little>(data);
 }
 
 template<class T>
-inline void ZcBufferIterator::WriteB(typename boost::type_identity<T>::type  data) BOOST_NOEXCEPT
+inline void
+ZcBufferIterator::WriteB(typename boost::type_identity<T>::type  data) BOOST_NOEXCEPT
 {
     WriteInOrder<T, endian::big>(data);
 }
 
 template<class T, endian::Order order>
-inline void ZcBufferIterator::WriteInOrder(T data) BOOST_NOEXCEPT
+inline void
+ZcBufferIterator::WriteInOrder(T data) BOOST_NOEXCEPT
 {
     static_assert(std::is_integral<T>::value ||
                   std::is_floating_point<T>::value,
@@ -693,23 +702,27 @@ ZcBufferIterator::InternalWrite(double value, size_t offset, ReverseEndianTag) B
     cursor_ += 8;
 }
 
-inline void ZcBufferIterator::Write(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+inline void
+ZcBufferIterator::Write(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
 {
     WriteInOrder<endian::native>(bytes, size);
 }
 
-inline void ZcBufferIterator::WriteL(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+inline void
+ZcBufferIterator::WriteL(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
 {
     WriteInOrder<endian::little>(bytes, size);
 }
 
-inline void ZcBufferIterator::WriteB(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+inline void
+ZcBufferIterator::WriteB(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
 {
     WriteInOrder<endian::big>(bytes, size);
 }
 
 template<endian::Order order>
-inline void ZcBufferIterator::WriteInOrder(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+inline void
+ZcBufferIterator::WriteInOrder(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
 {
     BOOST_ASSERT(bytes);
     WritableCheck(size);
@@ -738,25 +751,29 @@ ZcBufferIterator::InternalWrite(const uint8_t* bytes, size_t size, size_t offset
 }
 
 template<class T>
-inline T ZcBufferIterator::Read(void) BOOST_NOEXCEPT
+inline T
+ZcBufferIterator::Read(void) BOOST_NOEXCEPT
 {
     return ReadInOrder<T, endian::native>();
 }
 
 template<class T>
-inline T ZcBufferIterator::ReadL(void) BOOST_NOEXCEPT
+inline T
+ZcBufferIterator::ReadL(void) BOOST_NOEXCEPT
 {
     return ReadInOrder<T, endian::little>();
 }
 
 template<class T>
-inline T ZcBufferIterator::ReadB(void) BOOST_NOEXCEPT
+inline T
+ZcBufferIterator::ReadB(void) BOOST_NOEXCEPT
 {
     return ReadInOrder<T, endian::big>();
 }
 
 template<class T, endian::Order order>
-inline T ZcBufferIterator::ReadInOrder(void) BOOST_NOEXCEPT
+inline T
+ZcBufferIterator::ReadInOrder(void) BOOST_NOEXCEPT
 {
     static_assert(std::is_integral<T>::value ||
                   std::is_floating_point<T>::value,
@@ -1188,23 +1205,27 @@ ZcBufferIterator::InternalRead(ReadTag<double, CrossZeroAreaTag>, ReverseEndianT
     return v;
 }
 
-inline void ZcBufferIterator::Read(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+inline void
+ZcBufferIterator::Read(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
 {
     ReadInOrder<endian::native>(bytes, size);
 }
 
-inline void ZcBufferIterator::ReadL(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+inline void
+ZcBufferIterator::ReadL(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
 {
     ReadInOrder<endian::little>(bytes, size);
 }
 
-inline void ZcBufferIterator::ReadB(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+inline void
+ZcBufferIterator::ReadB(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
 {
     ReadInOrder<endian::big>(bytes, size);
 }
 
 template<endian::Order order>
-inline void ZcBufferIterator::ReadInOrder(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+inline void
+ZcBufferIterator::ReadInOrder(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
 {
     ReadableCheck(size);
     typedef typename MakeEndianTag<order>::Type  E;
@@ -1270,29 +1291,34 @@ ZcBufferIterator::InternalRead(uint8_t* bytes, size_t size, CrossZeroAreaTag, Re
     }
 }
 
-inline bool ZcBufferIterator::CanMoveForward(size_t numBytes) const BOOST_NOEXCEPT
+inline bool
+ZcBufferIterator::CanMoveForward(size_t numBytes) const BOOST_NOEXCEPT
 {
     return cursor_ + numBytes <= end_;
 }
 
-inline bool ZcBufferIterator::CanMoveBackward(size_t numBytes) const BOOST_NOEXCEPT
+inline bool
+ZcBufferIterator::CanMoveBackward(size_t numBytes) const BOOST_NOEXCEPT
 {
     return cursor_ >= start_ + numBytes;
 }
 
-inline void ZcBufferIterator::ForwardCheck(size_t numBytes) const BOOST_NOEXCEPT
+inline void
+ZcBufferIterator::ForwardCheck(size_t numBytes) const BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(CanMoveForward(numBytes),
                      "The buffer iterator cannot move beyond the end of buffer.");
 }
 
-inline void ZcBufferIterator::BackwardCheck(size_t numBytes) const BOOST_NOEXCEPT
+inline void
+ZcBufferIterator::BackwardCheck(size_t numBytes) const BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(CanMoveBackward(numBytes),
                      "The buffer iterator cannot move beyond the start of buffer.");
 }
 
-inline void ZcBufferIterator::WritableCheck(size_t numBytes) const BOOST_NOEXCEPT
+inline void
+ZcBufferIterator::WritableCheck(size_t numBytes) const BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(CanMoveForward(numBytes),
                      "The buffer iterator cannot write beyond the end of buffer.");
@@ -1300,56 +1326,65 @@ inline void ZcBufferIterator::WritableCheck(size_t numBytes) const BOOST_NOEXCEP
                      "The buffer iterator cannot write in the zero-compressed area.");
 }
 
-inline void ZcBufferIterator::ReadableCheck(size_t numBytes) const BOOST_NOEXCEPT
+inline void
+ZcBufferIterator::ReadableCheck(size_t numBytes) const BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(CanMoveForward(numBytes),
                      "The buffer iterator cannot read beyond the end of buffer.");
 }
 
-inline bool ZcBufferIterator::InZeroArea(void) const BOOST_NOEXCEPT
+inline bool
+ZcBufferIterator::InZeroArea(void) const BOOST_NOEXCEPT
 {
     return (zeroStart_ <= cursor_) && (cursor_ < zeroEnd_);
 }
 
-inline bool ZcBufferIterator::CrossZeroArea(size_t numBytes) const BOOST_NOEXCEPT
+inline bool
+ZcBufferIterator::CrossZeroArea(size_t numBytes) const BOOST_NOEXCEPT
 {
     return (cursor_ < zeroStart_ && zeroStart_ < cursor_ + numBytes) ||
            (cursor_ < zeroEnd_   && zeroEnd_   < cursor_ + numBytes);
 }
 
-inline ZcBufferIterator& ZcBufferIterator::operator++(void) BOOST_NOEXCEPT
+inline ZcBufferIterator&
+ZcBufferIterator::operator++(void) BOOST_NOEXCEPT
 {
     MoveForward(1);
     return *this;
 }
 
-inline ZcBufferIterator ZcBufferIterator::operator++(int) BOOST_NOEXCEPT
+inline ZcBufferIterator
+ZcBufferIterator::operator++(int) BOOST_NOEXCEPT
 {
     ZcBufferIterator it = *this;
     MoveForward(1);
     return it;
 }
 
-inline ZcBufferIterator& ZcBufferIterator::operator--(void) BOOST_NOEXCEPT
+inline ZcBufferIterator&
+ZcBufferIterator::operator--(void) BOOST_NOEXCEPT
 {
     MoveBackward(1);
     return *this;
 }
 
-inline ZcBufferIterator ZcBufferIterator::operator--(int) BOOST_NOEXCEPT
+inline ZcBufferIterator
+ZcBufferIterator::operator--(int) BOOST_NOEXCEPT
 {
     ZcBufferIterator it = *this;
     MoveBackward(1);
     return it;
 }
 
-inline ZcBufferIterator& ZcBufferIterator::operator+=(size_t numBytes) BOOST_NOEXCEPT
+inline ZcBufferIterator&
+ZcBufferIterator::operator+=(size_t numBytes) BOOST_NOEXCEPT
 {
     MoveForward(numBytes);
     return *this;
 }
 
-inline ZcBufferIterator& ZcBufferIterator::operator-=(size_t numBytes) BOOST_NOEXCEPT
+inline ZcBufferIterator&
+ZcBufferIterator::operator-=(size_t numBytes) BOOST_NOEXCEPT
 {
     MoveBackward(numBytes);
     return *this;
@@ -1358,62 +1393,70 @@ inline ZcBufferIterator& ZcBufferIterator::operator-=(size_t numBytes) BOOST_NOE
 
 ////////////////////////////////////////////////////////////////////////////////
 // ZcBufferIterator operators.
-inline bool operator> (const ZcBufferIterator& lhs,
-                       const ZcBufferIterator& rhs) BOOST_NOEXCEPT
+inline bool
+operator> (const ZcBufferIterator& lhs,
+           const ZcBufferIterator& rhs) BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
                      "Cannot compare unrelated buffer iterators.");
     return lhs.cursor_ > rhs.cursor_;
 }
 
-inline bool operator>=(const ZcBufferIterator& lhs,
-                       const ZcBufferIterator& rhs) BOOST_NOEXCEPT
+inline bool
+operator>=(const ZcBufferIterator& lhs,
+           const ZcBufferIterator& rhs) BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
                      "Cannot compare unrelated buffer iterators.");
     return lhs.cursor_ >= rhs.cursor_;
 }
 
-inline bool operator==(const ZcBufferIterator& lhs,
-                       const ZcBufferIterator& rhs) BOOST_NOEXCEPT
+inline bool
+operator==(const ZcBufferIterator& lhs,
+           const ZcBufferIterator& rhs) BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
                      "Cannot compare unrelated buffer iterators.");
     return lhs.cursor_ == rhs.cursor_;
 }
 
-inline bool operator!=(const ZcBufferIterator& lhs,
-                       const ZcBufferIterator& rhs) BOOST_NOEXCEPT
+inline bool
+operator!=(const ZcBufferIterator& lhs,
+           const ZcBufferIterator& rhs) BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
                      "Cannot compare unrelated buffer iterators.");
     return lhs.cursor_ != rhs.cursor_;
 }
 
-inline bool operator< (const ZcBufferIterator& lhs,
-                       const ZcBufferIterator& rhs) BOOST_NOEXCEPT
+inline bool
+operator< (const ZcBufferIterator& lhs,
+           const ZcBufferIterator& rhs) BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
                      "Cannot compare unrelated buffer iterators.");
     return lhs.cursor_ < rhs.cursor_;
 }
 
-inline bool operator<=(const ZcBufferIterator& lhs,
-                       const ZcBufferIterator& rhs) BOOST_NOEXCEPT
+inline bool
+operator<=(const ZcBufferIterator& lhs,
+           const ZcBufferIterator& rhs) BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
                      "Cannot compare unrelated buffer iterators.");
     return lhs.cursor_ <= rhs.cursor_;
 }
 
-inline ZcBufferIterator operator+(const ZcBufferIterator& lhs, size_t numBytes) BOOST_NOEXCEPT
+inline ZcBufferIterator
+operator+(const ZcBufferIterator& lhs, size_t numBytes) BOOST_NOEXCEPT
 {
     ZcBufferIterator it = lhs;
     it.MoveForward(numBytes);
     return it;
 }
 
-inline ZcBufferIterator operator-(const ZcBufferIterator& lhs, size_t numBytes) BOOST_NOEXCEPT
+inline ZcBufferIterator
+operator-(const ZcBufferIterator& lhs, size_t numBytes) BOOST_NOEXCEPT
 {
     ZcBufferIterator it = lhs;
     it.MoveBackward(numBytes);
@@ -1421,308 +1464,12 @@ inline ZcBufferIterator operator-(const ZcBufferIterator& lhs, size_t numBytes) 
 }
 
 inline ptrdiff_t
-operator-(const ZcBufferIterator& lhs, const ZcBufferIterator& rhs) BOOST_NOEXCEPT
+operator-(const ZcBufferIterator& lhs,
+          const ZcBufferIterator& rhs) BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
                      "Cannot compare unrelated buffer iterators.");
     return lhs.cursor_ - rhs.cursor_;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-/**
- * @ingroup Network
- * @brief Read-only buffer iterator.
- */
-class ConstZcBufferIterator
-{
-    // Xtructors.
-public:
-    ConstZcBufferIterator(uint8_t* bytes,
-                          size_t start,
-                          size_t zeroStart_,
-                          size_t zeroEnd_,
-                          size_t end,
-                          size_t cursor) BOOST_NOEXCEPT;
-
-    // Copyable.
-public:
-    ConstZcBufferIterator(const ConstZcBufferIterator& rhs) BOOST_NOEXCEPT;
-    ConstZcBufferIterator& operator=(const ConstZcBufferIterator& rhs) BOOST_NOEXCEPT;
-
-    // Implicit conversion from ZcBufferIterator.
-public:
-    ConstZcBufferIterator(const ZcBufferIterator& rhs) BOOST_NOEXCEPT;
-    ConstZcBufferIterator& operator=(const ZcBufferIterator& rhs) BOOST_NOEXCEPT;
-
-public:
-    size_t GetStart(void) const BOOST_NOEXCEPT;
-    size_t GetEnd(void) const BOOST_NOEXCEPT;
-    size_t GetCursor(void) const BOOST_NOEXCEPT;
-
-    // Move cursor.
-public:
-    /**
-     * @brief Move the iterator toward the end of the data area.
-     */
-    void MoveForward(size_t numBytes) BOOST_NOEXCEPT;
-
-    /**
-     * @brief Move the iterator toward the end of the data area.
-     */
-    void MoveBackward(size_t numBytes) BOOST_NOEXCEPT;
-
-    // Read data.
-public:
-    /**
-     * @brief Read data in native endian order.
-     *
-     * @tparam T Must be an integral type.
-     */
-    template<class T>
-    T Read(void) BOOST_NOEXCEPT;
-
-    /**
-     * @brief Read data in little endian order.
-     *
-     * @tparam T Must be an integral type.
-     */
-    template<class T>
-    T ReadL(void) BOOST_NOEXCEPT;
-
-    /**
-     * @brief Read data in big endian order.
-     *
-     * @tparam T Must be an integral type.
-     */
-    template<class T>
-    T ReadB(void) BOOST_NOEXCEPT;
-
-    // Read bytes.
-public:
-    /**
-     * @brief Read bytes in native endian order.
-     */
-    void Read(uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
-
-    /**
-     * @brief Read bytes in little endian order.
-     */
-    void ReadL(uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
-
-    /**
-     * @brief Read bytes in big endian order.
-     */
-    void ReadB(uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
-
-    // Operators.
-public:
-    ConstZcBufferIterator& operator++(void) BOOST_NOEXCEPT;
-    ConstZcBufferIterator  operator++(int) BOOST_NOEXCEPT;
-    ConstZcBufferIterator& operator--(void) BOOST_NOEXCEPT;
-    ConstZcBufferIterator  operator--(int) BOOST_NOEXCEPT;
-    ConstZcBufferIterator& operator+=(size_t numBytes) BOOST_NOEXCEPT;
-    ConstZcBufferIterator& operator-=(size_t numBytes) BOOST_NOEXCEPT;
-
-    friend bool operator> (const ConstZcBufferIterator& lhs, const ConstZcBufferIterator& rhs) BOOST_NOEXCEPT;
-    friend bool operator>=(const ConstZcBufferIterator& lhs, const ConstZcBufferIterator& rhs) BOOST_NOEXCEPT;
-    friend bool operator==(const ConstZcBufferIterator& lhs, const ConstZcBufferIterator& rhs) BOOST_NOEXCEPT;
-    friend bool operator!=(const ConstZcBufferIterator& lhs, const ConstZcBufferIterator& rhs) BOOST_NOEXCEPT;
-    friend bool operator< (const ConstZcBufferIterator& lhs, const ConstZcBufferIterator& rhs) BOOST_NOEXCEPT;
-    friend bool operator<=(const ConstZcBufferIterator& lhs, const ConstZcBufferIterator& rhs) BOOST_NOEXCEPT;
-
-    friend ConstZcBufferIterator operator+(const ConstZcBufferIterator& lhs, size_t numBytes) BOOST_NOEXCEPT;
-    friend ConstZcBufferIterator operator-(const ConstZcBufferIterator& lhs, size_t numBytes) BOOST_NOEXCEPT;
-    friend ptrdiff_t operator-(const ConstZcBufferIterator& lhs, const ConstZcBufferIterator& rhs) BOOST_NOEXCEPT;
-
-    // Properties.
-private:
-    ZcBufferIterator it_;
-
-};
-
-
-////////////////////////////////////////////////////////////////////////////////
-inline ConstZcBufferIterator::ConstZcBufferIterator(
-    uint8_t* bytes, size_t start, size_t zeroStart,
-    size_t zeroEnd, size_t end, size_t cursor) BOOST_NOEXCEPT :
-    it_(bytes, start, zeroStart, zeroEnd, end, cursor)
-{
-}
-
-inline ConstZcBufferIterator::ConstZcBufferIterator(const ConstZcBufferIterator& rhs) BOOST_NOEXCEPT :
-    it_(rhs.it_)
-{
-}
-
-inline ConstZcBufferIterator&
-ConstZcBufferIterator::operator=(const ConstZcBufferIterator& rhs) BOOST_NOEXCEPT
-{
-    if (this != &rhs)
-    {
-        it_ = rhs.it_;
-    }
-    return *this;
-}
-
-inline ConstZcBufferIterator::ConstZcBufferIterator(const ZcBufferIterator& rhs) BOOST_NOEXCEPT :
-    it_(rhs)
-{
-}
-
-inline ConstZcBufferIterator&
-ConstZcBufferIterator::operator=(const ZcBufferIterator& rhs) BOOST_NOEXCEPT
-{
-    it_ = rhs;
-    return *this;
-}
-
-inline size_t ConstZcBufferIterator::GetStart(void) const BOOST_NOEXCEPT
-{
-    return it_.GetStart();
-}
-
-inline size_t ConstZcBufferIterator::GetEnd(void) const BOOST_NOEXCEPT
-{
-    return it_.GetEnd();
-}
-
-inline size_t ConstZcBufferIterator::GetCursor(void) const BOOST_NOEXCEPT
-{
-    return it_.GetCursor();
-}
-
-inline void ConstZcBufferIterator::MoveForward(size_t numBytes) BOOST_NOEXCEPT
-{
-    it_.MoveForward(numBytes);
-}
-
-inline void ConstZcBufferIterator::MoveBackward(size_t numBytes) BOOST_NOEXCEPT
-{
-    it_.MoveBackward(numBytes);
-}
-
-template<class T>
-inline T ConstZcBufferIterator::Read(void) BOOST_NOEXCEPT
-{
-    return it_.Read<T>();
-}
-
-template<class T>
-inline T ConstZcBufferIterator::ReadL(void) BOOST_NOEXCEPT
-{
-    return it_.ReadL<T>();
-}
-
-template<class T>
-inline T ConstZcBufferIterator::ReadB(void) BOOST_NOEXCEPT
-{
-    return it_.ReadB<T>();
-}
-
-inline void ConstZcBufferIterator::Read(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
-{
-    it_.Read(bytes, size);
-}
-
-inline void ConstZcBufferIterator::ReadL(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
-{
-    it_.ReadL(bytes, size);
-}
-
-inline void ConstZcBufferIterator::ReadB(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
-{
-    it_.ReadB(bytes, size);
-}
-
-inline ConstZcBufferIterator& ConstZcBufferIterator::operator++(void) BOOST_NOEXCEPT
-{
-    ++it_;
-    return *this;
-}
-
-inline ConstZcBufferIterator ConstZcBufferIterator::operator++(int) BOOST_NOEXCEPT
-{
-    return ConstZcBufferIterator(it_++);
-}
-
-inline ConstZcBufferIterator& ConstZcBufferIterator::operator--(void) BOOST_NOEXCEPT
-{
-    --it_;
-    return *this;
-}
-
-inline ConstZcBufferIterator ConstZcBufferIterator::operator--(int) BOOST_NOEXCEPT
-{
-    return ConstZcBufferIterator(it_--);
-}
-
-inline ConstZcBufferIterator& ConstZcBufferIterator::operator+=(size_t numBytes) BOOST_NOEXCEPT
-{
-    it_ += numBytes;
-    return *this;
-}
-
-inline ConstZcBufferIterator& ConstZcBufferIterator::operator-=(size_t numBytes) BOOST_NOEXCEPT
-{
-    it_ -= numBytes;
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-inline bool
-operator> (const ConstZcBufferIterator& lhs, const ConstZcBufferIterator& rhs) BOOST_NOEXCEPT
-{
-    return lhs.it_ > rhs.it_;
-}
-
-inline bool
-operator>=(const ConstZcBufferIterator& lhs, const ConstZcBufferIterator& rhs) BOOST_NOEXCEPT
-{
-    return lhs.it_ >= rhs.it_;
-}
-
-inline bool
-operator==(const ConstZcBufferIterator& lhs, const ConstZcBufferIterator& rhs) BOOST_NOEXCEPT
-{
-    return lhs.it_ == rhs.it_;
-}
-
-inline bool
-operator!=(const ConstZcBufferIterator& lhs, const ConstZcBufferIterator& rhs) BOOST_NOEXCEPT
-{
-    return lhs.it_ != rhs.it_;
-}
-
-inline bool
-operator< (const ConstZcBufferIterator& lhs, const ConstZcBufferIterator& rhs) BOOST_NOEXCEPT
-{
-    return lhs.it_ < rhs.it_;
-}
-
-inline bool
-operator<=(const ConstZcBufferIterator& lhs, const ConstZcBufferIterator& rhs) BOOST_NOEXCEPT
-{
-    return lhs.it_ <= rhs.it_;
-}
-
-inline ConstZcBufferIterator
-operator+(const ConstZcBufferIterator& lhs, size_t numBytes) BOOST_NOEXCEPT
-{
-    return ConstZcBufferIterator(lhs.it_ + numBytes);
-}
-
-inline ConstZcBufferIterator
-operator-(const ConstZcBufferIterator& lhs, size_t numBytes) BOOST_NOEXCEPT
-{
-    return ConstZcBufferIterator(lhs.it_ - numBytes);
-}
-
-inline ptrdiff_t
-operator-(const ConstZcBufferIterator& lhs, const ConstZcBufferIterator& rhs) BOOST_NOEXCEPT
-{
-    return lhs.it_ - rhs.it_;
 }
 
 

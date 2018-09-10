@@ -15,7 +15,7 @@
 
 #include <nsfx/test.h>
 #include <nsfx/network/buffer/buffer.h>
-#include <nsfx/network/buffer/buffer-iterator.h>
+#include <nsfx/network/buffer/iterator/buffer-iterator.h>
 #include <iostream>
 
 

@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Test TagBuffer.
+ * @brief Test FixedBuffer.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -14,16 +14,16 @@
  */
 
 #include <nsfx/test.h>
-#include <nsfx/network/buffer/const-tag-buffer.h>
+#include <nsfx/network/buffer.h>
 #include <iostream>
 
 
-NSFX_TEST_SUITE(ConstTagBuffer)
+NSFX_TEST_SUITE(ConstFixedBuffer)
 {
     NSFX_TEST_CASE(Ctor)
     {
-        nsfx::TagBuffer b0(300);
-        nsfx::ConstTagBuffer cb(b0);
+        nsfx::FixedBuffer b0(300);
+        nsfx::ConstFixedBuffer cb(b0);
     }
 }
 

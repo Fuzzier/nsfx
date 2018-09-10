@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Packet buffer for Network Simulation Frameworks.
+ * @brief Buffer for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -18,9 +18,8 @@
 
 
 #include <nsfx/network/config.h>
-#include <nsfx/network/buffer/buffer-storage.h>
+#include <nsfx/network/buffer/iterator/basic-buffer-iterator.h>
 #include <nsfx/utility/endian.h>
-#include <boost/core/swap.hpp>
 #include <boost/type_traits/type_identity.hpp>
 #include <type_traits> // is_integral, is_floating_point, make_unsigned
 
@@ -29,28 +28,22 @@ NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// BufferIterator.
+// BasicBufferIterator.
 /**
  * @ingroup Network
- * @brief The iterator for accessing the buffer data.
+ * @brief The iterator for accessing buffer data.
  *
- * A buffer iterator is not associated with a buffer, but associated with the
- * underlying storage that is shared among buffers and iterators.
+ * A specialization of <code>BasicBufferIterator<></code>.
  *
- * ### Supported methods:
- * * copyable
- * * operator ++, --
- * * operator +, +=, -, -=
- * * operator >, >=, ==, !=, <=, <
- * * Write<T>(T data)
- * * WriteL<T>(T data)
- * * WriteB<T>(T data)
- * * T Read<T>()
- * * T ReadL<T>()
- * * T ReadB<T>()
+ * This buffer iterator operates on a common buffer.
+ * i.e., it does not support zero-compressed buffer.
  */
-class BufferIterator
+template<>
+class BasicBufferIterator</*readOnly=*/false, /*zcAware=*/false>
 {
+public:
+    typedef BasicBufferIterator<false, false>  BufferIterator;
+
 private:
     // Endian tag.
     struct ReverseEndianTag {};
@@ -83,13 +76,13 @@ private:
 
     // Xtructors.
 public:
-    BufferIterator(uint8_t* bytes, size_t start,
-                   size_t end, size_t cursor) BOOST_NOEXCEPT;
+    BasicBufferIterator(uint8_t* bytes, size_t start,
+                        size_t end, size_t cursor) BOOST_NOEXCEPT;
 
     // Copyable.
 public:
-    BufferIterator(const BufferIterator& rhs) BOOST_NOEXCEPT;
-    BufferIterator& operator=(const BufferIterator& rhs) BOOST_NOEXCEPT;
+    BasicBufferIterator(const BufferIterator& rhs) BOOST_NOEXCEPT;
+    BasicBufferIterator& operator=(const BufferIterator& rhs) BOOST_NOEXCEPT;
 
 public:
     size_t GetStart(void) const BOOST_NOEXCEPT;
@@ -326,11 +319,17 @@ private:
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// Typedef.
+typedef BasicBufferIterator</*readOnly=*/false, /*zcAware=*/false>
+        BufferIterator;
+
+
+////////////////////////////////////////////////////////////////////////////////
 // BufferIterator.
-inline BufferIterator::BufferIterator(uint8_t* bytes,
-                                      size_t start,
-                                      size_t end,
-                                      size_t cursor) BOOST_NOEXCEPT :
+inline BufferIterator::BasicBufferIterator(uint8_t* bytes,
+                                           size_t start,
+                                           size_t end,
+                                           size_t cursor) BOOST_NOEXCEPT :
     bytes_(bytes),
     start_(start),
     end_(end),
@@ -338,7 +337,7 @@ inline BufferIterator::BufferIterator(uint8_t* bytes,
 {
 }
 
-inline BufferIterator::BufferIterator(const BufferIterator& rhs) BOOST_NOEXCEPT :
+inline BufferIterator::BasicBufferIterator(const BufferIterator& rhs) BOOST_NOEXCEPT :
     bytes_(rhs.bytes_),
     start_(rhs.start_),
     end_(rhs.end_),
@@ -359,53 +358,62 @@ BufferIterator::operator=(const BufferIterator& rhs) BOOST_NOEXCEPT
     return *this;
 }
 
-inline size_t BufferIterator::GetStart(void) const BOOST_NOEXCEPT
+inline size_t
+BufferIterator::GetStart(void) const BOOST_NOEXCEPT
 {
     return start_;
 }
 
-inline size_t BufferIterator::GetEnd(void) const BOOST_NOEXCEPT
+inline size_t
+BufferIterator::GetEnd(void) const BOOST_NOEXCEPT
 {
     return end_;
 }
 
-inline size_t BufferIterator::GetCursor(void) const BOOST_NOEXCEPT
+inline size_t
+BufferIterator::GetCursor(void) const BOOST_NOEXCEPT
 {
     return cursor_;
 }
 
-inline void BufferIterator::MoveForward(size_t numBytes) BOOST_NOEXCEPT
+inline void
+BufferIterator::MoveForward(size_t numBytes) BOOST_NOEXCEPT
 {
     ForwardCheck(numBytes);
     cursor_ += numBytes;
 }
 
-inline void BufferIterator::MoveBackward(size_t numBytes) BOOST_NOEXCEPT
+inline void
+BufferIterator::MoveBackward(size_t numBytes) BOOST_NOEXCEPT
 {
     BackwardCheck(numBytes);
     cursor_ -= numBytes;
 }
 
 template<class T>
-inline void BufferIterator::Write(typename boost::type_identity<T>::type  data) BOOST_NOEXCEPT
+inline void
+BufferIterator::Write(typename boost::type_identity<T>::type  data) BOOST_NOEXCEPT
 {
     WriteInOrder<T, endian::native>(data);
 }
 
 template<class T>
-inline void BufferIterator::WriteL(typename boost::type_identity<T>::type  data) BOOST_NOEXCEPT
+inline void
+BufferIterator::WriteL(typename boost::type_identity<T>::type  data) BOOST_NOEXCEPT
 {
     WriteInOrder<T, endian::little>(data);
 }
 
 template<class T>
-inline void BufferIterator::WriteB(typename boost::type_identity<T>::type  data) BOOST_NOEXCEPT
+inline void
+BufferIterator::WriteB(typename boost::type_identity<T>::type  data) BOOST_NOEXCEPT
 {
     WriteInOrder<T, endian::big>(data);
 }
 
 template<class T, endian::Order order>
-inline void BufferIterator::WriteInOrder(T data) BOOST_NOEXCEPT
+inline void
+BufferIterator::WriteInOrder(T data) BOOST_NOEXCEPT
 {
     static_assert(std::is_integral<T>::value ||
                   std::is_floating_point<T>::value,
@@ -620,23 +628,27 @@ BufferIterator::InternalWrite(double value, size_t offset, ReverseEndianTag) BOO
     cursor_ += 8;
 }
 
-inline void BufferIterator::Write(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+inline void
+BufferIterator::Write(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
 {
     WriteInOrder<endian::native>(bytes, size);
 }
 
-inline void BufferIterator::WriteL(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+inline void
+BufferIterator::WriteL(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
 {
     WriteInOrder<endian::little>(bytes, size);
 }
 
-inline void BufferIterator::WriteB(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+inline void
+BufferIterator::WriteB(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
 {
     WriteInOrder<endian::big>(bytes, size);
 }
 
 template<endian::Order order>
-inline void BufferIterator::WriteInOrder(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+inline void
+BufferIterator::WriteInOrder(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
 {
     BOOST_ASSERT(bytes);
     WritableCheck(size);
@@ -644,7 +656,8 @@ inline void BufferIterator::WriteInOrder(const uint8_t* bytes, size_t size) BOOS
     InternalWrite(bytes, size, cursor_, E());
 }
 
-inline void BufferIterator::InternalWrite(const uint8_t* bytes, size_t size, size_t offset, KeepEndianTag) BOOST_NOEXCEPT
+inline void
+BufferIterator::InternalWrite(const uint8_t* bytes, size_t size, size_t offset, KeepEndianTag) BOOST_NOEXCEPT
 {
     while (size--)
     {
@@ -653,7 +666,8 @@ inline void BufferIterator::InternalWrite(const uint8_t* bytes, size_t size, siz
     }
 }
 
-inline void BufferIterator::InternalWrite(const uint8_t* bytes, size_t size, size_t offset, ReverseEndianTag) BOOST_NOEXCEPT
+inline void
+BufferIterator::InternalWrite(const uint8_t* bytes, size_t size, size_t offset, ReverseEndianTag) BOOST_NOEXCEPT
 {
     while (size--)
     {
@@ -663,25 +677,29 @@ inline void BufferIterator::InternalWrite(const uint8_t* bytes, size_t size, siz
 }
 
 template<class T>
-inline T BufferIterator::Read(void) BOOST_NOEXCEPT
+inline T
+BufferIterator::Read(void) BOOST_NOEXCEPT
 {
     return ReadInOrder<T, endian::native>();
 }
 
 template<class T>
-inline T BufferIterator::ReadL(void) BOOST_NOEXCEPT
+inline T
+BufferIterator::ReadL(void) BOOST_NOEXCEPT
 {
     return ReadInOrder<T, endian::little>();
 }
 
 template<class T>
-inline T BufferIterator::ReadB(void) BOOST_NOEXCEPT
+inline T
+BufferIterator::ReadB(void) BOOST_NOEXCEPT
 {
     return ReadInOrder<T, endian::big>();
 }
 
 template<class T, endian::Order order>
-inline T BufferIterator::ReadInOrder(void) BOOST_NOEXCEPT
+inline T
+BufferIterator::ReadInOrder(void) BOOST_NOEXCEPT
 {
     static_assert(std::is_integral<T>::value ||
                   std::is_floating_point<T>::value,
@@ -901,23 +919,27 @@ BufferIterator::InternalRead(size_t offset, ReadTag<double, InSolidAreaTag>, Rev
     return v;
 }
 
-inline void BufferIterator::Read(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+inline void
+BufferIterator::Read(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
 {
     ReadInOrder<endian::native>(bytes, size);
 }
 
-inline void BufferIterator::ReadL(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+inline void
+BufferIterator::ReadL(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
 {
     ReadInOrder<endian::little>(bytes, size);
 }
 
-inline void BufferIterator::ReadB(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+inline void
+BufferIterator::ReadB(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
 {
     ReadInOrder<endian::big>(bytes, size);
 }
 
 template<endian::Order order>
-inline void BufferIterator::ReadInOrder(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+inline void
+BufferIterator::ReadInOrder(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
 {
     BOOST_ASSERT(bytes);
     ReadableCheck(size);
@@ -925,7 +947,8 @@ inline void BufferIterator::ReadInOrder(uint8_t* bytes, size_t size) BOOST_NOEXC
     InternalRead(bytes, size, cursor_, InSolidAreaTag(), E());
 }
 
-inline void BufferIterator::InternalRead(uint8_t* bytes, size_t size, size_t offset, InSolidAreaTag, KeepEndianTag) BOOST_NOEXCEPT
+inline void
+BufferIterator::InternalRead(uint8_t* bytes, size_t size, size_t offset, InSolidAreaTag, KeepEndianTag) BOOST_NOEXCEPT
 {
     while (size--)
     {
@@ -934,7 +957,8 @@ inline void BufferIterator::InternalRead(uint8_t* bytes, size_t size, size_t off
     }
 }
 
-inline void BufferIterator::InternalRead(uint8_t* bytes, size_t size, size_t offset, InSolidAreaTag, ReverseEndianTag) BOOST_NOEXCEPT
+inline void
+BufferIterator::InternalRead(uint8_t* bytes, size_t size, size_t offset, InSolidAreaTag, ReverseEndianTag) BOOST_NOEXCEPT
 {
     while (size--)
     {
@@ -943,73 +967,85 @@ inline void BufferIterator::InternalRead(uint8_t* bytes, size_t size, size_t off
     }
 }
 
-inline bool BufferIterator::CanMoveForward(size_t numBytes) const BOOST_NOEXCEPT
+inline bool
+BufferIterator::CanMoveForward(size_t numBytes) const BOOST_NOEXCEPT
 {
     return cursor_ + numBytes <= end_;
 }
 
-inline bool BufferIterator::CanMoveBackward(size_t numBytes) const BOOST_NOEXCEPT
+inline bool
+BufferIterator::CanMoveBackward(size_t numBytes) const BOOST_NOEXCEPT
 {
     return cursor_ >= start_ + numBytes;
 }
 
-inline void BufferIterator::ForwardCheck(size_t numBytes) const BOOST_NOEXCEPT
+inline void
+BufferIterator::ForwardCheck(size_t numBytes) const BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(CanMoveForward(numBytes),
                      "The buffer iterator cannot move beyond the end of buffer.");
 }
 
-inline void BufferIterator::BackwardCheck(size_t numBytes) const BOOST_NOEXCEPT
+inline void
+BufferIterator::BackwardCheck(size_t numBytes) const BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(CanMoveBackward(numBytes),
                      "The buffer iterator cannot move beyond the start of buffer.");
 }
 
-inline void BufferIterator::WritableCheck(size_t numBytes) const BOOST_NOEXCEPT
+inline void
+BufferIterator::WritableCheck(size_t numBytes) const BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(CanMoveForward(numBytes),
                      "The buffer iterator cannot write beyond the end of buffer.");
 }
 
-inline void BufferIterator::ReadableCheck(size_t numBytes) const BOOST_NOEXCEPT
+inline void
+BufferIterator::ReadableCheck(size_t numBytes) const BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(CanMoveForward(numBytes),
                      "The buffer iterator cannot read beyond the end of buffer.");
 }
 
-inline BufferIterator& BufferIterator::operator++(void) BOOST_NOEXCEPT
+inline BufferIterator&
+BufferIterator::operator++(void) BOOST_NOEXCEPT
 {
     MoveForward(1);
     return *this;
 }
 
-inline BufferIterator BufferIterator::operator++(int) BOOST_NOEXCEPT
+inline BufferIterator
+BufferIterator::operator++(int) BOOST_NOEXCEPT
 {
-    BufferIterator it = *this;
+    BasicBufferIterator it = *this;
     MoveForward(1);
     return it;
 }
 
-inline BufferIterator& BufferIterator::operator--(void) BOOST_NOEXCEPT
+inline BufferIterator&
+BufferIterator::operator--(void) BOOST_NOEXCEPT
 {
     MoveBackward(1);
     return *this;
 }
 
-inline BufferIterator BufferIterator::operator--(int) BOOST_NOEXCEPT
+inline BufferIterator
+BufferIterator::operator--(int) BOOST_NOEXCEPT
 {
-    BufferIterator it = *this;
+    BasicBufferIterator it = *this;
     MoveBackward(1);
     return it;
 }
 
-inline BufferIterator& BufferIterator::operator+=(size_t numBytes) BOOST_NOEXCEPT
+inline BufferIterator&
+BufferIterator::operator+=(size_t numBytes) BOOST_NOEXCEPT
 {
     MoveForward(numBytes);
     return *this;
 }
 
-inline BufferIterator& BufferIterator::operator-=(size_t numBytes) BOOST_NOEXCEPT
+inline BufferIterator&
+BufferIterator::operator-=(size_t numBytes) BOOST_NOEXCEPT
 {
     MoveBackward(numBytes);
     return *this;
@@ -1018,7 +1054,8 @@ inline BufferIterator& BufferIterator::operator-=(size_t numBytes) BOOST_NOEXCEP
 
 ////////////////////////////////////////////////////////////////////////////////
 // BufferIterator operators.
-inline bool operator> (const BufferIterator& lhs,
+inline bool
+operator> (const BufferIterator& lhs,
                        const BufferIterator& rhs) BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
@@ -1026,7 +1063,8 @@ inline bool operator> (const BufferIterator& lhs,
     return lhs.cursor_ > rhs.cursor_;
 }
 
-inline bool operator>=(const BufferIterator& lhs,
+inline bool
+operator>=(const BufferIterator& lhs,
                        const BufferIterator& rhs) BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
@@ -1034,7 +1072,8 @@ inline bool operator>=(const BufferIterator& lhs,
     return lhs.cursor_ >= rhs.cursor_;
 }
 
-inline bool operator==(const BufferIterator& lhs,
+inline bool
+operator==(const BufferIterator& lhs,
                        const BufferIterator& rhs) BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
@@ -1042,7 +1081,8 @@ inline bool operator==(const BufferIterator& lhs,
     return lhs.cursor_ == rhs.cursor_;
 }
 
-inline bool operator!=(const BufferIterator& lhs,
+inline bool
+operator!=(const BufferIterator& lhs,
                        const BufferIterator& rhs) BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
@@ -1050,7 +1090,8 @@ inline bool operator!=(const BufferIterator& lhs,
     return lhs.cursor_ != rhs.cursor_;
 }
 
-inline bool operator< (const BufferIterator& lhs,
+inline bool
+operator< (const BufferIterator& lhs,
                        const BufferIterator& rhs) BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
@@ -1058,7 +1099,8 @@ inline bool operator< (const BufferIterator& lhs,
     return lhs.cursor_ < rhs.cursor_;
 }
 
-inline bool operator<=(const BufferIterator& lhs,
+inline bool
+operator<=(const BufferIterator& lhs,
                        const BufferIterator& rhs) BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
@@ -1066,14 +1108,16 @@ inline bool operator<=(const BufferIterator& lhs,
     return lhs.cursor_ <= rhs.cursor_;
 }
 
-inline BufferIterator operator+(const BufferIterator& lhs, size_t numBytes) BOOST_NOEXCEPT
+inline BufferIterator
+operator+(const BufferIterator& lhs, size_t numBytes) BOOST_NOEXCEPT
 {
     BufferIterator it = lhs;
     it.MoveForward(numBytes);
     return it;
 }
 
-inline BufferIterator operator-(const BufferIterator& lhs, size_t numBytes) BOOST_NOEXCEPT
+inline BufferIterator
+operator-(const BufferIterator& lhs, size_t numBytes) BOOST_NOEXCEPT
 {
     BufferIterator it = lhs;
     it.MoveBackward(numBytes);
@@ -1081,302 +1125,12 @@ inline BufferIterator operator-(const BufferIterator& lhs, size_t numBytes) BOOS
 }
 
 inline ptrdiff_t
-operator-(const BufferIterator& lhs, const BufferIterator& rhs) BOOST_NOEXCEPT
+operator-(const BufferIterator& lhs,
+          const BufferIterator& rhs) BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(lhs.bytes_ == rhs.bytes_,
                      "Cannot compare unrelated buffer iterators.");
     return lhs.cursor_ - rhs.cursor_;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-/**
- * @ingroup Network
- * @brief Read-only buffer iterator.
- */
-class ConstBufferIterator
-{
-    // Xtructors.
-public:
-    ConstBufferIterator(uint8_t* bytes, size_t start,
-                        size_t end, size_t cursor) BOOST_NOEXCEPT;
-
-    // Copyable.
-public:
-    ConstBufferIterator(const ConstBufferIterator& rhs) BOOST_NOEXCEPT;
-    ConstBufferIterator& operator=(const ConstBufferIterator& rhs) BOOST_NOEXCEPT;
-
-    // Implicit conversion from BufferIterator.
-public:
-    ConstBufferIterator(const BufferIterator& rhs) BOOST_NOEXCEPT;
-    ConstBufferIterator& operator=(const BufferIterator& rhs) BOOST_NOEXCEPT;
-
-public:
-    size_t GetStart(void) const BOOST_NOEXCEPT;
-    size_t GetEnd(void) const BOOST_NOEXCEPT;
-    size_t GetCursor(void) const BOOST_NOEXCEPT;
-
-    // Move cursor.
-public:
-    /**
-     * @brief Move the iterator toward the end of the data area.
-     */
-    void MoveForward(size_t numBytes) BOOST_NOEXCEPT;
-
-    /**
-     * @brief Move the iterator toward the end of the data area.
-     */
-    void MoveBackward(size_t numBytes) BOOST_NOEXCEPT;
-
-    // Read data.
-public:
-    /**
-     * @brief Read data in native endian order.
-     *
-     * @tparam T Must be an integral type.
-     */
-    template<class T>
-    T Read(void) BOOST_NOEXCEPT;
-
-    /**
-     * @brief Read data in little endian order.
-     *
-     * @tparam T Must be an integral type.
-     */
-    template<class T>
-    T ReadL(void) BOOST_NOEXCEPT;
-
-    /**
-     * @brief Read data in big endian order.
-     *
-     * @tparam T Must be an integral type.
-     */
-    template<class T>
-    T ReadB(void) BOOST_NOEXCEPT;
-
-    // Read bytes.
-public:
-    /**
-     * @brief Read bytes in native endian order.
-     */
-    void Read(uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
-
-    /**
-     * @brief Read bytes in little endian order.
-     */
-    void ReadL(uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
-
-    /**
-     * @brief Read bytes in big endian order.
-     */
-    void ReadB(uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
-
-    // Operators.
-public:
-    ConstBufferIterator& operator++(void) BOOST_NOEXCEPT;
-    ConstBufferIterator  operator++(int) BOOST_NOEXCEPT;
-    ConstBufferIterator& operator--(void) BOOST_NOEXCEPT;
-    ConstBufferIterator  operator--(int) BOOST_NOEXCEPT;
-    ConstBufferIterator& operator+=(size_t numBytes) BOOST_NOEXCEPT;
-    ConstBufferIterator& operator-=(size_t numBytes) BOOST_NOEXCEPT;
-
-    friend bool operator> (const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT;
-    friend bool operator>=(const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT;
-    friend bool operator==(const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT;
-    friend bool operator!=(const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT;
-    friend bool operator< (const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT;
-    friend bool operator<=(const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT;
-
-    friend ConstBufferIterator operator+(const ConstBufferIterator& lhs, size_t numBytes) BOOST_NOEXCEPT;
-    friend ConstBufferIterator operator-(const ConstBufferIterator& lhs, size_t numBytes) BOOST_NOEXCEPT;
-    friend ptrdiff_t operator-(const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT;
-
-    // Properties.
-private:
-    BufferIterator it_;
-
-};
-
-////////////////////////////////////////////////////////////////////////////////
-inline ConstBufferIterator::ConstBufferIterator(
-    uint8_t* bytes, size_t start, size_t end, size_t cursor) BOOST_NOEXCEPT :
-    it_(bytes, start, end, cursor)
-{
-}
-
-inline ConstBufferIterator::ConstBufferIterator(const ConstBufferIterator& rhs) BOOST_NOEXCEPT :
-    it_(rhs.it_)
-{
-}
-
-inline ConstBufferIterator&
-ConstBufferIterator::operator=(const ConstBufferIterator& rhs) BOOST_NOEXCEPT
-{
-    if (this != &rhs)
-    {
-        it_ = rhs.it_;
-    }
-    return *this;
-}
-
-inline ConstBufferIterator::ConstBufferIterator(const BufferIterator& rhs) BOOST_NOEXCEPT :
-    it_(rhs)
-{
-}
-
-inline ConstBufferIterator&
-ConstBufferIterator::operator=(const BufferIterator& rhs) BOOST_NOEXCEPT
-{
-    it_ = rhs;
-    return *this;
-}
-
-inline size_t ConstBufferIterator::GetStart(void) const BOOST_NOEXCEPT
-{
-    return it_.GetStart();
-}
-
-inline size_t ConstBufferIterator::GetEnd(void) const BOOST_NOEXCEPT
-{
-    return it_.GetEnd();
-}
-
-inline size_t ConstBufferIterator::GetCursor(void) const BOOST_NOEXCEPT
-{
-    return it_.GetCursor();
-}
-
-inline void ConstBufferIterator::MoveForward(size_t numBytes) BOOST_NOEXCEPT
-{
-    it_.MoveForward(numBytes);
-}
-
-inline void ConstBufferIterator::MoveBackward(size_t numBytes) BOOST_NOEXCEPT
-{
-    it_.MoveBackward(numBytes);
-}
-
-template<class T>
-inline T ConstBufferIterator::Read(void) BOOST_NOEXCEPT
-{
-    return it_.Read<T>();
-}
-
-template<class T>
-inline T ConstBufferIterator::ReadL(void) BOOST_NOEXCEPT
-{
-    return it_.ReadL<T>();
-}
-
-template<class T>
-inline T ConstBufferIterator::ReadB(void) BOOST_NOEXCEPT
-{
-    return it_.ReadB<T>();
-}
-
-inline void ConstBufferIterator::Read(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
-{
-    it_.Read(bytes, size);
-}
-
-inline void ConstBufferIterator::ReadL(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
-{
-    it_.ReadL(bytes, size);
-}
-
-inline void ConstBufferIterator::ReadB(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
-{
-    it_.ReadB(bytes, size);
-}
-
-inline ConstBufferIterator& ConstBufferIterator::operator++(void) BOOST_NOEXCEPT
-{
-    ++it_;
-    return *this;
-}
-
-inline ConstBufferIterator ConstBufferIterator::operator++(int) BOOST_NOEXCEPT
-{
-    return ConstBufferIterator(it_++);
-}
-
-inline ConstBufferIterator& ConstBufferIterator::operator--(void) BOOST_NOEXCEPT
-{
-    --it_;
-    return *this;
-}
-
-inline ConstBufferIterator ConstBufferIterator::operator--(int) BOOST_NOEXCEPT
-{
-    return ConstBufferIterator(it_--);
-}
-
-inline ConstBufferIterator& ConstBufferIterator::operator+=(size_t numBytes) BOOST_NOEXCEPT
-{
-    it_ += numBytes;
-    return *this;
-}
-
-inline ConstBufferIterator& ConstBufferIterator::operator-=(size_t numBytes) BOOST_NOEXCEPT
-{
-    it_ -= numBytes;
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-inline bool
-operator> (const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT
-{
-    return lhs.it_ > rhs.it_;
-}
-
-inline bool
-operator>=(const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT
-{
-    return lhs.it_ >= rhs.it_;
-}
-
-inline bool
-operator==(const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT
-{
-    return lhs.it_ == rhs.it_;
-}
-
-inline bool
-operator!=(const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT
-{
-    return lhs.it_ != rhs.it_;
-}
-
-inline bool
-operator< (const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT
-{
-    return lhs.it_ < rhs.it_;
-}
-
-inline bool
-operator<=(const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT
-{
-    return lhs.it_ <= rhs.it_;
-}
-
-inline ConstBufferIterator
-operator+(const ConstBufferIterator& lhs, size_t numBytes) BOOST_NOEXCEPT
-{
-    return ConstBufferIterator(lhs.it_ + numBytes);
-}
-
-inline ConstBufferIterator
-operator-(const ConstBufferIterator& lhs, size_t numBytes) BOOST_NOEXCEPT
-{
-    return ConstBufferIterator(lhs.it_ - numBytes);
-}
-
-inline ptrdiff_t
-operator-(const ConstBufferIterator& lhs, const ConstBufferIterator& rhs) BOOST_NOEXCEPT
-{
-    return lhs.it_ - rhs.it_;
 }
 
 

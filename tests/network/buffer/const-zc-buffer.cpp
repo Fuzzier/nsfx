@@ -14,7 +14,7 @@
  */
 
 #include <nsfx/test.h>
-#include <nsfx/network/buffer/const-zc-buffer.h>
+#include <nsfx/network/buffer.h>
 #include <iostream>
 
 

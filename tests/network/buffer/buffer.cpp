@@ -124,9 +124,9 @@ NSFX_TEST_SUITE(Buffer)
             }
         }
 
-        NSFX_TEST_CASE(FromConstTagBuffer)
+        NSFX_TEST_CASE(FromConstFixedBuffer)
         {
-            nsfx::TagBuffer b0(300);
+            nsfx::FixedBuffer b0(300);
             auto it0 = b0.begin();
             for (size_t i = 0; i < 300; ++i)
             {
@@ -406,7 +406,7 @@ NSFX_TEST_SUITE(Buffer)
             NSFX_TEST_CASE(FromNonEmpty)
             {
                 nsfx::Buffer b0(1000, 300);
-                const nsfx::BufferStorage* s0 = b0.GetStorage();
+                const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
                 b0.AddAtStart(0);
                 // Nothing was done.
                 NSFX_TEST_EXPECT_EQ(b0.GetSize(), 300);
@@ -449,7 +449,7 @@ NSFX_TEST_SUITE(Buffer)
                 {
                     nsfx::Buffer b0(1000, 700, 300);
                     // [700 s zs 300 ze e 300]
-                    const nsfx::BufferStorage* s0 = b0.GetStorage();
+                    const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
                     b0.AddAtEnd(100);
                     // [700 s zs 300 ze 100 e 200]
                     b0.AddAtStart(700);
@@ -472,7 +472,7 @@ NSFX_TEST_SUITE(Buffer)
                 {
                     nsfx::Buffer b0(1000, 700, 300);
                     // [700 s zs 300 ze e 300]
-                    const nsfx::BufferStorage* s0 = b0.GetStorage();
+                    const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
                     b0.AddAtEnd(100);
                     // [700 s zs 300 ze 100 e 200]
                     b0.AddAtStart(900);
@@ -495,7 +495,7 @@ NSFX_TEST_SUITE(Buffer)
                 {
                     nsfx::Buffer b0(1000, 700, 300);
                     // [700 s zs 300 ze e 300 ]
-                    const nsfx::BufferStorage* s0 = b0.GetStorage();
+                    const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
                     b0.AddAtEnd(100);
                     // [700 s zs 300 ze 100 e 200 ]
                     b0.AddAtStart(1000);
@@ -529,7 +529,7 @@ NSFX_TEST_SUITE(Buffer)
                         nsfx::Buffer b1(b0);
                         b1.AddAtEnd(100); // dirty at end, but not dirty at start
                         // b1 [600 s 100 zs 300 ze 200 e 100]
-                        const nsfx::BufferStorage* s0 = b0.GetStorage();
+                        const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
                         b0.AddAtStart(600);
                         // b0 [s 700 zs 300 ze 100 e 200]
                         // Adjust offset.
@@ -556,7 +556,7 @@ NSFX_TEST_SUITE(Buffer)
                         nsfx::Buffer b1(b0);
                         b1.AddAtEnd(100); // dirty at end, but not dirty at start
                         // b1 [600 s 100 zs 300 ze 200 e 100]
-                        const nsfx::BufferStorage* s0 = b0.GetStorage();
+                        const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
                         b0.AddAtStart(601);
                         // b0 [s 701 zs 300 ze 100 e]
                         // Reallocate just enough capacity.
@@ -586,7 +586,7 @@ NSFX_TEST_SUITE(Buffer)
                         nsfx::Buffer b1(b0);
                         b1.AddAtStart(1); // dirty at start
                         // b1 [599 s 101 zs 300 ze 200 e 100]
-                        const nsfx::BufferStorage* s0 = b0.GetStorage();
+                        const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
                         b0.AddAtStart(600);
                         // b0 [s 700 zs 300 ze 100 e]
                         // Reallocate (preserve capacity).
@@ -613,7 +613,7 @@ NSFX_TEST_SUITE(Buffer)
                         nsfx::Buffer b1(b0);
                         b1.AddAtStart(1); // dirty at start
                         // b1 [599 s 101 zs 300 ze 200 e 100]
-                        const nsfx::BufferStorage* s0 = b0.GetStorage();
+                        const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
                         b0.AddAtStart(601);
                         // b0 [s 701 zs 300 ze 100 e]
                         // Reallocate.
@@ -723,7 +723,7 @@ NSFX_TEST_SUITE(Buffer)
             NSFX_TEST_CASE(FromNonEmpty)
             {
                 nsfx::Buffer b0(1000, 300);
-                const nsfx::BufferStorage* s0 = b0.GetStorage();
+                const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
                 b0.AddAtEnd(0);
                 // Nothing was done.
                 NSFX_TEST_EXPECT_EQ(b0.GetSize(), 300);
@@ -766,7 +766,7 @@ NSFX_TEST_SUITE(Buffer)
                 {
                     nsfx::Buffer b0(1000, 700, 300);
                     // [700 s zs 300 ze e 300]
-                    const nsfx::BufferStorage* s0 = b0.GetStorage();
+                    const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
                     b0.AddAtStart(100);
                     // [600 s 100 zs 300 ze e 300]
                     b0.AddAtEnd(300);
@@ -789,7 +789,7 @@ NSFX_TEST_SUITE(Buffer)
                 {
                     nsfx::Buffer b0(1000, 700, 300);
                     // [700 s zs 300 ze e 300]
-                    const nsfx::BufferStorage* s0 = b0.GetStorage();
+                    const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
                     b0.AddAtStart(100);
                     // [600 s 100 zs 300 ze e 300]
                     b0.AddAtEnd(900);
@@ -812,7 +812,7 @@ NSFX_TEST_SUITE(Buffer)
                 {
                     nsfx::Buffer b0(1000, 700, 300);
                     // [ 700 s zs 300 ze e 300 ]
-                    const nsfx::BufferStorage* s0 = b0.GetStorage();
+                    const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
                     b0.AddAtStart(100);
                     // [ 600 s 100 zs 300 ze e 300 ]
                     b0.AddAtEnd(1000);
@@ -846,7 +846,7 @@ NSFX_TEST_SUITE(Buffer)
                         nsfx::Buffer b1(b0);
                         b1.AddAtStart(100); // dirty at start, but not dirty at end
                         // b1 [500 s 200 zs 300 ze 100 e 200]
-                        const nsfx::BufferStorage* s0 = b0.GetStorage();
+                        const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
                         b0.AddAtEnd(200);
                         // b0 [600 s 100 zs 300 ze 300 e]
                         // Adjust offset.
@@ -873,7 +873,7 @@ NSFX_TEST_SUITE(Buffer)
                         nsfx::Buffer b1(b0);
                         b1.AddAtStart(100); // dirty at start, but not dirty at end
                         // b1 [500 s 200 zs 300 ze 100 e 200]
-                        const nsfx::BufferStorage* s0 = b0.GetStorage();
+                        const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
                         b0.AddAtEnd(201);
                         // b0 [s 100 zs 300 ze 301 e]
                         // Reallocate just enough capacity.
@@ -903,7 +903,7 @@ NSFX_TEST_SUITE(Buffer)
                         nsfx::Buffer b1(b0);
                         b1.AddAtEnd(1); // dirty at end
                         // b1 [600 s 100 zs 300 ze 101 e 199]
-                        const nsfx::BufferStorage* s0 = b0.GetStorage();
+                        const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
                         b0.AddAtEnd(200);
                         // b0 [600 s 100 zs 300 ze 300 e]
                         // Reallocate (preserve capacity).
@@ -930,7 +930,7 @@ NSFX_TEST_SUITE(Buffer)
                         nsfx::Buffer b1(b0);
                         b1.AddAtEnd(1); // dirty at end
                         // b1 [600 s 100 zs 300 ze 101 e 199]
-                        const nsfx::BufferStorage* s0 = b0.GetStorage();
+                        const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
                         b0.AddAtEnd(201);
                         // b0 [s 100 zs 300 ze 301 e]
                         // Reallocate just enough capacity.
@@ -1024,7 +1024,7 @@ NSFX_TEST_SUITE(Buffer)
         {
             nsfx::Buffer b0(1000, 700, 300);
             // [700 s zs 300 ze e 300 ]
-            const nsfx::BufferStorage* s0 = b0.GetStorage();
+            const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
             b0.AddAtEnd(100);
             // [700 s zs 300 ze 100 e 200 ]
             b0.AddAtStart(100);
@@ -1079,7 +1079,7 @@ NSFX_TEST_SUITE(Buffer)
         {
             nsfx::Buffer b0(1000, 700, 300);
             // [700 s zs 300 ze e 300 ]
-            const nsfx::BufferStorage* s0 = b0.GetStorage();
+            const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
             b0.AddAtEnd(100);
             // [700 s zs 300 ze 100 e 200 ]
             b0.AddAtStart(100);
@@ -1122,7 +1122,7 @@ NSFX_TEST_SUITE(Buffer)
         {
             nsfx::Buffer b0(1000, 700, 300);
             // [700 s zs 300 ze e 300 ]
-            const nsfx::BufferStorage* s0 = b0.GetStorage();
+            const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
             b0.AddAtEnd(100);
             // [700 s zs 300 ze 100 e 200 ]
             b0.AddAtStart(100);
