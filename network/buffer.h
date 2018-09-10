@@ -19,18 +19,27 @@
 
 #include <nsfx/network/config.h>
 
-#include <nsfx/network/buffer/buffer-storage.h>
+// Storage.
+#include <nsfx/network/buffer/storage/basic-buffer-storage.h>
+
+// Iterator.
+#include <nsfx/network/buffer/iterator/basic-buffer-iterator.h>
+
+#include <nsfx/network/buffer/iterator/buffer-iterator.h>
+#include <nsfx/network/buffer/iterator/const-buffer-iterator.h>
+
+#include <nsfx/network/buffer/iterator/zc-buffer-iterator.h>
+#include <nsfx/network/buffer/iterator/const-zc-buffer-iterator.h>
+
+// Buffer.
 #include <nsfx/network/buffer/buffer.h>
 #include <nsfx/network/buffer/const-buffer.h>
-#include <nsfx/network/buffer/buffer-iterator.h>
 
 #include <nsfx/network/buffer/zc-buffer.h>
 #include <nsfx/network/buffer/const-zc-buffer.h>
-#include <nsfx/network/buffer/zc-buffer-iterator.h>
 
-#include <nsfx/network/buffer/tag-buffer-storage.h>
-#include <nsfx/network/buffer/tag-buffer.h>
-#include <nsfx/network/buffer/const-tag-buffer.h>
+#include <nsfx/network/buffer/fixed-buffer.h>
+#include <nsfx/network/buffer/const-fixed-buffer.h>
 
 
 #endif // BUFFER_H__50C89673_2F74_42D3_94EC_993B4FF4E2A8

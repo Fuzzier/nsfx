@@ -15,7 +15,7 @@
 
 #include <nsfx/test.h>
 #include <nsfx/network/buffer/zc-buffer.h>
-#include <nsfx/network/buffer/zc-buffer-iterator.h>
+#include <nsfx/network/buffer/iterator/zc-buffer-iterator.h>
 #include <iostream>
 
 

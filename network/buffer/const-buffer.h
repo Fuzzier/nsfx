@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Packet buffer for Network Simulation Frameworks.
+ * @brief Buffer for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -18,7 +18,8 @@
 
 
 #include <nsfx/network/config.h>
-#include <nsfx/network/buffer/const-buffer-declare.h>
+#include <nsfx/network/buffer/basic-buffer.h>
+#include <nsfx/network/buffer/buffer.h>
 #include <boost/core/swap.hpp>
 
 
@@ -27,12 +28,159 @@ NSFX_OPEN_NAMESPACE
 
 ////////////////////////////////////////////////////////////////////////////////
 // ConstBuffer.
-inline ConstBuffer::ConstBuffer(const Buffer& buffer) :
+/**
+ * @ingroup Network
+ * @brief A read-only buffer that supports copy-on-write.
+ *
+ * Although a read-only buffer cannot modify its underlying storage, it still
+ * have to provide support for copy-on-write for other writable buffers that
+ * share the same underlying storage.
+ */
+template<>
+class BasicBuffer</*readOnly*/true, /*copyOnResize*/true, /*zeroArea*/false>
+{
+public:
+    typedef BasicBuffer<true, true, false>  ConstBuffer;
+    typedef Buffer::BufferStorage           BufferStorage;
+    typedef ConstBufferIterator iterator;
+    typedef ConstBufferIterator const_iterator;
+
+    // Xtructors.
+public:
+    /**
+     * @brief Create a buffer.
+     *
+     * @param[in] buffer A buffer.
+     *
+     * A \c Buffer can be converted implicitly to a \c ConstBuffer.
+     */
+    BasicBuffer(const Buffer& buffer);
+
+    // Copyable.
+public:
+    /**
+     * @brief Make a shallow copy of the buffer.
+     */
+    BasicBuffer(const ConstBuffer& rhs) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Make a shallow copy of the buffer.
+     */
+    ConstBuffer& operator=(const ConstBuffer& rhs) BOOST_NOEXCEPT;
+
+    // Movable.
+public:
+    /**
+     * @brief Move a buffer.
+     */
+    BasicBuffer(ConstBuffer&& rhs) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Move a buffer.
+     */
+    ConstBuffer& operator=(ConstBuffer&& rhs) BOOST_NOEXCEPT;
+
+    // Methods.
+public:
+    /**
+     * @brief Get the size of the represented data.
+     */
+    size_t GetSize(void) const BOOST_NOEXCEPT;
+
+    /**
+     * @brief Get the size of the actually used memory.
+     */
+    size_t GetInternalSize(void) const BOOST_NOEXCEPT;
+
+    /**
+     * @brief Get the capacity of the storage.
+     */
+    size_t GetCapacity(void) const BOOST_NOEXCEPT;
+
+    size_t GetStart(void) const BOOST_NOEXCEPT;
+    size_t GetZeroStart(void) const BOOST_NOEXCEPT;
+    size_t GetZeroEnd(void) const BOOST_NOEXCEPT;
+    size_t GetEnd(void) const BOOST_NOEXCEPT;
+    const BufferStorage* GetStorage(void) const BOOST_NOEXCEPT;
+
+    /**
+     * @brief Copy data to a memory block.
+     * @return The number of bytes copied.
+     */
+    size_t CopyTo(uint8_t* dst, size_t size) const BOOST_NOEXCEPT;
+
+    // Fragmentation.
+public:
+    /**
+     * @brief Make a fragment of the buffer.
+     *
+     * @param[in] start The start of the fragment.
+     * @param[in] size  The size of the fragment.
+     */
+    ConstBuffer MakeFragment(size_t start, size_t size) const BOOST_NOEXCEPT;
+
+    // Decompression.
+public:
+    /**
+     * @brief Expand the zero-compressed data as part of the header.
+     */
+    ConstBuffer MakeRealBuffer(void) const BOOST_NOEXCEPT;
+
+    /**
+     * @brief Expand the zero-compressed data as part of the header.
+     */
+    void Realize(void) const BOOST_NOEXCEPT;
+
+    // Iterator.
+public:
+    /**
+     * @brief Get an iterator that points to the first byte of the data.
+     */
+    ConstBufferIterator begin(void) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Get an iterator that points one byte after the last byte of the data area.
+     */
+    ConstBufferIterator end(void) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Get a const iterator that points to the first byte of the data.
+     */
+    ConstBufferIterator cbegin(void) const BOOST_NOEXCEPT;
+
+    /**
+     * @brief Get a const iterator that points one byte after the last byte of the data area.
+     */
+    ConstBufferIterator cend(void) const BOOST_NOEXCEPT;
+
+    // Swappable.
+public:
+    void swap(ConstBuffer& rhs) BOOST_NOEXCEPT;
+
+    // Properties.
+private:
+    /**
+     * @brief The buffer.
+     */
+    Buffer buffer_;
+
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Typedef.
+typedef BasicBuffer</*readOnly*/true, /*copyOnResize*/true, /*zeroArea*/false>
+        ConstBuffer;
+
+
+////////////////////////////////////////////////////////////////////////////////
+// ConstBuffer.
+inline ConstBuffer::BasicBuffer(const Buffer& buffer) :
     buffer_(buffer)
 {
 }
 
-inline ConstBuffer::ConstBuffer(const ConstBuffer& rhs) BOOST_NOEXCEPT :
+inline ConstBuffer::BasicBuffer(const ConstBuffer& rhs) BOOST_NOEXCEPT :
    buffer_(rhs.buffer_)
 {
 }
@@ -46,7 +194,7 @@ inline ConstBuffer& ConstBuffer::operator=(const ConstBuffer& rhs) BOOST_NOEXCEP
     return *this;
 }
 
-inline ConstBuffer::ConstBuffer(ConstBuffer&& rhs) BOOST_NOEXCEPT :
+inline ConstBuffer::BasicBuffer(ConstBuffer&& rhs) BOOST_NOEXCEPT :
         buffer_(std::move(rhs.buffer_))
 {
 }
@@ -95,7 +243,8 @@ inline size_t ConstBuffer::GetEnd(void) const BOOST_NOEXCEPT
     return buffer_.GetEnd();
 }
 
-inline const BufferStorage* ConstBuffer::GetStorage(void) const BOOST_NOEXCEPT
+inline const ConstBuffer::BufferStorage*
+ConstBuffer::GetStorage(void) const BOOST_NOEXCEPT
 {
     return buffer_.GetStorage();
 }

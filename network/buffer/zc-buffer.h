@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Zero-compressed packet buffer for Network Simulation Frameworks.
+ * @brief Buffer for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -18,10 +18,10 @@
 
 
 #include <nsfx/network/config.h>
-#include <nsfx/network/buffer/zc-buffer-declare.h>
-#include <nsfx/network/buffer/const-buffer-declare.h>
-#include <nsfx/network/buffer/const-zc-buffer-declare.h>
-#include <nsfx/network/buffer/const-tag-buffer-declare.h>
+#include <nsfx/network/buffer/basic-buffer.h>
+#include <nsfx/network/buffer/storage/basic-buffer-storage.h>
+#include <nsfx/network/buffer/iterator/zc-buffer-iterator.h>
+#include <nsfx/network/buffer/iterator/const-zc-buffer-iterator.h>
 #include <boost/core/swap.hpp>
 #include <cstring> // memcpy, memmove, memset
 
@@ -31,7 +31,356 @@ NSFX_OPEN_NAMESPACE
 
 ////////////////////////////////////////////////////////////////////////////////
 // ZcBuffer.
-inline ZcBuffer::ZcBuffer(void) BOOST_NOEXCEPT :
+/**
+ * @ingroup Network
+ * @brief An zero-compressed, resizable buffer that supports copy-on-resize.
+ *
+ * # Structure
+ *   The buffer holds a storage that provides a memory space for the buffer.
+ *   The storage is logically divided into three areas.
+ *   The data area is located in middle of the storage, and the remaining space
+ *   is naturally divided in to the pre-data (pre-header) area and the post-data
+ *   (post-trailer) area.
+ *
+ *   To reduce memory consumption, the buffer models a <i>virtual data area</i>.
+ *   The buffer is logically divided into three areas: the <i>header area</i>,
+ *   the <i>zero-compressed data area</i>, and the <i>trailer area</i>.
+ *   The zero-compressed data area does not consume any physical memory, which
+ *   is usually used to represent the application layer payload.
+ *
+ *   When the zero-compressed data area is not empty, the buffer represents a
+ *   <i>virtual data buffer</i>.
+ *   When the zero-compressed data area is empty, the buffer represents a
+ *   <i>real buffer</i>.
+ *
+ * # Reallocation on expansion
+ *   Several buffers can link to the same buffer storage, and each buffer has
+ *   its own view of the start and end positions of the data area.
+ *
+ *   When a buffer expands, its buffer storage may be reallocated.
+ *   If the buffer storage is shared by other buffers, and the buffer expands
+ *   to an area that has already been occupied by other buffers, the buffer
+ *   storage is automatically reallocated and duplicated for the buffer.
+ *   The copy-on-write operations are \c ZcBuffer::AddAtStart() and
+ *   \c ZcBuffer::AddAtEnd().
+ */
+template<>
+class BasicBuffer</*readOnly*/false, /*copyOnResize*/true, /*zeroArea*/true>
+{
+public:
+    typedef BasicBuffer<false, true, true>               ZcBuffer;
+    typedef BasicBufferStorage</*trackDirtyArea=*/true>  BufferStorage;
+    typedef ZcBufferIterator      iterator;
+    typedef ConstZcBufferIterator const_iterator;
+
+    // Xtructors.
+public:
+    /**
+     * @brief Create an empty buffer.
+     */
+    BasicBuffer(void) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Create a buffer.
+     *
+     * @param[in] capacity The initial apacity of the buffer.
+     *
+     * The zero-compressed data area is empty in this buffer.
+     * The zero-compressed data area is located at the end of the storage,
+     * optimizing for adding data toward the head of the storage.
+     */
+    explicit BasicBuffer(size_t capacity);
+
+    /**
+     * @brief Create a buffer.
+     *
+     * @param[in] capacity The initial apacity of the buffer.
+     * @param[in] zeroSize The size of the zero-compressed data area.
+     *
+     * The zero-compressed data area is located at the end of the storage,
+     * optimizing for adding data at the head of the storage.
+     */
+    BasicBuffer(size_t capacity, size_t zeroSize);
+
+    /**
+     * @brief Create a buffer.
+     *
+     * @param[in] capacity   The initial apacity of the buffer.
+     * @param[in] zeroStart  The start of the zero-compressed data area.
+     *                       <p>
+     *                       <code>zeroStart <= capacity</code>.
+     * @param[in] zeroSize   The size of the zero-compressed data area.
+     */
+    BasicBuffer(size_t capacity, size_t zeroStart, size_t zeroSize);
+
+    // Conversions.
+public:
+    /**
+     * @brief Deep copy from a read-only buffer.
+     */
+    template<bool readOnly, bool copyOnResize, bool zeroArea>
+    explicit BasicBuffer(const BasicBuffer<readOnly, copyOnResize, zeroArea>& rhs);
+
+private:
+    /**
+     * @brief Create a buffer.
+     *
+     * @param[in] storage  The reference count is taken by the buffer.
+     *
+     * @see \c InternalMakeRealCopy().
+     * @internal
+     */
+    BasicBuffer(BufferStorage* storage, size_t start, size_t zeroStart,
+                size_t zeroEnd, size_t end) BOOST_NOEXCEPT;
+
+public:
+    ~BasicBuffer(void) BOOST_NOEXCEPT;
+
+    // Copyable.
+public:
+    /**
+     * @brief Make a shallow copy of the buffer.
+     */
+    BasicBuffer(const ZcBuffer& rhs) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Make a shallow copy of the buffer.
+     */
+    ZcBuffer& operator=(const ZcBuffer& rhs) BOOST_NOEXCEPT;
+
+    // Movable.
+public:
+    /**
+     * @brief Move a buffer.
+     */
+    BasicBuffer(ZcBuffer&& rhs) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Move a buffer.
+     */
+    ZcBuffer& operator=(ZcBuffer&& rhs) BOOST_NOEXCEPT;
+
+    // Acquire/release buffer storage.
+private:
+    void Acquire(void) BOOST_NOEXCEPT;
+
+    void Release(void) BOOST_NOEXCEPT;
+
+    // Methods.
+public:
+    /**
+     * @brief Get the size of the represented data.
+     */
+    size_t GetSize(void) const BOOST_NOEXCEPT;
+
+    /**
+     * @brief Get the size of the actually used memory.
+     */
+    size_t GetInternalSize(void) const BOOST_NOEXCEPT;
+
+    /**
+     * @brief Get the capacity of the storage.
+     */
+    size_t GetCapacity(void) const BOOST_NOEXCEPT;
+
+    size_t GetStart(void) const BOOST_NOEXCEPT;
+    size_t GetZeroStart(void) const BOOST_NOEXCEPT;
+    size_t GetZeroEnd(void) const BOOST_NOEXCEPT;
+    size_t GetEnd(void) const BOOST_NOEXCEPT;
+    const BufferStorage* GetStorage(void) const BOOST_NOEXCEPT;
+
+    /**
+     * @brief Copy data to a memory block.
+     * @return The number of bytes copied.
+     */
+    size_t CopyTo(uint8_t* dst, size_t size) const BOOST_NOEXCEPT;
+
+private:
+    struct ContinuousTag {};
+    struct SegmentedTag {};
+
+    size_t InternalCopyTo(uint8_t* dst, size_t size, ContinuousTag) const BOOST_NOEXCEPT;
+    size_t InternalCopyTo(uint8_t* dst, size_t size, SegmentedTag) const BOOST_NOEXCEPT;
+
+    // Add/remove.
+private:
+    struct AdjustOffsetTag {};
+    struct ReallocateTag {};
+    struct MoveMemoryTag {};
+
+public:
+    /**
+     * @brief Expand the buffer toward the start.
+     *
+     * @remarks Invalidates existing iterators of the buffer.
+     */
+    void AddAtStart(size_t size);
+
+    /**
+     * @brief Expand the buffer and copy the specified contents.
+     *
+     * @remarks Invalidates existing iterators of the buffer.
+     */
+    void AddAtStart(const uint8_t* src, size_t size);
+
+    /**
+     * @brief Expand the buffer and copy the contents from the specified buffer.
+     *
+     * @remarks Invalidates existing iterators of the buffer.
+     */
+    template<bool readOnly, bool copyOnResize, bool zeroArea>
+    void AddAtStart(const BasicBuffer<readOnly, copyOnResize, zeroArea>& src);
+
+private:
+    void InternalAddAtStart(size_t size, AdjustOffsetTag) BOOST_NOEXCEPT;
+    void InternalAddAtStart(size_t size, size_t newCapacity,
+                            size_t newStart, size_t dataSize, ReallocateTag);
+    void InternalAddAtStart(size_t size, size_t dataSize, MoveMemoryTag) BOOST_NOEXCEPT;
+
+public:
+    /**
+     * @brief Expand the buffer toward the end.
+     *
+     * @remarks Invalidates existing iterators of the buffer.
+     */
+    void AddAtEnd(size_t size);
+
+    /**
+     * @brief Extend the buffer and copy the specified contents.
+     *
+     * @remarks Invalidates existing iterators of the buffer.
+     */
+    void AddAtEnd(const uint8_t* src, size_t size);
+
+    /**
+     * @brief Extend the buffer and copy the contents from the specified buffer.
+     *
+     * @remarks Invalidates existing iterators of the buffer.
+     */
+    template<bool readOnly, bool copyOnResize, bool zeroArea>
+    void AddAtEnd(const BasicBuffer<readOnly, copyOnResize, zeroArea>& src);
+
+private:
+    void InternalAddAtEnd(size_t size, size_t dataSize, AdjustOffsetTag) BOOST_NOEXCEPT;
+    void InternalAddAtEnd(size_t size, size_t newCapacity,
+                          size_t newStart, size_t dataSize, ReallocateTag);
+    void InternalAddAtEnd(size_t size, size_t dataSize, MoveMemoryTag) BOOST_NOEXCEPT;
+
+public:
+    /**
+     * @brief Shrink the buffer from the start.
+     *
+     * @param[in] size The number of bytes to remove.
+     *                 <p>
+     *                 If it is no less than the size of the buffer, the buffer
+     *                 becomes empty.
+     *
+     * @remarks Invalidates existing iterators of the buffer.
+     */
+    void RemoveAtStart(size_t size) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Shrink the buffer from the end.
+     *
+     * @param[in] size The number of bytes to remove.
+     *                 <p>
+     *                 If it is no less than the size of the buffer, the buffer
+     *                 becomes empty.
+     *
+     * @remarks Invalidates existing iterators of the buffer.
+     */
+    void RemoveAtEnd(size_t size) BOOST_NOEXCEPT;
+
+    // Fragmentation.
+public:
+    /**
+     * @brief Make a fragment of the buffer.
+     *
+     * @param[in] start The start of the fragment.
+     * @param[in] size  The size of the fragment.
+     */
+    ZcBuffer MakeFragment(size_t start, size_t size) const BOOST_NOEXCEPT;
+
+    // Decompression.
+public:
+    /**
+     * @brief Expand the zero-compressed data as part of the header.
+     */
+    ZcBuffer MakeRealBuffer(void) const;
+
+    /**
+     * @brief Expand the zero-compressed data as part of the header.
+     */
+    void Realize(void) const;
+
+private:
+    ZcBuffer InternalGetRealBuffer(ReallocateTag) const;
+
+    // Iterator.
+public:
+    /**
+     * @brief Get an iterator that points to the first byte of the data.
+     */
+    ZcBufferIterator begin(void) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Get an iterator that points one byte after the last byte of the data area.
+     */
+    ZcBufferIterator end(void) BOOST_NOEXCEPT;
+
+    /**
+     * @brief Get a const iterator that points to the first byte of the data.
+     */
+    ConstZcBufferIterator cbegin(void) const BOOST_NOEXCEPT;
+
+    /**
+     * @brief Get a const iterator that points one byte after the last byte of the data area.
+     */
+    ConstZcBufferIterator cend(void) const BOOST_NOEXCEPT;
+
+    // Swappable.
+public:
+    void swap(ZcBuffer& rhs) BOOST_NOEXCEPT;
+
+    // Properties.
+private:
+    /**
+     * @brief The storage.
+     */
+    BufferStorage* storage_;
+
+    /**
+     * @brief The logical offset of the start of the header area.
+     */
+    size_t start_;
+
+    /**
+     * @brief The logical offset of the start of the zero-compressed data area.
+     */
+    size_t zeroStart_;
+
+    /**
+     * @brief The logical offset of the end of the zero-compressed data area (on-byte-beyond).
+     */
+    size_t zeroEnd_;
+
+    /**
+     * @brief The logical offset of the end of the trailer area (on-byte-beyond).
+     */
+    size_t end_;
+
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Typedef.
+typedef BasicBuffer</*readOnly*/false, /*copyOnResize*/true, /*zeroArea*/true>
+        ZcBuffer;
+
+
+////////////////////////////////////////////////////////////////////////////////
+// ZcBuffer.
+inline ZcBuffer::BasicBuffer(void) BOOST_NOEXCEPT :
     storage_(nullptr),
     start_(0),
     zeroStart_(0),
@@ -40,7 +389,7 @@ inline ZcBuffer::ZcBuffer(void) BOOST_NOEXCEPT :
 {
 }
 
-inline ZcBuffer::ZcBuffer(size_t capacity) :
+inline ZcBuffer::BasicBuffer(size_t capacity) :
     storage_(BufferStorage::Allocate(capacity)),
     start_(capacity),
     zeroStart_(capacity),
@@ -54,7 +403,7 @@ inline ZcBuffer::ZcBuffer(size_t capacity) :
     }
 }
 
-inline ZcBuffer::ZcBuffer(size_t capacity, size_t zeroSize) :
+inline ZcBuffer::BasicBuffer(size_t capacity, size_t zeroSize) :
     storage_(BufferStorage::Allocate(capacity)),
     start_(capacity),
     zeroStart_(capacity),
@@ -68,7 +417,7 @@ inline ZcBuffer::ZcBuffer(size_t capacity, size_t zeroSize) :
     }
 }
 
-inline ZcBuffer::ZcBuffer(size_t capacity, size_t zeroStart, size_t zeroSize)
+inline ZcBuffer::BasicBuffer(size_t capacity, size_t zeroStart, size_t zeroSize)
 {
     BOOST_ASSERT_MSG(zeroStart <= capacity,
                      "Cannot construct a ZcBuffer, since the start of "
@@ -86,8 +435,8 @@ inline ZcBuffer::ZcBuffer(size_t capacity, size_t zeroStart, size_t zeroSize)
     }
 }
 
-inline ZcBuffer::ZcBuffer(BufferStorage* storage, size_t start,
-                          size_t zeroStart, size_t zeroEnd, size_t end) BOOST_NOEXCEPT :
+inline ZcBuffer::BasicBuffer(BufferStorage* storage, size_t start,
+                             size_t zeroStart, size_t zeroEnd, size_t end) BOOST_NOEXCEPT :
     storage_(storage),
     start_(start),
     zeroStart_(zeroStart),
@@ -106,7 +455,8 @@ inline ZcBuffer::ZcBuffer(BufferStorage* storage, size_t start,
     }
 }
 
-inline ZcBuffer::ZcBuffer(const ConstBuffer& rhs) :
+template<bool readOnly, bool copyOnResize, bool zeroArea>
+inline ZcBuffer::BasicBuffer(const BasicBuffer<readOnly, copyOnResize, zeroArea>& rhs) :
     storage_(BufferStorage::Allocate(rhs.GetSize())),
     start_(0),
     zeroStart_(rhs.GetSize()),
@@ -119,38 +469,12 @@ inline ZcBuffer::ZcBuffer(const ConstBuffer& rhs) :
     }
 }
 
-inline ZcBuffer::ZcBuffer(const ConstZcBuffer& rhs) :
-    storage_(BufferStorage::Allocate(rhs.GetSize())),
-    start_(0),
-    zeroStart_(rhs.GetSize()),
-    zeroEnd_(rhs.GetSize()),
-    end_(rhs.GetSize())
-{
-    if (storage_)
-    {
-        rhs.CopyTo(storage_->bytes_, storage_->capacity_);
-    }
-}
-
-inline ZcBuffer::ZcBuffer(const ConstTagBuffer& rhs) :
-    storage_(BufferStorage::Allocate(rhs.GetSize())),
-    start_(0),
-    zeroStart_(rhs.GetSize()),
-    zeroEnd_(rhs.GetSize()),
-    end_(rhs.GetSize())
-{
-    if (storage_)
-    {
-        rhs.CopyTo(storage_->bytes_, storage_->capacity_);
-    }
-}
-
-inline ZcBuffer::~ZcBuffer(void) BOOST_NOEXCEPT
+inline ZcBuffer::~BasicBuffer(void) BOOST_NOEXCEPT
 {
     Release();
 }
 
-inline ZcBuffer::ZcBuffer(const ZcBuffer& rhs) BOOST_NOEXCEPT :
+inline ZcBuffer::BasicBuffer(const ZcBuffer& rhs) BOOST_NOEXCEPT :
     storage_(rhs.storage_),
     start_(rhs.start_),
     zeroStart_(rhs.zeroStart_),
@@ -179,7 +503,7 @@ inline ZcBuffer& ZcBuffer::operator=(const ZcBuffer& rhs) BOOST_NOEXCEPT
     return *this;
 }
 
-inline ZcBuffer::ZcBuffer(ZcBuffer&& rhs) BOOST_NOEXCEPT :
+inline ZcBuffer::BasicBuffer(ZcBuffer&& rhs) BOOST_NOEXCEPT :
     storage_(rhs.storage_),
     start_(rhs.start_),
     zeroStart_(rhs.zeroStart_),
@@ -260,7 +584,8 @@ inline size_t ZcBuffer::GetEnd(void) const BOOST_NOEXCEPT
     return end_;
 }
 
-inline const BufferStorage* ZcBuffer::GetStorage(void) const BOOST_NOEXCEPT
+inline const ZcBuffer::BufferStorage*
+ZcBuffer::GetStorage(void) const BOOST_NOEXCEPT
 {
     return storage_;
 }
@@ -444,7 +769,8 @@ inline void ZcBuffer::AddAtStart(const uint8_t* src, size_t size)
     }
 }
 
-inline void ZcBuffer::AddAtStart(const ConstZcBuffer& src)
+template<bool readOnly, bool copyOnResize, bool zeroArea>
+inline void ZcBuffer::AddAtStart(const BasicBuffer<readOnly, copyOnResize, zeroArea>& src)
 {
     size_t size = src.GetSize();
     if (size)
@@ -609,7 +935,8 @@ inline void ZcBuffer::AddAtEnd(const uint8_t* src, size_t size)
     }
 }
 
-inline void ZcBuffer::AddAtEnd(const ConstZcBuffer& src)
+template<bool readOnly, bool copyOnResize, bool zeroArea>
+inline void ZcBuffer::AddAtEnd(const BasicBuffer<readOnly, copyOnResize, zeroArea>& src)
 {
     size_t size = src.GetSize();
     if (size)

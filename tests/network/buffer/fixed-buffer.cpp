@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Test TagBuffer.
+ * @brief Test FixedBuffer.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -18,20 +18,20 @@
 #include <iostream>
 
 
-NSFX_TEST_SUITE(TagBuffer)
+NSFX_TEST_SUITE(FixedBuffer)
 {
     NSFX_TEST_SUITE(Ctor)/*{{{*/
     {
         NSFX_TEST_CASE(Ctor0)
         {
-            nsfx::TagBuffer b0;
+            nsfx::FixedBuffer b0;
             NSFX_TEST_EXPECT_EQ(b0.GetSize(), 0);
             NSFX_TEST_EXPECT(!b0.GetStorage());
         }
 
         NSFX_TEST_CASE(Ctor1)
         {
-            nsfx::TagBuffer b0(300);
+            nsfx::FixedBuffer b0(300);
             NSFX_TEST_EXPECT_EQ(b0.GetSize(), 300);
             NSFX_TEST_ASSERT(b0.GetStorage());
             NSFX_TEST_EXPECT_EQ(b0.GetStorage()->capacity_, 300);
@@ -40,7 +40,7 @@ NSFX_TEST_SUITE(TagBuffer)
 
         NSFX_TEST_CASE(ZeroInit)
         {
-            nsfx::TagBuffer b0(300, true);
+            nsfx::FixedBuffer b0(300, true);
             NSFX_TEST_EXPECT_EQ(b0.GetSize(), 300);
             NSFX_TEST_ASSERT(b0.GetStorage());
             NSFX_TEST_EXPECT_EQ(b0.GetStorage()->capacity_, 300);
@@ -63,7 +63,7 @@ NSFX_TEST_SUITE(TagBuffer)
             }
             it0 = b0.begin();
 
-            nsfx::TagBuffer b1(b0);
+            nsfx::FixedBuffer b1(b0);
             auto it1 = b1.cbegin();
             for (size_t i = 0; i < 300; ++i)
             {
@@ -84,7 +84,7 @@ NSFX_TEST_SUITE(TagBuffer)
             }
             it0 = b0.begin();
 
-            nsfx::TagBuffer b1(b0);
+            nsfx::FixedBuffer b1(b0);
             auto it1 = b1.cbegin();
             for (size_t i = 0; i < 300; ++i)
             {
@@ -93,9 +93,9 @@ NSFX_TEST_SUITE(TagBuffer)
             }
         }
 
-        NSFX_TEST_CASE(FromConstTagBuffer)
+        NSFX_TEST_CASE(FromConstFixedBuffer)
         {
-            nsfx::TagBuffer b0(300);
+            nsfx::FixedBuffer b0(300);
             auto it0 = b0.begin();
             for (size_t i = 0; i < 300; ++i)
             {
@@ -104,8 +104,8 @@ NSFX_TEST_SUITE(TagBuffer)
             }
             it0 = b0.begin();
 
-            nsfx::ConstTagBuffer cb0(b0);
-            nsfx::TagBuffer b1(cb0);
+            nsfx::ConstFixedBuffer cb0(b0);
+            nsfx::FixedBuffer b1(cb0);
             auto it1 = b1.cbegin();
             for (size_t i = 0; i < 300; ++i)
             {
@@ -120,8 +120,8 @@ NSFX_TEST_SUITE(TagBuffer)
     {
         NSFX_TEST_CASE(CopyCtor)
         {
-            nsfx::TagBuffer b0(300);
-            nsfx::TagBuffer b1(b0);
+            nsfx::FixedBuffer b0(300);
+            nsfx::FixedBuffer b1(b0);
             //
             NSFX_TEST_EXPECT_EQ(b0.GetSize(), 300);
             NSFX_TEST_ASSERT(b0.GetStorage());
@@ -137,9 +137,9 @@ NSFX_TEST_SUITE(TagBuffer)
 
         NSFX_TEST_CASE(CopyAssign)
         {
-            nsfx::TagBuffer b0(300);
-            nsfx::TagBuffer b1(600);
-            nsfx::TagBuffer b2(b1); // Before change b1, use make a backup in b2.
+            nsfx::FixedBuffer b0(300);
+            nsfx::FixedBuffer b1(600);
+            nsfx::FixedBuffer b2(b1); // Before change b1, use make a backup in b2.
             b1 = b0;
             //
             NSFX_TEST_EXPECT_EQ(b0.GetSize(), 300);
@@ -164,8 +164,8 @@ NSFX_TEST_SUITE(TagBuffer)
     {
         NSFX_TEST_CASE(MoveCtor)
         {
-            nsfx::TagBuffer b0(300);
-            nsfx::TagBuffer b1(std::move(b0));
+            nsfx::FixedBuffer b0(300);
+            nsfx::FixedBuffer b1(std::move(b0));
             //
             NSFX_TEST_EXPECT_EQ(b0.GetSize(), 0);
             NSFX_TEST_ASSERT(!b0.GetStorage());
@@ -178,9 +178,9 @@ NSFX_TEST_SUITE(TagBuffer)
 
         NSFX_TEST_CASE(MoveAssign)
         {
-            nsfx::TagBuffer b0(300);
-            nsfx::TagBuffer b1(600);
-            nsfx::TagBuffer b2(b1); // Before change b1, use make a backup in b2.
+            nsfx::FixedBuffer b0(300);
+            nsfx::FixedBuffer b1(600);
+            nsfx::FixedBuffer b2(b1); // Before change b1, use make a backup in b2.
             b1 = std::move(b0);
             //
             NSFX_TEST_EXPECT_EQ(b0.GetSize(), 0);
@@ -202,7 +202,7 @@ NSFX_TEST_SUITE(TagBuffer)
     {
         NSFX_TEST_CASE(Segmented)
         {
-            nsfx::TagBuffer b0(200);
+            nsfx::FixedBuffer b0(200);
 
             nsfx::BufferIterator it = b0.begin();
             for (size_t i = 0; i < 100; ++i)
