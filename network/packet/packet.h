@@ -19,10 +19,9 @@
 
 #include <nsfx/network/config.h>
 #include <nsfx/network/buffer.h>
-#include <nsfx/network/packet/tag-list.h>
+#include <nsfx/network/packet/tag/basic-tag-list.h>
 #include <boost/core/swap.hpp>
 #include <utility> // move
-#include <string>
 
 
 NSFX_OPEN_NAMESPACE
@@ -81,6 +80,13 @@ typedef BufferIterator         PacketBufferIterator;
 typedef ConstBufferIterator    ConstPacketBufferIterator;
 
 #endif // !defined(NSFX_PACKET_USES_SOLID_BUFFER)
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Tag.
+typedef FixedBuffer       TagBuffer;
+typedef ConstFixedBuffer  ConstTagBuffer;
+typedef BasicTag<ConstTagBuffer>  Tag;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -456,7 +462,7 @@ public:
      * @param[in] start     The start of the tagged bytes.
      * @param[in] size      The number of tagged bytes.
      */
-    void AddTag(size_t tagId, const ConstTagBuffer& tagBuffer,
+    void AddTag(uint32_t tagId, const ConstTagBuffer& tagBuffer,
                 size_t start, size_t size);
 
     /**
@@ -465,7 +471,7 @@ public:
      * @param[in] tagId  The id of the tag.
      * @param[in] offset The offset of the byte.
      */
-    bool HasTag(size_t tagId, size_t offset) const BOOST_NOEXCEPT;
+    bool HasTag(uint32_t tagId, size_t offset) const BOOST_NOEXCEPT;
 
     /**
      * @brief Get the tag.
@@ -475,7 +481,7 @@ public:
      *
      * @throw TagNotFound
      */
-    Tag GetTag(size_t tagId, size_t offset) const BOOST_NOEXCEPT;
+    Tag GetTag(uint32_t tagId, size_t offset) const BOOST_NOEXCEPT;
 
     // Fragmentation.
 public:
@@ -497,7 +503,9 @@ public:
 
 private:
     PacketBuffer buffer_;
-    TagList      tagList_;
+
+    typedef BasicTagList<ConstTagBuffer>  ByteTagList;
+    ByteTagList tagList_;
 };
 
 
@@ -533,7 +541,7 @@ inline Packet::Packet(Packet&& rhs) BOOST_NOEXCEPT :
     buffer_(std::move(rhs.buffer_)),
     tagList_(rhs.tagList_)
 {
-    rhs.tagList_ = TagList();
+    rhs.tagList_ = ByteTagList();
 }
 
 inline Packet& Packet::operator=(Packet&& rhs) BOOST_NOEXCEPT
@@ -542,7 +550,7 @@ inline Packet& Packet::operator=(Packet&& rhs) BOOST_NOEXCEPT
     {
         buffer_  = std::move(rhs.buffer_);
         tagList_ = rhs.tagList_;
-        rhs.tagList_ = TagList();
+        rhs.tagList_ = ByteTagList();
     }
     return *this;
 }
@@ -598,18 +606,18 @@ inline void Packet::AddTag(const Tag& tag, size_t start, size_t size)
     tagList_.Insert(tag, start, size);
 }
 
-inline void Packet::AddTag(size_t tagId, const ConstTagBuffer& tagBuffer,
+inline void Packet::AddTag(uint32_t tagId, const ConstTagBuffer& tagBuffer,
                            size_t start, size_t size)
 {
     tagList_.Insert(tagId, tagBuffer, start, size);
 }
 
-inline bool Packet::HasTag(size_t tagId, size_t offset) const BOOST_NOEXCEPT
+inline bool Packet::HasTag(uint32_t tagId, size_t offset) const BOOST_NOEXCEPT
 {
     return tagList_.Exists(tagId, offset);
 }
 
-inline Tag Packet::GetTag(size_t tagId, size_t offset) const BOOST_NOEXCEPT
+inline Tag Packet::GetTag(uint32_t tagId, size_t offset) const BOOST_NOEXCEPT
 {
     return tagList_.Get(tagId, offset);
 }

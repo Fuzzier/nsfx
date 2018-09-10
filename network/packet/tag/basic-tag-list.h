@@ -13,13 +13,14 @@
  *            All rights reserved.
  */
 
-#ifndef TAG_LIST_H__E97CCFD4_4B27_40D4_A750_379D8FB31667
-#define TAG_LIST_H__E97CCFD4_4B27_40D4_A750_379D8FB31667
+#ifndef BASIC_TAG_LIST_H__E46FDF92_2EF1_42DC_97B3_FB390EDED0FC
+#define BASIC_TAG_LIST_H__E46FDF92_2EF1_42DC_97B3_FB390EDED0FC
 
 
 #include <nsfx/network/config.h>
-#include <nsfx/network/packet/tag.h>
-#include <nsfx/network/packet/tag-index-array.h>
+#include <nsfx/network/packet/tag/basic-tag.h>
+#include <nsfx/network/packet/tag/basic-tag-index.h>
+#include <nsfx/network/packet/tag/basic-tag-index-array.h>
 #include <nsfx/network/packet/exception.h>
 #include <boost/core/swap.hpp>
 #include <utility> // forward
@@ -67,11 +68,11 @@ NSFX_OPEN_NAMESPACE
  *                                    middle of byte space
  *   @endcode
  *
- *   The \c TagList::REF_POINT is the half of \c MAX_SIZE.
- *   The origin is \c TagList::REF_POINT bytes ahead from the middle of the
+ *   The \c BasicTagList::REF_POINT is the half of \c MAX_SIZE.
+ *   The origin is \c BasicTagList::REF_POINT bytes ahead from the middle of the
  *   current buffer.
- *   The packet can add about \c TagList::REF_POINT bytes of headers and about
- *   \c TagList::REF_POINT bytes of trailers before overflow.
+ *   The packet can add about \c BasicTagList::REF_POINT bytes of headers and about
+ *   \c BasicTagList::REF_POINT bytes of trailers before overflow.
  *
  * # Track the position of bytes
  *   Once a byte is tagged, the coordinate of the tagged byte is fixed in the
@@ -87,9 +88,9 @@ NSFX_OPEN_NAMESPACE
  *   current buffer.
  *   Thus, whether a tagged byte is within the current buffer can be deduced.
  *
- *   The packet is responsibility to call \c TagList::AddAtStart(),
- *   \c TagList::RemoveAtStart(), \c TagList::AddAtEnd(), and
- *   \c TagList::RemoveAtEnd(), when it does the same action to its buffer.
+ *   The packet is responsibility to call \c BasicTagList::AddAtStart(),
+ *   \c BasicTagList::RemoveAtStart(), \c BasicTagList::AddAtEnd(), and
+ *   \c BasicTagList::RemoveAtEnd(), when it does the same action to its buffer.
  *
  *   @code
  *   origin of tag list       start of buffer                     end of buffer
@@ -122,7 +123,7 @@ NSFX_OPEN_NAMESPACE
  *    The tag indices is not ordered in the array.
  *
  * ## Tag list
- *    A \c TagList holds a pointer to the tag array, and records the number of
+ *    A \c BasicTagList holds a pointer to the tag array, and records the number of
  *    used tag indices.
  *    It is also responsible to keep track of the location of the current
  *    buffer.
@@ -143,7 +144,7 @@ NSFX_OPEN_NAMESPACE
  *      remove tags in other tag lists that share the array.
  *
  *    @code
- *    TagList        [list]
+ *    BasicTagList        [list]
  *                     |
  *    TagIndexArray  [idx1   idx2   idx3  ...]   (shared, copy-on-write)
  *                     |      |      |
@@ -213,7 +214,7 @@ NSFX_OPEN_NAMESPACE
  *         |---------------- old tag end ------------------>|
  *     @endcode
  *
- * ## Copy-on-write
+ * ## Copy-on-resize
  *    When a packet shrinks its buffer, it does not reallocate or modify the
  *    array, nor does it change the number of tag indices used by the tag list.
  *    It may leave some dirty tags in the array that are no longer in the tag
@@ -236,20 +237,26 @@ NSFX_OPEN_NAMESPACE
  *    When a tag is inserted to a packet, it depends on the situation whether
  *    the array is reallocates or not.
  */
-class TagList
+template<class TagValue>
+class BasicTagList
 {
+public:
+    typedef BasicTag<TagValue>           Tag;
+    typedef BasicTagIndex<TagValue>      TagIndex;
+    typedef BasicTagIndexArray<TagValue> TagIndexArray;
+
 public:
     /**
      * @brief Create an empty tag list.
      */
-    TagList(void) BOOST_NOEXCEPT;
+    BasicTagList(void) BOOST_NOEXCEPT;
 
     /**
      * @brief Create an empty tag list.
      *
      * @param[in] capacity The initial capacity of the tag list.
      */
-    explicit TagList(size_t capacity);
+    explicit BasicTagList(size_t capacity);
 
     /**
      * @brief Create an empty tag list.
@@ -257,14 +264,14 @@ public:
      * @param[in] capacity   The initial capacity of the tag list.
      * @param[in] bufferSize The current size of the buffer.
      */
-    TagList(size_t capacity, size_t bufferSize);
+    BasicTagList(size_t capacity, size_t bufferSize);
 
-    ~TagList(void);
+    ~BasicTagList(void);
 
     // Copyable.
 public:
-    TagList(const TagList& rhs) BOOST_NOEXCEPT;
-    TagList& operator=(const TagList& rhs);
+    BasicTagList(const BasicTagList& rhs) BOOST_NOEXCEPT;
+    BasicTagList& operator=(const BasicTagList& rhs);
 
     // Buffer.
 public:
@@ -278,7 +285,7 @@ public:
      *
      * The size of the buffer is given by \c rhs.
      */
-    void AddAtStart(const TagList& rhs);
+    void AddAtStart(const BasicTagList& rhs);
 
     /**
      * @brief Shrink the buffer.
@@ -295,7 +302,7 @@ public:
      *
      * The size of the buffer is given by \c rhs.
      */
-    void AddAtEnd(const TagList& rhs);
+    void AddAtEnd(const BasicTagList& rhs);
 
     /**
      * @brief Shrink the buffer.
@@ -318,14 +325,14 @@ public:
     /**
      * @brief Insert a tag for a range of bytes in the buffer.
      *
-     * @param[in] tagId     The id of the tag.
-     * @param[in] tagBuffer The buffer of the tag.
-     * @param[in] start     The start of the byte, relative to the start of
-     *                      the buffer.
-     * @param[in] size      The number of bytes to tag.
-     *                      All bytes <b>must</b> be within the current buffer.
+     * @param[in] tagId The id of the tag.
+     * @param[in] value The value of the tag.
+     * @param[in] start The start of the byte, relative to the start of
+     *                  the buffer.
+     * @param[in] size  The number of bytes to tag.
+     *                  All bytes <b>must</b> be within the current buffer.
      */
-    void Insert(size_t tagId, const ConstTagBuffer& tagBuffer,
+    void Insert(uint32_t tagId, const TagValue& value,
                 size_t start, size_t size);
 
     /**
@@ -335,7 +342,7 @@ public:
      * @param[in] offset The offset of the byte, relative to the start of
      *                   the buffer.
      */
-    bool Exists(size_t tagId, size_t offset) const BOOST_NOEXCEPT;
+    bool Exists(uint32_t tagId, size_t offset) const BOOST_NOEXCEPT;
 
     /**
      * @brief Get the tag for the specified byte.
@@ -349,7 +356,7 @@ public:
      *
      * @throw TagNotFound
      */
-    Tag Get(size_t tagId, size_t offset) const;
+    Tag Get(uint32_t tagId, size_t offset) const;
 
     // Methods.
 public:
@@ -361,7 +368,7 @@ public:
 
     // Swappable.
 public:
-    void swap(TagList& rhs) BOOST_NOEXCEPT;
+    void swap(BasicTagList& rhs) BOOST_NOEXCEPT;
 
 private:
     /**
@@ -398,7 +405,7 @@ private:
     /**
      * @brief Does the tag list has the specified tag.
      */
-    bool HasTag(size_t tagId, size_t tagStart, size_t tagEnd) const BOOST_NOEXCEPT;
+    bool HasTag(uint32_t tagId, size_t tagStart, size_t tagEnd) const BOOST_NOEXCEPT;
 
     /**
      * @brief Insert the specified tag.
@@ -414,20 +421,17 @@ public:
     };
 
 private:
-    size_t bufferStart_;  ///< The start of the buffer, relative to the origin.
-    size_t bufferEnd_;    ///< The end of the buffer, relative to the origin.
+    size_t bufferStart_; ///< The start of the buffer, relative to the origin.
+    size_t bufferEnd_;   ///< The end of the buffer, relative to the origin.
 
-    size_t size_;         ///< The number of indices used by this list.
-    TagIndexArray* tia_;  ///< The array of indices.
+    size_t size_;        ///< The number of indices used by this list.
+    TagIndexArray* tia_; ///< The array of indices.
 };
 
 
 ////////////////////////////////////////////////////////////////////////////////
-void swap(TagList& lhs, TagList& rhs) BOOST_NOEXCEPT;
-
-
-////////////////////////////////////////////////////////////////////////////////
-inline TagList::TagList(void) BOOST_NOEXCEPT :
+template<class T>
+inline BasicTagList<T>::BasicTagList(void) BOOST_NOEXCEPT :
     bufferStart_(REF_POINT),
     bufferEnd_(REF_POINT),
     size_(0),
@@ -435,7 +439,8 @@ inline TagList::TagList(void) BOOST_NOEXCEPT :
 {
 }
 
-inline TagList::TagList(size_t capacity) :
+template<class T>
+inline BasicTagList<T>::BasicTagList(size_t capacity) :
     bufferStart_(REF_POINT),
     bufferEnd_(REF_POINT),
     size_(0),
@@ -443,7 +448,8 @@ inline TagList::TagList(size_t capacity) :
 {
 }
 
-inline TagList::TagList(size_t capacity, size_t bufferSize) :
+template<class T>
+inline BasicTagList<T>::BasicTagList(size_t capacity, size_t bufferSize) :
     bufferStart_(REF_POINT - bufferSize / 2),
     bufferEnd_(bufferStart_ + bufferSize),
     size_(0),
@@ -451,7 +457,8 @@ inline TagList::TagList(size_t capacity, size_t bufferSize) :
 {
 }
 
-inline TagList::~TagList(void)
+template<class T>
+inline BasicTagList<T>::~BasicTagList(void)
 {
     if (tia_)
     {
@@ -459,7 +466,8 @@ inline TagList::~TagList(void)
     }
 }
 
-inline TagList::TagList(const TagList& rhs) BOOST_NOEXCEPT :
+template<class T>
+inline BasicTagList<T>::BasicTagList(const BasicTagList<T>& rhs) BOOST_NOEXCEPT :
     bufferStart_(rhs.bufferStart_),
     bufferEnd_(rhs.bufferEnd_),
     size_(rhs.size_),
@@ -471,7 +479,9 @@ inline TagList::TagList(const TagList& rhs) BOOST_NOEXCEPT :
     }
 }
 
-inline TagList& TagList::operator=(const TagList& rhs)
+template<class T>
+inline BasicTagList<T>&
+BasicTagList<T>::operator=(const BasicTagList<T>& rhs)
 {
     if (this != &rhs)
     {
@@ -492,7 +502,8 @@ inline TagList& TagList::operator=(const TagList& rhs)
     return *this;
 }
 
-inline void TagList::AddAtStart(size_t size)
+template<class T>
+inline void BasicTagList<T>::AddAtStart(size_t size)
 {
     BOOST_ASSERT_MSG(size <= bufferStart_,
                      "The buffer grows too large that the start position of "
@@ -500,7 +511,8 @@ inline void TagList::AddAtStart(size_t size)
     ExpandBuffer(size, 0);
 }
 
-inline void TagList::AddAtStart(const TagList& rhs)
+template<class T>
+inline void BasicTagList<T>::AddAtStart(const BasicTagList<T>& rhs)
 {
     size_t size = rhs.bufferEnd_ - rhs.bufferStart_;
     AddAtStart(size);
@@ -521,14 +533,16 @@ inline void TagList::AddAtStart(const TagList& rhs)
     }
 }
 
-inline void TagList::RemoveAtStart(size_t size) BOOST_NOEXCEPT
+template<class T>
+inline void BasicTagList<T>::RemoveAtStart(size_t size) BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(bufferStart_ + size <= bufferEnd_,
                      "The start of the buffer cannot go beyond the end.");
     bufferStart_ += size;
 }
 
-inline void TagList::AddAtEnd(size_t size)
+template<class T>
+inline void BasicTagList<T>::AddAtEnd(size_t size)
 {
     BOOST_ASSERT_MSG(bufferEnd_ + size >= bufferEnd_,
                      "The buffer grows too large that the end position of "
@@ -536,7 +550,8 @@ inline void TagList::AddAtEnd(size_t size)
     ExpandBuffer(0, size);
 }
 
-inline void TagList::AddAtEnd(const TagList& rhs)
+template<class T>
+inline void BasicTagList<T>::AddAtEnd(const BasicTagList<T>& rhs)
 {
     size_t size = rhs.bufferEnd_ - rhs.bufferStart_;
     AddAtEnd(size);
@@ -557,14 +572,16 @@ inline void TagList::AddAtEnd(const TagList& rhs)
     }
 }
 
-inline void TagList::RemoveAtEnd(size_t size) BOOST_NOEXCEPT
+template<class T>
+inline void BasicTagList<T>::RemoveAtEnd(size_t size) BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(bufferStart_ + size <= bufferEnd_,
                      "The end of the buffer cannot go beyond the start.");
     bufferEnd_ -= size;
 }
 
-inline void TagList::Insert(const Tag& tag, size_t start, size_t size)
+template<class T>
+inline void BasicTagList<T>::Insert(const Tag& tag, size_t start, size_t size)
 {
     BOOST_ASSERT_MSG(start + size <= bufferEnd_ - bufferStart_,
                      "Cannot tag bytes that are outside of the buffer.");
@@ -580,13 +597,15 @@ inline void TagList::Insert(const Tag& tag, size_t start, size_t size)
     ++tia_->dirty_;
 }
 
-inline void TagList::Insert(size_t tagId, const ConstTagBuffer& tagBuffer,
-                            size_t start, size_t size)
+template<class T>
+inline void
+BasicTagList<T>::Insert(uint32_t tagId, const T& value, size_t start, size_t size)
 {
-    Insert(Tag(tagId, tagBuffer), start, size);
+    Insert(Tag(tagId, value), start, size);
 }
 
-inline bool TagList::Exists(size_t tagId, size_t offset) const BOOST_NOEXCEPT
+template<class T>
+inline bool BasicTagList<T>::Exists(uint32_t tagId, size_t offset) const BOOST_NOEXCEPT
 {
     BOOST_ASSERT_MSG(offset < bufferEnd_ - bufferStart_,
                      "The offset is outside of the buffer.");
@@ -607,7 +626,9 @@ inline bool TagList::Exists(size_t tagId, size_t offset) const BOOST_NOEXCEPT
     return found;
 }
 
-inline Tag TagList::Get(size_t tagId, size_t offset) const
+template<class T>
+inline typename BasicTagList<T>::Tag
+BasicTagList<T>::Get(uint32_t tagId, size_t offset) const
 {
     BOOST_ASSERT_MSG(offset < bufferEnd_ - bufferStart_,
                      "The offset is outside of the buffer.");
@@ -628,7 +649,8 @@ inline Tag TagList::Get(size_t tagId, size_t offset) const
         ErrorMessage("Cannot find the requested tag in the tag list."));
 }
 
-inline size_t TagList::GetSize(void) const BOOST_NOEXCEPT
+template<class T>
+inline size_t BasicTagList<T>::GetSize(void) const BOOST_NOEXCEPT
 {
     size_t count = 0;
     TagIndex* idx = tia_->indices_;
@@ -644,27 +666,33 @@ inline size_t TagList::GetSize(void) const BOOST_NOEXCEPT
     return count;
 }
 
-inline size_t TagList::GetInternalSize(void) const BOOST_NOEXCEPT
+template<class T>
+inline size_t BasicTagList<T>::GetInternalSize(void) const BOOST_NOEXCEPT
 {
     return size_;
 }
 
-inline size_t TagList::GetBufferStart(void) const BOOST_NOEXCEPT
+template<class T>
+inline size_t BasicTagList<T>::GetBufferStart(void) const BOOST_NOEXCEPT
 {
     return bufferStart_;
 }
 
-inline size_t TagList::GetBufferEnd(void) const BOOST_NOEXCEPT
+template<class T>
+inline size_t BasicTagList<T>::GetBufferEnd(void) const BOOST_NOEXCEPT
 {
     return bufferEnd_;
 }
 
-inline const TagIndexArray* TagList::GetTagIndexArray(void) const BOOST_NOEXCEPT
+template<class T>
+inline const typename BasicTagList<T>::TagIndexArray*
+BasicTagList<T>::GetTagIndexArray(void) const BOOST_NOEXCEPT
 {
     return tia_;
 }
 
-inline void TagList::PrepareToInsert(void)
+template<class T>
+inline void BasicTagList<T>::PrepareToInsert(void)
 {
     // If the array is not allocated yet.
     if (!tia_)
@@ -723,7 +751,8 @@ inline void TagList::PrepareToInsert(void)
     BOOST_ASSERT(size_ == tia_->dirty_);
 }
 
-inline void TagList::Compact(void)
+template<class T>
+inline void BasicTagList<T>::Compact(void)
 {
     BOOST_ASSERT(tia_);
     BOOST_ASSERT(tia_->refCount_ == 1);
@@ -773,7 +802,8 @@ inline void TagList::Compact(void)
     BOOST_ASSERT(size_ == tia_->dirty_);
 }
 
-inline void TagList::Reallocate(size_t newCapacity)
+template<class T>
+inline void BasicTagList<T>::Reallocate(size_t newCapacity)
 {
     BOOST_ASSERT(tia_);
     BOOST_ASSERT(newCapacity >= tia_->capacity_);
@@ -804,7 +834,8 @@ inline void TagList::Reallocate(size_t newCapacity)
     size_ = tia_->dirty_;
 }
 
-inline void TagList::ExpandBuffer(size_t deltaStart, size_t deltaEnd)
+template<class T>
+inline void BasicTagList<T>::ExpandBuffer(size_t deltaStart, size_t deltaEnd)
 {
     // If the array is not allocated yet.
     if (!tia_)
@@ -860,7 +891,10 @@ inline void TagList::ExpandBuffer(size_t deltaStart, size_t deltaEnd)
     bufferEnd_   += deltaEnd;
 }
 
-inline bool TagList::HasTag(size_t tagId, size_t tagStart, size_t tagEnd) const BOOST_NOEXCEPT
+template<class T>
+inline bool BasicTagList<T>::HasTag(uint32_t tagId,
+                               size_t tagStart,
+                               size_t tagEnd) const BOOST_NOEXCEPT
 {
     bool found = false;
     const TagIndex* idx = tia_->indices_;
@@ -879,7 +913,8 @@ inline bool TagList::HasTag(size_t tagId, size_t tagStart, size_t tagEnd) const 
     return found;
 }
 
-inline void TagList::InsertTag(const Tag& tag, size_t tagStart, size_t tagEnd)
+template<class T>
+inline void BasicTagList<T>::InsertTag(const Tag& tag, size_t tagStart, size_t tagEnd)
 {
     if (!HasTag(tag.GetId(), tagStart, tagEnd) &&
         TagIndex::HasTaggedByte(tagStart, tagEnd, bufferStart_, bufferEnd_))
@@ -893,24 +928,18 @@ inline void TagList::InsertTag(const Tag& tag, size_t tagStart, size_t tagEnd)
     }
 }
 
-inline void TagList::swap(TagList& rhs) BOOST_NOEXCEPT
+template<class T>
+inline void BasicTagList<T>::swap(BasicTagList<T>& rhs) BOOST_NOEXCEPT
 {
     boost::swap(bufferStart_, rhs.bufferStart_);
-    boost::swap(bufferEnd_, rhs.bufferEnd_);
-    boost::swap(size_, rhs.size_);
-    boost::swap(tia_, rhs.tia_);
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-inline void swap(TagList& lhs, TagList& rhs) BOOST_NOEXCEPT
-{
-    lhs.swap(rhs);
+    boost::swap(bufferEnd_,   rhs.bufferEnd_);
+    boost::swap(size_,        rhs.size_);
+    boost::swap(tia_,         rhs.tia_);
 }
 
 
 NSFX_CLOSE_NAMESPACE
 
 
-#endif // TAG_LIST_H__E97CCFD4_4B27_40D4_A750_379D8FB31667
+#endif // BASIC_TAG_LIST_H__E46FDF92_2EF1_42DC_97B3_FB390EDED0FC
 

@@ -13,13 +13,14 @@
  *            All rights reserved.
  */
 
-#ifndef TAG_INDEX_H__2CC52BF3_7FE2_4F85_A67B_B4764D414923
-#define TAG_INDEX_H__2CC52BF3_7FE2_4F85_A67B_B4764D414923
+#ifndef BASIC_TAG_INDEX_H__4EBE6E70_CF6E_45F2_B95A_0ACD793E9967
+#define BASIC_TAG_INDEX_H__4EBE6E70_CF6E_45F2_B95A_0ACD793E9967
 
 
 #include <nsfx/network/config.h>
-#include <nsfx/network/packet/tag.h>
+#include <nsfx/network/packet/tag/basic-tag.h>
 #include <boost/core/swap.hpp>
+#include <type_traits>  // true_type, false_type
 
 
 NSFX_OPEN_NAMESPACE
@@ -29,17 +30,21 @@ NSFX_OPEN_NAMESPACE
 /**
  * @ingroup Network.
  * @brief The tag index.
- * @internal
  */
-class TagIndex
+template<class TagValue>
+class BasicTagIndex
 {
 public:
-    TagIndex(const Tag& tag, size_t tagStart, size_t tagEnd) BOOST_NOEXCEPT;
+    typedef BasicTag<TagValue>      Tag;
+    typedef BasicTagIndex<TagValue> TagIndex;
 
-    TagIndex(const TagIndex& rhs) BOOST_NOEXCEPT;
+public:
+    BasicTagIndex(const Tag& tag, size_t tagStart, size_t tagEnd) BOOST_NOEXCEPT;
+
+    BasicTagIndex(const TagIndex& rhs) BOOST_NOEXCEPT;
     TagIndex& operator=(const TagIndex& rhs) BOOST_NOEXCEPT;
 
-    TagIndex(TagIndex&& rhs) BOOST_NOEXCEPT;
+    BasicTagIndex(TagIndex&& rhs) BOOST_NOEXCEPT;
     TagIndex& operator=(TagIndex&& rhs) BOOST_NOEXCEPT;
 
     const Tag& GetTag(void) const BOOST_NOEXCEPT;
@@ -61,25 +66,27 @@ private:
 
 
 ////////////////////////////////////////////////////////////////////////////////
-void swap(Tag& lhs, Tag& rhs) BOOST_NOEXCEPT;
-
-
-////////////////////////////////////////////////////////////////////////////////
-inline TagIndex::TagIndex(const Tag& tag, size_t tagStart, size_t tagEnd) BOOST_NOEXCEPT :
+template<class T>
+inline
+BasicTagIndex<T>::BasicTagIndex(const Tag& tag, size_t tagStart, size_t tagEnd) BOOST_NOEXCEPT :
     tag_(tag),
     tagStart_(tagStart),
     tagEnd_(tagEnd)
 {
 }
 
-inline TagIndex::TagIndex(const TagIndex& rhs) BOOST_NOEXCEPT :
+template<class T>
+inline
+BasicTagIndex<T>::BasicTagIndex(const BasicTagIndex<T>& rhs) BOOST_NOEXCEPT :
     tag_(rhs.tag_),
     tagStart_(rhs.tagStart_),
     tagEnd_(rhs.tagEnd_)
 {
 }
 
-inline TagIndex& TagIndex::operator=(const TagIndex& rhs) BOOST_NOEXCEPT
+template<class T>
+inline BasicTagIndex<T>&
+BasicTagIndex<T>::operator=(const BasicTagIndex<T>& rhs) BOOST_NOEXCEPT
 {
     if (this != &rhs)
     {
@@ -90,14 +97,18 @@ inline TagIndex& TagIndex::operator=(const TagIndex& rhs) BOOST_NOEXCEPT
     return *this;
 }
 
-inline TagIndex::TagIndex(TagIndex&& rhs) BOOST_NOEXCEPT :
+template<class T>
+inline
+BasicTagIndex<T>::BasicTagIndex(BasicTagIndex<T>&& rhs) BOOST_NOEXCEPT :
     tag_(std::move(rhs.tag_)),
     tagStart_(rhs.tagStart_),
     tagEnd_(rhs.tagEnd_)
 {
 }
 
-inline TagIndex& TagIndex::operator=(TagIndex&& rhs) BOOST_NOEXCEPT
+template<class T>
+inline BasicTagIndex<T>&
+BasicTagIndex<T>::operator=(BasicTagIndex<T>&& rhs) BOOST_NOEXCEPT
 {
     if (this != &rhs)
     {
@@ -108,50 +119,55 @@ inline TagIndex& TagIndex::operator=(TagIndex&& rhs) BOOST_NOEXCEPT
     return *this;
 }
 
-inline void TagIndex::swap(TagIndex& rhs) BOOST_NOEXCEPT
+template<class T>
+inline void
+BasicTagIndex<T>::swap(BasicTagIndex<T>& rhs) BOOST_NOEXCEPT
 {
-    boost::swap(tag_, rhs.tag_);
+    boost::swap(tag_,      rhs.tag_);
     boost::swap(tagStart_, rhs.tagStart_);
-    boost::swap(tagEnd_, rhs.tagEnd_);
+    boost::swap(tagEnd_,   rhs.tagEnd_);
 }
 
-inline const Tag& TagIndex::GetTag(void) const BOOST_NOEXCEPT
+template<class T>
+inline const typename BasicTagIndex<T>::Tag&
+BasicTagIndex<T>::GetTag(void) const BOOST_NOEXCEPT
 {
     return tag_;
 }
 
-inline size_t TagIndex::GetStart(void) const BOOST_NOEXCEPT
+template<class T>
+inline size_t
+BasicTagIndex<T>::GetStart(void) const BOOST_NOEXCEPT
 {
     return tagStart_;
 }
 
-inline size_t TagIndex::GetEnd(void) const BOOST_NOEXCEPT
+template<class T>
+inline size_t
+BasicTagIndex<T>::GetEnd(void) const BOOST_NOEXCEPT
 {
     return tagEnd_;
 }
 
-inline bool TagIndex::HasTaggedByte(size_t bufferStart, size_t bufferEnd) const BOOST_NOEXCEPT
+template<class T>
+inline bool
+BasicTagIndex<T>::HasTaggedByte(size_t bufferStart, size_t bufferEnd) const BOOST_NOEXCEPT
 {
     return HasTaggedByte(tagStart_, tagEnd_, bufferStart, bufferEnd);
 }
 
-inline bool TagIndex::HasTaggedByte(size_t tagStart, size_t tagEnd,
-                                    size_t bufferStart, size_t bufferEnd) BOOST_NOEXCEPT
+template<class T>
+inline bool
+BasicTagIndex<T>::HasTaggedByte(size_t tagStart, size_t tagEnd,
+                                size_t bufferStart, size_t bufferEnd) BOOST_NOEXCEPT
 {
     return (tagStart < bufferEnd &&
             tagEnd   > bufferStart);
 }
 
 
-////////////////////////////////////////////////////////////////////////////////
-inline void swap(TagIndex& lhs, TagIndex& rhs) BOOST_NOEXCEPT
-{
-    lhs.swap(rhs);
-}
-
-
 NSFX_CLOSE_NAMESPACE
 
 
-#endif // TAG_INDEX_H__2CC52BF3_7FE2_4F85_A67B_B4764D414923
+#endif // BASIC_TAG_INDEX_H__4EBE6E70_CF6E_45F2_B95A_0ACD793E9967
 
