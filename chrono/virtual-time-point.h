@@ -35,7 +35,7 @@ NSFX_CHRONO_OPEN_NAMESPACE
  * This time epoch can be used in discreet event simulations.
  * The time resolution is 1/10 nanoseconds.
  */
-struct VirtualClock
+struct VirtualEpoch
 {
     typedef ratio<nano::num, nano::den * 10>  tenth_nano;
     typedef Duration<tenth_nano>  Duration;
@@ -47,7 +47,7 @@ struct VirtualClock
  * @ingroup Chrono
  * @brief TimePoint point.
  *
- * @tparam Clock  The clock that defines the epoch of the time system.
+ * @tparam Epoch  The epoch of the time system.
  *                It shall have a nested type \c Duration, which defines
  *                the time resolution of the time system.
  *
@@ -56,12 +56,12 @@ struct VirtualClock
  * The time resolution is 1/10 nanoseconds.
  */
 template<>
-class TimePoint<VirtualClock, VirtualClock::Duration>
+class TimePoint<VirtualEpoch, VirtualEpoch::Duration>
 {
     // Typedefs./*{{{*/
 public:
-    typedef VirtualClock::Duration  Duration;
-    typedef VirtualClock            Clock;
+    typedef VirtualEpoch::Duration  Duration;
+    typedef VirtualEpoch            Epoch;
     /*}}}*/
 
     // Constructors. /*{{{*/
@@ -174,9 +174,9 @@ private:
 };
 
 
-BOOST_CONCEPT_ASSERT((TimePointConcept<TimePoint<VirtualClock> >));
+BOOST_CONCEPT_ASSERT((TimePointConcept<TimePoint<VirtualEpoch> >));
 
-typedef TimePoint<VirtualClock>  VirtualTimePoint;
+typedef TimePoint<VirtualEpoch>  VirtualTimePoint;
 
 
 ////////////////////////////////////////////////////////////////////////////////
