@@ -14,15 +14,21 @@
  */
 
 #include <nsfx/test.h>
-#include <nsfx/network/packet/tag.h>
+#include <nsfx/network/buffer.h>
+#include <nsfx/network/packet/tag/basic-tag.h>
 #include <iostream>
 
 
 NSFX_TEST_SUITE(Tag)
 {
+    typedef nsfx::FixedBuffer      TagBuffer;
+    typedef nsfx::ConstFixedBuffer ConstTagBuffer;
+
+    typedef nsfx::BasicTag<ConstTagBuffer> Tag;
+
     NSFX_TEST_CASE(Ctor)
     {
-        nsfx::TagBuffer b(16);
+        TagBuffer b(16);
         {
             auto it = b.begin();
             for (size_t i = 0; i < 16; ++i)
@@ -32,10 +38,10 @@ NSFX_TEST_SUITE(Tag)
             }
         }
         size_t tagId = 1;
-        nsfx::Tag tag(tagId, b);
+        Tag tag(tagId, b);
         NSFX_TEST_EXPECT_EQ(tag.GetId(), tagId);
-        NSFX_TEST_EXPECT_EQ(tag.GetBuffer().GetSize(), 16);
-        auto it = tag.GetBuffer().cbegin();
+        NSFX_TEST_EXPECT_EQ(tag.GetValue().GetSize(), 16);
+        auto it = tag.GetValue().cbegin();
         for (size_t i = 0; i < 16; ++i)
         {
             uint8_t v = 0xfe + i;

@@ -20,10 +20,11 @@
 #include <nsfx/network/config.h>
 
 #include <nsfx/network/packet/exception.h>
-#include <nsfx/network/packet/tag.h>
-#include <nsfx/network/packet/tag-index.h>
-#include <nsfx/network/packet/tag-index-array.h>
-#include <nsfx/network/packet/tag-list.h>
+#include <nsfx/network/packet/tag/basic-tag.h>
+#include <nsfx/network/packet/tag/basic-tag-index.h>
+#include <nsfx/network/packet/tag/basic-tag-index-array.h>
+#include <nsfx/network/packet/tag/basic-tag-list.h>
+#include <nsfx/network/packet/packet-buffer.h>
 #include <nsfx/network/packet/packet.h>
 
 

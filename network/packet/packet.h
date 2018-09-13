@@ -18,7 +18,7 @@
 
 
 #include <nsfx/network/config.h>
-#include <nsfx/network/buffer.h>
+#include <nsfx/network/packet/packet-buffer.h>
 #include <nsfx/network/packet/tag/basic-tag-list.h>
 #include <boost/core/swap.hpp>
 #include <utility> // move
@@ -28,65 +28,10 @@ NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Types.
-#if !defined(NSFX_PACKET_USES_SOLID_BUFFER)
-/**
- * @ingroup Network
- * @brief The buffer of a packet.
- *
- * @remarks By default, this is \c ZcBuffer.
- *          <p>
- *          If \c NSFX_PACKET_USES_SOLID_BUFFER is defined, this is \c Buffer.
- */
-typedef ZcBuffer  PacketBuffer;
-
-/**
- * @ingroup Network
- * @brief The read-only buffer of a packet.
- *
- * @remarks By default, this is \c ConstZcBuffer.
- *          <p>
- *          If \c NSFX_PACKET_USES_SOLID_BUFFER is defined, this is
- *          \c ConstBuffer.
- */
-typedef ConstZcBuffer  ConstPacketBuffer;
-
-/**
- * @ingroup Network
- * @brief The iterator of a packet buffer.
- *
- * @remarks By default, this is \c ZcBufferIterator.
- *          <p>
- *          If \c NSFX_PACKET_USES_SOLID_BUFFER is defined, this is
- *          \c BufferIterator.
- */
-typedef ZcBufferIterator  PacketBufferIterator;
-
-/**
- * @ingroup Network
- * @brief The read-only iterator of a packet buffer.
- *
- * @remarks By default, this is \c ConstZcBufferIterator.
- *          <p>
- *          If \c NSFX_PACKET_USES_SOLID_BUFFER is defined, this is
- *          \c ConstBufferIterator.
- */
-typedef ConstZcBufferIterator  ConstPacketBufferIterator;
-
-#else // defined(NSFX_PACKET_USES_SOLID_BUFFER)
-typedef Buffer                 PacketBuffer;
-typedef ConstBuffer            ConstPacketBuffer;
-typedef BufferIterator         PacketBufferIterator;
-typedef ConstBufferIterator    ConstPacketBufferIterator;
-
-#endif // !defined(NSFX_PACKET_USES_SOLID_BUFFER)
-
-
-////////////////////////////////////////////////////////////////////////////////
 // Tag.
-typedef FixedBuffer       TagBuffer;
-typedef ConstFixedBuffer  ConstTagBuffer;
-typedef BasicTag<ConstTagBuffer>  Tag;
+typedef FixedBuffer              TagBuffer;
+typedef ConstFixedBuffer         ConstTagBuffer;
+typedef BasicTag<ConstTagBuffer> Tag;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -503,6 +448,9 @@ public:
 
 private:
     PacketBuffer buffer_;
+
+    typedef BasicTagList<ConstTagBuffer>  ByteTagList;
+    ByteTagList tagList_;
 
     typedef BasicTagList<ConstTagBuffer>  ByteTagList;
     ByteTagList tagList_;
