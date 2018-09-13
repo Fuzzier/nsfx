@@ -19,7 +19,7 @@
 
 #include <nsfx/chrono/config.h>
 #include <boost/concept_check.hpp>
-#include <functional>
+#include <boost/functional/hash.hpp>
 #include <iostream>
 
 
@@ -31,7 +31,7 @@ NSFX_CHRONO_OPEN_NAMESPACE
  * @ingroup Chrono
  * @brief The primary class template for defining a time point class.
  */
-template<class Clock, class Duration = typename Clock::Duration>
+template<class Epoch, class Duration = typename Epoch::Duration>
 class TimePoint;
 
 
@@ -45,7 +45,7 @@ class TimePointConcept
 {
 private:
     typedef typename TimePoint::Duration Duration;
-    typedef typename TimePoint::Clock    Clock;
+    typedef typename TimePoint::Epoch    Epoch;
 
     BOOST_CONCEPT_ASSERT((boost::Assignable<TimePoint>));
     BOOST_CONCEPT_ASSERT((boost::DefaultConstructible<TimePoint>));
@@ -122,10 +122,10 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 // ostream <<./*{{{*/
-template<class CharT, class TraitsT, class Clock, class Duration>
+template<class CharT, class TraitsT, class Epoch, class Duration>
 inline std::basic_ostream<CharT, TraitsT>&
 operator<<(std::basic_ostream<CharT, TraitsT>& os,
-           const TimePoint<Clock, Duration>& rhs)
+           const TimePoint<Epoch, Duration>& rhs)
 {
     return os << rhs.ToString();
 }
