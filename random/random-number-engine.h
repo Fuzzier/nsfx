@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Random support for Network Simulation Frameworks.
+ * @brief Random number support for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -13,8 +13,8 @@
  *   All rights reserved.
  */
 
-#ifndef RANDOM_NUMBER_ENGINES_H__09477B58_B350_4BE7_A807_55C4E816CEE4
-#define RANDOM_NUMBER_ENGINES_H__09477B58_B350_4BE7_A807_55C4E816CEE4
+#ifndef RANDOM_NUMBER_ENGINE_H__09477B58_B350_4BE7_A807_55C4E816CEE4
+#define RANDOM_NUMBER_ENGINE_H__09477B58_B350_4BE7_A807_55C4E816CEE4
 
 
 #include <nsfx/random/config.h>
@@ -54,9 +54,11 @@ NSFX_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Random
- * @brief A class template for encapsulating pseudo-random number engines.
+ * @brief A pseudo-random number generator.
  *
- * @tparam Engine A random number engine.
+ * @tparam Engine A standard pseudo-random number generator.
+ *                e.g., the random number engine in STL, the pseudo-random
+ *                number generator in BOOST random number library.
  *
  * Provides \c IRandomNumberGenerator and \c IRandomNumberEngine.
  */
@@ -324,38 +326,6 @@ private:
 ////////////////////////////////////////
 /**
  * @ingroup Random
- * @brief A minimal standard linear congruential pseudo-random generator.
- *
- * This linear congruential pseudo-random number generator is discovered
- * in 1969 by Lewis, Goodman and Miller, which was adopted as the
- * "Minimal standard" in 1988 by Park and Miller.
- *
- * The default seed value is \c 1.
- */
-typedef StdRandomNumberEngine<std::minstd_rand0>  Minstd0Engine;
-
-NSFX_REGISTER_CLASS(Minstd0Engine, "edu.uestc.nsfx.Minstd0Engine");
-
-
-////////////////////////////////////////
-/**
- * @ingroup Random
- * @brief A minimal standard linear congruential pseudo-random generator.
- *
- * This linear congruential pseudo-random number generator is a newer
- * "Minimum standard", which was recommended by Park, Miller and Stockmeyer
- * in 1993.
- *
- * The default seed value is \c 1.
- */
-typedef StdRandomNumberEngine<std::minstd_rand>  MinstdEngine;
-
-NSFX_REGISTER_CLASS(MinstdEngine, "edu.uestc.nsfx.MinstdEngine");
-
-
-////////////////////////////////////////
-/**
- * @ingroup Random
  * @brief A Mersenne Twister pseudo-random generator of a state size of 19937 bits.
  *
  * This is a 32-bit Mersenne Twister pseudo-random generator discovered in 1998
@@ -363,46 +333,13 @@ NSFX_REGISTER_CLASS(MinstdEngine, "edu.uestc.nsfx.MinstdEngine");
  *
  * The default seed value is \c 5489.
  */
-typedef StdRandomNumberEngine<std::mt19937>  Mt19937Engine;
+typedef StdRandomNumberEngine<boost::random::mt19937>  Mt19937Engine;
 
 NSFX_REGISTER_CLASS(Mt19937Engine, "edu.uestc.nsfx.Mt19937Engine");
-
-
-////////////////////////////////////////
-/**
- * @ingroup Random
- * @brief A 24-bit RANLUX pseudo-random generator.
- *
- * This is a 24-bit RANLUX pseudo-random generator discovered in 1994 by
- * Martin Lüscher and Fred James.
- *
- * It is a subtract-with-carry pseudo-random generator of 24-bit numbers with
- * accelerated advancement.
- *
- * The default seed value is \c 19780503.
- */
-typedef StdRandomNumberEngine<std::ranlux24>  Ranlux24Engine;
-
-NSFX_REGISTER_CLASS(Ranlux24Engine, "edu.uestc.nsfx.Ranlux24Engine");
-
-
-////////////////////////////////////////
-/**
- * @ingroup Random
- * @brief A Knuth-B pseudo-random generator.
- *
- * It returns shuffled sequences generated with the simple pseudo-random number
- * generator engine \c std::minstd_rand0.
- *
- * The default seed value is \c 1.
- */
-typedef StdRandomNumberEngine<std::knuth_b>  KnuthBEngine;
-
-NSFX_REGISTER_CLASS(KnuthBEngine, "edu.uestc.nsfx.KnuthBEngine");
 
 
 NSFX_CLOSE_NAMESPACE
 
 
-#endif // RANDOM_NUMBER_ENGINES_H__09477B58_B350_4BE7_A807_55C4E816CEE4
+#endif // RANDOM_NUMBER_ENGINE_H__09477B58_B350_4BE7_A807_55C4E816CEE4
 
