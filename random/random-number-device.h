@@ -19,6 +19,32 @@
 
 #include <nsfx/random/config.h>
 #include <nsfx/random/i-random-number-generator.h>
+
+#include <nsfx/random/distribution/std-uniform-int-distribution.h>
+#include <nsfx/random/distribution/std-uniform-real-distribution.h>
+
+#include <nsfx/random/distribution/std-bernoulli-distribution.h>
+#include <nsfx/random/distribution/std-binomial-distribution.h>
+#include <nsfx/random/distribution/std-negative-binomial-distribution.h>
+#include <nsfx/random/distribution/std-geometric-distribution.h>
+
+#include <nsfx/random/distribution/std-poisson-distribution.h>
+#include <nsfx/random/distribution/std-exponential-distribution.h>
+#include <nsfx/random/distribution/std-gamma-distribution.h>
+#include <nsfx/random/distribution/std-weibull-distribution.h>
+#include <nsfx/random/distribution/std-extreme-value-distribution.h>
+
+#include <nsfx/random/distribution/std-normal-distribution.h>
+#include <nsfx/random/distribution/std-lognormal-distribution.h>
+#include <nsfx/random/distribution/std-chi-squared-distribution.h>
+#include <nsfx/random/distribution/std-cauchy-distribution.h>
+#include <nsfx/random/distribution/std-fisher-f-distribution.h>
+#include <nsfx/random/distribution/std-student-t-distribution.h>
+
+#include <nsfx/random/distribution/std-discrete-distribution.h>
+#include <nsfx/random/distribution/std-piecewise-constant-distribution.h>
+#include <nsfx/random/distribution/std-piecewise-linear-distribution.h>
+
 #include <random>
 
 
@@ -28,10 +54,7 @@ NSFX_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Random
- * @brief A random number device.
- *
- * This class employs \c std::random_device instead of
- * \c boost::random::random_device.
+ * @brief A non-deterministic uniform random number generator.
  *
  * Provides \c IRandomNumberGenerator.
  */
@@ -74,9 +97,9 @@ public:
      * Called internaly by the distributions created by this class, so
      * they do not have to call virtual functions to generate random numbers.
      */
-    EngineType* GetRng(void)
+    DeviceType* GetRng(void)
     {
-        return &engine_;
+        return &device_;
     }
 
 public:

@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Random support for Network Simulation Frameworks.
+ * @brief Random number support for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
