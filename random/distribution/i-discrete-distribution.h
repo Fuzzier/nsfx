@@ -28,6 +28,68 @@ NSFX_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Random
+ * @brief The interface to the parameter of discrete distribution.
+ */
+class IDiscreteDistributionParam :
+    virtual public IObject
+{
+public:
+    virtual ~IDiscreteDistributionParam(void) BOOST_NOEXCEPT {}
+    virtual uint32_t GetNumWeights(void) = 0;
+    virtual void AddWeight(double weight) = 0;
+    virtual double GetWeight(uint32_t index) = 0;
+};
+
+NSFX_DEFINE_CLASS_UID(IDiscreteDistributionParam,
+                      "edu.uestc.nsfx.IDiscreteDistributionParam");
+
+
+////////////////////////////////////////
+/**
+ * @ingroup Random
+ * @brief The parameter of discrete distribution.
+ */
+class DiscreteDistributionParam :
+    public IDiscreteDistributionParam
+{
+    typedef DiscreteDistributionParam ThisClass;
+
+public:
+    virtual ~DiscreteDistributionParam(void) {}
+
+    virtual uint32_t GetNumWeights(void) NSFX_OVERRIDE
+    {
+        return weights_.size();
+    }
+
+    virtual void AddWeight(double weight) NSFX_OVERRIDE
+    {
+        BOOST_ASSERT(weight >= 0);
+        weights_.push_back(weight);
+    }
+
+    virtual double GetWeight(uint32_t index) NSFX_OVERRIDE
+    {
+        BOOST_ASSERT(index < weights_.size());
+        return weights_[index];
+    }
+
+private:
+    NSFX_INTERFACE_MAP_BEGIN(ThisClass)
+        NSFX_INTERFACE_ENTRY(IDiscreteDistributionParam)
+    NSFX_INTERFACE_MAP_END()
+
+private:
+    vector<double> weights_;
+};
+
+NSFX_REGISTER_CLASS(DiscreteDistributionParam,
+                    "edu.uestc.nsfx.DiscreteDistributionParam");
+
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+ * @ingroup Random
  * @brief A discrete distribution.
  *
  * This distribution produces random integers on the interval <i>[0, n)</i>.
@@ -100,53 +162,6 @@ NSFX_DEFINE_CLASS_UID(IDiscreteDistribution,
 NSFX_DEFINE_USER_INTERFACE(
     IDiscreteDistributionUser, "edu.uestc.nsfx.IDiscreteDistributionUser",
     IDiscreteDistribution);
-
-
-////////////////////////////////////////////////////////////////////////////////
-class IDiscreteDistributionParam :
-    virtual public IObject
-{
-public:
-    virtual ~IDiscreteDistributionParam(void) BOOST_NOEXCEPT {}
-    virtual uint32_t GetNumWeights(void) = 0;
-    virtual void AddWeight(double weight) = 0;
-    virtual double GetWeight(uint32_t index) = 0;
-};
-
-
-////////////////////////////////////////
-class DiscreteDistributionParam :
-    public IDiscreteDistributionParam
-{
-    typedef DiscreteDistributionParam ThisClass;
-
-public:
-    virtual ~DiscreteDistributionParam(void) {}
-
-    virtual uint32_t GetNumWeights(void) NSFX_OVERRIDE
-    {
-        return weights_.size();
-    }
-
-    virtual void AddWeight(double weight) NSFX_OVERRIDE
-    {
-        weights_.push_back(weight);
-    }
-
-    virtual double GetWeight(uint32_t index) NSFX_OVERRIDE
-    {
-        BOOST_ASSERT(index < weights_.size());
-        return weights_[index];
-    }
-
-private:
-    NSFX_INTERFACE_MAP_BEGIN(ThisClass)
-        NSFX_INTERFACE_ENTRY(IDiscreteDistributionParam)
-    NSFX_INTERFACE_MAP_END()
-
-private:
-    vector<double> weights_;
-};
 
 
 NSFX_CLOSE_NAMESPACE

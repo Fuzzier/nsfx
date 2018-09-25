@@ -28,6 +28,86 @@ NSFX_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Random
+ * @brief The interface to the parameter of piecewise constant distribution.
+ */
+class IPiecewiseConstantDistributionParam :
+    virtual public IObject
+{
+public:
+    virtual ~IPiecewiseConstantDistributionParam(void) BOOST_NOEXCEPT {}
+    virtual uint32_t GetNumIntervals(void) = 0;
+    virtual void SetLowerBound(double bound) = 0;
+    virtual void AddInterval(double bound, double weight) = 0;
+    virtual double GetBound(uint32_t index) = 0;
+    virtual double GetIntervalWeight(uint32_t index) = 0;
+};
+
+NSFX_DEFINE_CLASS_UID(IPiecewiseConstantDistributionParam,
+                      "edu.uestc.nsfx.IPiecewiseConstantDistributionParam");
+
+
+////////////////////////////////////////
+/**
+ * @ingroup Random
+ * @brief The parameter of piecewise constant distribution.
+ */
+class PiecewiseConstantDistributionParam :
+    public IPiecewiseConstantDistributionParam
+{
+    typedef PiecewiseConstantDistributionParam ThisClass;
+
+public:
+    virtual ~PiecewiseConstantDistributionParam(void) {}
+
+    virtual uint32_t GetNumIntervals(void) NSFX_OVERRIDE
+    {
+        return weights_.size();
+    }
+
+    virtual void SetLowerBound(double bound) NSFX_OVERRIDE
+    {
+        BOOST_ASSERT(bounds_.size() == 0);
+        bounds_.push_back(bound);
+    }
+
+    virtual void AddInterval(double bound, double weight) NSFX_OVERRIDE
+    {
+        BOOST_ASSERT(bounds_.size());
+        BOOST_ASSERT(bounds_.back() < bound);
+        BOOST_ASSERT(weights >= 0);
+        bounds_.push_back(bound);
+        weights_.push_back(weight);
+    }
+
+    virtual double GetBound(uint32_t index) NSFX_OVERRIDE
+    {
+        BOOST_ASSERT(index < bounds_.size());
+        return bounds_[index];
+    }
+
+    virtual double GetIntervalWeight(uint32_t index) NSFX_OVERRIDE
+    {
+        BOOST_ASSERT(index < weights_.size());
+        return weights_[index];
+    }
+
+private:
+    NSFX_INTERFACE_MAP_BEGIN(ThisClass)
+        NSFX_INTERFACE_ENTRY(IPiecewiseConstantDistributionParam)
+    NSFX_INTERFACE_MAP_END()
+
+private:
+    vector<double> bounds_;
+    vector<double> weights_;
+};
+
+NSFX_REGISTER_CLASS(PiecewiseConstantDistributionParam,
+                    "edu.uestc.nsfx.PiecewiseConstantDistributionParam");
+
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+ * @ingroup Random
  * @brief A piecewise constant distribution.
  *
  * This distribution produces floating-point values that are uniformly
@@ -88,7 +168,7 @@ public:
     /**
      * @brief The parameter associated with the piecewise constant distribution.
      *
-     * @param[in] index <code>index < GetNumIntervals() + 1</code>.
+     * @param[in] index <code>0 <= index < GetNumIntervals() + 1</code>.
      *
      * The subintervals are consecutive, and each inner bound indicates where
      * one subinterval ends and where the next begins, with the first and last
@@ -100,7 +180,7 @@ public:
     /**
      * @brief The parameter associated with the piecewise constant distribution.
      *
-     * @param[in] index <code>index < GetNumIntervals()</code>.
+     * @param[in] index <code>0 <= index < GetNumIntervals()</code>.
      *
      * The probability density of a subinterval.
      *
@@ -122,72 +202,6 @@ NSFX_DEFINE_CLASS_UID(IPiecewiseConstantDistribution,
 NSFX_DEFINE_USER_INTERFACE(
     IPiecewiseConstantDistributionUser, "edu.uestc.nsfx.IPiecewiseConstantDistributionUser",
     IPiecewiseConstantDistribution);
-
-
-////////////////////////////////////////////////////////////////////////////////
-class IPiecewiseConstantDistributionParam :
-    virtual public IObject
-{
-public:
-    virtual ~IPiecewiseConstantDistributionParam(void) BOOST_NOEXCEPT {}
-    virtual uint32_t GetNumIntervals(void) = 0;
-    virtual void SetLowerBound(double bound) = 0;
-    virtual void AddInterval(double bound, double weight) = 0;
-    virtual double GetBound(uint32_t index) = 0;
-    virtual double GetIntervalWeight(uint32_t index) = 0;
-};
-
-
-////////////////////////////////////////
-class PiecewiseConstantDistributionParam :
-    public IPiecewiseConstantDistributionParam
-{
-    typedef PiecewiseConstantDistributionParam ThisClass;
-
-public:
-    virtual ~PiecewiseConstantDistributionParam(void) {}
-
-    virtual uint32_t GetNumIntervals(void) NSFX_OVERRIDE
-    {
-        return weights_.size();
-    }
-
-    virtual void SetLowerBound(double bound) NSFX_OVERRIDE
-    {
-        BOOST_ASSERT(bounds_.size() == 0);
-        bounds_.push_back(bound);
-    }
-
-    virtual void AddInterval(double bound, double weight) NSFX_OVERRIDE
-    {
-        BOOST_ASSERT(bounds_.size());
-        BOOST_ASSERT(bounds_.back() <= bound);
-        BOOST_ASSERT(weights >= 0);
-        bounds_.push_back(bound);
-        weights_.push_back(weight);
-    }
-
-    virtual double GetBound(uint32_t index) NSFX_OVERRIDE
-    {
-        BOOST_ASSERT(index < bounds_.size());
-        return bounds_[index];
-    }
-
-    virtual double GetIntervalWeight(uint32_t index) NSFX_OVERRIDE
-    {
-        BOOST_ASSERT(index < weights_.size());
-        return weights_[index];
-    }
-
-private:
-    NSFX_INTERFACE_MAP_BEGIN(ThisClass)
-        NSFX_INTERFACE_ENTRY(IPiecewiseConstantDistributionParam)
-    NSFX_INTERFACE_MAP_END()
-
-private:
-    vector<double> bounds_;
-    vector<double> weights_;
-};
 
 
 NSFX_CLOSE_NAMESPACE

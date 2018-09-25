@@ -21,6 +21,7 @@
 #include <nsfx/random/distribution/i-discrete-distribution.h>
 #include <nsfx/component/object.h>
 #include <boost/random/discrete_distribution.hpp>
+#include <boost/core/swap.hpp>
 
 
 NSFX_OPEN_NAMESPACE
@@ -55,6 +56,21 @@ class StdDiscreteDistribution :
             index_(index)
         {}
 
+        Iterator(const Iterator& rhs) :
+            param_(rhs.param_),
+            index_(rhs.index_)
+        {}
+
+        Iterator& operator=(const Iterator& rhs)
+        {
+            if (this != &rhs)
+            {
+                param_ = rhs.param_;
+                index_ = rhs.index_;
+            }
+            return *this;
+        }
+
         double operator*(void) const
         {
             return param_->GetWeight(index_);
@@ -81,6 +97,12 @@ class StdDiscreteDistribution :
             return !(*this == rhs);
         }
 
+        void swap(Iterator& rhs)
+        {
+            boost::swap(param_, rhs.param_);
+            boost::swap(index_, rhs.index_);
+        }
+
         IDiscreteDistributionParam* param_;
         uint32_t index_;
     };
@@ -100,7 +122,7 @@ public:
 
     virtual double Generate(void) NSFX_OVERRIDE
     {
-        return dist_(*rng_->GetEngine());
+        return dist_(*rng_->GetRng());
     }
 
     virtual void Reset(void) NSFX_OVERRIDE

@@ -28,6 +28,75 @@ NSFX_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Random
+ * @brief The interface to the parameter of piecewise linear distribution.
+ */
+class IPiecewiseLinearDistributionParam :
+    virtual public IObject
+{
+public:
+    virtual ~IPiecewiseLinearDistributionParam(void) BOOST_NOEXCEPT {}
+    virtual uint32_t GetNumBounds(void) = 0;
+    virtual void AddBound(double bound, double weight) = 0;
+    virtual double GetBound(uint32_t index) = 0;
+    virtual double GetBoundWeight(uint32_t index) = 0;
+};
+
+
+////////////////////////////////////////
+/**
+ * @ingroup Random
+ * @brief The parameter of piecewise linear distribution.
+ */
+class PiecewiseLinearDistributionParam :
+    public IPiecewiseLinearDistributionParam
+{
+    typedef PiecewiseLinearDistributionParam ThisClass;
+
+public:
+    virtual ~PiecewiseLinearDistributionParam(void) {}
+
+    virtual uint32_t GetNumBounds(void) NSFX_OVERRIDE
+    {
+        return bounds_.size();
+    }
+
+    virtual void AddBound(double bound, double weight) NSFX_OVERRIDE
+    {
+        if (bounds_.size())
+        {
+            BOOST_ASSERT(bounds_.back() < bound);
+        }
+        BOOST_ASSERT(weights >= 0);
+        bounds_.push_back(bound);
+        weights_.push_back(weight);
+    }
+
+    virtual double GetBound(uint32_t index) NSFX_OVERRIDE
+    {
+        BOOST_ASSERT(index < bounds_.size());
+        return bounds_[index];
+    }
+
+    virtual double GetBoundWeight(uint32_t index) NSFX_OVERRIDE
+    {
+        BOOST_ASSERT(index < weights_.size());
+        return weights_[index];
+    }
+
+private:
+    NSFX_INTERFACE_MAP_BEGIN(ThisClass)
+        NSFX_INTERFACE_ENTRY(IPiecewiseLinearDistributionParam)
+    NSFX_INTERFACE_MAP_END()
+
+private:
+    vector<double> bounds_;
+    vector<double> weights_;
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+ * @ingroup Random
  * @brief A piecewise linear distribution.
  *
  * It produces floating-point values that are distributed over a sequence of
@@ -91,7 +160,7 @@ public:
     /**
      * @brief The parameter associated with the piecewise linear distribution.
      *
-     * @param[in] index <code>index < GetNumIntervals() + 1</code>.
+     * @param[in] index <code>0 <= index < GetNumIntervals() + 1</code>.
      *
      * The subintervals are consecutive, and each inner bound indicates where
      * one subinterval ends and where the next begins, with the first and last
@@ -103,7 +172,7 @@ public:
     /**
      * @brief The parameter associated with the piecewise linear distribution.
      *
-     * @param[in] index <code>index < GetNumIntervals() + 1</code>.
+     * @param[in] index <code>0 <= index < GetNumIntervals() + 1</code>.
      *
      * The probability density at an inner bound of the subintervals.
      *
@@ -126,67 +195,6 @@ NSFX_DEFINE_CLASS_UID(IPiecewiseLinearDistribution,
 NSFX_DEFINE_USER_INTERFACE(
     IPiecewiseLinearDistributionUser, "edu.uestc.nsfx.IPiecewiseLinearDistributionUser",
     IPiecewiseLinearDistribution);
-
-
-////////////////////////////////////////////////////////////////////////////////
-class IPiecewiseLinearDistributionParam :
-    virtual public IObject
-{
-public:
-    virtual ~IPiecewiseLinearDistributionParam(void) BOOST_NOEXCEPT {}
-    virtual uint32_t GetNumIntervals(void) = 0;
-    virtual void AddBound(double bound, double weight) = 0;
-    virtual double GetBound(uint32_t index) = 0;
-    virtual double GetBoundWeight(uint32_t index) = 0;
-};
-
-
-////////////////////////////////////////
-class PiecewiseLinearDistributionParam :
-    public IPiecewiseLinearDistributionParam
-{
-    typedef PiecewiseLinearDistributionParam ThisClass;
-
-public:
-    virtual ~PiecewiseLinearDistributionParam(void) {}
-
-    virtual uint32_t GetNumIntervals(void) NSFX_OVERRIDE
-    {
-        return bounds_.size() ? bounds_.size() - 1 : 0;
-    }
-
-    virtual void AddBound(double bound, double weight) NSFX_OVERRIDE
-    {
-        if (bounds_.size())
-        {
-            BOOST_ASSERT(bounds_.back() <= bound);
-        }
-        BOOST_ASSERT(weights >= 0);
-        bounds_.push_back(bound);
-        weights_.push_back(weight);
-    }
-
-    virtual double GetBound(uint32_t index) NSFX_OVERRIDE
-    {
-        BOOST_ASSERT(index < bounds_.size());
-        return bounds_[index];
-    }
-
-    virtual double GetBoundWeight(uint32_t index) NSFX_OVERRIDE
-    {
-        BOOST_ASSERT(index < weights_.size());
-        return weights_[index];
-    }
-
-private:
-    NSFX_INTERFACE_MAP_BEGIN(ThisClass)
-        NSFX_INTERFACE_ENTRY(IPiecewiseLinearDistributionParam)
-    NSFX_INTERFACE_MAP_END()
-
-private:
-    vector<double> bounds_;
-    vector<double> weights_;
-};
 
 
 NSFX_CLOSE_NAMESPACE

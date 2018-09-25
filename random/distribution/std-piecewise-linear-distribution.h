@@ -21,6 +21,7 @@
 #include <nsfx/random/distribution/i-piecewise-linear-distribution.h>
 #include <nsfx/component/object.h>
 #include <boost/random/piecewise_linear_distribution.hpp>
+#include <boost/core/swap.hpp>
 
 
 NSFX_OPEN_NAMESPACE
@@ -56,6 +57,21 @@ class StdPiecewiseLinearDistribution :
             index_(index)
         {}
 
+        BoundIterator(const BoundIterator& rhs) :
+            param_(rhs.param_),
+            index_(rhs.index_)
+        {}
+
+        BoundIterator& operator=(const BoundIterator& rhs)
+        {
+            if (this != &rhs)
+            {
+                param_ = rhs.param_;
+                index_ = rhs.index_;
+            }
+            return *this;
+        }
+
         double operator*(void) const
         {
             return param_->GetBound(index_);
@@ -81,6 +97,12 @@ class StdPiecewiseLinearDistribution :
             return !(*this == rhs);
         }
 
+        void swap(BoundIterator& rhs)
+        {
+            boost::swap(param_, rhs.param_);
+            boost::swap(index_, rhs.index_);
+        }
+
         IPiecewiseLinearDistributionParam* param_;
         uint32_t index_;
     };
@@ -92,6 +114,22 @@ class StdPiecewiseLinearDistribution :
             param_(param),
             index_(index)
         {}
+
+        WeightIterator(IPiecewiseLinearDistributionParam* param,
+                      uint32_t index) :
+            param_(param),
+            index_(index)
+        {}
+
+        WeightIterator& operator=(const WeightIterator& rhs)
+        {
+            if (this != &rhs)
+            {
+                param_ = rhs.param_;
+                index_ = rhs.index_;
+            }
+            return *this;
+        }
 
         double operator*(void) const
         {
@@ -119,6 +157,12 @@ class StdPiecewiseLinearDistribution :
             return !(*this == rhs);
         }
 
+        void swap(WeightIterator& rhs)
+        {
+            boost::swap(param_, rhs.param_);
+            boost::swap(index_, rhs.index_);
+        }
+
         IPiecewiseLinearDistributionParam* param_;
         uint32_t index_;
     };
@@ -128,7 +172,7 @@ public:
             Ptr<RngType> rng, Ptr<IPiecewiseLinearDistributionParam> param) :
         rng_(rng),
         dist_(BoundIterator(param.Get(), 0),
-              BoundIterator(param.Get(), param->GetNumIntervals()),
+              BoundIterator(param.Get(), param->GetNumIntervals() + 1),
               WeightIterator(param.Get(), 0)),
         intervals_(dist_.intervals()),
         densities_(dist_.densities())
@@ -140,7 +184,7 @@ public:
 
     virtual double Generate(void) NSFX_OVERRIDE
     {
-        return dist_(*rng_->GetEngine());
+        return dist_(*rng_->GetRng());
     }
 
     virtual void Reset(void) NSFX_OVERRIDE
