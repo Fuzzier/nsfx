@@ -13,39 +13,13 @@
  *   All rights reserved.
  */
 
-#ifndef RANDOM_NUMBER_ENGINES_H__09477B58_B350_4BE7_A807_55C4E816CEE4
-#define RANDOM_NUMBER_ENGINES_H__09477B58_B350_4BE7_A807_55C4E816CEE4
+#ifndef RANDOM_NUMBER_DEVICE_H__AC01075E_AD8C_460E_AB22_0D03F32FE6CF
+#define RANDOM_NUMBER_DEVICE_H__AC01075E_AD8C_460E_AB22_0D03F32FE6CF
 
 
 #include <nsfx/random/config.h>
 #include <nsfx/random/i-random-number-generator.h>
-
-#include <nsfx/random/distribution/std-uniform-int-distribution.h>
-#include <nsfx/random/distribution/std-uniform-real-distribution.h>
-
-#include <nsfx/random/distribution/std-bernoulli-distribution.h>
-#include <nsfx/random/distribution/std-binomial-distribution.h>
-#include <nsfx/random/distribution/std-negative-binomial-distribution.h>
-#include <nsfx/random/distribution/std-geometric-distribution.h>
-
-#include <nsfx/random/distribution/std-poisson-distribution.h>
-#include <nsfx/random/distribution/std-exponential-distribution.h>
-#include <nsfx/random/distribution/std-gamma-distribution.h>
-#include <nsfx/random/distribution/std-weibull-distribution.h>
-#include <nsfx/random/distribution/std-extreme-value-distribution.h>
-
-#include <nsfx/random/distribution/std-normal-distribution.h>
-#include <nsfx/random/distribution/std-lognormal-distribution.h>
-#include <nsfx/random/distribution/std-chi-squared-distribution.h>
-#include <nsfx/random/distribution/std-cauchy-distribution.h>
-#include <nsfx/random/distribution/std-fisher-f-distribution.h>
-#include <nsfx/random/distribution/std-student-t-distribution.h>
-
-#include <nsfx/random/distribution/std-discrete-distribution.h>
-#include <nsfx/random/distribution/std-piecewise-constant-distribution.h>
-#include <nsfx/random/distribution/std-piecewise-linear-distribution.h>
-
-#include <boost/random/mersenne_twister.hpp>
+#include <random>
 
 
 NSFX_OPEN_NAMESPACE
@@ -54,63 +28,43 @@ NSFX_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Random
- * @brief A class template for encapsulating pseudo-random number engines.
+ * @brief A random number device.
  *
- * @tparam Engine A random number engine.
+ * This class employs \c std::random_device instead of
+ * \c boost::random::random_device.
  *
- * Provides \c IRandomNumberGenerator and \c IRandomNumberEngine.
+ * Provides \c IRandomNumberGenerator.
  */
-template<class Engine>
-class StdRandomNumberEngine :
-    public IRandomNumberEngine
+class RandomDevice :
+    public IRandomNumberGenerator
 {
-    typedef StdRandomNumberEngine ThisClass;
+    typedef RandomDevice ThisClass;
 
 public:
-    typedef Engine  EngineType;
+    typedef std::random_device  DeviceType;
 
-    /**
-     * @brief Construct the engine with the default seeding value.
-     */
-    StdRandomNumberEngine(void) {}
+    RandomDevice(void) {}
 
-    /**
-     * @brief Construct the engine with a seeding value.
-     */
-    StdRandomNumberEngine(uint32_t seed) :
-        engine_(seed)
-    {}
-
-    virtual ~StdRandomNumberEngine(void) {}
+    virtual ~RandomDevice(void) {}
 
     virtual uint32_t Generate(void) NSFX_OVERRIDE
     {
-        return engine_();
+        return device_();
     }
 
     virtual uint32_t GetMinValue(void) NSFX_OVERRIDE
     {
-        return EngineType::min();
+        return DeviceType::min();
     }
 
     virtual uint32_t GetMaxValue(void) NSFX_OVERRIDE
     {
-        return EngineType::max();
+        return DeviceType::max();
     }
 
     virtual double GetEntropy(void) NSFX_OVERRIDE
     {
-        return 0;
-    }
-
-    virtual void Seed(uint32_t seed) NSFX_OVERRIDE
-    {
-        engine_.seed(seed);
-    }
-
-    virtual void Discard(uint64_t z) NSFX_OVERRIDE
-    {
-        engine_.discard(z);
+        return device_.entropy();
     }
 
 public:
@@ -313,77 +267,13 @@ public:
 private:
     NSFX_INTERFACE_MAP_BEGIN(ThisClass)
         NSFX_INTERFACE_ENTRY(IRandomNumberGenerator)
-        NSFX_INTERFACE_ENTRY(IRandomNumberEngine)
     NSFX_INTERFACE_MAP_END()
 
 private:
-    EngineType engine_;
+    DeviceType device_;
 };
 
-
-////////////////////////////////////////
-/**
- * @ingroup Random
- * @brief A minimal standard linear congruential pseudo-random generator.
- *
- * This linear congruential pseudo-random number generator is discovered
- * in 1969 by Lewis, Goodman and Miller, which was adopted as the
- * "Minimal standard" in 1988 by Park and Miller.
- *
- * The default seed value is \c 1.
- */
-typedef StdRandomNumberEngine<std::minstd_rand0>  Minstd0Engine;
-
-NSFX_REGISTER_CLASS(Minstd0Engine, "edu.uestc.nsfx.Minstd0Engine");
-
-
-////////////////////////////////////////
-/**
- * @ingroup Random
- * @brief A minimal standard linear congruential pseudo-random generator.
- *
- * This linear congruential pseudo-random number generator is a newer
- * "Minimum standard", which was recommended by Park, Miller and Stockmeyer
- * in 1993.
- *
- * The default seed value is \c 1.
- */
-typedef StdRandomNumberEngine<std::minstd_rand>  MinstdEngine;
-
-NSFX_REGISTER_CLASS(MinstdEngine, "edu.uestc.nsfx.MinstdEngine");
-
-
-////////////////////////////////////////
-/**
- * @ingroup Random
- * @brief A Mersenne Twister pseudo-random generator of a state size of 19937 bits.
- *
- * This is a 32-bit Mersenne Twister pseudo-random generator discovered in 1998
- * by Matsumoto and Nishimura.
- *
- * The default seed value is \c 5489.
- */
-typedef StdRandomNumberEngine<std::mt19937>  Mt19937Engine;
-
-NSFX_REGISTER_CLASS(Mt19937Engine, "edu.uestc.nsfx.Mt19937Engine");
-
-
-////////////////////////////////////////
-/**
- * @ingroup Random
- * @brief A 24-bit RANLUX pseudo-random generator.
- *
- * This is a 24-bit RANLUX pseudo-random generator discovered in 1994 by
- * Martin Lüscher and Fred James.
- *
- * It is a subtract-with-carry pseudo-random generator of 24-bit numbers with
- * accelerated advancement.
- *
- * The default seed value is \c 19780503.
- */
-typedef StdRandomNumberEngine<std::ranlux24>  Ranlux24Engine;
-
-NSFX_REGISTER_CLASS(Ranlux24Engine, "edu.uestc.nsfx.Ranlux24Engine");
+NSFX_REGISTER_CLASS(RandomDevice, "edu.uestc.nsfx.RandomDevice");
 
 
 ////////////////////////////////////////
@@ -404,5 +294,5 @@ NSFX_REGISTER_CLASS(KnuthBEngine, "edu.uestc.nsfx.KnuthBEngine");
 NSFX_CLOSE_NAMESPACE
 
 
-#endif // RANDOM_NUMBER_ENGINES_H__09477B58_B350_4BE7_A807_55C4E816CEE4
+#endif // RANDOM_NUMBER_DEVICE_H__AC01075E_AD8C_460E_AB22_0D03F32FE6CF
 

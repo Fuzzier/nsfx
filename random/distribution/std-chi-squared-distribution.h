@@ -59,7 +59,7 @@ public:
 
     virtual double Generate(void) NSFX_OVERRIDE
     {
-        return dist_(*rng_->GetEngine());
+        return dist_(*rng_->GetRng());
     }
 
     virtual void Reset(void) NSFX_OVERRIDE

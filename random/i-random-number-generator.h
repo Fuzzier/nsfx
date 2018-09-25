@@ -54,9 +54,16 @@ NSFX_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Random
- * @brief A random number generator.
+ * @brief A uniform random number generator.
  *
- * It generates unsigned integer numbers with a uniform distribution.
+ * A uniform random number generator produces unsigned integer numbers with
+ * a uniform distribution.
+ *
+ * For performance reasons, the interface of the random number generator is
+ * designed to be able to create various distributions, in the hope that a
+ * distribution can directly access the internal resource of the uniform
+ * random number generator without invoking the virtual functions on this
+ * interface.
  */
 class IRandomNumberGenerator :
     virtual public IObject
