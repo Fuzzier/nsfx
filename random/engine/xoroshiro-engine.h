@@ -66,8 +66,8 @@ struct xoroshiro_plus_scrambler
     static_assert(j < n, "Invalid parameter.");
     static result_type scramble(xoroshiro_state<UIntType, n>& state)
     {
-        return state.s_[(p_ + (i+1) & (n-1)) & (n-1)] +
-               state.s_[(p_ + (j+1) & (n-1)) & (n-1)];
+        return state.s_[(state.p_ + ((i+1) & (n-1))) & (n-1)] +
+               state.s_[(state.p_ + ((j+1) & (n-1))) & (n-1)];
     }
 };
 
@@ -80,7 +80,7 @@ struct xoroshiro_star_scrambler
     static_assert(i < n, "Invalid parameter.");
     static result_type scramble(xoroshiro_state<UIntType, n>& state)
     {
-        return state.s_[(p_ + (i+1) & (n-1)) & (n-1)] * s;
+        return state.s_[(state.p_ + ((i+1) & (n-1))) & (n-1)] * s;
     }
 };
 
@@ -93,7 +93,7 @@ struct xoroshiro_starstar_scrambler
     static_assert(i < n, "Invalid parameter.");
     static result_type scramble(xoroshiro_state<UIntType, n>& state)
     {
-        return rotl(state.s_[(p_ + (i+1) & (n-1)) & (n-1)] * s, r) * t;
+        return rotl(state.s_[(state.p_ + ((i+1) & (n-1))) & (n-1)] * s, r) * t;
     }
 };
 
@@ -103,10 +103,10 @@ template<class UIntType, size_t i, size_t j>
 struct xoroshiro_plus_scrambler<UIntType, 2, i, j>
 {
     typedef UIntType result_type;
-    BOOST_STATIC_CONSTANT(size_t, state_size = n);
-    static_assert(i < n, "Invalid parameter.");
-    static_assert(j < n, "Invalid parameter.");
-    static result_type scramble(xoroshiro_state<UIntType, n>& state)
+    BOOST_STATIC_CONSTANT(size_t, state_size = 2);
+    static_assert(i < 2, "Invalid parameter.");
+    static_assert(j < 2, "Invalid parameter.");
+    static result_type scramble(xoroshiro_state<UIntType, 2>& state)
     {
         return state.s_[i] + state.s_[j];
     }
@@ -117,9 +117,9 @@ template<class UIntType, size_t i, UIntType s>
 struct xoroshiro_star_scrambler<UIntType, 2, i, s>
 {
     typedef UIntType result_type;
-    BOOST_STATIC_CONSTANT(size_t, state_size = n);
-    static_assert(i < n, "Invalid parameter.");
-    static result_type scramble(xoroshiro_state<UIntType, n>& state)
+    BOOST_STATIC_CONSTANT(size_t, state_size = 2);
+    static_assert(i < 2, "Invalid parameter.");
+    static result_type scramble(xoroshiro_state<UIntType, 2>& state)
     {
         return state.s_[i] * s;
     }
@@ -130,9 +130,9 @@ template<class UIntType, size_t i, UIntType s, size_t r, UIntType t>
 struct xoroshiro_starstar_scrambler<UIntType, 2, i, s, r, t>
 {
     typedef UIntType result_type;
-    BOOST_STATIC_CONSTANT(size_t, state_size = n);
-    static_assert(i < n, "Invalid parameter.");
-    static result_type scramble(xoroshiro_state<UIntType, n>& state)
+    BOOST_STATIC_CONSTANT(size_t, state_size = 2);
+    static_assert(i < 2, "Invalid parameter.");
+    static result_type scramble(xoroshiro_state<UIntType, 2>& state)
     {
         return rotl(state.s_[i] * s, r) * t;
     }
@@ -218,7 +218,7 @@ public:
         seed(default_seed);
     }
 
-    explicit xoroshiro_engine(result_type value) :
+    explicit xoroshiro_engine(result_type value)
     {
         seed(value);
     }
@@ -231,7 +231,7 @@ public:
 public:
     result_type operator()(void)
     {
-        const UIntType result = Scrambler::scramble(s_);
+        const UIntType result = Scrambler::scramble(*this);
         transform(state_size_tag<n>());
         return result;
     }
@@ -251,7 +251,7 @@ public:
 
     static result_type (max)(void)
     {
-        return std::numeric_limits<result_type>::(max)();
+        return (std::numeric_limits<result_type>::max)();
     }
 };
 
@@ -262,6 +262,9 @@ public:
  *
  * It is discovered by David Blackman and Sebastiano Vigna in 2018.
  * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
+ *
+ * Ported from the code written by David Blackman and Sebastiano Vigna in 2016.
+ * See http://xoshiro.di.unimi.it/xoroshiro64star.c
  *
  * This is \c xoroshiro64* 1.0, the authors' best and fastest 32-bit
  * small-state generator for 32-bit floating-point numbers.
@@ -289,6 +292,9 @@ typedef xoroshiro_engine<uint32_t, 2, 26, 9, 13,
  * It is discovered by David Blackman and Sebastiano Vigna in 2018.
  * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
  *
+ * Ported from the code written by David Blackman and Sebastiano Vigna in 2018.
+ * See http://xoshiro.di.unimi.it/xoroshiro64starstar.c
+ *
  * This is \c xoroshiro64** 1.0, the authors' 32-bit all-purpose, rock-solid,
  * small-state generator.
  * It is extremely fast and it passes all tests the authors are aware of, but
@@ -309,6 +315,9 @@ typedef xoroshiro_engine<uint32_t, 2, 26, 9, 13,
  *
  * It is discovered by David Blackman and Sebastiano Vigna in 2018.
  * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
+ *
+ * Ported from the code written by David Blackman and Sebastiano Vigna in 2018.
+ * See http://xoshiro.di.unimi.it/xoroshiro128plus.c
  *
  * This is \c xoroshiro128+ 1.0, the authors' best and fastest small-state
  * generator for floating-point numbers.
@@ -340,6 +349,9 @@ typedef xoroshiro_engine<uint64_t, 2, 24, 16, 37,
  * It is discovered by David Blackman and Sebastiano Vigna in 2018.
  * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
  *
+ * Ported from the code written by David Blackman and Sebastiano Vigna in 2018.
+ * See http://xoshiro.di.unimi.it/xoroshiro128starstar.c
+ *
  * This is \c xoroshiro128** 1.0, the authors' all-purpose, rock-solid,
  * small-state generator.
  * It is extremely (sub-ns) fast and it passes all tests the authors are
@@ -354,6 +366,235 @@ typedef xoroshiro_engine<uint64_t, 2, 24, 16, 37,
 typedef xoroshiro_engine<uint64_t, 2, 24, 16, 37,
         random::aux::xoroshiro_starstar_scrambler<uint64_t, 2, 0, 5, 7, 9> >
     xoroshiro128starstar;
+
+/**
+ * @ingroup Random
+ * @brief A xoroshiro1024+ pseudo-random number generator.
+ *
+ * It is discovered by David Blackman and Sebastiano Vigna in 2018.
+ * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
+ *
+ * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * fill the state.
+ */
+typedef xoroshiro_engine<uint64_t, 16, 25, 27, 36,
+        random::aux::xoroshiro_plus_scrambler<uint64_t, 16, 15, 0> >
+    xoroshiro1024plus;
+
+/**
+ * @ingroup Random
+ * @brief A xoroshiro1024* pseudo-random number generator.
+ *
+ * It is discovered by David Blackman and Sebastiano Vigna in 2018.
+ * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
+ *
+ * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * fill the state.
+ */
+typedef xoroshiro_engine<uint64_t, 16, 25, 27, 36,
+        random::aux::xoroshiro_star_scrambler<uint64_t, 16, 0, 0x9e3779b97f4a7c13ULL> >
+    xoroshiro1024star;
+
+/**
+ * @ingroup Random
+ * @brief A xoroshiro1024** pseudo-random number generator.
+ *
+ * It is discovered by David Blackman and Sebastiano Vigna in 2018.
+ * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
+ *
+ * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * fill the state.
+ */
+typedef xoroshiro_engine<uint64_t, 16, 25, 27, 36,
+        random::aux::xoroshiro_starstar_scrambler<uint64_t, 16, 0, 5, 7, 9> >
+    xoroshiro1024starstar;
+
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+ * @ingroup Random
+ * @brief A xoroshiro pseudo-random number generator.
+ */
+template<class RealType, class UIntType, size_t n,
+         size_t a, size_t b, size_t c,
+         class Scrambler>
+class xoroshiro_01_engine
+{
+private:
+    typedef xoroshiro_engine<UIntType, n, a, b, c, Scrambler> rng_type;
+
+public:
+    typedef RealType result_type;
+    BOOST_STATIC_CONSTANT(UIntType, default_seed = 1u);
+    BOOST_STATIC_CONSTANT(size_t, state_size = n);
+    BOOST_STATIC_CONSTANT(size_t, rotate_a = a);
+    BOOST_STATIC_CONSTANT(size_t, shift_b  = b);
+    BOOST_STATIC_CONSTANT(size_t, rotate_c = c);
+
+    static_assert(sizeof (float)  == 4, "Unsupported float type.");
+    static_assert(std::numeric_limits<float>::digits == 24,
+                  "Unsupported float type.");
+
+    static_assert(sizeof (double) == 8, "Unsupported double type.");
+    static_assert(std::numeric_limits<double>::digits == 53,
+                  "Unsupported double type.");
+
+public:
+    xoroshiro_01_engine(void) {}
+
+    explicit xoroshiro_01_engine(result_type value) :
+        rng_(value)
+    {}
+
+    void seed(result_type value)
+    {
+        rng_.seed(value);
+    }
+
+private:
+    template<class RealType, class UIntType>
+    struct uint_to_real
+    {
+        static RealType convert(uint32_t n)
+        {
+            return (n >> 8) * (1.0f / 16777216.0f); // 2^-24
+        }
+    };
+
+    template<class RealType>
+    struct uint_to_real<RealType, uint64_t>
+    {
+        static RealType convert(uint64_t n)
+        {
+            return (n >> 11) * (1.0 / 9007199254740992.0); // 2^-53
+        }
+    };
+
+public:
+    result_type operator()(void)
+    {
+        return uint_to_real<RealType, UIntType>::convert(rng_());
+    }
+
+    void discard(uintmax_t z)
+    {
+        rng_.discard(z);
+    }
+
+    static result_type (min)(void)
+    {
+        return 0;
+    }
+
+    static result_type (max)(void)
+    {
+        return 1;
+    }
+
+private:
+    rng_type rng_;
+};
+
+
+////////////////////////////////////////
+/**
+ * @ingroup Random
+ * @brief A xoroshiro64* pseudo-random number generator.
+ *
+ * It is discovered by David Blackman and Sebastiano Vigna in 2018.
+ * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
+ *
+ * This is \c xoroshiro64* 1.0, the authors' best and fastest 32-bit
+ * small-state generator for 32-bit floating-point numbers.
+ *
+ * The authors suggest to use its upper bits for floating-point generation,
+ * as it is slightly faster than \c xoroshiro64**.
+ * It passes all tests the authors are aware of except for linearity tests,
+ * as the lowest six bits have low linear complexity, so if low linear
+ * complexity is not considered an issue (as it is usually the case), it can
+ * be used to generate 32-bit outputs, too.
+ *
+ * The authors suggest to use a sign test to extract a random Boolean value,
+ * and right shifts to extract subsets of bits.
+ *
+ * A \c splitmix64 generator is seeded, and its output is used to fill the state.
+ */
+typedef xoroshiro_01_engine<float, uint32_t, 2, 26, 9, 13,
+        random::aux::xoroshiro_star_scrambler<uint32_t, 2, 0, 0x9e3779bb> >
+    xoroshiro64star_01;
+
+/**
+ * @ingroup Random
+ * @brief A xoroshiro64** pseudo-random number generator.
+ *
+ * It is discovered by David Blackman and Sebastiano Vigna in 2018.
+ * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
+ *
+ * This is \c xoroshiro64** 1.0, the authors' 32-bit all-purpose, rock-solid,
+ * small-state generator.
+ * It is extremely fast and it passes all tests the authors are aware of, but
+ * its state space is not large enough for any parallel application.
+ *
+ * For generating just single-precision (i.e., 32-bit) floating-point
+ * numbers, \c xoroshiro64* is even faster.
+ *
+ * A \c splitmix64 generator is seeded, and its output is used to fill the state.
+ */
+typedef xoroshiro_01_engine<float, uint32_t, 2, 26, 9, 13,
+        random::aux::xoroshiro_starstar_scrambler<uint32_t, 2, 0, 0x9e3779bb, 5, 5> >
+    xoroshiro64starstar_01;
+
+/**
+ * @ingroup Random
+ * @brief A xoroshiro128+ pseudo-random number generator.
+ *
+ * It is discovered by David Blackman and Sebastiano Vigna in 2018.
+ * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
+ *
+ * This is \c xoroshiro128+ 1.0, the authors' best and fastest small-state
+ * generator for floating-point numbers.
+ * The authors suggest to use its upper bits for floating-point generation,
+ * as it is slightly faster than \c xoroshiro128**.
+ * It passes all tests the authors are aware of except for the four lower bits,
+ * which might fail linearity tests (and just those), so if low linear
+ * complexity is not considered an issue (as it is usually the case), it can
+ * be used to generate 64-bit outputs, too; moreover, this generator has a
+ * very mild Hamming-weight dependency making our test
+ * (http://prng.di.unimi.it/hwd.php) fail after 8 TB of output; the authors
+ * believe this slight bias cannot affect any application.
+ * If the users are concerned, use \c xoroshiro128** or \c xoshiro256+.
+ *
+ * The authors suggest to use a sign test to extract a random Boolean value,
+ * and right shifts to extract subsets of bits.
+ *
+ * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * fill the state.
+ */
+typedef xoroshiro_01_engine<double, uint64_t, 2, 24, 16, 37,
+        random::aux::xoroshiro_plus_scrambler<uint64_t, 2, 0, 1> >
+    xoroshiro128plus_01;
+
+/**
+ * @ingroup Random
+ * @brief A xoroshiro128** pseudo-random number generator.
+ *
+ * It is discovered by David Blackman and Sebastiano Vigna in 2018.
+ * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
+ *
+ * This is \c xoroshiro128** 1.0, the authors' all-purpose, rock-solid,
+ * small-state generator.
+ * It is extremely (sub-ns) fast and it passes all tests the authors are
+ * aware of, but its state space is large enough only for mild parallelism.
+ *
+ * For generating just floating-point numbers, \c xoroshiro128+ is even
+ * faster (but it has a very mild bias, see the comments).
+ *
+ * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * fill the state.
+ */
+typedef xoroshiro_01_engine<double, uint64_t, 2, 24, 16, 37,
+        random::aux::xoroshiro_starstar_scrambler<uint64_t, 2, 0, 5, 7, 9> >
+    xoroshiro128starstar_01;
 
 
 NSFX_CLOSE_NAMESPACE

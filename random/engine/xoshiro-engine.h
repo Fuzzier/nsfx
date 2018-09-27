@@ -22,7 +22,6 @@
 
 #include <nsfx/random/detail/rot.h>
 #include <nsfx/random/detail/is-power-2.h>
-#include <nsfx/random/detail/scrambler.h>
 
 #include <type_traits> // is_same
 #include <cstring> // memcpy
@@ -93,12 +92,13 @@ struct xoshiro_n4_transformer :
 // | I  0  0  0  0  0  I     0    |
 // | 0  0  0  0  0  0  I     R(b) |
 // xoshiro256: uint64_t, a: 11, b: 21
+template<class UIntType, size_t a, size_t b>
 struct xoshiro_n8_transformer :
     xoshiro_transformer_traits<UIntType, 8, a, b>
 {
     typedef uint64_t UIntType;
     typedef UIntType result_type;
-    BOOST_STATIC_CONSTANT(size_t, state_size = 4);
+    BOOST_STATIC_CONSTANT(size_t, state_size = 8);
     static void transform(UIntType (&s)[state_size])
     {
         const UIntType t = s[1] << a;
@@ -151,9 +151,9 @@ struct xoshiro_starstar_scrambler
     typedef UIntType result_type;
     BOOST_STATIC_CONSTANT(size_t, state_size = n);
     static_assert(i < n, "Invalid parameter.");
-    static result_type scramble(UIntType (&s)[n])
+    static result_type scramble(UIntType (&x)[n])
     {
-        return rotl(s[i] * s, r) * t;
+        return rotl(x[i] * s, r) * t;
     }
 };
 
@@ -190,49 +190,6 @@ public:
     static_assert(Scrambler::state_size == state_size,
                   "Incompatible scrambler type.");
 
-private:
-    template<size_t n>
-    struct state_size_tag {};
-
-    // For n > 2.
-    template<size_t n>
-    void seed(result_type value, state_size_tag<n>)
-    {
-        seed(value, state_size_tag<2>());
-        p_ = n - 1;
-    }
-
-    template<size_t n>
-    void transform(state_size_tag<n>)
-    {
-        size_t q = p_;
-        p_ = (p_ + 1) & (n - 1); // n must be 2^k, where k >= 1.
-        const UIntType s0 = s_[p_];
-              UIntType s1 = s_[q];
-        s1 ^= s0;
-        s_[q]  = random::aux::rotl(s0, a) ^ s1 ^ (s1 << b);
-        s_[p_] = random::aux::rotl(s1, c);
-    }
-
-    // For n == 2.
-    void seed(result_type value, state_size_tag<2>)
-    {
-        splitmix64 gen(value);
-        for (size_t i = 0; i < n; ++i)
-        {
-            s_[i] = static_cast<UIntType>(gen());
-        }
-    }
-
-    void transform(state_size_tag<2>)
-    {
-        const UIntType s0 = s_[0];
-              UIntType s1 = s_[1];
-        s1 ^= s0;
-        s_[0] = random::aux::rotl(s0, a) ^ s1 ^ (s1 << b);
-        s_[1] = random::aux::rotl(s1, c);
-    }
-
 public:
     xoshiro_engine(void)
     {
@@ -246,7 +203,11 @@ public:
 
     void seed(result_type value)
     {
-        seed(value, state_size_tag<n>());
+        splitmix64 gen(value);
+        for (size_t i = 0; i < n; ++i)
+        {
+            s_[i] = static_cast<UIntType>(gen());
+        }
     }
 
 public:
@@ -272,7 +233,7 @@ public:
 
     static result_type (max)(void)
     {
-        return std::numeric_limits<result_type>::(max)();
+        return (std::numeric_limits<result_type>::max)();
     }
 
 private:
@@ -286,6 +247,9 @@ private:
  *
  * It is discovered by David Blackman and Sebastiano Vigna in 2018.
  * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
+ *
+ * Ported from the code written by David Blackman and Sebastiano Vigna in 2018.
+ * See http://xoshiro.di.unimi.it/xoshiro128plus.c
  *
  * This is \c xoshiro128+ 1.0, the authors' best and fastest 32-bit generator
  * for 32-bit floating-point numbers.
@@ -302,7 +266,7 @@ private:
  * A \c splitmix64 generator is seeded, and its output is used to fill the state.
  */
 typedef xoshiro_engine<uint32_t, 4,
-        random::aux::xoshiro_n4_transformer<uint32_t, 4, 9, 11>,
+        random::aux::xoshiro_n4_transformer<uint32_t, 9, 11>,
         random::aux::xoshiro_plus_scrambler<uint32_t, 4, 0, 3> >
     xoshiro128plus;
 
@@ -312,6 +276,9 @@ typedef xoshiro_engine<uint32_t, 4,
  *
  * It is discovered by David Blackman and Sebastiano Vigna in 2018.
  * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
+ *
+ * Ported from the code written by David Blackman and Sebastiano Vigna in 2018.
+ * See http://xoshiro.di.unimi.it/xoshiro128starstar.c
  *
  * This is \c xoshiro128** 1.0, a 32-bit all-purpose, rock-solid generator.
  * It has excellent (sub-ns) speed, a state size (128 bits) that is large
@@ -323,7 +290,7 @@ typedef xoshiro_engine<uint32_t, 4,
  * A \c splitmix64 generator is seeded, and its output is used to fill the state.
  */
 typedef xoshiro_engine<uint32_t, 4,
-        random::aux::xoshiro_n4_transformer<uint32_t, 4, 9, 11>,
+        random::aux::xoshiro_n4_transformer<uint32_t, 9, 11>,
         random::aux::xoshiro_starstar_scrambler<uint32_t, 4, 0, 5, 7, 9> >
     xoshiro128starstar;
 
@@ -333,6 +300,9 @@ typedef xoshiro_engine<uint32_t, 4,
  *
  * It is discovered by David Blackman and Sebastiano Vigna in 2018.
  * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
+ *
+ * Ported from the code written by David Blackman and Sebastiano Vigna in 2018.
+ * See http://xoshiro.di.unimi.it/xoshiro256plus.c
  *
  * This is xoshiro256+ 1.0, the authors' best and fastest generator for
  * floating-point numbers.
@@ -350,7 +320,7 @@ typedef xoshiro_engine<uint32_t, 4,
  * fill the state.
  */
 typedef xoshiro_engine<uint64_t, 4,
-        random::aux::xoshiro_n4_transformer<uint64_t, 4, 17, 45>,
+        random::aux::xoshiro_n4_transformer<uint64_t, 17, 45>,
         random::aux::xoshiro_plus_scrambler<uint64_t, 4, 0, 3> >
     xoshiro256plus;
 
@@ -360,6 +330,9 @@ typedef xoshiro_engine<uint64_t, 4,
  *
  * It is discovered by David Blackman and Sebastiano Vigna in 2018.
  * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
+ *
+ * Ported from the code written by David Blackman and Sebastiano Vigna in 2018.
+ * See http://xoshiro.di.unimi.it/xoshiro256starstar.c
  *
  * This is xoshiro256** 1.0, the authors' all-purpose, rock-solid generator.
  * It has excellent (sub-ns) speed, a state (256 bits) that is large enough for
@@ -371,7 +344,7 @@ typedef xoshiro_engine<uint64_t, 4,
  * fill the state.
  */
 typedef xoshiro_engine<uint64_t, 4,
-        random::aux::xoshiro_n4_transformer<uint64_t, 4, 17, 45>,
+        random::aux::xoshiro_n4_transformer<uint64_t, 17, 45>,
         random::aux::xoshiro_starstar_scrambler<uint64_t, 4, 1, 5, 7, 9> >
     xoshiro256starstar;
 
@@ -381,6 +354,9 @@ typedef xoshiro_engine<uint64_t, 4,
  *
  * It is discovered by David Blackman and Sebastiano Vigna in 2018.
  * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
+ *
+ * Ported from the code written by David Blackman and Sebastiano Vigna in 2018.
+ * See http://xoshiro.di.unimi.it/xoshiro512plus.c
  *
  * This is \c xoshiro512+ 1.0, the authers' generator for floating-point
  * numbers with increased state size.
@@ -398,7 +374,7 @@ typedef xoshiro_engine<uint64_t, 4,
  * fill the state.
  */
 typedef xoshiro_engine<uint64_t, 8,
-        random::aux::xoshiro_n4_transformer<uint64_t, 8, 11, 21>,
+        random::aux::xoshiro_n8_transformer<uint64_t, 11, 21>,
         random::aux::xoshiro_plus_scrambler<uint64_t, 8, 0, 2> >
     xoshiro512plus;
 
@@ -408,6 +384,9 @@ typedef xoshiro_engine<uint64_t, 8,
  *
  * It is discovered by David Blackman and Sebastiano Vigna in 2018.
  * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
+ *
+ * Ported from the code written by David Blackman and Sebastiano Vigna in 2018.
+ * See http://xoshiro.di.unimi.it/xoshiro512starstar.c
  *
  * This is \c xoshiro512** 1.0, an all-purpose, rock-solid generator.
  * It has excellent (about 1ns) speed, an increased state (512 bits) that
@@ -420,12 +399,12 @@ typedef xoshiro_engine<uint64_t, 8,
  * fill the state.
  */
 typedef xoshiro_engine<uint64_t, 8,
-        random::aux::xoshiro_n4_transformer<uint64_t, 8, 11, 21>,
+        random::aux::xoshiro_n8_transformer<uint64_t, 11, 21>,
         random::aux::xoshiro_starstar_scrambler<uint64_t, 8, 1, 5, 7, 9> >
     xoshiro512starstar;
 
 
-NSFX_OPEN_NAMESPACE
+NSFX_CLOSE_NAMESPACE
 
 
 #endif // XOSHIRO_ENGINE_H__805A391A_924A_4BB0_88CD_9A674BEF2D41

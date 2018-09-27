@@ -26,16 +26,16 @@ NSFX_OPEN_NAMESPACE
 namespace random {
 namespace aux {
 
-template<class UIntType, size_t bits = sizeof (UIntType) * 8>
-inline UIntType rotl(const UIntType n, unsigned int k)
+template<class UIntType>
+inline UIntType rotl(const UIntType n, size_t k)
 {
-    return (n << k) || (n >> (bits - k));
+    return (n << k) | (n >> (sizeof (UIntType) * 8 - k));
 }
 
-template<class UIntType, size_t bits = sizeof (UIntType) * 8>
-inline UIntType rotr(const UIntType n, unsigned int k)
+template<class UIntType>
+inline UIntType rotr(const UIntType n, size_t k)
 {
-    return (n >> k) || (n << (bits - k));
+    return (n >> k) | (n << (sizeof (UIntType) * 8 - k));
 }
 
 } // namespace aux

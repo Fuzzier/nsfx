@@ -27,10 +27,11 @@ NSFX_OPEN_NAMESPACE
 namespace random {
 namespace aux {
 
+
 // A valid state size is a power of 2.
 // i.e., 2^k, where k >= 1.
 template<size_t n, bool valid = (n>=2) && !(n&1)>
-struct is_power_2 : is_valid_state_size<(n>>1)> {};
+struct is_power_2 : is_power_2<(n>>1)> {};
 
 template<size_t n>
 struct is_power_2<n, false> : std::false_type {};

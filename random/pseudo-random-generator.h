@@ -13,12 +13,14 @@
  *   All rights reserved.
  */
 
-#ifndef PSEUDO_RANDOM_ENGINE_H__A95A63F4_29C3_4A68_B44B_816188096353
-#define PSEUDO_RANDOM_ENGINE_H__A95A63F4_29C3_4A68_B44B_816188096353
+#ifndef PSEUDO_RANDOM_GENERATOR_H__F0D2AE39_EDCE_4DD2_ABCE_1BE52AF367B2
+#define PSEUDO_RANDOM_GENERATOR_H__F0D2AE39_EDCE_4DD2_ABCE_1BE52AF367B2
 
 
 #include <nsfx/random/config.h>
+
 #include <nsfx/random/i-random-uint32-generator.h>
+#include <nsfx/random/i-random-uint64-generator.h>
 #include <nsfx/random/i-random-double-generator.h>
 
 #include <nsfx/random/distribution/std-uniform-int-distribution.h>
@@ -26,8 +28,8 @@
 
 #include <nsfx/random/distribution/std-bernoulli-distribution.h>
 #include <nsfx/random/distribution/std-binomial-distribution.h>
-#include <nsfx/random/distribution/std-negative-binomial-distribution.h>
 #include <nsfx/random/distribution/std-geometric-distribution.h>
+#include <nsfx/random/distribution/std-negative-binomial-distribution.h>
 
 #include <nsfx/random/distribution/std-poisson-distribution.h>
 #include <nsfx/random/distribution/std-exponential-distribution.h>
@@ -46,6 +48,9 @@
 #include <nsfx/random/distribution/std-piecewise-constant-distribution.h>
 #include <nsfx/random/distribution/std-piecewise-linear-distribution.h>
 
+#include <nsfx/random/engine/xoroshiro-engine.h>
+#include <nsfx/random/engine/xoshiro-engine.h>
+
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/lagged_fibonacci.hpp.hpp>
 #include <boost/random/niederreiter_base2.hpp.hpp>
@@ -57,8 +62,9 @@
 NSFX_OPEN_NAMESPACE
 
 
-namespace aux
-{
+namespace random {
+namespace aux {
+
 
 template<class StdRng>
 struct RandomNumberGeneratorTraits
@@ -95,7 +101,9 @@ struct RandomNumberGeneratorTraits
     > > > InterfaceType;
 };
 
+
 } // namespace aux
+} // namespace random
 
 
 
@@ -117,14 +125,14 @@ struct RandomNumberGeneratorTraits
  */
 template<class StdRng>
 class PseudoRandomEngine :
-    public typename nsfx::aux::RandomNumberGeneratorTraits<StdRng>::InterfaceType,
+    public typename random::aux::RandomNumberGeneratorTraits<StdRng>::InterfaceType,
     public IRandomDistributionGenerator
 {
     typedef PseudoRandomEngine ThisClass;
 
 public:
-    typedef typename nsfx::aux::RandomNumberGeneratorTraits<StdRng>::ResultType    ResultType;
-    typedef typename nsfx::aux::RandomNumberGeneratorTraits<StdRng>::InterfaceType InterfaceType;
+    typedef typename random::aux::RandomNumberGeneratorTraits<StdRng>::ResultType    ResultType;
+    typedef typename random::aux::RandomNumberGeneratorTraits<StdRng>::InterfaceType InterfaceType;
 
     /**
      * @brief Construct the engine with the default seeding value.
@@ -150,12 +158,12 @@ public:
 
     virtual ResultType GetMinValue(void) NSFX_OVERRIDE
     {
-        return RngType::min();
+        return (RngType::min)();
     }
 
     virtual ResultType GetMaxValue(void) NSFX_OVERRIDE
     {
-        return RngType::max();
+        return (RngType::max)();
     }
 
     virtual double GetEntropy(void) NSFX_OVERRIDE
@@ -421,20 +429,35 @@ NSFX_REGISTER_CLASS(LaggedFibonacci44497Engine, "edu.uestc.nsfx.LaggedFibonacci4
 ////////////////////////////////////////
 /**
  * @ingroup Random
- * @brief A Mersenne Twister pseudo-random generator of a state size of about 2300000 bits.
+ * @brief A xoroshiro128+ pseudo-random generator of a state size of 128 bits.
  *
- * This is a lagged Fibonacci pseudo-random generator discovered in 1992
- * by Richard Brent.
+ * This is a pseudo-random generator discovered by David Blackman and
+ * Sebastiano Vigna in 2018.
  *
- * The default seed value is \c 331u.
+ * The default seed value is \c 1u.
  */
-typedef PseudoRandomUintEngine<boost::random::lagged_fibonacci44497>  LaggedFibonacci44497Engine;
+typedef PseudoRandomUintEngine<nsfx::xoroshiro128plus>  Xoroshiro128PlusEngine;
 
-NSFX_REGISTER_CLASS(LaggedFibonacci44497Engine, "edu.uestc.nsfx.LaggedFibonacci44497Engine");
+NSFX_REGISTER_CLASS(Xoroshiro128PlusEngine, "edu.uestc.nsfx.Xoroshiro128PlusEngine");
+
+
+////////////////////////////////////////
+/**
+ * @ingroup Random
+ * @brief A xoroshiro128** pseudo-random generator of a state size of 128 bits.
+ *
+ * This is a pseudo-random generator discovered by David Blackman and
+ * Sebastiano Vigna in 2018.
+ *
+ * The default seed value is \c 1u.
+ */
+typedef PseudoRandomUintEngine<nsfx::xoroshiro128starstar>  Xoroshiro128StarstarEngine;
+
+NSFX_REGISTER_CLASS(Xoroshiro128StarstarEngine, "edu.uestc.nsfx.Xoroshiro128StarstarEngine");
 
 
 NSFX_CLOSE_NAMESPACE
 
 
-#endif // PSEUDO_RANDOM_ENGINE_H__A95A63F4_29C3_4A68_B44B_816188096353
+#endif // PSEUDO_RANDOM_GENERATOR_H__F0D2AE39_EDCE_4DD2_ABCE_1BE52AF367B2
 
