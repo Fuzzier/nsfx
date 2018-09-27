@@ -13,8 +13,8 @@
  *   All rights reserved.
  */
 
-#ifndef I_RANDOM_NUMBER_GENERATOR_H__E6D026FA_399E_402F_BA49_D9AD1E703A1B
-#define I_RANDOM_NUMBER_GENERATOR_H__E6D026FA_399E_402F_BA49_D9AD1E703A1B
+#ifndef I_RANDOM_DISTRIBUTION_GENERATOR_H__9C3F214F_B1A5_4877_865D_105326654B5B
+#define I_RANDOM_DISTRIBUTION_GENERATOR_H__9C3F214F_B1A5_4877_865D_105326654B5B
 
 
 #include <nsfx/random/config.h>
@@ -54,60 +54,41 @@ NSFX_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Random
- * @brief A uniform random number generator.
+ * @brief A statistical distribution generator.
  *
- * A uniform random number generator produces unsigned integer numbers with
- * a uniform distribution.
- *
- * For performance reasons, the interface of the random number generator is
- * designed to be able to create various distributions, in the hope that a
- * distribution can directly access the internal resource of the uniform
- * random number generator without invoking the virtual functions on this
- * interface.
+ * # Supported statistical distributions
+ * ## Uniform distributions
+ * * \c IUniformIntDistribution
+ * * \c IUniformRealDistribution
+ * ## Bernoulli distributions
+ * * \c IBernoulliDistribution
+ * * \c IBinomialDistribution
+ * * \c INegativeBinomialDistribution
+ * * \c IGeometricDistribution
+ * ## Poisson distributions
+ * * \c IPoissonDistribution
+ * * \c IExponentialDistribution
+ * * \c IGammaDistribution
+ * * \c IWeibullDistribution
+ * * \c IExtremeValueDistribution
+ * ## Normal distributions
+ * * \c INormalDistribution
+ * * \c ILognormalDistribution
+ * * \c IChiSquaredDistribution
+ * * \c ICauchyDistribution
+ * * \c IFisherFDistribution
+ * * \c IStudentTDistribution
+ * ## Sampling distributions
+ * * \c IDiscreteDistribution
+ * * \c IPiecewiseConstantDistribution
+ * * \c IPiecewiseLinearDistribution
  */
-class IRandomNumberGenerator :
+class IRandomDistributionGenerator :
     virtual public IObject
 {
 public:
-    virtual ~IRandomNumberGenerator(void) BOOST_NOEXCEPT {}
+    virtual ~IRandomDistributionGenerator(void) BOOST_NOEXCEPT {}
 
-    /**
-     * @brief Generate a new random number.
-     */
-    virtual uint32_t Generate(void) = 0;
-
-    /**
-     * @brief The minimum value that can be potentially generated.
-     *
-     * The return value <b>must</b> be the same during the lifetime of the
-     * random engine.
-     */
-    virtual uint32_t GetMinValue(void) = 0;
-
-    /**
-     * @brief The maximum value that can be potentially generated.
-     *
-     * The return value <b>must</b> be the same during the lifetime of the
-     * random engine.
-     */
-    virtual uint32_t GetMaxValue(void) = 0;
-
-    /**
-     * @brief The entropy estimate for the generated random numbers.
-     *
-     * The value is expressed on a base-2 scale, with a value between \c 0 and
-     * <i>log2(max()+1)</i>
-     * (which is equal to <code>std::numeric_limits<unsigned int>::digits</code>).
-     *
-     * @return For a pseudo-random (deterministic) number generator, the value
-     *         returned is always \c 0.
-     *         <p>
-     *         For a non-deterministic random number generator, the value
-     *         returned may be positive.
-     */
-    virtual double GetEntropy(void) = 0;
-
-    // Common distributions.
     /**
      * @brief Create a discrete uniform distribution.
      *
@@ -311,68 +292,18 @@ public:
 
 };
 
-NSFX_DEFINE_CLASS_UID(IRandomNumberGenerator,
-                      "edu.uestc.nsfx.IRandomNumberGenerator");
+NSFX_DEFINE_CLASS_UID(IRandomDistributionGenerator,
+                      "edu.uestc.nsfx.IRandomDistributionGenerator");
 
 
 ////////////////////////////////////////
 NSFX_DEFINE_USER_INTERFACE(
-    IRandomGeneratorUser, "edu.uestc.nsfx.IRandomGeneratorUser",
-    IRandomNumberGenerator);
-
-
-////////////////////////////////////////////////////////////////////////////////
-/**
- * @ingroup Random
- * @brief A pseudo-random number generator.
- *
- * It generates a sequence of unsigned integer numbers with a uniform
- * distribution.
- */
-class IRandomNumberEngine :
-    public IRandomNumberGenerator
-{
-public:
-    virtual ~IRandomNumberEngine(void) BOOST_NOEXCEPT {}
-
-    // IRandomNumberGenerator
-    virtual uint32_t Generate(void)    NSFX_OVERRIDE = 0;
-    virtual uint32_t GetMinValue(void) NSFX_OVERRIDE = 0;
-    virtual uint32_t GetMaxValue(void) NSFX_OVERRIDE = 0;
-    virtual double   GetEntropy(void)  NSFX_OVERRIDE = 0;
-
-    virtual Ptr<IUniformDistribution>
-            CreateUniformDistribution(double a, double b) = 0;
-
-    /**
-     * @brief Re-initialize the pseudo-random number generator by a seed value.
-     *
-     * @param[in] seed The seeding value.
-     */
-    virtual void Seed(uint32_t seed) = 0;
-
-    /**
-     * @brief Advances the internal state by \c z notches.
-     *
-     * This function operations as if \c Generate() was called \c z times,
-     * but without generating any numbers in the process.
-     */
-    virtual void Discard(uint64_t z) = 0;
-
-};
-
-NSFX_DEFINE_CLASS_UID(IRandomNumberEngine,
-                      "edu.uestc.nsfx.IRandomNumberEngine");
-
-
-////////////////////////////////////////
-NSFX_DEFINE_USER_INTERFACE(
-    IRandomEngineUser, "edu.uestc.nsfx.IRandomEngineUser",
-    IRandomNumberEngine);
+    IRandomDistributionGeneratorUser, "edu.uestc.nsfx.IRandomDistributionGeneratorUser",
+    IRandomDistributionGenerator);
 
 
 NSFX_CLOSE_NAMESPACE
 
 
-#endif // I_RANDOM_NUMBER_GENERATOR_H__E6D026FA_399E_402F_BA49_D9AD1E703A1B
+#endif // I_RANDOM_DISTRIBUTION_GENERATOR_H__9C3F214F_B1A5_4877_865D_105326654B5B
 
