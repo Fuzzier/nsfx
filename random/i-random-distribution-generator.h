@@ -35,6 +35,8 @@
 #include <nsfx/random/distribution/i-gamma-distribution.h>
 #include <nsfx/random/distribution/i-weibull-distribution.h>
 #include <nsfx/random/distribution/i-extreme-value-distribution.h>
+#include <nsfx/random/distribution/i-beta-distribution.h>
+#include <nsfx/random/distribution/i-laplace-distribution.h>
 
 #include <nsfx/random/distribution/i-normal-distribution.h>
 #include <nsfx/random/distribution/i-lognormal-distribution.h>
@@ -73,6 +75,8 @@ NSFX_OPEN_NAMESPACE
  * * \c IGammaDistribution
  * * \c IWeibullDistribution
  * * \c IExtremeValueDistribution
+ * * \c IBetaDistribution
+ * * \c ILaplaceDistribution
  * ## Normal distributions
  * * \c INormalDistribution
  * * \c ILognormalDistribution
@@ -212,6 +216,27 @@ public:
      */
     virtual Ptr<IExtremeValueDistribution>
             CreateExtremeValueDistribution(double location, double scale) = 0;
+
+    /**
+     * @brief Create a beta distribution.
+     *
+     * @param[in] alpha The first shape of the distribution.
+     *                  It <b>must</b> be positive.
+     * @param[in] beta  The second shape of the distribution.
+     *                  It <b>must</b> be positive.
+     */
+    virtual Ptr<IBetaDistribution>
+            CreateBetaDistribution(double alpha, double beta) = 0;
+
+    /**
+     * @brief Create a laplace distribution.
+     *
+     * @param[in] mean  The mean (location) of the distribution.
+     * @param[in] scale The shape of the distribution.
+     *                  It <b>must</b> be positive.
+     */
+    virtual Ptr<ILaplaceDistribution>
+            CreateLaplaceDistribution(double mean, double scale) = 0;
 
     /**
      * @brief Create a normal distribution.

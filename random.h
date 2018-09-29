@@ -33,6 +33,8 @@
 #include <nsfx/random/distribution/i-gamma-distribution.h>
 #include <nsfx/random/distribution/i-weibull-distribution.h>
 #include <nsfx/random/distribution/i-extreme-value-distribution.h>
+#include <nsfx/random/distribution/i-beta-distribution.h>
+#include <nsfx/random/distribution/i-laplace-distribution.h>
 
 #include <nsfx/random/distribution/i-normal-distribution.h>
 #include <nsfx/random/distribution/i-lognormal-distribution.h>

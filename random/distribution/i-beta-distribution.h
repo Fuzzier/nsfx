@@ -1,11 +1,11 @@
 /**
  * @file
  *
- * @brief Random number support for Network Simulation Frameworks.
+ * @brief Random support for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
- * @date    2018-09-24
+ * @date    2018-09-25
  *
  * @copyright Copyright (c) 2018.
  *   National Key Laboratory of Science and Technology on Communications,
@@ -13,8 +13,8 @@
  *   All rights reserved.
  */
 
-#ifndef I_WEIBULL_DISTRIBUTION_H__91725FDB_5431_41E8_B37A_60C9F2501B12
-#define I_WEIBULL_DISTRIBUTION_H__91725FDB_5431_41E8_B37A_60C9F2501B12
+#ifndef I_BETA_DISTRIBUTION_H__DAA2CC24_5718_4793_B9B8_3286701389BC
+#define I_BETA_DISTRIBUTION_H__DAA2CC24_5718_4793_B9B8_3286701389BC
 
 
 #include <nsfx/random/config.h>
@@ -28,18 +28,16 @@ NSFX_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Random
- * @brief A 2-parameter Weibull distribution.
+ * @brief A beta distribution.
  *
- * This distribution produces random numbers where each value can be
- * interpreted, in terms of population, as the lifetime for which the death
- * probability is proportional to the <i>a</i>-th power of time.
- * Parameter <i>b</i> scales the process.
+ * This distribution produces random numbers within <i>[0, 1]</i> or
+ * <i>(0, 1)</i>.
  */
-class IWeibullDistribution :
+class IBetaDistribution :
     virtual public IObject
 {
 public:
-    virtual ~IWeibullDistribution(void) BOOST_NOEXCEPT {}
+    virtual ~IBetaDistribution(void) BOOST_NOEXCEPT {}
 
     /**
      * @brief Generate a new random number.
@@ -73,39 +71,34 @@ public:
      * The least upper bound of the range of values that can be potentially
      * generated.
      *
-     * @return <code>std::numeric_limits<double>::max()</code> or
-     *         <code>std::numeric_limits<double>::infinity()</code>.
+     * @return \c 1.
      */
     virtual double GetMaxValue(void) = 0;
 
     /**
-     * @brief The parameter <i>a</i> associated with the Weibull distribution.
-     *
-     * The shape parameter of the Weibull distribution.
+     * @brief The parameter <i>alpha</i> associated with the beta distribution.
      */
-    virtual double GetShape(void) = 0;
+    virtual double GetAlpha(void) = 0;
 
     /**
-     * @brief The parameter <i>b</i> associated with the Weibull distribution.
-     *
-     * The scale parameter of the Weibull distribution.
+     * @brief The parameter <i>beta</i> associated with the beta distribution.
      */
-    virtual double GetScale(void) = 0;
+    virtual double GetBeta(void) = 0;
 
 };
 
-NSFX_DEFINE_CLASS_UID(IWeibullDistribution,
-                      "edu.uestc.nsfx.IWeibullDistribution");
+NSFX_DEFINE_CLASS_UID(IBetaDistribution,
+                      "edu.uestc.nsfx.IBetaDistribution");
 
 
 ////////////////////////////////////////////////////////////////////////////////
 NSFX_DEFINE_USER_INTERFACE(
-    IWeibullDistributionUser, "edu.uestc.nsfx.IWeibullDistributionUser",
-    IWeibullDistribution);
+    IBetaDistributionUser, "edu.uestc.nsfx.IBetaDistributionUser",
+    IBetaDistribution);
 
 
 NSFX_CLOSE_NAMESPACE
 
 
-#endif // I_WEIBULL_DISTRIBUTION_H__91725FDB_5431_41E8_B37A_60C9F2501B12
+#endif // I_BETA_DISTRIBUTION_H__DAA2CC24_5718_4793_B9B8_3286701389BC
 
