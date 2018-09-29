@@ -31,7 +31,8 @@ NSFX_OPEN_NAMESPACE
  * @ingroup Random
  * @brief A pseudo-random number engine.
  */
-class IPseudoRandomEngine
+class IPseudoRandomEngine :
+    virtual public IObject
 {
 public:
     virtual ~IPseudoRandomEngine(void) BOOST_NOEXCEPT {}

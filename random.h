@@ -45,6 +45,8 @@
 #include <nsfx/random/distribution/i-piecewise-constant-distribution.h>
 #include <nsfx/random/distribution/i-piecewise-linear-distribution.h>
 
+#include <nsfx/random/distribution/i-triangle-distribution.h>
+
 // Random number generators.
 #include <nsfx/random/i-random-uint32-generator.h>
 #include <nsfx/random/i-random-uint64-generator.h>
@@ -55,11 +57,11 @@
 
 #include <nsfx/random/i-random-distribution-generator.h>
 
-#include <nsfx/random/engine/xoroshiro-engine.h>
+#include <nsfx/random/engine/splitmix-engine.h>
 #include <nsfx/random/engine/xoshiro-engine.h>
+#include <nsfx/random/engine/xoroshiro-engine.h>
 
 #include <nsfx/random/pseudo-random-generator.h>
-// #include <nsfx/random/quasi-random-generator.h>
 
 
 #endif // RANDOM_H__B4E5C3DA_BCD7_45DD_967D_1C6A539E69E5

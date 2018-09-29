@@ -21,7 +21,12 @@
 
 #include <nsfx/random/i-random-uint32-generator.h>
 #include <nsfx/random/i-random-uint64-generator.h>
+#include <nsfx/random/i-random-float-generator.h>
 #include <nsfx/random/i-random-double-generator.h>
+
+#include <nsfx/random/i-pseudo-random-engine.h>
+
+#include <nsfx/random/i-random-distribution-generator.h>
 
 #include <nsfx/random/distribution/std-uniform-int-distribution.h>
 #include <nsfx/random/distribution/std-uniform-real-distribution.h>
@@ -48,15 +53,13 @@
 #include <nsfx/random/distribution/std-piecewise-constant-distribution.h>
 #include <nsfx/random/distribution/std-piecewise-linear-distribution.h>
 
+#include <nsfx/random/distribution/std-triangle-distribution.h>
+
 #include <nsfx/random/engine/xoroshiro-engine.h>
 #include <nsfx/random/engine/xoshiro-engine.h>
-
 #include <boost/random/mersenne_twister.hpp>
-#include <boost/random/lagged_fibonacci.hpp.hpp>
-#include <boost/random/niederreiter_base2.hpp.hpp>
 
-#include <type_traits> // conditional, is_integral, is_unsigned,
-                       // is_floating_point, is_same
+#include <type_traits> // conditional, is_integral, is_floating_point, is_same
 
 
 NSFX_OPEN_NAMESPACE
@@ -72,39 +75,53 @@ struct RandomNumberGeneratorTraits
     typedef typename StdRng::result_type  StdRngResultType;
 
     typedef
-    std::conditional<
-        std::is_integral<StdRngResultType>::value && std::is_unsigned<StdRngResultType>::value && sizeof (StdRngResultType) <= sizeof (uint32_t),
+    typename std::conditional<
+        std::is_integral<StdRngResultType>::value && sizeof (StdRngResultType) == sizeof (uint32_t),
         uint32_t,
-        std::conditional<
-            std::is_integral<StdRngResultType>::value && std::is_unsigned<StdRngResultType>::value && sizeof (StdRngResultType) <= sizeof (uint64_t),
+        typename std::conditional<
+            std::is_integral<StdRngResultType>::value && sizeof (StdRngResultType) == sizeof (uint64_t),
             uint64_t,
-            std::conditional<
-                std::is_floating_point<StdRngResultType>::value && sizeof (StdRngResultType) <= sizeof (double),
-                double,
-                void
-    > > > ResultType;
+            typename std::conditional<
+                std::is_floating_point<StdRngResultType>::value && sizeof (StdRngResultType) == sizeof (float),
+                float,
+                typename std::conditional<
+                    std::is_floating_point<StdRngResultType>::value && sizeof (StdRngResultType) == sizeof (double),
+                    double,
+                    void
+                >::type
+            >::type
+        >::type
+    >::type ResultType;
 
     static_assert(!std::is_same<ResultType, void>::value,
                   "The StdRng is unsupported.");
 
     typedef
-    std::conditional<
+    typename std::conditional<
         std::is_same<ResultType, uint32_t>::value,
-        IRandomUint32Generator,
-        std::conditional<
+        IRandomUInt32Generator,
+        typename std::conditional<
             std::is_same<ResultType, uint64_t>::value,
-            IRandomUint64Generator,
-            std::conditional<
-                std::is_same<ResultType, double>::value,
-                IRandomDoubleGenerator,
-                void
-    > > > InterfaceType;
+            IRandomUInt64Generator,
+            typename std::conditional<
+                std::is_same<ResultType, float>::value,
+                IRandomFloatGenerator,
+                typename std::conditional<
+                    std::is_same<ResultType, double>::value,
+                    IRandomDoubleGenerator,
+                    void
+                >::type
+            >::type
+        >::type
+    >::type InterfaceType;
+
+    static_assert(!std::is_same<InterfaceType, void>::value,
+                  "The StdRng is unsupported.");
 };
 
 
 } // namespace aux
 } // namespace random
-
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -118,19 +135,22 @@ struct RandomNumberGeneratorTraits
  *
  * Provided interfaces:
  * * \c IPseudoRandomEngine
- * * \c IRandomUint32Generator (if \c StdRng::result_type is 32-bit unsigned integer)
- * * \c IRandomUint64Generator (if \c StdRng::result_type is 64-bit unsigned integer)
+ * * \c IRandomUInt32Generator (if \c StdRng::result_type is 32-bit unsigned integer)
+ * * \c IRandomUInt64Generator (if \c StdRng::result_type is 64-bit unsigned integer)
+ * * \c IRandomFloatGenerator  (if \c StdRng::result_type is float)
  * * \c IRandomDoubleGenerator (if \c StdRng::result_type is double)
  * * \c IRandomDistributionGenerator
  */
 template<class StdRng>
 class PseudoRandomEngine :
-    public typename random::aux::RandomNumberGeneratorTraits<StdRng>::InterfaceType,
+    public IPseudoRandomEngine,
+    public random::aux::RandomNumberGeneratorTraits<StdRng>::InterfaceType,
     public IRandomDistributionGenerator
 {
     typedef PseudoRandomEngine ThisClass;
 
 public:
+    typedef StdRng RngType;
     typedef typename random::aux::RandomNumberGeneratorTraits<StdRng>::ResultType    ResultType;
     typedef typename random::aux::RandomNumberGeneratorTraits<StdRng>::InterfaceType InterfaceType;
 
@@ -148,12 +168,13 @@ public:
 
     virtual ~PseudoRandomEngine(void) {}
 
-    // IRandomUint32Generator or
-    // IRandomUint64Generator or
+    // IRandomUInt32Generator or
+    // IRandomUInt64Generator or
+    // IRandomFloatGenerator  or
     // IRandomDoubleGenerator
     virtual ResultType Generate(void) NSFX_OVERRIDE
     {
-        return engine_();
+        return rng_();
     }
 
     virtual ResultType GetMinValue(void) NSFX_OVERRIDE
@@ -190,9 +211,9 @@ public:
      * Called internaly by the distributions created by this class, so
      * they do not have to call virtual functions to generate random numbers.
      */
-    RngType* GetRng(void)
+    RngType& GetRng(void)
     {
-        return &rng_;
+        return rng_;
     }
 
 public:
@@ -243,12 +264,12 @@ public:
 
     virtual Ptr<INegativeBinomialDistribution>
             CreateNegativeBinomialDistribution(
-                uint32_t numFailures, double prob) NSFX_OVERRIDE
+                uint32_t numTrials, double prob) NSFX_OVERRIDE
     {
         BOOST_ASSERT(0 <= prob && prob <= 1);
         return Ptr<INegativeBinomialDistribution>(
             new Object<StdNegativeBinomialDistribution<ThisClass> >(
-                Ptr<ThisClass>(this), numFailures, prob));
+                Ptr<ThisClass>(this), numTrials, prob));
     }
 
     virtual Ptr<IPoissonDistribution>
@@ -295,7 +316,7 @@ public:
         BOOST_ASSERT(scale > 0);
         return Ptr<IExtremeValueDistribution>(
             new Object<StdExtremeValueDistribution<ThisClass> >(
-                Ptr<ThisClass>(this), shape, scale));
+                Ptr<ThisClass>(this), location, scale));
     }
 
     virtual Ptr<INormalDistribution>
@@ -317,7 +338,7 @@ public:
     }
 
     virtual Ptr<IChiSquaredDistribution>
-            CreatChiSquaredDistribution(double degreesOfFreedom) NSFX_OVERRIDE
+            CreateChiSquaredDistribution(double degreesOfFreedom) NSFX_OVERRIDE
     {
         BOOST_ASSERT(degreesOfFreedom > 0);
         return Ptr<IChiSquaredDistribution>(
@@ -380,10 +401,18 @@ public:
                 Ptr<ThisClass>(this), param));
     }
 
+    virtual Ptr<ITriangleDistribution>
+            CreateTriangleDistribution(double a, double b, double c) NSFX_OVERRIDE
+    {
+        return Ptr<ITriangleDistribution>(
+            new Object<StdTriangleDistribution<ThisClass> >(
+                Ptr<ThisClass>(this), a, b, c));
+    }
+
 private:
     NSFX_INTERFACE_MAP_BEGIN(ThisClass)
         NSFX_INTERFACE_ENTRY(IPseudoRandomEngine)
-        NSFX_INTERFACE_ENTRY(IRandomUintNumberGenerator)
+        NSFX_INTERFACE_ENTRY(InterfaceType)
         NSFX_INTERFACE_ENTRY(IRandomDistributionGenerator)
     NSFX_INTERFACE_MAP_END()
 
@@ -395,65 +424,128 @@ private:
 ////////////////////////////////////////
 /**
  * @ingroup Random
- * @brief A Mersenne Twister pseudo-random generator of a state size of 19937 bits.
+ * @brief A xoshiro256+ pseudo-random floating-point number generator.
+ *
+ * This is a pseudo-random generator discovered by David Blackman and
+ * Sebastiano Vigna in 2018.
+ *
+ * It generates double precision floating-point numbers in the range of
+ * <i>[0, 1)</i> .
+ *
+ * It has a state size of \c 256 bits, and a period of <code>2^256 - 1</code>.
+ *
+ * The seed value is a 64-bit unsigned integer.
+ * The default seed value is \c 1u.
+ *
+ * Provided interfaces:
+ * * \c IPseudoRandomEngine
+ * * \c IRandomDoubleGenerator
+ * * \c IRandomDistributionGenerator
+ */
+typedef PseudoRandomEngine<nsfx::xoshiro256plus_01>  Xoshiro256Plus01Engine;
+
+NSFX_REGISTER_CLASS(Xoshiro256Plus01Engine, "edu.uestc.nsfx.Xoshiro256Plus01Engine");
+
+
+////////////////////////////////////////
+/**
+ * @ingroup Random
+ * @brief A xoshiro256** pseudo-random 64-bit integer number generator.
+ *
+ * This is a pseudo-random generator discovered by David Blackman and
+ * Sebastiano Vigna in 2018.
+ *
+ * It generates 64-bit unsigned integer numbers.
+ *
+ * It has a state size of \c 256 bits, and a period of <code>2^256 - 1</code>.
+ *
+ * The seed value is a 64-bit unsigned integer.
+ * The default seed value is \c 1u.
+ *
+ * Provided interfaces:
+ * * \c IPseudoRandomEngine
+ * * \c IRandomUInt64Generator
+ * * \c IRandomDistributionGenerator
+ */
+typedef PseudoRandomEngine<nsfx::xoshiro256starstar>  Xoshiro256StarstarEngine;
+
+NSFX_REGISTER_CLASS(Xoshiro256StarstarEngine, "edu.uestc.nsfx.Xoshiro256StarstarEngine");
+
+
+////////////////////////////////////////
+/**
+ * @ingroup Random
+ * @brief A xoshiro128+ pseudo-random floating-point number generator.
+ *
+ * This is a pseudo-random generator discovered by David Blackman and
+ * Sebastiano Vigna in 2018.
+ *
+ * It generates single precision floating-point numbers in the range of
+ * <i>[0, 1)</i>.
+ *
+ * It has a state size of \c 128 bits, and a period of <code>2^128 - 1</code>.
+ *
+ * The seed value is a 64-bit unsigned integer.
+ * The default seed value is \c 1u.
+ *
+ * Provided interfaces:
+ * * \c IPseudoRandomEngine
+ * * \c IRandomFloatGenerator
+ * * \c IRandomDistributionGenerator
+ */
+typedef PseudoRandomEngine<nsfx::xoshiro128plus_01>  Xoshiro128Plus01Engine;
+
+NSFX_REGISTER_CLASS(Xoshiro128Plus01Engine, "edu.uestc.nsfx.Xoshiro128Plus01Engine");
+
+
+////////////////////////////////////////
+/**
+ * @ingroup Random
+ * @brief A xoshiro128** pseudo-random 32-bit integer number generator.
+ *
+ * This is a pseudo-random generator discovered by David Blackman and
+ * Sebastiano Vigna in 2018.
+ *
+ * It generates 32-bit unsigned integer numbers.
+ *
+ * It has a state size of \c 128 bits, and a period of <code>2^128 - 1</code>.
+ *
+ * The seed value is a 64-bit unsigned integer.
+ * The default seed value is \c 1u.
+ *
+ * Provided interfaces:
+ * * \c IPseudoRandomEngine
+ * * \c IRandomUInt32Generator
+ * * \c IRandomDistributionGenerator
+ */
+typedef PseudoRandomEngine<nsfx::xoshiro128starstar>  Xoshiro128StarstarEngine;
+
+NSFX_REGISTER_CLASS(Xoshiro128StarstarEngine, "edu.uestc.nsfx.Xoshiro128StarstarEngine");
+
+
+////////////////////////////////////////
+/**
+ * @ingroup Random
+ * @brief A Mersenne Twister pseudo-random integer number generator.
  *
  * This is a 32-bit Mersenne Twister pseudo-random generator discovered in 1998
  * by Matsumoto and Nishimura.
  *
+ * It generates 32-bit unsigned integer numbers.
+ *
+ * It has a state size of \c 19937 bits, and a period of <code>2^19937 - 1</code>.
+ *
+ * The seed value is a 32-bit unsigned integer.
  * The default seed value is \c 5489u.
+ *
+ * Provided interfaces:
+ * * \c IPseudoRandomEngine
+ * * \c IRandomUInt32Generator
+ * * \c IRandomDistributionGenerator
  */
-typedef PseudoRandomUintEngine<boost::random::mt19937>  Mt19937Engine;
+typedef PseudoRandomEngine<boost::random::mt19937>  Mt19937Engine;
 
 NSFX_REGISTER_CLASS(Mt19937Engine, "edu.uestc.nsfx.Mt19937Engine");
-
-
-////////////////////////////////////////
-/**
- * @ingroup Random
- * @brief A lagged Fibonacci pseudo-random generator of a state size of about 2300000 bits.
- *
- * This is a lagged Fibonacci pseudo-random generator discovered in 1992
- * by Richard Brent.
- *
- * The default seed value is \c 331u.
- * The seed value should be in the range <i>[1, 0x7fffffff)</i>, since other
- * seed values will be equivalent to some seed values within this range.
- *
- * It produces floating-point numbers in the range <i>[0, 1)</i>.
- */
-typedef PseudoRandomUintEngine<boost::random::lagged_fibonacci44497>  LaggedFibonacci44497Engine;
-
-NSFX_REGISTER_CLASS(LaggedFibonacci44497Engine, "edu.uestc.nsfx.LaggedFibonacci44497Engine");
-
-
-////////////////////////////////////////
-/**
- * @ingroup Random
- * @brief A xoroshiro128+ pseudo-random generator of a state size of 128 bits.
- *
- * This is a pseudo-random generator discovered by David Blackman and
- * Sebastiano Vigna in 2018.
- *
- * The default seed value is \c 1u.
- */
-typedef PseudoRandomUintEngine<nsfx::xoroshiro128plus>  Xoroshiro128PlusEngine;
-
-NSFX_REGISTER_CLASS(Xoroshiro128PlusEngine, "edu.uestc.nsfx.Xoroshiro128PlusEngine");
-
-
-////////////////////////////////////////
-/**
- * @ingroup Random
- * @brief A xoroshiro128** pseudo-random generator of a state size of 128 bits.
- *
- * This is a pseudo-random generator discovered by David Blackman and
- * Sebastiano Vigna in 2018.
- *
- * The default seed value is \c 1u.
- */
-typedef PseudoRandomUintEngine<nsfx::xoroshiro128starstar>  Xoroshiro128StarstarEngine;
-
-NSFX_REGISTER_CLASS(Xoroshiro128StarstarEngine, "edu.uestc.nsfx.Xoroshiro128StarstarEngine");
 
 
 NSFX_CLOSE_NAMESPACE

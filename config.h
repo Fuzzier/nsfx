@@ -61,6 +61,9 @@
 # if defined(_M_X64)
 #  define NSFX_X64 1
 # endif // defined(_M_IX64)
+
+// Disable warning for using unchecked iterators.
+# pragma warning(disable : 4996)
 #endif // defined(BOOST_MSVC)
 
 

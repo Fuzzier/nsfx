@@ -92,7 +92,7 @@ public:
      * The scale parameter of the extreme value distribution, which is always
      * positive.
      */
-    virtual double GetScale(double index) = 0;
+    virtual double GetScale(void) = 0;
 
 };
 

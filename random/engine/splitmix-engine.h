@@ -109,7 +109,7 @@ private:
  * computations) or a \c xorshift1024* (for massively parallel computations)
  * generator.
  *
- * This is used to seed xoroshiro and xoshiro engines.
+ * This is used to seed \c xoshiro_engine and \c xoroshiro_engine.
  */
 typedef splitmix_engine<uint64_t,
             30, 27, 31,

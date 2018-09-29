@@ -47,6 +47,8 @@
 #include <nsfx/random/distribution/i-piecewise-constant-distribution.h>
 #include <nsfx/random/distribution/i-piecewise-linear-distribution.h>
 
+#include <nsfx/random/distribution/i-triangle-distribution.h>
+
 
 NSFX_OPEN_NAMESPACE
 
@@ -82,6 +84,8 @@ NSFX_OPEN_NAMESPACE
  * * \c IDiscreteDistribution
  * * \c IPiecewiseConstantDistribution
  * * \c IPiecewiseLinearDistribution
+ * ## Miscellaneous Distributions
+ * * \c ITriangleDistribution
  */
 class IRandomDistributionGenerator :
     virtual public IObject
@@ -139,16 +143,16 @@ public:
     /**
      * @brief Create a negative binomial distribution.
      *
-     * @param[in] numFailures The number of unsuccessful trials that stops
-     *                        the count of successful Bernoulli-distributed
-     *                        experiments.
+     * @param[in] numTrials The number of successful trials that stops
+     *                      the count of unsuccessful Bernoulli-distributed
+     *                      experiments.
      * @param[in] prob Probability of success of the independent
      *                 Bernoulli-distributed experiments.
      *                 It <b>must</b> be within <i>[0, 1]</i> .
      */
     virtual Ptr<INegativeBinomialDistribution>
             CreateNegativeBinomialDistribution(
-                uint32_t numFailures, double prob) = 0;
+                uint32_t numTrials, double prob) = 0;
 
     /**
      * @brief Create a geometric distribution.
@@ -237,7 +241,7 @@ public:
      *                             It <b>must</b> be positive.
      */
     virtual Ptr<IChiSquaredDistribution>
-            CreatChiSquaredDistribution(double degreesOfFreedom) = 0;
+            CreateChiSquaredDistribution(double degreesOfFreedom) = 0;
 
     /**
      * @brief Create a Cauchy distribution.
@@ -270,25 +274,35 @@ public:
             CreateStudentTDistribution(double degreesOfFreedom) = 0;
 
     /**
-     * @brief Create an uninitialized discrete distribution.
+     * @brief Create a discrete distribution.
      */
     virtual Ptr<IDiscreteDistribution>
             CreateDiscreteDistribution(
-                const DiscreteDistributionParam& param) = 0;
+                Ptr<IDiscreteDistributionParam> param) = 0;
 
     /**
-     * @brief Create an uninitialized piecewise constant distribution.
+     * @brief Create a piecewise constant distribution.
      */
     virtual Ptr<IPiecewiseConstantDistribution>
             CreatePiecewiseConstantDistribution(
-                const PiecewiseConstantDistributionParam& param) = 0;
+                Ptr<IPiecewiseConstantDistributionParam> param) = 0;
 
     /**
-     * @brief Create an uninitialized piecewise linear distribution.
+     * @brief Create a piecewise linear distribution.
      */
     virtual Ptr<IPiecewiseLinearDistribution>
             CreatePiecewiseLinearDistribution(
-                const PiecewiseLinearDistributionParam& param) = 0;
+                Ptr<IPiecewiseLinearDistributionParam> param) = 0;
+
+    /**
+     * @brief Create a triangle distribution.
+     *
+     * @param[in] a The smallest value.
+     * @param[in] b The most probable value.
+     * @param[in] c The largest value.
+     */
+    virtual Ptr<ITriangleDistribution>
+            CreateTriangleDistribution(double a, double b, double c) = 0;
 
 };
 

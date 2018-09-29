@@ -33,11 +33,11 @@ NSFX_OPEN_NAMESPACE
  * This random number generator produces 32-bit unsigned integer values
  * according to a uniform distribution.
  */
-class IRandomUint32Generator :
+class IRandomUInt32Generator :
     virtual public IObject
 {
 public:
-    virtual ~IRandomUint32Generator(void) BOOST_NOEXCEPT {}
+    virtual ~IRandomUInt32Generator(void) BOOST_NOEXCEPT {}
 
     /**
      * @brief Generate a new random number.
@@ -77,14 +77,14 @@ public:
 
 };
 
-NSFX_DEFINE_CLASS_UID(IRandomUint32Generator,
-                      "edu.uestc.nsfx.IRandomUint32Generator");
+NSFX_DEFINE_CLASS_UID(IRandomUInt32Generator,
+                      "edu.uestc.nsfx.IRandomUInt32Generator");
 
 
 ////////////////////////////////////////
 NSFX_DEFINE_USER_INTERFACE(
-    IRandomUint32GeneratorUser, "edu.uestc.nsfx.IRandomUint32GeneratorUser",
-    IRandomUint32Generator);
+    IRandomUInt32GeneratorUser, "edu.uestc.nsfx.IRandomUInt32GeneratorUser",
+    IRandomUInt32Generator);
 
 
 NSFX_CLOSE_NAMESPACE

@@ -74,7 +74,7 @@ public:
      * The least upper bound of the range of values that can be potentially
      * generated.
      *
-     * @return <code>numeric_limits<uint32_t>::max()</code>.
+     * @return <code>std::numeric_limits<uint32_t>::max()</code>.
      */
     virtual uint32_t GetMaxValue(void) = 0;
 
