@@ -60,7 +60,7 @@ public:
 
     virtual uint32_t Generate(void) NSFX_OVERRIDE
     {
-        return dist_(*rng_->GetRng());
+        return dist_(rng_->GetRng());
     }
 
     virtual void Reset(void) NSFX_OVERRIDE
@@ -70,12 +70,12 @@ public:
 
     virtual uint32_t GetMinValue(void) NSFX_OVERRIDE
     {
-        return dist_.(min)();
+        return (dist_.min)();
     }
 
     virtual uint32_t GetMaxValue(void) NSFX_OVERRIDE
     {
-        return dist_.(max)();
+        return (dist_.max)();
     }
 
     virtual double GetProbability(void) NSFX_OVERRIDE

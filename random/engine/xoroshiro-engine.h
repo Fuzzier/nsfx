@@ -425,6 +425,7 @@ private:
 
 public:
     typedef RealType result_type;
+    typedef UIntType seed_type;
     BOOST_STATIC_CONSTANT(UIntType, default_seed = 1u);
     BOOST_STATIC_CONSTANT(size_t, state_size = n);
     BOOST_STATIC_CONSTANT(size_t, rotate_a = a);
@@ -442,11 +443,11 @@ public:
 public:
     xoroshiro_01_engine(void) {}
 
-    explicit xoroshiro_01_engine(result_type value) :
+    explicit xoroshiro_01_engine(seed_type value) :
         rng_(value)
     {}
 
-    void seed(result_type value)
+    void seed(seed_type value)
     {
         rng_.seed(value);
     }
@@ -481,12 +482,12 @@ public:
         rng_.discard(z);
     }
 
-    static result_type (min)(void)
+    static BOOST_CONSTEXPR result_type (min)(void)
     {
         return 0;
     }
 
-    static result_type (max)(void)
+    static BOOST_CONSTEXPR result_type (max)(void)
     {
         return 1;
     }
@@ -595,6 +596,48 @@ typedef xoroshiro_01_engine<double, uint64_t, 2, 24, 16, 37,
 typedef xoroshiro_01_engine<double, uint64_t, 2, 24, 16, 37,
         random::aux::xoroshiro_starstar_scrambler<uint64_t, 2, 0, 5, 7, 9> >
     xoroshiro128starstar_01;
+
+/**
+ * @ingroup Random
+ * @brief A xoroshiro1024+ pseudo-random number generator.
+ *
+ * It is discovered by David Blackman and Sebastiano Vigna in 2018.
+ * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
+ *
+ * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * fill the state.
+ */
+typedef xoroshiro_01_engine<double, uint64_t, 16, 25, 27, 36,
+        random::aux::xoroshiro_plus_scrambler<uint64_t, 16, 15, 0> >
+    xoroshiro1024plus_01;
+
+/**
+ * @ingroup Random
+ * @brief A xoroshiro1024* pseudo-random number generator.
+ *
+ * It is discovered by David Blackman and Sebastiano Vigna in 2018.
+ * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
+ *
+ * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * fill the state.
+ */
+typedef xoroshiro_01_engine<double, uint64_t, 16, 25, 27, 36,
+        random::aux::xoroshiro_star_scrambler<uint64_t, 16, 0, 0x9e3779b97f4a7c13ULL> >
+    xoroshiro1024star_01;
+
+/**
+ * @ingroup Random
+ * @brief A xoroshiro1024** pseudo-random number generator.
+ *
+ * It is discovered by David Blackman and Sebastiano Vigna in 2018.
+ * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
+ *
+ * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * fill the state.
+ */
+typedef xoroshiro_01_engine<double, uint64_t, 16, 25, 27, 36,
+        random::aux::xoroshiro_starstar_scrambler<uint64_t, 16, 0, 5, 7, 9> >
+    xoroshiro1024starstar_01;
 
 
 NSFX_CLOSE_NAMESPACE

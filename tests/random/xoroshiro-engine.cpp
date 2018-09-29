@@ -125,6 +125,48 @@ NSFX_TEST_SUITE(xoroshiro)
         std::cout << std::endl;
     }
 
+    NSFX_TEST_CASE(xoroshiro1024star)
+    {
+        typedef nsfx::xoroshiro1024star rng;
+
+        NSFX_TEST_EXPECT_EQ((rng::min)(), 0);
+        NSFX_TEST_EXPECT_EQ((rng::max)(),
+                            (std::numeric_limits<uint64_t>::max)());
+        NSFX_TEST_EXPECT_EQ(rng::default_seed, 1);
+        rng r;
+        r();
+        r.discard(1000000);
+        r.seed(2);
+        std::cout << "xoroshiro1024+" << std::endl;
+        for (size_t i = 0; i < 10; ++i)
+        {
+            std::cout << "0x" << std::hex << std::setw(16) << std::setfill('0')
+                << r() << std::endl;
+        }
+        std::cout << std::endl;
+    }
+
+    NSFX_TEST_CASE(xoroshiro1024starstar)
+    {
+        typedef nsfx::xoroshiro1024starstar rng;
+
+        NSFX_TEST_EXPECT_EQ((rng::min)(), 0);
+        NSFX_TEST_EXPECT_EQ((rng::max)(),
+                            (std::numeric_limits<uint64_t>::max)());
+        NSFX_TEST_EXPECT_EQ(rng::default_seed, 1);
+        rng r;
+        r();
+        r.discard(1000000);
+        r.seed(2);
+        std::cout << "xoroshiro1024+" << std::endl;
+        for (size_t i = 0; i < 10; ++i)
+        {
+            std::cout << "0x" << std::hex << std::setw(16) << std::setfill('0')
+                << r() << std::endl;
+        }
+        std::cout << std::endl;
+    }
+
 }
 
 
@@ -199,6 +241,63 @@ NSFX_TEST_SUITE(xoroshiro_01)
         r.discard(1000000);
         r.seed(2);
         std::cout << "xoroshiro128**_01" << std::endl;
+        for (size_t i = 0; i < 10; ++i)
+        {
+            std::cout << r() << std::endl;
+        }
+        std::cout << std::endl;
+    }
+
+    NSFX_TEST_CASE(xoroshiro1024plus_01)
+    {
+        typedef nsfx::xoroshiro1024plus_01 rng;
+
+        NSFX_TEST_EXPECT_EQ((rng::min)(), 0);
+        NSFX_TEST_EXPECT_EQ((rng::max)(), 1);
+        NSFX_TEST_EXPECT_EQ(rng::default_seed, 1);
+        rng r;
+        r();
+        r.discard(1000000);
+        r.seed(2);
+        std::cout << "xoroshiro1024+_01" << std::endl;
+        for (size_t i = 0; i < 10; ++i)
+        {
+            std::cout << r() << std::endl;
+        }
+        std::cout << std::endl;
+    }
+
+    NSFX_TEST_CASE(xoroshiro1024star_01)
+    {
+        typedef nsfx::xoroshiro1024star_01 rng;
+
+        NSFX_TEST_EXPECT_EQ((rng::min)(), 0);
+        NSFX_TEST_EXPECT_EQ((rng::max)(), 1);
+        NSFX_TEST_EXPECT_EQ(rng::default_seed, 1);
+        rng r;
+        r();
+        r.discard(1000000);
+        r.seed(2);
+        std::cout << "xoroshiro1024*_01" << std::endl;
+        for (size_t i = 0; i < 10; ++i)
+        {
+            std::cout << r() << std::endl;
+        }
+        std::cout << std::endl;
+    }
+
+    NSFX_TEST_CASE(xoroshiro1024starstar_01)
+    {
+        typedef nsfx::xoroshiro1024starstar_01 rng;
+
+        NSFX_TEST_EXPECT_EQ((rng::min)(), 0);
+        NSFX_TEST_EXPECT_EQ((rng::max)(), 1);
+        NSFX_TEST_EXPECT_EQ(rng::default_seed, 1);
+        rng r;
+        r();
+        r.discard(1000000);
+        r.seed(2);
+        std::cout << "xoroshiro1024**_01" << std::endl;
         for (size_t i = 0; i < 10; ++i)
         {
             std::cout << r() << std::endl;

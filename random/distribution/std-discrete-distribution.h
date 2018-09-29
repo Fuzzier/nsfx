@@ -22,6 +22,7 @@
 #include <nsfx/component/object.h>
 #include <boost/random/discrete_distribution.hpp>
 #include <boost/core/swap.hpp>
+#include <iterator>
 
 
 NSFX_OPEN_NAMESPACE
@@ -51,6 +52,12 @@ class StdDiscreteDistribution :
 
     struct Iterator
     {
+        typedef std::forward_iterator_tag iterator_category;
+        typedef int32_t difference_type;
+        typedef double value_type;
+        typedef double* pointer;
+        typedef double& reference;
+
         Iterator(IDiscreteDistributionParam* param, uint32_t index) :
             param_(param),
             index_(index)
@@ -120,9 +127,9 @@ public:
 
     virtual ~StdDiscreteDistribution(void) {}
 
-    virtual double Generate(void) NSFX_OVERRIDE
+    virtual uint32_t Generate(void) NSFX_OVERRIDE
     {
-        return dist_(*rng_->GetRng());
+        return dist_(rng_->GetRng());
     }
 
     virtual void Reset(void) NSFX_OVERRIDE
@@ -130,14 +137,14 @@ public:
         return dist_.reset();
     }
 
-    virtual double GetMinValue(void) NSFX_OVERRIDE
+    virtual uint32_t GetMinValue(void) NSFX_OVERRIDE
     {
-        return dist_.(min)();
+        return (dist_.min)();
     }
 
-    virtual double GetMaxValue(void) NSFX_OVERRIDE
+    virtual uint32_t GetMaxValue(void) NSFX_OVERRIDE
     {
-        return dist_.(max)();
+        return (dist_.max)();
     }
 
     virtual uint32_t GetNumValues(void) NSFX_OVERRIDE

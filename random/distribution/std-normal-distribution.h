@@ -5,7 +5,7 @@
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
- * @date    2018-09-24
+ * @date    2018-09-28
  *
  * @copyright Copyright (c) 2018.
  *   National Key Laboratory of Science and Technology on Communications,
@@ -13,14 +13,14 @@
  *   All rights reserved.
  */
 
-#ifndef STD_NEGATIVE_BINOMIAL_DISTRIBUTION_H__D21911DC_210B_409E_9F95_2ECE1D2E5359
-#define STD_NEGATIVE_BINOMIAL_DISTRIBUTION_H__D21911DC_210B_409E_9F95_2ECE1D2E5359
+#ifndef STD_NORMAL_DISTRIBUTION_H__356F062D_249C_4979_852B_BAC067D95D24
+#define STD_NORMAL_DISTRIBUTION_H__356F062D_249C_4979_852B_BAC067D95D24
 
 
 #include <nsfx/random/config.h>
-#include <nsfx/random/distribution/i-negative-binomial-distribution.h>
+#include <nsfx/random/distribution/i-normal-distribution.h>
 #include <nsfx/component/object.h>
-#include <boost/random/negative_binomial_distribution.hpp>
+#include <boost/random/normal_distribution.hpp>
 
 
 NSFX_OPEN_NAMESPACE
@@ -29,7 +29,7 @@ NSFX_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Random
- * @brief A negative binomial distribution.
+ * @brief A normal distribution.
  *
  * @tparam StdRng A <code>StdRandomNumberEngine<></code> or
  *                a <code>StdRandomDevice</code>.
@@ -38,28 +38,27 @@ NSFX_OPEN_NAMESPACE
  *                a pointer to the underlying random number engine or random
  *                device.
  *
- * Provides \c INegativeBinomialDistribution.
+ * Provides \c INormalDistribution.
  */
 template<class StdRng>
-class StdNegativeBinomialDistribution :
-    public INegativeBinomialDistribution
+class StdNormalDistribution :
+    public INormalDistribution
 {
-    typedef StdNegativeBinomialDistribution ThisClass;
-    typedef boost::random::negative_binomial_distribution<uint32_t, double> DistributionType;
+    typedef StdNormalDistribution ThisClass;
+    typedef boost::random::normal_distribution<double> DistributionType;
     typedef StdRng RngType;
 
 public:
-    StdNegativeBinomialDistribution(Ptr<RngType> rng,
-                                    uint32_t numTrials, double prob) :
+    StdNormalDistribution(Ptr<RngType> rng, double location, double scale) :
         rng_(rng),
-        dist_(numTrials, prob)
+        dist_(location, scale)
     {
         BOOST_ASSERT(rng);
     }
 
-    virtual ~StdNegativeBinomialDistribution(void) {}
+    virtual ~StdNormalDistribution(void) {}
 
-    virtual uint32_t Generate(void) NSFX_OVERRIDE
+    virtual double Generate(void) NSFX_OVERRIDE
     {
         return dist_(rng_->GetRng());
     }
@@ -69,28 +68,28 @@ public:
         return dist_.reset();
     }
 
-    virtual uint32_t GetMinValue(void) NSFX_OVERRIDE
+    virtual double GetMinValue(void) NSFX_OVERRIDE
     {
         return (dist_.min)();
     }
 
-    virtual uint32_t GetMaxValue(void) NSFX_OVERRIDE
+    virtual double GetMaxValue(void) NSFX_OVERRIDE
     {
         return (dist_.max)();
     }
 
-    virtual uint32_t GetNumTrials(void) NSFX_OVERRIDE
+    virtual double GetMean(void) NSFX_OVERRIDE
     {
-        return dist_.k();
+        return dist_.mean();
     }
 
-    virtual double GetProbability(void) NSFX_OVERRIDE
+    virtual double GetStddev(void) NSFX_OVERRIDE
     {
-        return dist_.p();
+        return dist_.sigma();
     }
 
     NSFX_INTERFACE_MAP_BEGIN(ThisClass)
-        NSFX_INTERFACE_ENTRY(INegativeBinomialDistribution)
+        NSFX_INTERFACE_ENTRY(INormalDistribution)
     NSFX_INTERFACE_MAP_END()
 
 private:
@@ -102,5 +101,5 @@ private:
 NSFX_CLOSE_NAMESPACE
 
 
-#endif // STD_NEGATIVE_BINOMIAL_DISTRIBUTION_H__D21911DC_210B_409E_9F95_2ECE1D2E5359
+#endif // STD_NORMAL_DISTRIBUTION_H__356F062D_249C_4979_852B_BAC067D95D24
 

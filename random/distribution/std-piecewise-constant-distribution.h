@@ -51,6 +51,12 @@ class StdPiecewiseConstantDistribution :
 
     struct BoundIterator
     {
+        typedef std::forward_iterator_tag iterator_category;
+        typedef int32_t difference_type;
+        typedef double value_type;
+        typedef double* pointer;
+        typedef double& reference;
+
         BoundIterator(IPiecewiseConstantDistributionParam* param,
                       uint32_t index) :
             param_(param),
@@ -80,6 +86,7 @@ class StdPiecewiseConstantDistribution :
         BoundIterator& operator++(void)
         {
             ++index_;
+            return *this;
         }
 
         BoundIterator operator++(int)
@@ -109,13 +116,13 @@ class StdPiecewiseConstantDistribution :
 
     struct WeightIterator
     {
-        WeightIterator(IPiecewiseConstantDistributionParam* param,
-                      uint32_t index) :
-            param_(param),
-            index_(index)
-        {}
+        typedef std::forward_iterator_tag iterator_category;
+        typedef int32_t difference_type;
+        typedef double value_type;
+        typedef double* pointer;
+        typedef double& reference;
 
-        WeightIterator(IPiecewiseLinearDistributionParam* param,
+        WeightIterator(IPiecewiseConstantDistributionParam* param,
                       uint32_t index) :
             param_(param),
             index_(index)
@@ -184,7 +191,7 @@ public:
 
     virtual double Generate(void) NSFX_OVERRIDE
     {
-        return dist_(*rng_->GetRng());
+        return dist_(rng_->GetRng());
     }
 
     virtual void Reset(void) NSFX_OVERRIDE
@@ -194,12 +201,12 @@ public:
 
     virtual double GetMinValue(void) NSFX_OVERRIDE
     {
-        return dist_.(min)();
+        return (dist_.min)();
     }
 
     virtual double GetMaxValue(void) NSFX_OVERRIDE
     {
-        return dist_.(max)();
+        return (dist_.max)();
     }
 
     virtual uint32_t GetNumIntervals(void) NSFX_OVERRIDE

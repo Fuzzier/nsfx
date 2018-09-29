@@ -20,7 +20,7 @@
 #include <nsfx/random/config.h>
 #include <nsfx/random/distribution/i-cauchy-distribution.h>
 #include <nsfx/component/object.h>
-#include <boost/random/cauchy-distribution.hpp>
+#include <boost/random/cauchy_distribution.hpp>
 
 
 NSFX_OPEN_NAMESPACE
@@ -60,7 +60,7 @@ public:
 
     virtual double Generate(void) NSFX_OVERRIDE
     {
-        return dist_(*rng_->GetRng());
+        return dist_(rng_->GetRng());
     }
 
     virtual void Reset(void) NSFX_OVERRIDE
@@ -70,12 +70,12 @@ public:
 
     virtual double GetMinValue(void) NSFX_OVERRIDE
     {
-        return dist_.(min)();
+        return (dist_.min)();
     }
 
     virtual double GetMaxValue(void) NSFX_OVERRIDE
     {
-        return dist_.(max)();
+        return (dist_.max)();
     }
 
     virtual double GetLocation(void) NSFX_OVERRIDE

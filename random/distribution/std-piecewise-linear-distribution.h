@@ -46,11 +46,17 @@ class StdPiecewiseLinearDistribution :
     public IPiecewiseLinearDistribution
 {
     typedef StdPiecewiseLinearDistribution ThisClass;
-    typedef boost::random::piecewise_linear_distribution<double, double> DistributionType;
+    typedef boost::random::piecewise_linear_distribution<double> DistributionType;
     typedef StdRng RngType;
 
     struct BoundIterator
     {
+        typedef std::forward_iterator_tag iterator_category;
+        typedef int32_t difference_type;
+        typedef double value_type;
+        typedef double* pointer;
+        typedef double& reference;
+
         BoundIterator(IPiecewiseLinearDistributionParam* param,
                       uint32_t index) :
             param_(param),
@@ -80,6 +86,7 @@ class StdPiecewiseLinearDistribution :
         BoundIterator& operator++(void)
         {
             ++index_;
+            return *this;
         }
 
         BoundIterator operator++(int)
@@ -109,11 +116,11 @@ class StdPiecewiseLinearDistribution :
 
     struct WeightIterator
     {
-        WeightIterator(IPiecewiseLinearDistributionParam* param,
-                      uint32_t index) :
-            param_(param),
-            index_(index)
-        {}
+        typedef std::forward_iterator_tag iterator_category;
+        typedef int32_t difference_type;
+        typedef double value_type;
+        typedef double* pointer;
+        typedef double& reference;
 
         WeightIterator(IPiecewiseLinearDistributionParam* param,
                       uint32_t index) :
@@ -172,7 +179,7 @@ public:
             Ptr<RngType> rng, Ptr<IPiecewiseLinearDistributionParam> param) :
         rng_(rng),
         dist_(BoundIterator(param.Get(), 0),
-              BoundIterator(param.Get(), param->GetNumIntervals() + 1),
+              BoundIterator(param.Get(), param->GetNumBounds()),
               WeightIterator(param.Get(), 0)),
         intervals_(dist_.intervals()),
         densities_(dist_.densities())
@@ -184,7 +191,7 @@ public:
 
     virtual double Generate(void) NSFX_OVERRIDE
     {
-        return dist_(*rng_->GetRng());
+        return dist_(rng_->GetRng());
     }
 
     virtual void Reset(void) NSFX_OVERRIDE
@@ -194,17 +201,17 @@ public:
 
     virtual double GetMinValue(void) NSFX_OVERRIDE
     {
-        return dist_.(min)();
+        return (dist_.min)();
     }
 
     virtual double GetMaxValue(void) NSFX_OVERRIDE
     {
-        return dist_.(max)();
+        return (dist_.max)();
     }
 
     virtual uint32_t GetNumIntervals(void) NSFX_OVERRIDE
     {
-        return densities_.size();
+        return intervals_.size() - 1;
     }
 
     virtual double GetBound(uint32_t index) NSFX_OVERRIDE

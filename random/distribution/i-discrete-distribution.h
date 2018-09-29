@@ -20,6 +20,7 @@
 #include <nsfx/random/config.h>
 #include <nsfx/component/i-object.h>
 #include <nsfx/component/i-user.h>
+#include <nsfx/component/class-registry.h>
 
 
 NSFX_OPEN_NAMESPACE

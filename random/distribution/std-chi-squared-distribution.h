@@ -20,6 +20,7 @@
 #include <nsfx/random/config.h>
 #include <nsfx/random/distribution/i-chi-squared-distribution.h>
 #include <nsfx/component/object.h>
+#include <boost/random/chi_squared_distribution.hpp>
 
 
 NSFX_OPEN_NAMESPACE
@@ -44,7 +45,7 @@ class StdChiSquaredDistribution :
     public IChiSquaredDistribution
 {
     typedef StdChiSquaredDistribution ThisClass;
-    typedef std::bernoulli_distribution DistributionType;
+    typedef boost::random::chi_squared_distribution<double> DistributionType;
     typedef StdRng RngType;
 
 public:
@@ -59,7 +60,7 @@ public:
 
     virtual double Generate(void) NSFX_OVERRIDE
     {
-        return dist_(*rng_->GetRng());
+        return dist_(rng_->GetRng());
     }
 
     virtual void Reset(void) NSFX_OVERRIDE
@@ -69,12 +70,12 @@ public:
 
     virtual double GetMinValue(void) NSFX_OVERRIDE
     {
-        return dist_.(min)();
+        return (dist_.min)();
     }
 
     virtual double GetMaxValue(void) NSFX_OVERRIDE
     {
-        return dist_.(max)();
+        return (dist_.max)();
     }
 
     virtual double GetDegreesOfFreedom(void) NSFX_OVERRIDE

@@ -58,9 +58,9 @@ public:
 
     virtual ~StdBernoulliDistribution(void) {}
 
-    virtual double Generate(void) NSFX_OVERRIDE
+    virtual bool Generate(void) NSFX_OVERRIDE
     {
-        return dist_(*rng_->GetRng());
+        return dist_(rng_->GetRng());
     }
 
     virtual void Reset(void) NSFX_OVERRIDE
@@ -68,14 +68,14 @@ public:
         return dist_.reset();
     }
 
-    virtual double GetMinValue(void) NSFX_OVERRIDE
+    virtual bool GetMinValue(void) NSFX_OVERRIDE
     {
-        return dist_.(min)();
+        return (dist_.min)();
     }
 
-    virtual double GetMaxValue(void) NSFX_OVERRIDE
+    virtual bool GetMaxValue(void) NSFX_OVERRIDE
     {
-        return dist_.(max)();
+        return (dist_.max)();
     }
 
     virtual double GetProbability(void) NSFX_OVERRIDE

@@ -33,8 +33,8 @@ NSFX_OPEN_NAMESPACE
  * This distribution is also known as Pascal distribution.
  *
  * This distribution produces random integers where each value represents
- * the number of successful trials before <i>k</i> unsuccessful trials happen
- * in a sequence of trials, each with a probability of success equal to <i>p</i>.
+ * the number of failures before <i>k</i> successful trials happen in a
+ * sequence of trials, each with a probability of success equal to <i>p</i>.
  */
 class INegativeBinomialDistribution :
     virtual public IObject
@@ -74,17 +74,17 @@ public:
      * The least upper bound of the range of values that can be potentially
      * generated.
      *
-     * @return <code>numeric_limits<uint32_t>::max()</code>.
+     * @return <code>std::numeric_limits<uint32_t>::max()</code>.
      */
     virtual uint32_t GetMaxValue(void) = 0;
 
     /**
      * @brief The parameter <i>k</i> associated with the negative binomial distribution.
      *
-     * The number of unsuccessful trials that stops the count of successful
+     * The number of successful trials that stops the count of unsuccessful
      * Bernoulli-distributed experiments to simulate.
      */
-    virtual double GetNumFailures(void) = 0;
+    virtual uint32_t GetNumTrials(void) = 0;
 
     /**
      * @brief The parameter <i>p</i> associated with the negative binomial distribution.

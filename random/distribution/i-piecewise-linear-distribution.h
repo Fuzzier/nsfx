@@ -20,6 +20,7 @@
 #include <nsfx/random/config.h>
 #include <nsfx/component/i-object.h>
 #include <nsfx/component/i-user.h>
+#include <nsfx/component/class-registry.h>
 
 
 NSFX_OPEN_NAMESPACE
@@ -40,6 +41,9 @@ public:
     virtual double GetBound(uint32_t index) = 0;
     virtual double GetBoundWeight(uint32_t index) = 0;
 };
+
+NSFX_DEFINE_CLASS_UID(IPiecewiseLinearDistributionParam,
+                      "edu.uestc.nsfx.IPiecewiseLinearDistributionParam");
 
 
 ////////////////////////////////////////
@@ -66,7 +70,7 @@ public:
         {
             BOOST_ASSERT(bounds_.back() < bound);
         }
-        BOOST_ASSERT(weights >= 0);
+        BOOST_ASSERT(weight >= 0);
         bounds_.push_back(bound);
         weights_.push_back(weight);
     }
@@ -92,6 +96,9 @@ private:
     vector<double> bounds_;
     vector<double> weights_;
 };
+
+NSFX_REGISTER_CLASS(PiecewiseLinearDistributionParam,
+                    "edu.uestc.nsfx.PiecewiseLinearDistributionParam");
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -155,7 +162,7 @@ public:
      *
      * The number of subintervals.
      */
-    virtual double GetNumIntervals(void) = 0;
+    virtual uint32_t GetNumIntervals(void) = 0;
 
     /**
      * @brief The parameter associated with the piecewise linear distribution.
