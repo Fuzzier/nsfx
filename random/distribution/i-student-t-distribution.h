@@ -65,8 +65,8 @@ public:
      * The greatest lower bound of the range of values that can be potentially
      * generated.
      *
-     * @return <code>numeric_limits<double>::lowest()</code> or
-     *         <code>-numeric_limits<double>::infinity()</code>.
+     * @return <code>std::numeric_limits<double>::lowest()</code> or
+     *         <code>-std::numeric_limits<double>::infinity()</code>.
      */
     virtual double GetMinValue(void) = 0;
 
@@ -76,8 +76,8 @@ public:
      * The least upper bound of the range of values that can be potentially
      * generated.
      *
-     * @return <code>numeric_limits<double>::max()</code> or
-     *         <code>numeric_limits<double>::infinity()</code>.
+     * @return <code>std::numeric_limits<double>::max()</code> or
+     *         <code>std::numeric_limits<double>::infinity()</code>.
      */
     virtual double GetMaxValue(void) = 0;
 

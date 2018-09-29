@@ -5,7 +5,7 @@
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
- * @date    2018-09-24
+ * @date    2018-09-29
  *
  * @copyright Copyright (c) 2018.
  *   National Key Laboratory of Science and Technology on Communications,
@@ -13,8 +13,8 @@
  *   All rights reserved.
  */
 
-#ifndef I_NORMAL_DISTRIBUTION_H__2970862B_1918_4DDF_B47E_F2200EC75376
-#define I_NORMAL_DISTRIBUTION_H__2970862B_1918_4DDF_B47E_F2200EC75376
+#ifndef I_LAPLACE_DISTRIBUTION_H__253F3168_AC88_4656_92BA_935FE8382229
+#define I_LAPLACE_DISTRIBUTION_H__253F3168_AC88_4656_92BA_935FE8382229
 
 
 #include <nsfx/random/config.h>
@@ -28,21 +28,17 @@ NSFX_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Random
- * @brief A normal distribution.
+ * @brief A Paplace distribution.
  *
- * This distribution produces random numbers around the distribution mean with
- * a specific standard deviation.
- *
- * The normal distribution is a common distribution used for many kind of
- * processes, since it is the distribution that the aggregation of a large
- * number of independent random variables approximates to, when all follow
- * the same distribution (no matter which distribution).
+ * This distribution produces random numbers as the result of dividing two
+ * independent standard normal random variables, like a Student-t distribution
+ * with one degree of freedom.
  */
-class INormalDistribution :
+class ILaplaceDistribution :
     virtual public IObject
 {
 public:
-    virtual ~INormalDistribution(void) BOOST_NOEXCEPT {}
+    virtual ~ILaplaceDistribution(void) BOOST_NOEXCEPT {}
 
     /**
      * @brief Generate a new random number.
@@ -83,35 +79,31 @@ public:
     virtual double GetMaxValue(void) = 0;
 
     /**
-     * @brief The parameter <i>mu</i> associated with the normal distribution.
-     *
-     * The expected value of the normal distribution.
-     * Its value coincides with the location of the distribution peak.
+     * @brief The parameter <i>mean</i> associated with the Laplace distribution.
      */
     virtual double GetMean(void) = 0;
 
     /**
-     * @brief The parameter <i>sigma</i> associated with the normal distribution.
+     * @brief The parameter <i>scale</i> associated with the Laplace distribution.
      *
-     * the root square of the distribution variance, which expresses
-     * the dispersion of parameters from its mean.
+     * The scale parameter, which is always positive.
      */
-    virtual double GetStddev(void) = 0;
+    virtual double GetScale(void) = 0;
 
 };
 
-NSFX_DEFINE_CLASS_UID(INormalDistribution,
-                      "edu.uestc.nsfx.INormalDistribution");
+NSFX_DEFINE_CLASS_UID(ILaplaceDistribution,
+                      "edu.uestc.nsfx.ILaplaceDistribution");
 
 
 ////////////////////////////////////////////////////////////////////////////////
 NSFX_DEFINE_USER_INTERFACE(
-    INormalDistributionUser, "edu.uestc.nsfx.INormalDistributionUser",
-    INormalDistribution);
+    ILaplaceDistributionUser, "edu.uestc.nsfx.ILaplaceDistributionUser",
+    ILaplaceDistribution);
 
 
 NSFX_CLOSE_NAMESPACE
 
 
-#endif // I_NORMAL_DISTRIBUTION_H__2970862B_1918_4DDF_B47E_F2200EC75376
+#endif // I_LAPLACE_DISTRIBUTION_H__253F3168_AC88_4656_92BA_935FE8382229
 

@@ -73,8 +73,8 @@ public:
      * The least upper bound of the range of values that can be potentially
      * generated.
      *
-     * @return <code>numeric_limits<result_type>::max()</code> or
-     *         <code>numeric_limits<result_type>::infinity()</code>.
+     * @return <code>std::numeric_limits<result_type>::max()</code> or
+     *         <code>std::numeric_limits<result_type>::infinity()</code>.
      */
     virtual double GetMaxValue(void) = 0;
 

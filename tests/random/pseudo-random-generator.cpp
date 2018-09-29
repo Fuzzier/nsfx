@@ -56,6 +56,8 @@ struct TestDistributions
         TestGammaDistribution();
         TestWeibullDistribution();
         TestExtremeValueDistribution();
+        TestBetaDistribution();
+        TestLaplaceDistribution();
         TestNormalDistribution();
         TestLognormalDistribution();
         TestChiSquaredDistribution();
@@ -283,8 +285,48 @@ struct TestDistributions
             double x = d->Generate();
             count += x;
         }
-        double expected = 2.0 + 3.0 * 0.5772156649015328606;
+        // Euler–Mascheroni constant
+        static const double EulerMascheroniConstant = 0.5772156649015328606;
+        double expected = 2.0 + 3.0 * EulerMascheroniConstant;
         NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "extreme value";
+        d->Reset();
+    }
+
+    void TestBetaDistribution(void)
+    {
+        nsfx::Ptr<nsfx::IBetaDistribution> d =
+            dg_->CreateBetaDistribution(2.0, 3.0);
+        NSFX_TEST_EXPECT_LE(d->GetMinValue(), 0);
+        NSFX_TEST_EXPECT_GE(d->GetMaxValue(), 1);
+        NSFX_TEST_EXPECT_EQ(d->GetAlpha(), 2.0);
+        NSFX_TEST_EXPECT_EQ(d->GetBeta(), 3.0);
+        double count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            double x = d->Generate();
+            count += x;
+        }
+        double expected = 2.0 / (2.0 + 3.0);
+        NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "beta";
+        d->Reset();
+    }
+
+    void TestLaplaceDistribution(void)
+    {
+        nsfx::Ptr<nsfx::ILaplaceDistribution> d =
+            dg_->CreateLaplaceDistribution(1.0, 0.5);
+        NSFX_TEST_EXPECT_LE(d->GetMinValue(), 0);
+        NSFX_TEST_EXPECT_GE(d->GetMaxValue(), 1);
+        NSFX_TEST_EXPECT_EQ(d->GetMean(), 1.0);
+        NSFX_TEST_EXPECT_EQ(d->GetScale(), 0.5);
+        double count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            double x = d->Generate();
+            count += x;
+        }
+        double expected = 1.0;
+        NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "laplace";
         d->Reset();
     }
 

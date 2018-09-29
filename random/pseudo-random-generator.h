@@ -21,7 +21,6 @@
 
 #include <nsfx/random/i-random-uint32-generator.h>
 #include <nsfx/random/i-random-uint64-generator.h>
-#include <nsfx/random/i-random-float-generator.h>
 #include <nsfx/random/i-random-double-generator.h>
 
 #include <nsfx/random/i-pseudo-random-engine.h>
@@ -41,6 +40,8 @@
 #include <nsfx/random/distribution/std-gamma-distribution.h>
 #include <nsfx/random/distribution/std-weibull-distribution.h>
 #include <nsfx/random/distribution/std-extreme-value-distribution.h>
+#include <nsfx/random/distribution/std-beta-distribution.h>
+#include <nsfx/random/distribution/std-laplace-distribution.h>
 
 #include <nsfx/random/distribution/std-normal-distribution.h>
 #include <nsfx/random/distribution/std-lognormal-distribution.h>
@@ -82,13 +83,9 @@ struct RandomNumberGeneratorTraits
             std::is_integral<StdRngResultType>::value && sizeof (StdRngResultType) == sizeof (uint64_t),
             uint64_t,
             typename std::conditional<
-                std::is_floating_point<StdRngResultType>::value && sizeof (StdRngResultType) == sizeof (float),
-                float,
-                typename std::conditional<
-                    std::is_floating_point<StdRngResultType>::value && sizeof (StdRngResultType) == sizeof (double),
-                    double,
-                    void
-                >::type
+                std::is_floating_point<StdRngResultType>::value && sizeof (StdRngResultType) <= sizeof (double),
+                double,
+                void
             >::type
         >::type
     >::type ResultType;
@@ -104,13 +101,9 @@ struct RandomNumberGeneratorTraits
             std::is_same<ResultType, uint64_t>::value,
             IRandomUInt64Generator,
             typename std::conditional<
-                std::is_same<ResultType, float>::value,
-                IRandomFloatGenerator,
-                typename std::conditional<
-                    std::is_same<ResultType, double>::value,
-                    IRandomDoubleGenerator,
-                    void
-                >::type
+                std::is_same<ResultType, double>::value,
+                IRandomDoubleGenerator,
+                void
             >::type
         >::type
     >::type InterfaceType;
@@ -317,6 +310,26 @@ public:
         return Ptr<IExtremeValueDistribution>(
             new Object<StdExtremeValueDistribution<ThisClass> >(
                 Ptr<ThisClass>(this), location, scale));
+    }
+
+    virtual Ptr<IBetaDistribution>
+            CreateBetaDistribution(double alpha, double beta) NSFX_OVERRIDE
+    {
+        BOOST_ASSERT(alpha > 0);
+        BOOST_ASSERT(beta > 0);
+        return Ptr<IBetaDistribution>(
+            new Object<StdBetaDistribution<ThisClass> >(
+                Ptr<ThisClass>(this), alpha, beta));
+    }
+
+    virtual Ptr<ILaplaceDistribution>
+            CreateLaplaceDistribution(double mean, double scale) NSFX_OVERRIDE
+    {
+        BOOST_ASSERT(mean > 0);
+        BOOST_ASSERT(scale > 0);
+        return Ptr<ILaplaceDistribution>(
+            new Object<StdLaplaceDistribution<ThisClass> >(
+                Ptr<ThisClass>(this), mean, scale));
     }
 
     virtual Ptr<INormalDistribution>
