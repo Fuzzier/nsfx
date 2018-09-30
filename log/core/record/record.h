@@ -156,7 +156,7 @@ inline void Record::Update(const std::string& name, const AttributeValue& value)
 
 inline bool Record::Exists(const std::string& name) const
 {
-    return values_.count(name);
+    return !!values_.count(name);
 }
 
 template<class T>

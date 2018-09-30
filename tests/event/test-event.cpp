@@ -96,8 +96,6 @@ NSFX_TEST_SUITE(Event)
 
     struct Test : ITest, Ev0, Ev1, Ev2, Ev3, Er0, Er1, Er2, Er3
     {
-#pragma warning(push)
-#pragma warning(disable : 4355)
         Test(void) :
             v0_(this),
             v1_(this),
@@ -107,7 +105,6 @@ NSFX_TEST_SUITE(Event)
             r1_(this),
             r2_(this),
             r3_(this)
-#pragma warning(pop)
         {}
 
         virtual ~Test(void) {}

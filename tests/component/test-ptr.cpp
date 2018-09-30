@@ -437,7 +437,7 @@ NSFX_TEST_SUITE(Ptr)
                 nsfx::Ptr<ITest>  q(p);
                 NSFX_TEST_EXPECT(false);
             }
-            catch (boost::exception& e)
+            catch (boost::exception& )
             {
                 // Should come here.
             }
@@ -513,7 +513,7 @@ NSFX_TEST_SUITE(Ptr)
                 q = p;
                 NSFX_TEST_EXPECT(false);
             }
-            catch (boost::exception& e)
+            catch (boost::exception& )
             {
                 // Should come here
             }

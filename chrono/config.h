@@ -29,18 +29,19 @@
  * Basic concepts:
  * <b>Time Point</b>: </br>
  *    A location in time. e.g., 2013-03-14 10:33:29.
+ *    Also known as a Time Instant.
  *
  * <b>Time Duration</b>: </br>
  *    A free length of time which is not associated with a time point.
  *    e.g., 3 seconds.
- *
- * <b>Time Interval</b>: </br>
- *    A length of time associated with a time point.
- *    e.g., from 2013-03-14 10:33:29 to 2013-04-28 09:00:00.
  *    Also known as a Time Period.
  *
+ * <b>Time Interval</b>: </br>
+ *    A length of time between two time points.
+ *    e.g., from 2013-03-14 10:33:29 to 2013-04-28 09:00:00.
+ *
  * <b>Time Resolution</b>: </br>
- *    The smallest representable duration.
+ *    The smallest representable time duration.
  *    It is also called the fundamental time period.
  *
  * <b>Time Epoch</b>: </br>

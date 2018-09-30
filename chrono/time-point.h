@@ -30,8 +30,13 @@ NSFX_CHRONO_OPEN_NAMESPACE
 /**
  * @ingroup Chrono
  * @brief The primary class template for defining a time point class.
+ *
+ * @tparam Clock    The clock that defines the epoch of the time system.
+ * @tparam Duration The duration that defines the time resolution of the time
+ *                  system.
+ *                  It also defines the range of representable time duration.
  */
-template<class Epoch, class Duration = typename Epoch::Duration>
+template<class Clock, class Duration = typename Clock::Duration>
 class TimePoint;
 
 
@@ -45,7 +50,7 @@ class TimePointConcept
 {
 private:
     typedef typename TimePoint::Duration Duration;
-    typedef typename TimePoint::Epoch    Epoch;
+    typedef typename TimePoint::Clock    Clock;
 
     BOOST_CONCEPT_ASSERT((boost::Assignable<TimePoint>));
     BOOST_CONCEPT_ASSERT((boost::DefaultConstructible<TimePoint>));
@@ -122,10 +127,10 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 // ostream <<./*{{{*/
-template<class CharT, class TraitsT, class Epoch, class Duration>
+template<class CharT, class TraitsT, class Clock, class Duration>
 inline std::basic_ostream<CharT, TraitsT>&
 operator<<(std::basic_ostream<CharT, TraitsT>& os,
-           const TimePoint<Epoch, Duration>& rhs)
+           const TimePoint<Clock, Duration>& rhs)
 {
     return os << rhs.ToString();
 }
