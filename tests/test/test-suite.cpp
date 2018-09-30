@@ -136,9 +136,9 @@ NSFX_TEST_SUITE(ValueFormat)
 
     NSFX_TEST_CASE(Float)
     {
-        float i = -1;
-        float j = -2;
-        float k = 0.1;
+        float i = -1.0f;
+        float j = -2.0f;
+        float k =  0.1f;
         NSFX_TEST_EXPECT_RC(i, j, k) << SHOULD_SEE;
     }
 

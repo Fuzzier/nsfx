@@ -30,12 +30,12 @@ NSFX_CHRONO_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Chrono
- * @brief Virtual time epoch.
+ * @brief A virtual clock.
  *
- * This time epoch can be used in discreet event simulations.
+ * This clock can be used in discreet event simulations.
  * The time resolution is 1/10 nanoseconds.
  */
-struct VirtualEpoch
+struct VirtualClock
 {
     typedef ratio<nano::num, nano::den * 10>  tenth_nano;
     typedef Duration<tenth_nano>  Duration;
@@ -45,23 +45,22 @@ struct VirtualEpoch
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Chrono
- * @brief TimePoint point.
+ * @brief A time point.
  *
- * @tparam Epoch  The epoch of the time system.
- *                It shall have a nested type \c Duration, which defines
- *                the time resolution of the time system.
+ * @tparam Clock The clock that defines the epoch of the time system.
+ *               It shall have a nested type \c Duration, which defines
+ *               the time resolution of the time system.
  *
- * TimePoint epoch represents the starting time point in a time system.
- * TimePoint point stores the time duration elapsed since the epoch.
+ * This class stores the time duration elapsed since the epoch.
  * The time resolution is 1/10 nanoseconds.
  */
 template<>
-class TimePoint<VirtualEpoch, VirtualEpoch::Duration>
+class TimePoint<VirtualClock, VirtualClock::Duration>
 {
     // Typedefs./*{{{*/
 public:
-    typedef VirtualEpoch::Duration  Duration;
-    typedef VirtualEpoch            Epoch;
+    typedef VirtualClock::Duration  Duration;
+    typedef VirtualClock            Clock;
     /*}}}*/
 
     // Constructors. /*{{{*/
@@ -174,9 +173,9 @@ private:
 };
 
 
-BOOST_CONCEPT_ASSERT((TimePointConcept<TimePoint<VirtualEpoch> >));
+BOOST_CONCEPT_ASSERT((TimePointConcept<TimePoint<VirtualClock> >));
 
-typedef TimePoint<VirtualEpoch>  VirtualTimePoint;
+typedef TimePoint<VirtualClock>  VirtualTimePoint;
 
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1,0 +1,363 @@
+NSFX_PATH=..
+CC=cl.exe
+LD=link.exe
+LIBS=ws2_32.lib iphlpapi.lib
+
+!IFDEF RELEASE
+CFLAGS=
+CPPFLAGS=/nologo /W3 /wd4355 /EHsc /Ox /DBOOST_DISABLE_ASSERTS /I"$(NSFX_PATH)/.."
+LDFLAGS=/NOLOGO /INCREMENTAL:NO
+!ELSE
+CFLAGS=
+CPPFLAGS=/nologo /W3 /wd4355 /EHsc /Od /Zi /DDEBUG /I"$(NSFX_PATH)/.."
+LDFLAGS=/NOLOGO /DEBUG /INCREMENTAL:NO
+!ENDIF
+
+run ::
+	@echo ==================
+	sequence-number.exe
+	@echo ==================
+	event-key.exe
+	@echo ==================
+	event.exe
+	@echo ==================
+	list-scheduler.exe
+	@echo ==================
+	realtime-simulator.exe
+
+.PHONY: all clean run	\
+	test chrono utility component event log random
+
+all : test chrono utility component event log random
+
+clean :
+	del /s /q *.exe
+	del /s /q *.obj
+	del /s /q *.ilk
+	del /s /q *.exp
+	del /s /q *.dll
+	del /s /q *.pdb
+	del /s /q *.log
+
+
+EXCEPTION_HEADERS=                   \
+	$(NSFX_PATH)/config.h               \
+	$(NSFX_PATH)/exception/exception.h  \
+
+################################################################################
+# test
+test :       \
+	test-case   \
+	test-suite  \
+
+TEST_HEADERS=                         \
+	$(EXCEPTION_HEADERS)                 \
+	$(NSFX_PATH)/test.h                  \
+	$(NSFX_PATH)/test/config.h           \
+	$(NSFX_PATH)/test/visitor-concept.h  \
+	$(NSFX_PATH)/test/tool-type.h        \
+	$(NSFX_PATH)/test/tool-level.h       \
+	$(NSFX_PATH)/test/result.h           \
+	$(NSFX_PATH)/test/case.h             \
+	$(NSFX_PATH)/test/suite.h            \
+	$(NSFX_PATH)/test/logger.h           \
+	$(NSFX_PATH)/test/runner.h           \
+	$(NSFX_PATH)/test/builder.h          \
+	$(NSFX_PATH)/test/tool-iterate.h     \
+	$(NSFX_PATH)/test/tool.h             \
+
+########################################
+test-case : test-case.exe
+
+SRC=test/test-case.cpp
+
+test-case.exe : $(TEST_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-suite : test-suite.exe
+
+SRC=test/test-suite.cpp
+
+test-suite.exe : $(TEST_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+################################################################################
+# chrono
+chrono :                  \
+	test-duration            \
+	test-virtual-time-point  \
+
+CHRONO_HEADERS=                            \
+	$(TEST_HEADERS)                           \
+	$(NSFX_PATH)/config.h                     \
+	$(NSFX_PATH)/chrono/config.h              \
+	$(NSFX_PATH)/chrono/duration.h            \
+	$(NSFX_PATH)/chrono/time-point.h          \
+	$(NSFX_PATH)/chrono/virtual-time-point.h  \
+
+########################################
+test-duration : test-duration.exe
+
+SRC=chrono/test-duration.cpp
+
+test-duration.exe : $(HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-virtual-time-point : test-virtual-time-point.exe
+
+SRC=chrono/test-virtual-time-point.cpp
+
+test-virtual-time-point.exe : $(HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+################################################################################
+# component
+component :           \
+	test-uid             \
+	test-ptr             \
+	test-object          \
+	test-class-factory   \
+	test-class-registry  \
+
+COMPONENT_HEADERS=                          \
+	$(TEST_HEADERS)                            \
+	$(NSFX_PATH)/component.h                   \
+	$(NSFX_PATH)/component/config.h            \
+	$(NSFX_PATH)/component/exception.h         \
+	$(NSFX_PATH)/component/uid.h               \
+	$(NSFX_PATH)/component/i-object.h          \
+	$(NSFX_PATH)/component/object.h            \
+	$(NSFX_PATH)/component/ptr.h               \
+	$(NSFX_PATH)/component/i-user.h            \
+	$(NSFX_PATH)/component/i-class-factory.h   \
+	$(NSFX_PATH)/component/class-factory.h     \
+	$(NSFX_PATH)/component/i-class-registry.h  \
+	$(NSFX_PATH)/component/class-registry.h    \
+
+########################################
+test-uid : test-uid.exe
+
+SRC=component/test-uid.cpp
+
+test-uid.exe : $(COMPONENT_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-ptr : test-ptr.exe
+
+SRC=component/test-ptr.cpp
+
+test-ptr.exe : $(COMPONENT_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-object : test-object.exe
+
+SRC=component/test-object.cpp
+
+test-object.exe : $(COMPONENT_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-class-factory : test-class-factory.exe
+
+SRC=component/test-class-factory.cpp
+
+test-class-factory.exe : $(COMPONENT_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-class-registry : test-class-registry.exe
+
+SRC=component/test-class-registry.cpp
+
+test-class-registry.exe : $(COMPONENT_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+################################################################################
+# event
+event :           \
+	test-event-sink  \
+	test-event       \
+
+EVENT_HEADERS=                      \
+	$(TEST_HEADERS)                    \
+	$(COMPONENT_HEADERS)               \
+	$(NSFX_PATH)/event.h               \
+	$(NSFX_PATH)/event/config.h        \
+	$(NSFX_PATH)/event/exception.h     \
+	$(NSFX_PATH)/event/i-event-sink.h  \
+	$(NSFX_PATH)/event/event-sink.h    \
+	$(NSFX_PATH)/event/i-event.h       \
+	$(NSFX_PATH)/event/event.h         \
+
+########################################
+test-event : test-event.exe
+
+SRC=event/test-event.cpp
+
+test-event.exe : $(EVENT_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-event-sink : test-event-sink.exe
+
+SRC=event/test-event-sink.cpp
+
+test-event-sink.exe : $(EVENT_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+################################################################################
+# log
+log :                        \
+	test-const-attribute-value  \
+	test-const-attribute        \
+	test-record                 \
+	test-filter                 \
+	test-logger                 \
+	test-timestamp-attribute    \
+
+LOG_HEADERS=                                                    \
+	$(TEST_HEADERS)                                                \
+	$(COMPONENT_HEADERS)                                           \
+	$(EVENT_HEADERS)                                               \
+	$(CHRONO_HEADERS)                                              \
+	$(NSFX_PATH)/log.h                                             \
+	$(NSFX_PATH)/log/config.h                                      \
+	$(NSFX_PATH)/log/core/exception.h                              \
+	$(NSFX_PATH)/log/core/attribute-value/attribute-value.h        \
+	$(NSFX_PATH)/log/core/attribute-value/const-attribute-value.h  \
+	$(NSFX_PATH)/log/core/attribute/attribute.h                    \
+	$(NSFX_PATH)/log/core/attribute/const-attribute.h              \
+	$(NSFX_PATH)/log/core/attribute/i-attribute-set.h              \
+	$(NSFX_PATH)/log/core/attribute/attribute-set.h                \
+	$(NSFX_PATH)/log/core/record/record.h                          \
+	$(NSFX_PATH)/log/core/record/attribute-value-info.h            \
+	$(NSFX_PATH)/log/core/logger/i-logger.h                        \
+	$(NSFX_PATH)/log/core/logger/logger.h                          \
+	$(NSFX_PATH)/log/core/filter/i-filter.h                        \
+	$(NSFX_PATH)/log/core/filter/filter.h                          \
+	$(NSFX_PATH)/log/core/filter/i-filter-chain.h                  \
+	$(NSFX_PATH)/log/core/filter/filter-chain.h                    \
+	$(NSFX_PATH)/log/core/formatter/i-stream-formatter.h           \
+	$(NSFX_PATH)/log/core/formatter/stream-formatter.h             \
+	$(NSFX_PATH)/log/core/sink/i-stream-sink.h                     \
+	$(NSFX_PATH)/log/core/sink/stream-sink.h                       \
+	$(NSFX_PATH)/log/core/sink/i-file-sink.h                       \
+	$(NSFX_PATH)/log/core/sink/file-sink.h                         \
+	$(NSFX_PATH)/log/default/common-attribute-value-info.h         \
+	$(NSFX_PATH)/log/default/severity-level.h                      \
+	$(NSFX_PATH)/log/default/i-severity-level-filter.h             \
+	$(NSFX_PATH)/log/default/severity-level-filter.h               \
+	$(NSFX_PATH)/log/default/timestamp-attribute.h                 \
+	$(NSFX_PATH)/log/default/tool.h                                \
+
+########################################
+test-const-attribute-value : test-const-attribute-value.exe
+
+SRC=log/test-const-attribute-value.cpp
+
+test-const-attribute-value.exe : $(LOG_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-const-attribute : test-const-attribute.exe
+
+SRC=log/test-const-attribute.cpp
+
+test-const-attribute.exe : $(LOG_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-record : test-record.exe
+
+SRC=log/test-record.cpp
+
+test-record.exe : $(LOG_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-filter : test-filter.exe
+
+SRC=log/test-filter.cpp
+
+test-filter.exe : $(LOG_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-logger : test-logger.exe
+
+SRC=log/test-logger.cpp
+
+test-logger.exe : $(LOG_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-timestamp-attribute : test-timestamp-attribute.exe
+
+SRC=log/test-timestamp-attribute.cpp
+
+test-timestamp-attribute.exe : $(LOG_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+################################################################################
+# network
+SRC=network
+
+NETWORK_HEADERS=									\
+	$(FATAL_HEADERS)								\
+	$(TEST_HEADERS)									\
+	$(UTILITY_HEADERS)								\
+	$(NSFX_PATH)/network/config.h					\
+	$(NSFX_PATH)/network/buffer.h					\
+	$(NSFX_PATH)/network/ipv4-address.h				\
+	$(NSFX_PATH)/network/win32-socket.h				\
+	$(NSFX_PATH)/network/socket.h					\
+	$(NSFX_PATH)/network/win32-socket-selector.h	\
+	$(NSFX_PATH)/network/socket-selector.h			\
+
+NETWORK_TARGETS=						\
+	buffer.exe							\
+	ipv4-address.exe					\
+	udp-socket.exe						\
+	udp-mcast.exe						\
+#	socket-selector.exe					\
+
+network : $(NETWORK_TARGETS)
+
+$(NETWORK_TARGETS) : $(SRC)/$*.cpp $(NETWORK_HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"$(SRC)/" /Fd"$(SRC)/" /Fe"$@" $(SRC)/$*.cpp /link $(LDFLAGS) $(LIBS) /PDB:"$(SRC)/"
+
+################################################################################
+# simulator
+SRC=simulator
+
+SIMULATOR_HEADERS=									\
+	$(FATAL_HEADERS)								\
+	$(TEST_HEADERS)									\
+	$(NETWORK_HEADERS)								\
+	$(NSFX_PATH)/simulator/config.h					\
+	$(NSFX_PATH)/simulator/sequence-number.h		\
+	$(NSFX_PATH)/simulator/event-type.h				\
+	$(NSFX_PATH)/simulator/event-key.h				\
+	$(NSFX_PATH)/simulator/event.h					\
+	$(NSFX_PATH)/simulator/event-id.h				\
+	$(NSFX_PATH)/simulator/scheduler.h				\
+	$(NSFX_PATH)/simulator/list-scheduler.h			\
+	$(NSFX_PATH)/simulator/simulator.h				\
+	$(NSFX_PATH)/simulator/realtime-simulator.h		\
+
+SIMULATOR_TARGETS=						\
+	sequence-number.exe					\
+	event-key.exe						\
+	event.exe							\
+	list-scheduler.exe		 			\
+	realtime-simulator.exe				\
+
+simulator : $(SIMULATOR_TARGETS)
+
+$(SIMULATOR_TARGETS) : $(SRC)/$*.cpp $(SIMULATOR_HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"$(SRC)/" /Fd"$(SRC)/" /Fe"$@" $(SRC)/$*.cpp /link $(LDFLAGS) $(LIBS) /PDB:"$(SRC)/"
+

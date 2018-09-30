@@ -65,7 +65,7 @@ inline bool operator==(const Uid& lhs, const Uid& rhs) BOOST_NOEXCEPT
 
 inline bool operator!=(const Uid& lhs, const Uid& rhs) BOOST_NOEXCEPT
 {
-    return std::strcmp(lhs.uid_, rhs.uid_);
+    return !!std::strcmp(lhs.uid_, rhs.uid_);
 }
 
 inline bool operator==(const Uid& lhs, const char* rhs) BOOST_NOEXCEPT
@@ -75,7 +75,7 @@ inline bool operator==(const Uid& lhs, const char* rhs) BOOST_NOEXCEPT
 
 inline bool operator!=(const Uid& lhs, const char* rhs) BOOST_NOEXCEPT
 {
-    return std::strcmp(lhs.uid_, rhs);
+    return !!std::strcmp(lhs.uid_, rhs);
 }
 
 inline bool operator==(const char* lhs, const Uid& rhs) BOOST_NOEXCEPT
@@ -85,7 +85,7 @@ inline bool operator==(const char* lhs, const Uid& rhs) BOOST_NOEXCEPT
 
 inline bool operator!=(const char* lhs, const Uid& rhs) BOOST_NOEXCEPT
 {
-    return std::strcmp(lhs, rhs.uid_);
+    return !!std::strcmp(lhs, rhs.uid_);
 }
 
 template<class Char, class Traits>
