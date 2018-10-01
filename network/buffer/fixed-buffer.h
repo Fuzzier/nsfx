@@ -33,7 +33,7 @@ NSFX_OPEN_NAMESPACE
 // FixedBuffer.
 /**
  * @ingroup Network
- * @brief A fixed-size buffer that does not support copy-on-resize.
+ * @brief A fixed-size buffer that does not support resizing.
  */
 template<>
 class BasicBuffer</*readOnly*/false, /*copyOnResize*/false, /*zeroArea*/false>

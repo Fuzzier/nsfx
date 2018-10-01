@@ -39,7 +39,8 @@ public:
     typedef BasicTagIndex<TagValue> TagIndex;
 
 public:
-    BasicTagIndex(const Tag& tag, size_t tagStart, size_t tagEnd) BOOST_NOEXCEPT;
+    BasicTagIndex(uint32_t tagId, const TagValue& value,
+                  size_t tagStart, size_t tagEnd) BOOST_NOEXCEPT;
 
     BasicTagIndex(const TagIndex& rhs) BOOST_NOEXCEPT;
     TagIndex& operator=(const TagIndex& rhs) BOOST_NOEXCEPT;
@@ -67,17 +68,16 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 template<class T>
-inline
-BasicTagIndex<T>::BasicTagIndex(const Tag& tag, size_t tagStart, size_t tagEnd) BOOST_NOEXCEPT :
-    tag_(tag),
+inline BasicTagIndex<T>::BasicTagIndex(uint32_t tagId, const TagValue& value,
+                                       size_t tagStart, size_t tagEnd) BOOST_NOEXCEPT :
+    tag_(tagId, value),
     tagStart_(tagStart),
     tagEnd_(tagEnd)
 {
 }
 
 template<class T>
-inline
-BasicTagIndex<T>::BasicTagIndex(const BasicTagIndex<T>& rhs) BOOST_NOEXCEPT :
+inline BasicTagIndex<T>::BasicTagIndex(const BasicTagIndex<T>& rhs) BOOST_NOEXCEPT :
     tag_(rhs.tag_),
     tagStart_(rhs.tagStart_),
     tagEnd_(rhs.tagEnd_)
@@ -98,8 +98,7 @@ BasicTagIndex<T>::operator=(const BasicTagIndex<T>& rhs) BOOST_NOEXCEPT
 }
 
 template<class T>
-inline
-BasicTagIndex<T>::BasicTagIndex(BasicTagIndex<T>&& rhs) BOOST_NOEXCEPT :
+inline BasicTagIndex<T>::BasicTagIndex(BasicTagIndex<T>&& rhs) BOOST_NOEXCEPT :
     tag_(std::move(rhs.tag_)),
     tagStart_(rhs.tagStart_),
     tagEnd_(rhs.tagEnd_)
@@ -120,8 +119,7 @@ BasicTagIndex<T>::operator=(BasicTagIndex<T>&& rhs) BOOST_NOEXCEPT
 }
 
 template<class T>
-inline void
-BasicTagIndex<T>::swap(BasicTagIndex<T>& rhs) BOOST_NOEXCEPT
+inline void BasicTagIndex<T>::swap(BasicTagIndex<T>& rhs) BOOST_NOEXCEPT
 {
     boost::swap(tag_,      rhs.tag_);
     boost::swap(tagStart_, rhs.tagStart_);
@@ -136,15 +134,13 @@ BasicTagIndex<T>::GetTag(void) const BOOST_NOEXCEPT
 }
 
 template<class T>
-inline size_t
-BasicTagIndex<T>::GetStart(void) const BOOST_NOEXCEPT
+inline size_t BasicTagIndex<T>::GetStart(void) const BOOST_NOEXCEPT
 {
     return tagStart_;
 }
 
 template<class T>
-inline size_t
-BasicTagIndex<T>::GetEnd(void) const BOOST_NOEXCEPT
+inline size_t BasicTagIndex<T>::GetEnd(void) const BOOST_NOEXCEPT
 {
     return tagEnd_;
 }

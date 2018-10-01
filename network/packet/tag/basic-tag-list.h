@@ -314,17 +314,6 @@ public:
     /**
      * @brief Insert a tag for a range of bytes in the buffer.
      *
-     * @param[in] tag    The tag.
-     * @param[in] start  The start of the byte, relative to the start of
-     *                   the buffer.
-     * @param[in] size   The number of bytes to tag.
-     *                   All bytes <b>must</b> be within the current buffer.
-     */
-    void Insert(const Tag& tag, size_t start, size_t size);
-
-    /**
-     * @brief Insert a tag for a range of bytes in the buffer.
-     *
      * @param[in] tagId The id of the tag.
      * @param[in] value The value of the tag.
      * @param[in] start The start of the byte, relative to the start of
@@ -356,7 +345,7 @@ public:
      *
      * @throw TagNotFound
      */
-    Tag Get(uint32_t tagId, size_t offset) const;
+    const TagValue& Get(uint32_t tagId, size_t offset) const;
 
     // Methods.
 public:
@@ -627,7 +616,7 @@ inline bool BasicTagList<T>::Exists(uint32_t tagId, size_t offset) const BOOST_N
 }
 
 template<class T>
-inline typename BasicTagList<T>::Tag
+inline const typename BasicTagList<T>::TagValue&
 BasicTagList<T>::Get(uint32_t tagId, size_t offset) const
 {
     BOOST_ASSERT_MSG(offset < bufferEnd_ - bufferStart_,
@@ -640,7 +629,7 @@ BasicTagList<T>::Get(uint32_t tagId, size_t offset) const
         if (idx->GetTag().GetId() == tagId &&
             idx->GetStart() <= pos && pos < idx->GetEnd())
         {
-            return idx->GetTag();
+            return idx->GetTag().GetValue();
         }
         ++idx;
     }
@@ -892,9 +881,8 @@ inline void BasicTagList<T>::ExpandBuffer(size_t deltaStart, size_t deltaEnd)
 }
 
 template<class T>
-inline bool BasicTagList<T>::HasTag(uint32_t tagId,
-                               size_t tagStart,
-                               size_t tagEnd) const BOOST_NOEXCEPT
+inline bool BasicTagList<T>::HasTag(
+    uint32_t tagId, size_t tagStart, size_t tagEnd) const BOOST_NOEXCEPT
 {
     bool found = false;
     const TagIndex* idx = tia_->indices_;
@@ -914,14 +902,15 @@ inline bool BasicTagList<T>::HasTag(uint32_t tagId,
 }
 
 template<class T>
-inline void BasicTagList<T>::InsertTag(const Tag& tag, size_t tagStart, size_t tagEnd)
+inline void BasicTagList<T>::InsertTag(
+    uint32_t tagId, const TagValue& value, size_t tagStart, size_t tagEnd)
 {
-    if (!HasTag(tag.GetId(), tagStart, tagEnd) &&
+    if (!HasTag(tagId, tagStart, tagEnd) &&
         TagIndex::HasTaggedByte(tagStart, tagEnd, bufferStart_, bufferEnd_))
     {
         PrepareToInsert();
         TagIndex* idx = tia_->indices_ + size_;
-        new (idx) TagIndex(tag, tagStart, tagEnd);
+        new (idx) TagIndex(tagId, value, tagStart, tagEnd);
         // Increase the size after the construction succeeded.
         ++size_;
         ++tia_->dirty_;

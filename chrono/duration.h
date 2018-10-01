@@ -522,7 +522,6 @@ public:
     template<class Res2>
     BOOST_CONSTEXPR Duration& operator=(const Duration<Res2>& rhs) BOOST_NOEXCEPT
     {
-        BOOST_ASSERT(this != &rhs);
         count_ = aux::ConvertCount<Res2, Res>(rhs.count_);
         return *this;
     }
