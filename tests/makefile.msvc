@@ -303,61 +303,189 @@ test-timestamp-attribute.exe : $(LOG_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ################################################################################
-# network
-SRC=network
+# simulation
+simulation :                \
+	test-event-handle          \
+	test-list-event-scheduler  \
+	test-set-event-scheduler   \
+	test-simulator             \
+	test-timer                 \
 
-NETWORK_HEADERS=									\
-	$(FATAL_HEADERS)								\
-	$(TEST_HEADERS)									\
-	$(UTILITY_HEADERS)								\
-	$(NSFX_PATH)/network/config.h					\
-	$(NSFX_PATH)/network/buffer.h					\
-	$(NSFX_PATH)/network/ipv4-address.h				\
-	$(NSFX_PATH)/network/win32-socket.h				\
-	$(NSFX_PATH)/network/socket.h					\
-	$(NSFX_PATH)/network/win32-socket-selector.h	\
-	$(NSFX_PATH)/network/socket-selector.h			\
+SIMULATION_HEADERS=                              \
+	$(TEST_HEADERS)                                 \
+	$(CHRONO_HEADERS)                               \
+	$(COMPONENT_HEADERS)                            \
+	$(EVENT_HEADERS)                                \
+	$(NSFX_PATH)/simulation.h                       \
+	$(NSFX_PATH)/simulation/config.h                \
+	$(NSFX_PATH)/simulation/exception.h             \
+	$(NSFX_PATH)/simulation/i-clock.h               \
+	$(NSFX_PATH)/simulation/i-event-handle.h        \
+	$(NSFX_PATH)/simulation/event-handle.h          \
+	$(NSFX_PATH)/simulation/i-event-scheduler.h     \
+	$(NSFX_PATH)/simulation/list-event-scheduler.h  \
+	$(NSFX_PATH)/simulation/set-event-scheduler.h   \
+	$(NSFX_PATH)/simulation/i-simulator.h           \
+	$(NSFX_PATH)/simulation/simulator.h             \
+	$(NSFX_PATH)/simulation/i-timer.h               \
+	$(NSFX_PATH)/simulation/timer.h                 \
 
-NETWORK_TARGETS=						\
-	buffer.exe							\
-	ipv4-address.exe					\
-	udp-socket.exe						\
-	udp-mcast.exe						\
-#	socket-selector.exe					\
+########################################
+test-event-handle : test-event-handle.exe
 
-network : $(NETWORK_TARGETS)
+SRC=simulation/test-event-handle.cpp
 
-$(NETWORK_TARGETS) : $(SRC)/$*.cpp $(NETWORK_HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"$(SRC)/" /Fd"$(SRC)/" /Fe"$@" $(SRC)/$*.cpp /link $(LDFLAGS) $(LIBS) /PDB:"$(SRC)/"
+test-event-handle.exe : $(EVENT_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-list-event-scheduler : test-list-event-scheduler.exe
+
+SRC=simulation/test-list-event-scheduler.cpp
+
+test-list-event-scheduler.exe : $(EVENT_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-set-event-scheduler : test-set-event-scheduler.exe
+
+SRC=simulation/test-set-event-scheduler.cpp
+
+test-set-event-scheduler.exe : $(EVENT_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-simulator : test-simulator.exe
+
+SRC=simulation/test-simulator.cpp
+
+test-simulator.exe : $(EVENT_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-timer : test-timer.exe
+
+SRC=simulation/test-timer.cpp
+
+test-timer.exe : $(EVENT_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ################################################################################
-# simulator
-SRC=simulator
+# network
+network :           \
+	test-event-sink  \
+	test-event       \
 
-SIMULATOR_HEADERS=									\
-	$(FATAL_HEADERS)								\
-	$(TEST_HEADERS)									\
-	$(NETWORK_HEADERS)								\
-	$(NSFX_PATH)/simulator/config.h					\
-	$(NSFX_PATH)/simulator/sequence-number.h		\
-	$(NSFX_PATH)/simulator/event-type.h				\
-	$(NSFX_PATH)/simulator/event-key.h				\
-	$(NSFX_PATH)/simulator/event.h					\
-	$(NSFX_PATH)/simulator/event-id.h				\
-	$(NSFX_PATH)/simulator/scheduler.h				\
-	$(NSFX_PATH)/simulator/list-scheduler.h			\
-	$(NSFX_PATH)/simulator/simulator.h				\
-	$(NSFX_PATH)/simulator/realtime-simulator.h		\
+EVENT_HEADERS=                                                    \
+	$(TEST_HEADERS)                                                  \
+	$(COMPONENT_HEADERS)                                             \
+	$(NSFX_PATH)/network.h                                           \
+	$(NSFX_PATH)/network/config.h                                    \
+	$(NSFX_PATH)/network/buffer.h                                    \
+	$(NSFX_PATH)/network/buffer/storage/basic-buffer-storage.h       \
+	$(NSFX_PATH)/network/buffer/iterator/basic-buffer-iterator.h     \
+	$(NSFX_PATH)/network/buffer/iterator/buffer-iterator.h           \
+	$(NSFX_PATH)/network/buffer/iterator/const-buffer-iterator.h     \
+	$(NSFX_PATH)/network/buffer/iterator/zc-buffer-iterator.h        \
+	$(NSFX_PATH)/network/buffer/iterator/const-zc-buffer-iterator.h  \
+	$(NSFX_PATH)/network/buffer/basic-buffer.h                       \
+	$(NSFX_PATH)/network/buffer/buffer.h                             \
+	$(NSFX_PATH)/network/buffer/const-buffer.h                       \
+	$(NSFX_PATH)/network/buffer/zc-buffer.h                          \
+	$(NSFX_PATH)/network/buffer/const-zc-buffer.h                    \
+	$(NSFX_PATH)/network/buffer/fixed-buffer.h                       \
+	$(NSFX_PATH)/network/buffer/const-fixed-buffer.h                 \
+	$(NSFX_PATH)/network/packet.h                                    \
+	$(NSFX_PATH)/network/packet/exception.h                          \
+	$(NSFX_PATH)/network/packet/tag/basic-tag.h                      \
+	$(NSFX_PATH)/network/packet/tag/basic-tag-index.h                \
+	$(NSFX_PATH)/network/packet/tag/basic-tag-index-array.h          \
+	$(NSFX_PATH)/network/packet/tag/basic-tag-list.h                 \
+	$(NSFX_PATH)/network/packet/packet-packet.h                      \
+	$(NSFX_PATH)/network/packet/packet.h                             \
 
-SIMULATOR_TARGETS=						\
-	sequence-number.exe					\
-	event-key.exe						\
-	event.exe							\
-	list-scheduler.exe		 			\
-	realtime-simulator.exe				\
+#include <nsfx/network/buffer/basic-buffer.h>
+#include <nsfx/network/buffer/storage/basic-buffer-storage.h>
+#include <nsfx/network/buffer/iterator/buffer-iterator.h>
+#include <nsfx/network/buffer/iterator/const-buffer-iterator.h>
 
-simulator : $(SIMULATOR_TARGETS)
+########################################
+test-event : test-event.exe
 
-$(SIMULATOR_TARGETS) : $(SRC)/$*.cpp $(SIMULATOR_HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"$(SRC)/" /Fd"$(SRC)/" /Fe"$@" $(SRC)/$*.cpp /link $(LDFLAGS) $(LIBS) /PDB:"$(SRC)/"
+SRC=network/test-event.cpp
+
+test-event.exe : $(EVENT_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-event : test-event.exe
+
+SRC=network/test-event.cpp
+
+test-event.exe : $(EVENT_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-event : test-event.exe
+
+SRC=network/test-event.cpp
+
+test-event.exe : $(EVENT_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-event : test-event.exe
+
+SRC=network/test-event.cpp
+
+test-event.exe : $(EVENT_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-event : test-event.exe
+
+SRC=network/test-event.cpp
+
+test-event.exe : $(EVENT_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-event : test-event.exe
+
+SRC=network/test-event.cpp
+
+test-event.exe : $(EVENT_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-event : test-event.exe
+
+SRC=network/test-event.cpp
+
+test-event.exe : $(EVENT_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-event : test-event.exe
+
+SRC=network/test-event.cpp
+
+test-event.exe : $(EVENT_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-event : test-event.exe
+
+SRC=network/test-event.cpp
+
+test-event.exe : $(EVENT_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-event : test-event.exe
+
+SRC=network/test-event.cpp
+
+test-event.exe : $(EVENT_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 

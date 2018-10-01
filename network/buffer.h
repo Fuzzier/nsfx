@@ -32,6 +32,8 @@
 #include <nsfx/network/buffer/iterator/const-zc-buffer-iterator.h>
 
 // Buffer.
+#include <nsfx/network/buffer/basic-buffer.h>
+
 #include <nsfx/network/buffer/buffer.h>
 #include <nsfx/network/buffer/const-buffer.h>
 
