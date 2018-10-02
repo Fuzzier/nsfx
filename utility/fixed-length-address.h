@@ -47,7 +47,7 @@ public:
     /**
      * @brief The type of underlying value.
      */
-    typedef typename LeastInt<bits>::UintType   ValueType;
+    typedef typename LeastInt<bits>::UIntType   ValueType;
 
     /**
      * @brief The type of signed integer used in operators.
@@ -57,7 +57,7 @@ public:
     /**
      * @brief The type of unsigned integer used in operators.
      */
-    typedef typename LeastInt<bits>::UintOpType UintOpType;
+    typedef typename LeastInt<bits>::UIntOpType UIntOpType;
 
 private:
     static const ValueType MASK = static_cast<ValueType>(
@@ -409,8 +409,8 @@ template<size_t bits, class Char, class Traits>
 inline std::basic_ostream<Char, Traits>&
 operator<<(std::basic_ostream<Char, Traits>& os, const FixedLengthAddress<bits>& address)
 {
-    typedef typename FixedLengthAddress<bits>::UintOpType  UintOpType;
-    return os << static_cast<UintOpType>(address.GetValue());
+    typedef typename FixedLengthAddress<bits>::UIntOpType  UIntOpType;
+    return os << static_cast<UIntOpType>(address.GetValue());
 }
 
 

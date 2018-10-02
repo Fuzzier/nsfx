@@ -659,7 +659,7 @@ NSFX_TEST_SUITE(BufferIterator)
             NSFX_TEST_EXPECT_EQ(it.GetCursor(), 600);
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t n8 = 0xfe + i;
+                uint8_t n8 = (uint8_t)(0xfe + i);
                 it.Write<uint8_t>(n8);
                 NSFX_TEST_EXPECT_EQ(*p8, n8);
                 ++p8;
@@ -677,7 +677,7 @@ NSFX_TEST_SUITE(BufferIterator)
             NSFX_TEST_ASSERT_EQ(it.GetCursor(), 1000);
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t n8 = 0xef + i;
+                uint8_t n8 = (uint8_t)(0xef + i);
                 it.Write<uint8_t>(n8);
                 NSFX_TEST_EXPECT_EQ(*p8, n8);
                 ++p8;
@@ -1232,7 +1232,7 @@ NSFX_TEST_SUITE(ConstBufferIterator)
             NSFX_TEST_EXPECT_EQ(it1.GetCursor(), 600);
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t n8 = 0xfe + i;
+                uint8_t n8 = (uint8_t)(0xfe + i);
                 it.Write<uint8_t>(n8);
                 NSFX_TEST_EXPECT_EQ(*p8, n8);
                 ++it1;
@@ -1252,7 +1252,7 @@ NSFX_TEST_SUITE(ConstBufferIterator)
             NSFX_TEST_ASSERT_EQ(it1.GetCursor(), 1000);
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t n8 = 0xef + i;
+                uint8_t n8 = (uint8_t)(0xef + i);
                 it.Write<uint8_t>(n8);
                 NSFX_TEST_EXPECT_EQ(*p8, n8);
                 ++it1;
@@ -1265,7 +1265,7 @@ NSFX_TEST_SUITE(ConstBufferIterator)
 
 int main(void)
 {
-    nsfx::test::runner::GetLogger()->AddStreamSink(std::cout);
+    nsfx::test::runner::GetLogger()->AddStreamSink(std::cerr);
     nsfx::test::runner::Run();
 
     return 0;

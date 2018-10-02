@@ -88,7 +88,7 @@ NSFX_TEST_SUITE(Buffer)
             auto it0 = b0.begin();
             for (size_t i = 0; i < 300; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 it0.Write<uint8_t>(v);
             }
             it0 = b0.begin();
@@ -98,19 +98,19 @@ NSFX_TEST_SUITE(Buffer)
             auto it1 = b1.cbegin();
             for (size_t i = 0; i < 300; ++i)
             {
-                uint8_t v = 0xfe + i;
-                NSFX_TEST_EXPECT_EQ(it1.Read<uint8_t>(), v);
-            }
-        }
+				uint8_t v = (uint8_t)(0xfe + i);
+				NSFX_TEST_EXPECT_EQ(it1.Read<uint8_t>(), v);
+			}
+		}
 
-        NSFX_TEST_CASE(FromConstZcBuffer)
+		NSFX_TEST_CASE(FromConstZcBuffer)
         {
             nsfx::ZcBuffer b0(300);
             b0.AddAtStart(300);
             auto it0 = b0.begin();
             for (size_t i = 0; i < 300; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 it0.Write<uint8_t>(v);
             }
             it0 = b0.begin();
@@ -119,7 +119,7 @@ NSFX_TEST_SUITE(Buffer)
             auto it1 = b1.cbegin();
             for (size_t i = 0; i < 300; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 NSFX_TEST_EXPECT_EQ(it1.Read<uint8_t>(), v);
             }
         }
@@ -130,7 +130,7 @@ NSFX_TEST_SUITE(Buffer)
             auto it0 = b0.begin();
             for (size_t i = 0; i < 300; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 it0.Write<uint8_t>(v);
             }
             it0 = b0.begin();
@@ -139,7 +139,7 @@ NSFX_TEST_SUITE(Buffer)
             auto it1 = b1.cbegin();
             for (size_t i = 0; i < 300; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 NSFX_TEST_EXPECT_EQ(it1.Read<uint8_t>(), v);
             }
         }
@@ -318,13 +318,13 @@ NSFX_TEST_SUITE(Buffer)
             nsfx::BufferIterator it = b0.begin();
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 it.Write<uint8_t>(v);
             }
             it += 300;
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xef + i;
+                uint8_t v = (uint8_t)(0xef + i);
                 it.Write<uint8_t>(v);
             }
 
@@ -334,7 +334,7 @@ NSFX_TEST_SUITE(Buffer)
 
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 NSFX_TEST_EXPECT_EQ(byte[i], v);
             }
             for (size_t i = 100; i < 400; ++i)
@@ -343,7 +343,7 @@ NSFX_TEST_SUITE(Buffer)
             }
             for (size_t i = 400; i < 500; ++i)
             {
-                uint8_t v = 0xef + i - 400;
+                uint8_t v = (uint8_t)(0xef + i - 400);
                 NSFX_TEST_EXPECT_EQ(byte[i], v);
             }
         }
@@ -360,12 +360,12 @@ NSFX_TEST_SUITE(Buffer)
             nsfx::BufferIterator it = b0.begin();
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 it.Write<uint8_t>(v);
             }
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xef + i;
+                uint8_t v = (uint8_t)(0xef + i);
                 it.Write<uint8_t>(v);
             }
 
@@ -375,12 +375,12 @@ NSFX_TEST_SUITE(Buffer)
 
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 NSFX_TEST_EXPECT_EQ(byte[i], v);
             }
             for (size_t i = 100; i < 200; ++i)
             {
-                uint8_t v = 0xef + i - 100;
+                uint8_t v = (uint8_t)(0xef + i - 100);
                 NSFX_TEST_EXPECT_EQ(byte[i], v);
             }
         }
@@ -638,7 +638,7 @@ NSFX_TEST_SUITE(Buffer)
             uint8_t s[100];
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 s[i] = v;
             }
 
@@ -650,7 +650,7 @@ NSFX_TEST_SUITE(Buffer)
             auto it = b0.begin();
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 if (i == 99)
                 {
                     i = 99;
@@ -672,12 +672,12 @@ NSFX_TEST_SUITE(Buffer)
             auto it = s.begin();
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 it.Write<uint8_t>(v);
             }
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xef + i;
+                uint8_t v = (uint8_t)(0xef + i);
                 it.Write<uint8_t>(v);
             }
 
@@ -688,12 +688,12 @@ NSFX_TEST_SUITE(Buffer)
             it = b0.begin();
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), v);
             }
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xef + i;
+                uint8_t v = (uint8_t)(0xef + i);
                 NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), v);
             }
             for (size_t i = 0; i < 300; ++i)
@@ -955,7 +955,7 @@ NSFX_TEST_SUITE(Buffer)
             uint8_t s[100];
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xef + i;
+                uint8_t v = (uint8_t)(0xef + i);
                 s[i] = v;
             }
 
@@ -967,7 +967,7 @@ NSFX_TEST_SUITE(Buffer)
             auto it = b0.end() - 100;
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xef + i;
+                uint8_t v = (uint8_t)(0xef + i);
                 NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), v);
             }
             it -= 400;
@@ -986,12 +986,12 @@ NSFX_TEST_SUITE(Buffer)
             auto it = s.begin();
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 it.Write<uint8_t>(v);
             }
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xef + i;
+                uint8_t v = (uint8_t)(0xef + i);
                 it.Write<uint8_t>(v);
             }
 
@@ -1002,12 +1002,12 @@ NSFX_TEST_SUITE(Buffer)
             it = b0.end() - 200;
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), v);
             }
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xef + i;
+                uint8_t v = (uint8_t)(0xef + i);
                 NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), v);
             }
             it -= 500;
@@ -1032,13 +1032,13 @@ NSFX_TEST_SUITE(Buffer)
             auto it = b0.begin();
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 it.Write<uint8_t>(v);
             }
             it += 300;
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xef + i;
+                uint8_t v = (uint8_t)(0xef + i);
                 it.Write<uint8_t>(v);
             }
             // Make fragment.
@@ -1047,7 +1047,7 @@ NSFX_TEST_SUITE(Buffer)
             it = f0.begin();
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), v);
             }
             for (size_t i = 0; i < 100; ++i)
@@ -1064,7 +1064,7 @@ NSFX_TEST_SUITE(Buffer)
             }
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xef + i;
+                uint8_t v = (uint8_t)(0xef + i);
                 NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), v);
             }
             // Make fragment.
@@ -1087,13 +1087,13 @@ NSFX_TEST_SUITE(Buffer)
             auto it = b0.begin();
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 it.Write<uint8_t>(v);
             }
             it += 300;
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xef + i;
+                uint8_t v = (uint8_t)(0xef + i);
                 it.Write<uint8_t>(v);
             }
             // Make real buffer.
@@ -1103,17 +1103,17 @@ NSFX_TEST_SUITE(Buffer)
             it = b1.begin();
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), v);
             }
             for (size_t i = 0; i < 300; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), 0);
             }
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xef + i;
+                uint8_t v = (uint8_t)(0xef + i);
                 NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), v);
             }
         }
@@ -1130,13 +1130,13 @@ NSFX_TEST_SUITE(Buffer)
             auto it = b0.begin();
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 it.Write<uint8_t>(v);
             }
             it += 300;
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xef + i;
+                uint8_t v = (uint8_t)(0xef + i);
                 it.Write<uint8_t>(v);
             }
             // Realize.
@@ -1146,17 +1146,17 @@ NSFX_TEST_SUITE(Buffer)
             it = b0.begin();
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), v);
             }
             for (size_t i = 0; i < 300; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), 0);
             }
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xef + i;
+                uint8_t v = (uint8_t)(0xef + i);
                 NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), v);
             }
         }
@@ -1166,7 +1166,7 @@ NSFX_TEST_SUITE(Buffer)
 
 int main(void)
 {
-    nsfx::test::runner::GetLogger()->AddStreamSink(std::cout);
+    nsfx::test::runner::GetLogger()->AddStreamSink(std::cerr);
     nsfx::test::runner::Run();
 
     return 0;

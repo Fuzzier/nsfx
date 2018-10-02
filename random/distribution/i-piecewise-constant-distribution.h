@@ -21,6 +21,7 @@
 #include <nsfx/component/i-object.h>
 #include <nsfx/component/i-user.h>
 #include <nsfx/component/class-registry.h>
+#include <limits> // numeric_limits
 
 
 NSFX_OPEN_NAMESPACE
@@ -62,7 +63,7 @@ public:
 
     virtual uint32_t GetNumIntervals(void) NSFX_OVERRIDE
     {
-        return weights_.size();
+        return static_cast<uint32_t>(weights_.size());
     }
 
     virtual void SetLowerBound(double bound) NSFX_OVERRIDE
@@ -74,6 +75,7 @@ public:
     virtual void AddInterval(double bound, double weight) NSFX_OVERRIDE
     {
         BOOST_ASSERT(bounds_.size());
+		BOOST_ASSERT(bounds_.size() < (std::numeric_limits<uint32_t>::max)());
         BOOST_ASSERT(bounds_.back() < bound);
         BOOST_ASSERT(weight >= 0);
         bounds_.push_back(bound);

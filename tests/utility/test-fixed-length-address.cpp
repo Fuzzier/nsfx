@@ -261,16 +261,16 @@ NSFX_TEST_SUITE(FixedLengthAddress)
             NSFX_TEST_EXPECT_EQ(a.GetValue(), 0xffffffff);
 
             a = Address(0);
-            a += -0xffffffff;
+            a += 1;
             NSFX_TEST_EXPECT_EQ(a.GetValue(), 0x01);
 
             // -=
             a = Address(0);
-            a -= 0x01;
+            a -= 1;
             NSFX_TEST_EXPECT_EQ(a.GetValue(), 0xffffffff);
 
             a = Address(0);
-            a -= -0x01;
+            a -= -1;
             NSFX_TEST_EXPECT_EQ(a.GetValue(), 0x01);
 
             // +
@@ -282,11 +282,11 @@ NSFX_TEST_SUITE(FixedLengthAddress)
             NSFX_TEST_EXPECT_EQ(b.GetValue(), 0xffffffff);
 
             // -
-            b = a - 0x01;
+            b = a - 1;
             NSFX_TEST_EXPECT_EQ(b.GetValue(), 0xffffffff);
 
-            NSFX_TEST_EXPECT_EQ(b - a,  0xffffffff);
-            NSFX_TEST_EXPECT_EQ(a - b, -0xffffffff);
+            NSFX_TEST_EXPECT_EQ(b - a, 0xffffffff);
+            NSFX_TEST_EXPECT_EQ(a - b, 1);
 
             //
             NSFX_TEST_EXPECT(a == a);
@@ -415,7 +415,7 @@ NSFX_TEST_SUITE(FixedLengthAddress)
 
 int main(void)
 {
-    nsfx::test::runner::GetLogger()->AddStreamSink(std::cout);
+    nsfx::test::runner::GetLogger()->AddStreamSink(std::cerr);
     nsfx::test::runner::Run();
 
     return 0;

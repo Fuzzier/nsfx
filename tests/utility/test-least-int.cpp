@@ -32,14 +32,14 @@ NSFX_TEST_SUITE(LeastInt)/*{{{*/
         typedef boost::ratio_multiply<boost::milli,  PicoSecond>::type   FemtoSecond;
         typedef boost::ratio_multiply<boost::milli,  FemtoSecond>::type  AttoSecond;
         typedef boost::ratio_multiply<boost::milli,  AttoSecond>::type   ZeptoSecond;
-        typedef boost::ratio_multiply<boost::milli,  ZeptoSecond>::type  YoctoSecond;
+     // typedef boost::ratio_multiply<boost::milli,  ZeptoSecond>::type  YoctoSecond;
         std::cout << AttoSecond::num << std::endl;
         std::cout << AttoSecond::den << std::endl;
     }
 
     NSFX_TEST_CASE(0)
     {
-        typedef nsfx::LeastInt<0>::UintType Type;
+        typedef nsfx::LeastInt<0>::UIntType Type;
         NSFX_TEST_EXPECT((std::is_same<Type, nsfx::uint8_t>::value));
 
         typedef nsfx::LeastInt<0>::IntOpType OpType;
@@ -48,7 +48,7 @@ NSFX_TEST_SUITE(LeastInt)/*{{{*/
 
     NSFX_TEST_CASE(8)
     {
-        typedef nsfx::LeastInt<8>::UintType Type;
+        typedef nsfx::LeastInt<8>::UIntType Type;
         NSFX_TEST_EXPECT((std::is_same<Type, nsfx::uint8_t>::value));
 
         typedef nsfx::LeastInt<8>::IntOpType OpType;
@@ -57,7 +57,7 @@ NSFX_TEST_SUITE(LeastInt)/*{{{*/
 
     NSFX_TEST_CASE(17)
     {
-        typedef nsfx::LeastInt<17>::UintType Type;
+        typedef nsfx::LeastInt<17>::UIntType Type;
         NSFX_TEST_EXPECT((std::is_same<Type, nsfx::uint32_t>::value));
 
         typedef nsfx::LeastInt<17>::IntOpType OpType;
@@ -66,7 +66,7 @@ NSFX_TEST_SUITE(LeastInt)/*{{{*/
 
     NSFX_TEST_CASE(32)
     {
-        typedef nsfx::LeastInt<32>::UintType Type;
+        typedef nsfx::LeastInt<32>::UIntType Type;
         NSFX_TEST_EXPECT((std::is_same<Type, nsfx::uint32_t>::value));
 
         typedef nsfx::LeastInt<32>::IntOpType OpType;
@@ -75,7 +75,7 @@ NSFX_TEST_SUITE(LeastInt)/*{{{*/
 
     NSFX_TEST_CASE(33)
     {
-        typedef nsfx::LeastInt<33>::UintType Type;
+        typedef nsfx::LeastInt<33>::UIntType Type;
         NSFX_TEST_EXPECT((std::is_same<Type, nsfx::uint64_t>::value));
 
         typedef nsfx::LeastInt<33>::IntOpType OpType;
@@ -84,7 +84,7 @@ NSFX_TEST_SUITE(LeastInt)/*{{{*/
 
     NSFX_TEST_CASE(64)
     {
-        typedef nsfx::LeastInt<64>::UintType Type;
+        typedef nsfx::LeastInt<64>::UIntType Type;
         NSFX_TEST_EXPECT((std::is_same<Type, nsfx::uint64_t>::value));
 
         typedef nsfx::LeastInt<64>::IntOpType OpType;
@@ -96,7 +96,7 @@ NSFX_TEST_SUITE(LeastInt)/*{{{*/
 
 int main(void)
 {
-    nsfx::test::runner::GetLogger()->AddStreamSink(std::cout);
+    nsfx::test::runner::GetLogger()->AddStreamSink(std::cerr);
     nsfx::test::runner::Run();
 
     return 0;

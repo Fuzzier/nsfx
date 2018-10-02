@@ -345,7 +345,7 @@ NSFX_TEST_SUITE(Event)
 
 int main(void)
 {
-    nsfx::test::runner::GetLogger()->AddStreamSink(std::cout);
+    nsfx::test::runner::GetLogger()->AddStreamSink(std::cerr);
     nsfx::test::runner::Run();
 
     return 0;

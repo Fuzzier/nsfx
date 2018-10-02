@@ -13,10 +13,13 @@ CPPFLAGS=/nologo /W3 /wd4355 /EHsc /Od /Zi /DDEBUG /I"$(NSFX_PATH)/.."
 LDFLAGS=/NOLOGO /DEBUG /INCREMENTAL:NO
 !ENDIF
 
-.PHONY: all clean \
-	test chrono utility component event log random
+.PHONY: all clean run \
+	test utility chrono component event log simulation network random
 
-all : test chrono utility component event log random
+all : test utility chrono component event log simulation network random
+
+run :
+    for /f %d in ('dir /b *.exe') do (%d)
 
 clean :
 	del /s /q *.exe
@@ -67,6 +70,48 @@ test-suite : test-suite.exe
 SRC=test/test-suite.cpp
 
 test-suite.exe : $(TEST_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+################################################################################
+# utility
+utility :                       \
+	test-least-int                 \
+	test-circular-sequence-number  \
+	test-fixed-length-address      \
+
+UTILITY_HEADERS=                                  \
+	$(EXCEPTION_HEADERS)                             \
+	$(NSFX_PATH)/utility.h                           \
+	$(NSFX_PATH)/utility/config.h                    \
+	$(NSFX_PATH)/utility/ratio.h                     \
+	$(NSFX_PATH)/utility/endian.h                    \
+	$(NSFX_PATH)/utility/least-int.h                 \
+	$(NSFX_PATH)/utility/circular-sequence-number.h  \
+	$(NSFX_PATH)/utility/address-concept.h           \
+	$(NSFX_PATH)/utility/fixed-length-address.h      \
+
+########################################
+test-least-int : test-least-int.exe
+
+SRC=utility/test-least-int.cpp
+
+test-least-int.exe : $(UTILITY_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-circular-sequence-number : test-circular-sequence-number.exe
+
+SRC=utility/test-circular-sequence-number.cpp
+
+test-circular-sequence-number.exe : $(UTILITY_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-fixed-length-address : test-fixed-length-address.exe
+
+SRC=utility/test-fixed-length-address.cpp
+
+test-fixed-length-address.exe : $(UTILITY_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ################################################################################
@@ -380,9 +425,8 @@ packet:                \
 	test-tag-list         \
 	test-packet           \
 
-PACKET_HEADERS=                                                   \
+NETWORK_HEADERS=                                                  \
 	$(TEST_HEADERS)                                                  \
-	$(COMPONENT_HEADERS)                                             \
 	$(NSFX_PATH)/network.h                                           \
 	$(NSFX_PATH)/network/config.h                                    \
 	$(NSFX_PATH)/network/buffer.h                                    \
@@ -412,7 +456,7 @@ test-buffer : test-buffer.exe
 
 SRC=network/buffer/test-buffer.cpp
 
-test-buffer.exe : $(PACKET_HEADERS) $(SRC)
+test-buffer.exe : $(NETWORK_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -420,7 +464,7 @@ test-const-buffer : test-const-buffer.exe
 
 SRC=network/buffer/test-const-buffer.cpp
 
-test-const-buffer.exe : $(PACKET_HEADERS) $(SRC)
+test-const-buffer.exe : $(NETWORK_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -428,7 +472,7 @@ test-zc-buffer : test-zc-buffer.exe
 
 SRC=network/buffer/test-zc-buffer.cpp
 
-test-zc-buffer.exe : $(PACKET_HEADERS) $(SRC)
+test-zc-buffer.exe : $(NETWORK_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -436,7 +480,7 @@ test-const-zc-buffer : test-const-zc-buffer.exe
 
 SRC=network/buffer/test-const-zc-buffer.cpp
 
-test-const-zc-buffer.exe : $(PACKET_HEADERS) $(SRC)
+test-const-zc-buffer.exe : $(NETWORK_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -444,7 +488,7 @@ test-fixed-buffer : test-fixed-buffer.exe
 
 SRC=network/buffer/test-fixed-buffer.cpp
 
-test-fixed-buffer.exe : $(PACKET_HEADERS) $(SRC)
+test-fixed-buffer.exe : $(NETWORK_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -452,7 +496,7 @@ test-const-fixed-buffer : test-const-fixed-buffer.exe
 
 SRC=network/buffer/test-const-fixed-buffer.cpp
 
-test-const-fixed-buffer.exe : $(PACKET_HEADERS) $(SRC)
+test-const-fixed-buffer.exe : $(NETWORK_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -460,7 +504,7 @@ test-buffer-iterator : test-buffer-iterator.exe
 
 SRC=network/buffer/test-buffer-iterator.cpp
 
-test-buffer-iterator.exe : $(PACKET_HEADERS) $(SRC)
+test-buffer-iterator.exe : $(NETWORK_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -468,7 +512,7 @@ test-zc-buffer-iterator : test-zc-buffer-iterator.exe
 
 SRC=network/buffer/test-zc-buffer-iterator.cpp
 
-test-zc-buffer-iterator.exe : $(PACKET_HEADERS) $(SRC)
+test-zc-buffer-iterator.exe : $(NETWORK_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -476,7 +520,7 @@ test-tag : test-tag.exe
 
 SRC=network/packet/test-tag.cpp
 
-test-tag.exe : $(PACKET_HEADERS) $(SRC)
+test-tag.exe : $(NETWORK_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -484,7 +528,7 @@ test-tag-index : test-tag-index.exe
 
 SRC=network/packet/test-tag-index.cpp
 
-test-tag-index.exe : $(PACKET_HEADERS) $(SRC)
+test-tag-index.exe : $(NETWORK_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -492,7 +536,7 @@ test-tag-index-array : test-tag-index-array.exe
 
 SRC=network/packet/test-tag-index-array.cpp
 
-test-tag-index-array.exe : $(PACKET_HEADERS) $(SRC)
+test-tag-index-array.exe : $(NETWORK_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -500,7 +544,7 @@ test-tag-list : test-tag-list.exe
 
 SRC=network/packet/test-tag-list.cpp
 
-test-tag-list.exe : $(PACKET_HEADERS) $(SRC)
+test-tag-list.exe : $(NETWORK_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -508,6 +552,118 @@ test-packet : test-packet.exe
 
 SRC=network/packet/test-packet.cpp
 
-test-packet.exe : $(PACKET_HEADERS) $(SRC)
+test-packet.exe : $(NETWORK_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+################################################################################
+# random
+random :                       \
+	test-rot                      \
+	test-splitmix-engine          \
+	test-xoshiro-engine           \
+	test-xoroshiro-engine         \
+	test-pseudo-random-generator  \
+
+RANDOM_HEADERS=                                                          \
+	$(TEST_HEADERS)                                                         \
+	$(COMPONENT_HEADERS)                                                    \
+	$(NSFX_PATH)/random.h                                                   \
+	$(NSFX_PATH)/random/config.h                                            \
+	$(NSFX_PATH)/random/detail/rot.h                                        \
+	$(NSFX_PATH)/random/detail/is-power-2.h                                 \
+	$(NSFX_PATH)/random/distribution/i-uniform-int-distribution.h           \
+	$(NSFX_PATH)/random/distribution/i-uniform-real-distribution.h          \
+	$(NSFX_PATH)/random/distribution/i-bernoulli-distribution.h             \
+	$(NSFX_PATH)/random/distribution/i-binomial-distribution.h              \
+	$(NSFX_PATH)/random/distribution/i-geometric-distribution.h             \
+	$(NSFX_PATH)/random/distribution/i-negative-binomial-distribution.h     \
+	$(NSFX_PATH)/random/distribution/i-poisson-distribution.h               \
+	$(NSFX_PATH)/random/distribution/i-exponential-distribution.h           \
+	$(NSFX_PATH)/random/distribution/i-gamma-distribution.h                 \
+	$(NSFX_PATH)/random/distribution/i-weibull-distribution.h               \
+	$(NSFX_PATH)/random/distribution/i-extreme-value-distribution.h         \
+	$(NSFX_PATH)/random/distribution/i-beta-distribution.h                  \
+	$(NSFX_PATH)/random/distribution/i-laplace-distribution.h               \
+	$(NSFX_PATH)/random/distribution/i-normal-distribution.h                \
+	$(NSFX_PATH)/random/distribution/i-lognormal-distribution.h             \
+	$(NSFX_PATH)/random/distribution/i-chi-squared-distribution.h           \
+	$(NSFX_PATH)/random/distribution/i-cauchy-distribution.h                \
+	$(NSFX_PATH)/random/distribution/i-fisher-f-distribution.h              \
+	$(NSFX_PATH)/random/distribution/i-student-t-distribution.h             \
+	$(NSFX_PATH)/random/distribution/i-discrete-distribution.h              \
+	$(NSFX_PATH)/random/distribution/i-piecewise-constant-distribution.h    \
+	$(NSFX_PATH)/random/distribution/i-piecewise-linear-distribution.h      \
+	$(NSFX_PATH)/random/distribution/i-triangle-distribution.h              \
+	$(NSFX_PATH)/random/distribution/std-uniform-int-distribution.h         \
+	$(NSFX_PATH)/random/distribution/std-uniform-real-distribution.h        \
+	$(NSFX_PATH)/random/distribution/std-bernoulli-distribution.h           \
+	$(NSFX_PATH)/random/distribution/std-binomial-distribution.h            \
+	$(NSFX_PATH)/random/distribution/std-geometric-distribution.h           \
+	$(NSFX_PATH)/random/distribution/std-negative-binomial-distribution.h   \
+	$(NSFX_PATH)/random/distribution/std-poisson-distribution.h             \
+	$(NSFX_PATH)/random/distribution/std-exponential-distribution.h         \
+	$(NSFX_PATH)/random/distribution/std-gamma-distribution.h               \
+	$(NSFX_PATH)/random/distribution/std-weibull-distribution.h             \
+	$(NSFX_PATH)/random/distribution/std-extreme-value-distribution.h       \
+	$(NSFX_PATH)/random/distribution/std-beta-distribution.h                \
+	$(NSFX_PATH)/random/distribution/std-laplace-distribution.h             \
+	$(NSFX_PATH)/random/distribution/std-normal-distribution.h              \
+	$(NSFX_PATH)/random/distribution/std-lognormal-distribution.h           \
+	$(NSFX_PATH)/random/distribution/std-chi-squared-distribution.h         \
+	$(NSFX_PATH)/random/distribution/std-cauchy-distribution.h              \
+	$(NSFX_PATH)/random/distribution/std-fisher-f-distribution.h            \
+	$(NSFX_PATH)/random/distribution/std-student-t-distribution.h           \
+	$(NSFX_PATH)/random/distribution/std-discrete-distribution.h            \
+	$(NSFX_PATH)/random/distribution/std-piecewise-constant-distribution.h  \
+	$(NSFX_PATH)/random/distribution/std-piecewise-linear-distribution.h    \
+	$(NSFX_PATH)/random/distribution/std-triangle-distribution.h            \
+	$(NSFX_PATH)/random/engine/splitmix-engine.h                            \
+	$(NSFX_PATH)/random/engine/xoroshiro-engine.h                           \
+	$(NSFX_PATH)/random/engine/xoshiro-engine.h                             \
+	$(NSFX_PATH)/random/i-random-distribution-generator.h                   \
+	$(NSFX_PATH)/random/i-random-uint32-generator.h                         \
+	$(NSFX_PATH)/random/i-random-uint64-generator.h                         \
+	$(NSFX_PATH)/random/i-random-double-generator.h                         \
+	$(NSFX_PATH)/random/i-pseudo-random-engine.h                            \
+	$(NSFX_PATH)/random/pseudo-random-generator.h                           \
+
+########################################
+test-rot : test-rot.exe
+
+SRC=random/test-rot.cpp
+
+test-rot.exe : $(RANDOM_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-splitmix-engine : test-splitmix-engine.exe
+
+SRC=random/test-splitmix-engine.cpp
+
+test-splitmix-engine.exe : $(RANDOM_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-xoshiro-engine : test-xoshiro-engine.exe
+
+SRC=random/test-xoshiro-engine.cpp
+
+test-xoshiro-engine.exe : $(RANDOM_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-xoroshiro-engine : test-xoroshiro-engine.exe
+
+SRC=random/test-xoroshiro-engine.cpp
+
+test-xoroshiro-engine.exe : $(RANDOM_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-pseudo-random-generator : test-pseudo-random-generator.exe
+
+SRC=random/test-pseudo-random-generator.cpp
+
+test-pseudo-random-generator.exe : $(RANDOM_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 

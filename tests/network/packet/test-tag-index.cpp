@@ -29,7 +29,7 @@ NSFX_TEST_SUITE(TagIndex)
 
     NSFX_TEST_CASE(Ctor)
     {
-        size_t tagId1 = 4;
+        uint32_t tagId1 = 4;
         size_t tagStart1 = 5;
         size_t tagEnd1 = 6;
         TagBuffer b1(16);
@@ -46,7 +46,7 @@ NSFX_TEST_SUITE(TagIndex)
 
     NSFX_TEST_CASE(CopyCtor)
     {
-        size_t tagId1 = 4;
+        uint32_t tagId1 = 4;
         size_t tagStart1 = 5;
         size_t tagEnd1 = 6;
         TagBuffer b1(16);
@@ -65,7 +65,7 @@ NSFX_TEST_SUITE(TagIndex)
 
     NSFX_TEST_CASE(CopyAssign)
     {
-        size_t tagId1 = 4;
+        uint32_t tagId1 = 4;
         size_t tagStart1 = 5;
         size_t tagEnd1 = 6;
         TagBuffer b1(16);
@@ -73,7 +73,7 @@ NSFX_TEST_SUITE(TagIndex)
         Tag tag1(tagId1, b1);
         TagIndex idx1(tag1, tagStart1, tagEnd1);
 
-        size_t tagId2 = 7;
+        uint32_t tagId2 = 7;
         size_t tagStart2 = 8;
         size_t tagEnd2 = 9;
         TagBuffer b2(32);
@@ -92,7 +92,7 @@ NSFX_TEST_SUITE(TagIndex)
 
     NSFX_TEST_CASE(MoveCtor)
     {
-        size_t tagId1 = 4;
+        uint32_t tagId1 = 4;
         size_t tagStart1 = 5;
         size_t tagEnd1 = 6;
         TagBuffer b1(16);
@@ -116,7 +116,7 @@ NSFX_TEST_SUITE(TagIndex)
 
     NSFX_TEST_CASE(MoveAssign)
     {
-        size_t tagId1 = 4;
+        uint32_t tagId1 = 4;
         size_t tagStart1 = 5;
         size_t tagEnd1 = 6;
         TagBuffer b1(16);
@@ -124,7 +124,7 @@ NSFX_TEST_SUITE(TagIndex)
         Tag tag1(tagId1, b1);
         TagIndex idx1(tag1, tagStart1, tagEnd1);
 
-        size_t tagId2 = 7;
+        uint32_t tagId2 = 7;
         size_t tagStart2 = 8;
         size_t tagEnd2 = 9;
         TagBuffer b2(32);
@@ -148,7 +148,7 @@ NSFX_TEST_SUITE(TagIndex)
 
     NSFX_TEST_CASE(Swap)
     {
-        size_t tagId1 = 4;
+        uint32_t tagId1 = 4;
         size_t tagStart1 = 5;
         size_t tagEnd1 = 6;
         TagBuffer b1(16);
@@ -156,7 +156,7 @@ NSFX_TEST_SUITE(TagIndex)
         Tag tag1(tagId1, b1);
         TagIndex idx1(tag1, tagStart1, tagEnd1);
 
-        size_t tagId2 = 7;
+        uint32_t tagId2 = 7;
         size_t tagStart2 = 8;
         size_t tagEnd2 = 9;
         TagBuffer b2(32);
@@ -181,7 +181,7 @@ NSFX_TEST_SUITE(TagIndex)
 
     NSFX_TEST_CASE(HasTaggedByte)
     {
-        size_t tagId1 = 4;
+        uint32_t tagId1 = 4;
         size_t tagStart1 = 5;
         size_t tagEnd1 = 6;
         TagBuffer b1(16);
@@ -199,7 +199,7 @@ NSFX_TEST_SUITE(TagIndex)
 
 int main(void)
 {
-    nsfx::test::runner::GetLogger()->AddStreamSink(std::cout);
+    nsfx::test::runner::GetLogger()->AddStreamSink(std::cerr);
     nsfx::test::runner::Run();
 
     return 0;

@@ -68,7 +68,7 @@ NSFX_TEST_SUITE(Filter)
             {
                 record->Get<int>("Other");
             }
-            catch (nsfx::log::AttributeValueNotFound& e)
+            catch (nsfx::log::AttributeValueNotFound& )
             {
                 // Should come here.
             }
@@ -100,7 +100,7 @@ NSFX_TEST_SUITE(Filter)
 
 int main(void)
 {
-    nsfx::test::runner::GetLogger()->AddStreamSink(std::cout);
+    nsfx::test::runner::GetLogger()->AddStreamSink(std::cerr);
     nsfx::test::runner::Run();
 
     return 0;

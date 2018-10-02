@@ -47,7 +47,7 @@ class StdDiscreteDistribution :
     public IDiscreteDistribution
 {
     typedef StdDiscreteDistribution ThisClass;
-    typedef boost::random::discrete_distribution<uint32_t, double> DistributionType;
+    typedef boost::random::discrete_distribution<int32_t, double> DistributionType;
     typedef StdRng RngType;
 
     struct Iterator
@@ -127,7 +127,7 @@ public:
 
     virtual ~StdDiscreteDistribution(void) {}
 
-    virtual uint32_t Generate(void) NSFX_OVERRIDE
+    virtual int32_t Generate(void) NSFX_OVERRIDE
     {
         return dist_(rng_->GetRng());
     }
@@ -137,19 +137,19 @@ public:
         return dist_.reset();
     }
 
-    virtual uint32_t GetMinValue(void) NSFX_OVERRIDE
+    virtual int32_t GetMinValue(void) NSFX_OVERRIDE
     {
         return (dist_.min)();
     }
 
-    virtual uint32_t GetMaxValue(void) NSFX_OVERRIDE
+    virtual int32_t GetMaxValue(void) NSFX_OVERRIDE
     {
         return (dist_.max)();
     }
 
     virtual uint32_t GetNumValues(void) NSFX_OVERRIDE
     {
-        return probabilities_.size();
+        return static_cast<uint32_t>(probabilities_.size());
     }
 
     virtual double GetProbability(uint32_t index) NSFX_OVERRIDE

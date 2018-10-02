@@ -58,7 +58,7 @@ NSFX_TEST_SUITE(FixedBuffer)
             auto it0 = b0.begin();
             for (size_t i = 0; i < 300; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 it0.Write<uint8_t>(v);
             }
             it0 = b0.begin();
@@ -67,7 +67,7 @@ NSFX_TEST_SUITE(FixedBuffer)
             auto it1 = b1.cbegin();
             for (size_t i = 0; i < 300; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 NSFX_TEST_EXPECT_EQ(it1.Read<uint8_t>(), v);
             }
         }
@@ -79,7 +79,7 @@ NSFX_TEST_SUITE(FixedBuffer)
             auto it0 = b0.begin();
             for (size_t i = 0; i < 300; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 it0.Write<uint8_t>(v);
             }
             it0 = b0.begin();
@@ -88,7 +88,7 @@ NSFX_TEST_SUITE(FixedBuffer)
             auto it1 = b1.cbegin();
             for (size_t i = 0; i < 300; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 NSFX_TEST_EXPECT_EQ(it1.Read<uint8_t>(), v);
             }
         }
@@ -99,7 +99,7 @@ NSFX_TEST_SUITE(FixedBuffer)
             auto it0 = b0.begin();
             for (size_t i = 0; i < 300; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 it0.Write<uint8_t>(v);
             }
             it0 = b0.begin();
@@ -109,7 +109,7 @@ NSFX_TEST_SUITE(FixedBuffer)
             auto it1 = b1.cbegin();
             for (size_t i = 0; i < 300; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 NSFX_TEST_EXPECT_EQ(it1.Read<uint8_t>(), v);
             }
         }
@@ -207,12 +207,12 @@ NSFX_TEST_SUITE(FixedBuffer)
             nsfx::BufferIterator it = b0.begin();
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 it.Write<uint8_t>(v);
             }
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xef + i;
+                uint8_t v = (uint8_t)(0xef + i);
                 it.Write<uint8_t>(v);
             }
 
@@ -222,12 +222,12 @@ NSFX_TEST_SUITE(FixedBuffer)
 
             for (size_t i = 0; i < 100; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 NSFX_TEST_EXPECT_EQ(byte[i], v);
             }
             for (size_t i = 100; i < 200; ++i)
             {
-                uint8_t v = 0xef + i - 100;
+                uint8_t v = (uint8_t)(0xef + i - 100);
                 NSFX_TEST_EXPECT_EQ(byte[i], v);
             }
         }
@@ -237,7 +237,7 @@ NSFX_TEST_SUITE(FixedBuffer)
 
 int main(void)
 {
-    nsfx::test::runner::GetLogger()->AddStreamSink(std::cout);
+    nsfx::test::runner::GetLogger()->AddStreamSink(std::cerr);
     nsfx::test::runner::Run();
 
     return 0;

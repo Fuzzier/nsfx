@@ -417,7 +417,7 @@ private:
     void InsertTag(const Tag& tag, size_t tagStart, size_t tagEnd);
 
 public:
-    BOOST_STATIC_CONSTANT(uint32_t, REF_POINT = 0x7fffffffUL);
+    BOOST_STATIC_CONSTANT(size_t, REF_POINT = static_cast<size_t>(-1) / 2);
 
 private:
     size_t bufferStart_; ///< The start of the buffer, relative to the origin.

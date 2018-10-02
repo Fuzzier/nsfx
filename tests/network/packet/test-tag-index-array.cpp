@@ -57,7 +57,7 @@ NSFX_TEST_SUITE(TagIndexArray)
         TagIndex* idx = tia->indices_;
         for (size_t i = 0; i < tia->capacity_; ++i)
         {
-            size_t tagId = 4;
+            uint32_t tagId = 4;
             size_t tagStart = 5;
             size_t tagEnd = 6;
             Tag tag(tagId, b);
@@ -76,7 +76,7 @@ NSFX_TEST_SUITE(TagIndexArray)
 
 int main(void)
 {
-    nsfx::test::runner::GetLogger()->AddStreamSink(std::cout);
+    nsfx::test::runner::GetLogger()->AddStreamSink(std::cerr);
     nsfx::test::runner::Run();
 
     return 0;

@@ -85,7 +85,7 @@ public:
         *address = 1 + *address;
         *address = *address - 1;
 
-        ptrdiff_t n = *address - *address;
+        auto n = *address - *address;
     }
 
     void Hashable(void)
