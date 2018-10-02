@@ -34,6 +34,8 @@ NSFX_OPEN_NAMESPACE
  * @ingroup Network
  * @brief The tag list.
  *
+ * @tparam ValueType The type of the value of the tag.
+ *
  * # Overview
  *  A tag has an id and a value.
  *  A tag may be attached to multiple bytes.
@@ -237,10 +239,11 @@ NSFX_OPEN_NAMESPACE
  *    When a tag is inserted to a packet, it depends on the situation whether
  *    the array is reallocates or not.
  */
-template<class TagValue>
+template<class ValueType>
 class BasicTagList
 {
 public:
+    typedef ValueType                    TagValue;
     typedef BasicTag<TagValue>           Tag;
     typedef BasicTagIndex<TagValue>      TagIndex;
     typedef BasicTagIndexArray<TagValue> TagIndexArray;
@@ -314,6 +317,17 @@ public:
     /**
      * @brief Insert a tag for a range of bytes in the buffer.
      *
+     * @param[in] tag   The tag.
+     * @param[in] start The start of the byte, relative to the start of
+     *                  the buffer.
+     * @param[in] size  The number of bytes to tag.
+     *                  All bytes <b>must</b> be within the current buffer.
+     */
+    void Insert(const Tag& tag, size_t start, size_t size);
+
+    /**
+     * @brief Insert a tag for a range of bytes in the buffer.
+     *
      * @param[in] tagId The id of the tag.
      * @param[in] value The value of the tag.
      * @param[in] start The start of the byte, relative to the start of
@@ -321,8 +335,7 @@ public:
      * @param[in] size  The number of bytes to tag.
      *                  All bytes <b>must</b> be within the current buffer.
      */
-    void Insert(uint32_t tagId, const TagValue& value,
-                size_t start, size_t size);
+    void Insert(uint32_t tagId, const TagValue& value, size_t start, size_t size);
 
     /**
      * @brief Whether the specified byte has a tag.
@@ -345,7 +358,7 @@ public:
      *
      * @throw TagNotFound
      */
-    const TagValue& Get(uint32_t tagId, size_t offset) const;
+    const Tag& Get(uint32_t tagId, size_t offset) const;
 
     // Methods.
 public:
@@ -404,10 +417,7 @@ private:
     void InsertTag(const Tag& tag, size_t tagStart, size_t tagEnd);
 
 public:
-    enum
-    {
-        REF_POINT = static_cast<size_t>(-1) / 2,
-    };
+    BOOST_STATIC_CONSTANT(uint32_t, REF_POINT = 0x7fffffffUL);
 
 private:
     size_t bufferStart_; ///< The start of the buffer, relative to the origin.
@@ -587,8 +597,8 @@ inline void BasicTagList<T>::Insert(const Tag& tag, size_t start, size_t size)
 }
 
 template<class T>
-inline void
-BasicTagList<T>::Insert(uint32_t tagId, const T& value, size_t start, size_t size)
+inline void BasicTagList<T>::Insert(uint32_t tagId, const TagValue& value,
+                                    size_t start, size_t size)
 {
     Insert(Tag(tagId, value), start, size);
 }
@@ -616,7 +626,7 @@ inline bool BasicTagList<T>::Exists(uint32_t tagId, size_t offset) const BOOST_N
 }
 
 template<class T>
-inline const typename BasicTagList<T>::TagValue&
+inline const typename BasicTagList<T>::Tag&
 BasicTagList<T>::Get(uint32_t tagId, size_t offset) const
 {
     BOOST_ASSERT_MSG(offset < bufferEnd_ - bufferStart_,
@@ -629,7 +639,7 @@ BasicTagList<T>::Get(uint32_t tagId, size_t offset) const
         if (idx->GetTag().GetId() == tagId &&
             idx->GetStart() <= pos && pos < idx->GetEnd())
         {
-            return idx->GetTag().GetValue();
+            return idx->GetTag();
         }
         ++idx;
     }
@@ -903,14 +913,14 @@ inline bool BasicTagList<T>::HasTag(
 
 template<class T>
 inline void BasicTagList<T>::InsertTag(
-    uint32_t tagId, const TagValue& value, size_t tagStart, size_t tagEnd)
+    const Tag& tag, size_t tagStart, size_t tagEnd)
 {
-    if (!HasTag(tagId, tagStart, tagEnd) &&
+    if (!HasTag(tag.GetId(), tagStart, tagEnd) &&
         TagIndex::HasTaggedByte(tagStart, tagEnd, bufferStart_, bufferEnd_))
     {
         PrepareToInsert();
         TagIndex* idx = tia_->indices_ + size_;
-        new (idx) TagIndex(tagId, value, tagStart, tagEnd);
+        new (idx) TagIndex(tag, tagStart, tagEnd);
         // Increase the size after the construction succeeded.
         ++size_;
         ++tia_->dirty_;

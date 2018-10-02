@@ -51,6 +51,9 @@ NSFX_OPEN_NAMESPACE
 template<class ValueType>
 class BasicTag
 {
+public:
+    typedef ValueType  TagValue;
+
     // Xtructors.
 public:
     /**

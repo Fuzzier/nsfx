@@ -28,10 +28,13 @@ NSFX_OPEN_NAMESPACE
 /**
  * @ingroup Network.
  * @brief The tag index array (POD).
+ *
+ * @tparam ValueType The type of the value of the tag.
  */
-template<class TagValue>
+template<class ValueType>
 struct BasicTagIndexArray
 {
+    typedef ValueType                    TagValue;
     typedef BasicTagIndex<TagValue>      TagIndex;
     typedef BasicTagIndexArray<TagValue> TagIndexArray;
 
