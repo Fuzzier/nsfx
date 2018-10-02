@@ -13,19 +13,7 @@ CPPFLAGS=/nologo /W3 /wd4355 /EHsc /Od /Zi /DDEBUG /I"$(NSFX_PATH)/.."
 LDFLAGS=/NOLOGO /DEBUG /INCREMENTAL:NO
 !ENDIF
 
-run ::
-	@echo ==================
-	sequence-number.exe
-	@echo ==================
-	event-key.exe
-	@echo ==================
-	event.exe
-	@echo ==================
-	list-scheduler.exe
-	@echo ==================
-	realtime-simulator.exe
-
-.PHONY: all clean run	\
+.PHONY: all clean \
 	test chrono utility component event log random
 
 all : test chrono utility component event log random
@@ -38,7 +26,6 @@ clean :
 	del /s /q *.dll
 	del /s /q *.pdb
 	del /s /q *.log
-
 
 EXCEPTION_HEADERS=                   \
 	$(NSFX_PATH)/config.h               \
@@ -101,7 +88,7 @@ test-duration : test-duration.exe
 
 SRC=chrono/test-duration.cpp
 
-test-duration.exe : $(HEADERS) $(SRC)
+test-duration.exe : $(CHRONO_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -109,7 +96,7 @@ test-virtual-time-point : test-virtual-time-point.exe
 
 SRC=chrono/test-virtual-time-point.cpp
 
-test-virtual-time-point.exe : $(HEADERS) $(SRC)
+test-virtual-time-point.exe : $(CHRONO_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ################################################################################
@@ -335,7 +322,7 @@ test-event-handle : test-event-handle.exe
 
 SRC=simulation/test-event-handle.cpp
 
-test-event-handle.exe : $(EVENT_HEADERS) $(SRC)
+test-event-handle.exe : $(SIMULATION_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -343,7 +330,7 @@ test-list-event-scheduler : test-list-event-scheduler.exe
 
 SRC=simulation/test-list-event-scheduler.cpp
 
-test-list-event-scheduler.exe : $(EVENT_HEADERS) $(SRC)
+test-list-event-scheduler.exe : $(SIMULATION_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -351,7 +338,7 @@ test-set-event-scheduler : test-set-event-scheduler.exe
 
 SRC=simulation/test-set-event-scheduler.cpp
 
-test-set-event-scheduler.exe : $(EVENT_HEADERS) $(SRC)
+test-set-event-scheduler.exe : $(SIMULATION_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -359,7 +346,7 @@ test-simulator : test-simulator.exe
 
 SRC=simulation/test-simulator.cpp
 
-test-simulator.exe : $(EVENT_HEADERS) $(SRC)
+test-simulator.exe : $(SIMULATION_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -367,16 +354,33 @@ test-timer : test-timer.exe
 
 SRC=simulation/test-timer.cpp
 
-test-timer.exe : $(EVENT_HEADERS) $(SRC)
+test-timer.exe : $(SIMULATION_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ################################################################################
 # network
-network :           \
-	test-event-sink  \
-	test-event       \
+network :   \
+    buffer  \
+    packet  \
 
-EVENT_HEADERS=                                                    \
+buffer :                  \
+	test-buffer              \
+	test-const-buffer        \
+	test-zc-buffer           \
+	test-const-zc-buffer     \
+	test-fixed-buffer        \
+	test-const-fixed-buffer  \
+	test-buffer-iterator     \
+	test-zc-buffer-iterator  \
+
+packet:                \
+	test-tag              \
+	test-tag-index        \
+	test-tag-index-array  \
+	test-tag-list         \
+	test-packet           \
+
+PACKET_HEADERS=                                                   \
 	$(TEST_HEADERS)                                                  \
 	$(COMPONENT_HEADERS)                                             \
 	$(NSFX_PATH)/network.h                                           \
@@ -401,91 +405,109 @@ EVENT_HEADERS=                                                    \
 	$(NSFX_PATH)/network/packet/tag/basic-tag-index.h                \
 	$(NSFX_PATH)/network/packet/tag/basic-tag-index-array.h          \
 	$(NSFX_PATH)/network/packet/tag/basic-tag-list.h                 \
-	$(NSFX_PATH)/network/packet/packet-packet.h                      \
 	$(NSFX_PATH)/network/packet/packet.h                             \
 
-#include <nsfx/network/buffer/basic-buffer.h>
-#include <nsfx/network/buffer/storage/basic-buffer-storage.h>
-#include <nsfx/network/buffer/iterator/buffer-iterator.h>
-#include <nsfx/network/buffer/iterator/const-buffer-iterator.h>
-
 ########################################
-test-event : test-event.exe
+test-buffer : test-buffer.exe
 
-SRC=network/test-event.cpp
+SRC=network/buffer/test-buffer.cpp
 
-test-event.exe : $(EVENT_HEADERS) $(SRC)
+test-buffer.exe : $(PACKET_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
-test-event : test-event.exe
+test-const-buffer : test-const-buffer.exe
 
-SRC=network/test-event.cpp
+SRC=network/buffer/test-const-buffer.cpp
 
-test-event.exe : $(EVENT_HEADERS) $(SRC)
+test-const-buffer.exe : $(PACKET_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
-test-event : test-event.exe
+test-zc-buffer : test-zc-buffer.exe
 
-SRC=network/test-event.cpp
+SRC=network/buffer/test-zc-buffer.cpp
 
-test-event.exe : $(EVENT_HEADERS) $(SRC)
+test-zc-buffer.exe : $(PACKET_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
-test-event : test-event.exe
+test-const-zc-buffer : test-const-zc-buffer.exe
 
-SRC=network/test-event.cpp
+SRC=network/buffer/test-const-zc-buffer.cpp
 
-test-event.exe : $(EVENT_HEADERS) $(SRC)
+test-const-zc-buffer.exe : $(PACKET_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
-test-event : test-event.exe
+test-fixed-buffer : test-fixed-buffer.exe
 
-SRC=network/test-event.cpp
+SRC=network/buffer/test-fixed-buffer.cpp
 
-test-event.exe : $(EVENT_HEADERS) $(SRC)
+test-fixed-buffer.exe : $(PACKET_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
-test-event : test-event.exe
+test-const-fixed-buffer : test-const-fixed-buffer.exe
 
-SRC=network/test-event.cpp
+SRC=network/buffer/test-const-fixed-buffer.cpp
 
-test-event.exe : $(EVENT_HEADERS) $(SRC)
+test-const-fixed-buffer.exe : $(PACKET_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
-test-event : test-event.exe
+test-buffer-iterator : test-buffer-iterator.exe
 
-SRC=network/test-event.cpp
+SRC=network/buffer/test-buffer-iterator.cpp
 
-test-event.exe : $(EVENT_HEADERS) $(SRC)
+test-buffer-iterator.exe : $(PACKET_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
-test-event : test-event.exe
+test-zc-buffer-iterator : test-zc-buffer-iterator.exe
 
-SRC=network/test-event.cpp
+SRC=network/buffer/test-zc-buffer-iterator.cpp
 
-test-event.exe : $(EVENT_HEADERS) $(SRC)
+test-zc-buffer-iterator.exe : $(PACKET_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
-test-event : test-event.exe
+test-tag : test-tag.exe
 
-SRC=network/test-event.cpp
+SRC=network/packet/test-tag.cpp
 
-test-event.exe : $(EVENT_HEADERS) $(SRC)
+test-tag.exe : $(PACKET_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
-test-event : test-event.exe
+test-tag-index : test-tag-index.exe
 
-SRC=network/test-event.cpp
+SRC=network/packet/test-tag-index.cpp
 
-test-event.exe : $(EVENT_HEADERS) $(SRC)
+test-tag-index.exe : $(PACKET_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-tag-index-array : test-tag-index-array.exe
+
+SRC=network/packet/test-tag-index-array.cpp
+
+test-tag-index-array.exe : $(PACKET_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-tag-list : test-tag-list.exe
+
+SRC=network/packet/test-tag-list.cpp
+
+test-tag-list.exe : $(PACKET_HEADERS) $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-packet : test-packet.exe
+
+SRC=network/packet/test-packet.cpp
+
+test-packet.exe : $(PACKET_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 

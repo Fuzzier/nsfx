@@ -376,7 +376,7 @@ NSFX_TEST_SUITE(BufferIterator)
             b0.AddAtStart(100);
             // [600 s 100 zs 300 ze e 300]
             nsfx::BufferIterator it = b0.begin();
-            const nsfx::BufferStorage* storage = b0.GetStorage();
+            const nsfx::Buffer::BufferStorage* storage = b0.GetStorage();
             const uint8_t*  p8  = reinterpret_cast<const uint8_t* >(storage->bytes_ + b0.GetStart());
             const uint16_t* p16 = reinterpret_cast<const uint16_t*>(storage->bytes_ + b0.GetStart());
             const uint32_t* p32 = reinterpret_cast<const uint32_t*>(storage->bytes_ + b0.GetStart());
@@ -652,7 +652,7 @@ NSFX_TEST_SUITE(BufferIterator)
             b0.AddAtEnd(100);
             // [600 s 100 zs 300 ze 100 e 200]
             nsfx::BufferIterator it = b0.begin();
-            const nsfx::BufferStorage* storage = b0.GetStorage();
+            const nsfx::Buffer::BufferStorage* storage = b0.GetStorage();
             const uint8_t* p8 = reinterpret_cast<const uint8_t* >(storage->bytes_ + b0.GetStart());
 
             // Write header area.
@@ -960,7 +960,7 @@ NSFX_TEST_SUITE(ConstBufferIterator)
             // [600 s 100 zs 300 ze e 300]
             nsfx::BufferIterator it = b0.begin();
             nsfx::ConstBufferIterator it1 = b0.cbegin();
-            const nsfx::BufferStorage* storage = b0.GetStorage();
+            const nsfx::Buffer::BufferStorage* storage = b0.GetStorage();
             const uint8_t*  p8  = reinterpret_cast<const uint8_t* >(storage->bytes_ + b0.GetStart());
             const uint16_t* p16 = reinterpret_cast<const uint16_t*>(storage->bytes_ + b0.GetStart());
             const uint32_t* p32 = reinterpret_cast<const uint32_t*>(storage->bytes_ + b0.GetStart());
@@ -1225,7 +1225,7 @@ NSFX_TEST_SUITE(ConstBufferIterator)
             // [600 s 100 zs 300 ze 100 e 200]
             nsfx::BufferIterator it = b0.begin();
             nsfx::ConstBufferIterator it1 = b0.cbegin();
-            const nsfx::BufferStorage* storage = b0.GetStorage();
+            const nsfx::Buffer::BufferStorage* storage = b0.GetStorage();
             const uint8_t* p8 = reinterpret_cast<const uint8_t* >(storage->bytes_ + b0.GetStart());
 
             // Write header area.

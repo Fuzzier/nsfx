@@ -34,9 +34,8 @@ NSFX_TEST_SUITE(TagIndex)
         size_t tagEnd1 = 6;
         TagBuffer b1(16);
         b1.begin().Write<uint8_t>(0xfe);
-        Tag tag1(tagId1, b1);
 
-        TagIndex idx1(tag1, tagStart1, tagEnd1);
+        TagIndex idx1(tagId1, b1, tagStart1, tagEnd1);
 
         NSFX_TEST_EXPECT_EQ(idx1.GetTag().GetId(), tagId1);
         NSFX_TEST_EXPECT_EQ(idx1.GetStart(), tagStart1);

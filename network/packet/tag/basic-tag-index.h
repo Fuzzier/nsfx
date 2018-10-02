@@ -30,15 +30,20 @@ NSFX_OPEN_NAMESPACE
 /**
  * @ingroup Network.
  * @brief The tag index.
+ *
+ * @tparam ValueType The type of the value of the tag.
  */
-template<class TagValue>
+template<class ValueType>
 class BasicTagIndex
 {
 public:
+    typedef ValueType               TagValue;
     typedef BasicTag<TagValue>      Tag;
     typedef BasicTagIndex<TagValue> TagIndex;
 
 public:
+    BasicTagIndex(const Tag& tag, size_t tagStart, size_t tagEnd) BOOST_NOEXCEPT;
+
     BasicTagIndex(uint32_t tagId, const TagValue& value,
                   size_t tagStart, size_t tagEnd) BOOST_NOEXCEPT;
 
@@ -68,8 +73,20 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 template<class T>
-inline BasicTagIndex<T>::BasicTagIndex(uint32_t tagId, const TagValue& value,
-                                       size_t tagStart, size_t tagEnd) BOOST_NOEXCEPT :
+inline BasicTagIndex<T>::BasicTagIndex(const Tag& tag,
+                                       size_t tagStart,
+                                       size_t tagEnd) BOOST_NOEXCEPT :
+    tag_(tag),
+    tagStart_(tagStart),
+    tagEnd_(tagEnd)
+{
+}
+
+template<class T>
+inline BasicTagIndex<T>::BasicTagIndex(uint32_t tagId,
+                                       const TagValue& value,
+                                       size_t tagStart,
+                                       size_t tagEnd) BOOST_NOEXCEPT :
     tag_(tagId, value),
     tagStart_(tagStart),
     tagEnd_(tagEnd)

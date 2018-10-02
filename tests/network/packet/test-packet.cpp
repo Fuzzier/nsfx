@@ -198,7 +198,7 @@ NSFX_TEST_SUITE(Packet)
         }
     }/*}}}*/
 
-    NSFX_TEST_CASE(Tag)/*{{{*/
+    NSFX_TEST_CASE(ByteTag)/*{{{*/
     {
         nsfx::TagBuffer tb(16);
         {
@@ -212,10 +212,10 @@ NSFX_TEST_SUITE(Packet)
             // |--------|--------|--------|--------|
             // |<-tag1->|                 |<-tag4->|
             // |<------tag2----->|<------tag3----->|
-            p0.AddTag(          tagId++, tb,    0, 100);
-            p0.AddTag(nsfx::Tag(tagId++, tb),   0, 200);
-            p0.AddTag(nsfx::Tag(tagId++, tb), 200, 200);
-            p0.AddTag(nsfx::Tag(tagId++, tb), 300, 100);
+            p0.AddByteTag(tagId++, tb,   0, 100);
+            p0.AddByteTag(tagId++, tb,   0, 200);
+            p0.AddByteTag(tagId++, tb, 200, 200);
+            p0.AddByteTag(tagId++, tb, 300, 100);
             // Create fragments.
             // | f1 |
             // 0    50
@@ -223,32 +223,32 @@ NSFX_TEST_SUITE(Packet)
             // |<-tag1->|                 |<-tag4->|
             // |<------tag2----->|<------tag3----->|
             nsfx::Packet f1 = p0.MakeFragment(0, 50);
-            NSFX_TEST_EXPECT(f1.HasTag(1, 0));
-            NSFX_TEST_EXPECT(f1.HasTag(2, 0));
+            NSFX_TEST_EXPECT(f1.HasByteTag(1, 0));
+            NSFX_TEST_EXPECT(f1.HasByteTag(2, 0));
             //      |f2 |
             //      0   50
             // |----|---|--------|--------|--------|
             // |<-tag1->|                 |<-tag4->|
             // |<------tag2----->|<------tag3----->|
             nsfx::Packet f2 = p0.MakeFragment(50, 50);
-            NSFX_TEST_EXPECT(f2.HasTag(1, 0));
-            NSFX_TEST_EXPECT(f2.HasTag(2, 0));
+            NSFX_TEST_EXPECT(f2.HasByteTag(1, 0));
+            NSFX_TEST_EXPECT(f2.HasByteTag(2, 0));
             //          |     f3      |
             //          0             150
             // |----|---|-------------|---|--------|
             // |<-tag1->|                 |<-tag4->|
             // |<------tag2----->|<------tag3----->|
             nsfx::Packet f3 = p0.MakeFragment(100, 150);
-            NSFX_TEST_EXPECT(f3.HasTag(2, 0));
-            NSFX_TEST_EXPECT(f3.HasTag(3, 100));
+            NSFX_TEST_EXPECT(f3.HasByteTag(2, 0));
+            NSFX_TEST_EXPECT(f3.HasByteTag(3, 100));
             //                        |       f4   |
             //                        0   50       150
             // |----|---|--------|----|---|--------|
             // |<-tag1->|                 |<-tag4->|
             // |<------tag2----->|<------tag3----->|
             nsfx::Packet f4 = p0.MakeFragment(250, 150);
-            NSFX_TEST_EXPECT(f4.HasTag(3, 0));
-            NSFX_TEST_EXPECT(f4.HasTag(4, 50));
+            NSFX_TEST_EXPECT(f4.HasByteTag(3, 0));
+            NSFX_TEST_EXPECT(f4.HasByteTag(4, 50));
             // Reassemble the fragments.
             {
                 nsfx::Packet r(f4);
@@ -256,20 +256,19 @@ NSFX_TEST_SUITE(Packet)
                 r.AddHeader(f2);
                 r.AddHeader(f1);
                 // tag1 survives.
-                NSFX_TEST_EXPECT(r.HasTag(1, 0));
-                NSFX_TEST_EXPECT(r.HasTag(1, 100-1));
+                NSFX_TEST_EXPECT(r.HasByteTag(1, 0));
+                NSFX_TEST_EXPECT(r.HasByteTag(1, 100-1));
                 // tag2 survives.
-                NSFX_TEST_EXPECT(r.HasTag(2, 0));
-                NSFX_TEST_EXPECT(r.HasTag(2, 200-1));
+                NSFX_TEST_EXPECT(r.HasByteTag(2, 0));
+                NSFX_TEST_EXPECT(r.HasByteTag(2, 200-1));
                 // tag3 survives.
-                NSFX_TEST_EXPECT(r.HasTag(3, 200));
-                NSFX_TEST_EXPECT(r.HasTag(3, 400-1));
+                NSFX_TEST_EXPECT(r.HasByteTag(3, 200));
+                NSFX_TEST_EXPECT(r.HasByteTag(3, 400-1));
                 // tag4 survives.
-                NSFX_TEST_EXPECT(r.HasTag(4, 300));
-                NSFX_TEST_EXPECT(r.HasTag(4, 400-1));
-                nsfx::Tag tag4 = r.GetTag(4, 300);
-                NSFX_TEST_EXPECT_EQ(tag4.GetId(), 4);
-                NSFX_TEST_EXPECT_EQ(tag4.GetValue().GetSize(), 16);
+                NSFX_TEST_EXPECT(r.HasByteTag(4, 300));
+                NSFX_TEST_EXPECT(r.HasByteTag(4, 400-1));
+                nsfx::ConstTagBuffer b4 = r.GetByteTag(4, 300);
+                NSFX_TEST_EXPECT_EQ(b4.GetSize(), 16);
             }
             // Reassemble the fragments.
             {
@@ -278,24 +277,187 @@ NSFX_TEST_SUITE(Packet)
                 r.AddTrailer(f3);
                 r.AddTrailer(f4);
                 // tag1 survives.
-                NSFX_TEST_EXPECT(r.HasTag(1, 0));
-                NSFX_TEST_EXPECT(r.HasTag(1, 100-1));
+                NSFX_TEST_EXPECT(r.HasByteTag(1, 0));
+                NSFX_TEST_EXPECT(r.HasByteTag(1, 100-1));
                 // tag2 survives.
-                NSFX_TEST_EXPECT(r.HasTag(2, 0));
-                NSFX_TEST_EXPECT(r.HasTag(2, 200-1));
+                NSFX_TEST_EXPECT(r.HasByteTag(2, 0));
+                NSFX_TEST_EXPECT(r.HasByteTag(2, 200-1));
                 // tag3 survives.
-                NSFX_TEST_EXPECT(r.HasTag(3, 200));
-                NSFX_TEST_EXPECT(r.HasTag(3, 400-1));
+                NSFX_TEST_EXPECT(r.HasByteTag(3, 200));
+                NSFX_TEST_EXPECT(r.HasByteTag(3, 400-1));
                 // tag4 survives.
-                NSFX_TEST_EXPECT(r.HasTag(4, 300));
-                NSFX_TEST_EXPECT(r.HasTag(4, 400-1));
-                nsfx::Tag tag4 = r.GetTag(4, 400-1);
-                NSFX_TEST_EXPECT_EQ(tag4.GetId(), 4);
-                NSFX_TEST_EXPECT_EQ(tag4.GetValue().GetSize(), 16);
+                NSFX_TEST_EXPECT(r.HasByteTag(4, 300));
+                NSFX_TEST_EXPECT(r.HasByteTag(4, 400-1));
+                nsfx::ConstTagBuffer b4 = r.GetByteTag(4, 400-1);
+                NSFX_TEST_EXPECT_EQ(b4.GetSize(), 16);
             }
         }
         NSFX_TEST_EXPECT_EQ(tb.GetStorage()->refCount_, 1);
     }/*}}}*/
+
+    NSFX_TEST_CASE(PacketTag)/*{{{*/
+    {
+        nsfx::PacketBuffer b0(1000, 700, 400);
+        nsfx::Packet p0(b0);
+        // [700 s zs 400 ze e 300]
+        size_t tagId = 1;
+        nsfx::TagBuffer tb(16);
+        // Add 4 tags.
+        // |<--------------buffer------------->|
+        // 0        100      200      300      400
+        // |--------|--------|--------|--------|
+        // |<-tag1->|                 |<-tag4->|
+        // |<------tag2----->|<------tag3----->|
+        p0.AddByteTag(tagId++, tb,   0, 100);
+        p0.AddByteTag(tagId++, tb,   0, 200);
+        p0.AddByteTag(tagId++, tb, 200, 200);
+        p0.AddByteTag(tagId++, tb, 300, 100);
+        {
+            nsfx::PacketBuffer b1(1000, 700, 400);
+            nsfx::Packet p1(b1);
+            // [700 s zs 400 ze e 300]
+            tagId = 1;
+            // Add 4 tags.
+            // |<--------------buffer------------->|
+            // 0        100      200      300      400
+            // |--------|--------|--------|--------|
+            // |<-tag1->|                 |<-tag4->|
+            // |<------tag2----->|<------tag3----->|
+            p1.AddPacketTag(tagId++, p0,   0, 100);
+            p1.AddPacketTag(tagId++, p0,   0, 200);
+            p1.AddPacketTag(tagId++, p0, 200, 200);
+            p1.AddPacketTag(tagId++, p0, 300, 100);
+            // Create fragments.
+            // | f1 |
+            // 0    50
+            // |----|---|--------|--------|--------|
+            // |<-tag1->|                 |<-tag4->|
+            // |<------tag2----->|<------tag3----->|
+            nsfx::Packet f1 = p1.MakeFragment(0, 50);
+            NSFX_TEST_EXPECT(f1.HasPacketTag(1, 0));
+            NSFX_TEST_EXPECT(f1.HasPacketTag(2, 0));
+            //      |f2 |
+            //      0   50
+            // |----|---|--------|--------|--------|
+            // |<-tag1->|                 |<-tag4->|
+            // |<------tag2----->|<------tag3----->|
+            nsfx::Packet f2 = p1.MakeFragment(50, 50);
+            NSFX_TEST_EXPECT(f2.HasPacketTag(1, 0));
+            NSFX_TEST_EXPECT(f2.HasPacketTag(2, 0));
+            //          |     f3      |
+            //          0             150
+            // |----|---|-------------|---|--------|
+            // |<-tag1->|                 |<-tag4->|
+            // |<------tag2----->|<------tag3----->|
+            nsfx::Packet f3 = p1.MakeFragment(100, 150);
+            NSFX_TEST_EXPECT(f3.HasPacketTag(2, 0));
+            NSFX_TEST_EXPECT(f3.HasPacketTag(3, 100));
+            //                        |       f4   |
+            //                        0   50       150
+            // |----|---|--------|----|---|--------|
+            // |<-tag1->|                 |<-tag4->|
+            // |<------tag2----->|<------tag3----->|
+            nsfx::Packet f4 = p1.MakeFragment(250, 150);
+            NSFX_TEST_EXPECT(f4.HasPacketTag(3, 0));
+            NSFX_TEST_EXPECT(f4.HasPacketTag(4, 50));
+            // Reassemble the fragments.
+            {
+                nsfx::Packet r(f4);
+                r.AddHeader(f3);
+                r.AddHeader(f2);
+                r.AddHeader(f1);
+                // tag1 survives.
+                NSFX_TEST_EXPECT(r.HasPacketTag(1, 0));
+                NSFX_TEST_EXPECT(r.HasPacketTag(1, 100-1));
+                // tag2 survives.
+                NSFX_TEST_EXPECT(r.HasPacketTag(2, 0));
+                NSFX_TEST_EXPECT(r.HasPacketTag(2, 200-1));
+                // tag3 survives.
+                NSFX_TEST_EXPECT(r.HasPacketTag(3, 200));
+                NSFX_TEST_EXPECT(r.HasPacketTag(3, 400-1));
+                // tag4 survives.
+                NSFX_TEST_EXPECT(r.HasPacketTag(4, 300));
+                NSFX_TEST_EXPECT(r.HasPacketTag(4, 400-1));
+                nsfx::Packet p4 = r.GetPacketTag(4, 300);
+                NSFX_TEST_EXPECT_EQ(p4.GetSize(), 400);
+                p4.HasByteTag(1,   0);
+                p4.HasByteTag(2, 100);
+                p4.HasByteTag(3, 200);
+                p4.HasByteTag(4, 300);
+            }
+            // Reassemble the fragments.
+            {
+                nsfx::Packet r(f1);
+                r.AddTrailer(f2);
+                r.AddTrailer(f3);
+                r.AddTrailer(f4);
+                // tag1 survives.
+                NSFX_TEST_EXPECT(r.HasPacketTag(1, 0));
+                NSFX_TEST_EXPECT(r.HasPacketTag(1, 100-1));
+                // tag2 survives.
+                NSFX_TEST_EXPECT(r.HasPacketTag(2, 0));
+                NSFX_TEST_EXPECT(r.HasPacketTag(2, 200-1));
+                // tag3 survives.
+                NSFX_TEST_EXPECT(r.HasPacketTag(3, 200));
+                NSFX_TEST_EXPECT(r.HasPacketTag(3, 400-1));
+                // tag4 survives.
+                NSFX_TEST_EXPECT(r.HasPacketTag(4, 300));
+                NSFX_TEST_EXPECT(r.HasPacketTag(4, 400-1));
+                nsfx::Packet p4 = r.GetPacketTag(4, 400-1);
+                NSFX_TEST_EXPECT_EQ(p4.GetSize(), 400);
+                p4.HasByteTag(1,   0);
+                p4.HasByteTag(2, 100);
+                p4.HasByteTag(3, 200);
+                p4.HasByteTag(4, 300);
+            }
+        }
+        NSFX_TEST_EXPECT_EQ(tb.GetStorage()->refCount_, 5);
+    }/*}}}*/
+
+    NSFX_TEST_CASE(CopyTags)
+    {
+        nsfx::TagBuffer tb(16);
+        {
+            nsfx::PacketBuffer b0(1000, 700, 400);
+            nsfx::Packet p0(b0);
+            // [700 s zs 400 ze e 300]
+            // Add 4 tags.
+            // |<--------------buffer------------->|
+            // 0        100      200      300      400
+            // |--------|--------|--------|--------|
+            // |<-tag1->|                 |<-tag4->|
+            // |<------tag2----->|<------tag3----->|
+            size_t tagId = 1;
+            p0.AddByteTag(tagId++, tb,   0, 100);
+            p0.AddByteTag(tagId++, tb,   0, 200);
+            p0.AddPacketTag(tagId++, p0, 200, 200);
+            p0.AddByteTag(tagId++, tb, 300, 100);
+
+            nsfx::PacketBuffer b1(1000, 700, 400);
+            nsfx::Packet p1(b1);
+            // Add 2 tags.
+            // |<--------------buffer------------->|
+            // 0        100      200      300      400
+            // |--------|--------|--------|--------|
+            // |<------tag1----->|<------tag2----->|
+            tagId = 1;
+            p1.AddPacketTag(tagId++, p1, 0, 200);
+            p1.AddByteTag(tagId++, tb, 200, 200);
+
+            p1.CopyTagsFrom(p0);
+            NSFX_TEST_EXPECT(p1.HasByteTag(1, 0));
+            NSFX_TEST_EXPECT(p1.HasByteTag(2, 0));
+            NSFX_TEST_EXPECT(p1.HasPacketTag(3, 200));
+            NSFX_TEST_EXPECT(p1.HasByteTag(4, 300));
+
+            nsfx::Packet p2 = p1.GetPacketTag(3, 200);
+            NSFX_TEST_EXPECT(p2.HasByteTag(1, 0));
+            NSFX_TEST_EXPECT(p2.HasByteTag(2, 0));
+            NSFX_TEST_EXPECT(!p2.HasPacketTag(3, 200));
+            NSFX_TEST_EXPECT(!p2.HasByteTag(4, 300));
+        }
+        NSFX_TEST_EXPECT_EQ(tb.GetStorage()->refCount_, 1);
+    }
 }
 
 

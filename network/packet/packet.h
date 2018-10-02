@@ -500,6 +500,15 @@ public:
      * @param[in] packet The packet carried by the tag.
      * @param[in] start  The start of the tagged bytes.
      * @param[in] size   The number of tagged bytes.
+     *
+     * When a packet is added as a packet tag, the tag carries a copy of
+     * the packet.
+     *
+     * @remarks A packet can be added to itelf as a packet tag.
+     *          The packet is copied before the tag is added, and this copy is
+     *          carried by the tag, then the tag is added to the packet.
+     *          i.e., the packet carried by the tag is a separate copy, and
+     *          the tag is not added to this separate copy.
      */
     void AddPacketTag(uint32_t tagId, const Packet& packet,
                       size_t start, size_t size);
@@ -520,7 +529,7 @@ public:
      *
      * @throw TagNotFound
      */
-    Packet GetPacketTag(uint32_t tagId, size_t offset) const;
+    const Packet& GetPacketTag(uint32_t tagId, size_t offset) const;
 
     /**
      * @brief Copy the tags from a packet.
@@ -534,7 +543,7 @@ public:
      *
      * @throw InvalidArgument The source packet has a different buffer size.
      */
-    void CopyTags(const Packet& src);
+    void CopyTagsFrom(const Packet& src);
 
     // Fragmentation.
 public:
@@ -685,7 +694,7 @@ inline bool Packet::HasByteTag(uint32_t tagId, size_t offset) const BOOST_NOEXCE
 
 inline ConstTagBuffer Packet::GetByteTag(uint32_t tagId, size_t offset) const
 {
-    return byteTagList_.Get(tagId, offset);
+    return byteTagList_.Get(tagId, offset).GetValue();
 }
 
 inline void Packet::AddPacketTag(uint32_t tagId, const Packet& packet,
@@ -699,12 +708,12 @@ inline bool Packet::HasPacketTag(uint32_t tagId, size_t offset) const BOOST_NOEX
     return packetTagList_.Exists(tagId, offset);
 }
 
-inline Packet Packet::GetPacketTag(uint32_t tagId, size_t offset) const
+inline const Packet& Packet::GetPacketTag(uint32_t tagId, size_t offset) const
 {
-    return packetTagList_.Get(tagId, offset);
+    return packetTagList_.Get(tagId, offset).GetValue();
 }
 
-inline void Packet::CopyTags(const Packet& src)
+inline void Packet::CopyTagsFrom(const Packet& src)
 {
     if (buffer_.GetSize() != src.buffer_.GetSize())
     {
