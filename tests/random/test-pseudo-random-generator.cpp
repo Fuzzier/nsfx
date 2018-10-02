@@ -39,7 +39,7 @@ static double gamma(double z)
 
 struct TestDistributions
 {
-    static const uint32_t N = 100000;
+    static const size_t N = 100000;
 
     TestDistributions(nsfx::Ptr<nsfx::IRandomDistributionGenerator> dg) : dg_(dg) {}
 
@@ -253,7 +253,7 @@ struct TestDistributions
     {
         nsfx::Ptr<nsfx::IWeibullDistribution> d =
             dg_->CreateWeibullDistribution(2.0, 3.0);
-        NSFX_TEST_EXPECT_LE(d->GetMinValue(), 0);
+        NSFX_TEST_EXPECT_EQ(d->GetMinValue(), 0);
         NSFX_TEST_EXPECT_GE(d->GetMaxValue(),
                             (std::numeric_limits<double>::max)());
         NSFX_TEST_EXPECT_EQ(d->GetShape(), 2.0);
@@ -296,8 +296,8 @@ struct TestDistributions
     {
         nsfx::Ptr<nsfx::IBetaDistribution> d =
             dg_->CreateBetaDistribution(2.0, 3.0);
-        NSFX_TEST_EXPECT_LE(d->GetMinValue(), 0);
-        NSFX_TEST_EXPECT_GE(d->GetMaxValue(), 1);
+        NSFX_TEST_EXPECT_EQ(d->GetMinValue(), 0);
+        NSFX_TEST_EXPECT_EQ(d->GetMaxValue(), 1);
         NSFX_TEST_EXPECT_EQ(d->GetAlpha(), 2.0);
         NSFX_TEST_EXPECT_EQ(d->GetBeta(), 3.0);
         double count = 0;
@@ -315,8 +315,10 @@ struct TestDistributions
     {
         nsfx::Ptr<nsfx::ILaplaceDistribution> d =
             dg_->CreateLaplaceDistribution(1.0, 0.5);
-        NSFX_TEST_EXPECT_LE(d->GetMinValue(), 0);
-        NSFX_TEST_EXPECT_GE(d->GetMaxValue(), 1);
+        NSFX_TEST_EXPECT_LE(d->GetMinValue(),
+                            -(std::numeric_limits<double>::max)());
+        NSFX_TEST_EXPECT_GE(d->GetMaxValue(),
+                            (std::numeric_limits<double>::max)());
         NSFX_TEST_EXPECT_EQ(d->GetMean(), 1.0);
         NSFX_TEST_EXPECT_EQ(d->GetScale(), 0.5);
         double count = 0;
@@ -355,7 +357,7 @@ struct TestDistributions
     {
         nsfx::Ptr<nsfx::ILognormalDistribution> d =
             dg_->CreateLognormalDistribution(0.1, 1.0);
-        NSFX_TEST_EXPECT_LE(d->GetMinValue(), 0);
+        NSFX_TEST_EXPECT_EQ(d->GetMinValue(), 0);
         NSFX_TEST_EXPECT_GE(d->GetMaxValue(),
                             (std::numeric_limits<double>::max)());
         NSFX_TEST_EXPECT_EQ(d->GetMean(), 0.1);
@@ -375,7 +377,7 @@ struct TestDistributions
     {
         nsfx::Ptr<nsfx::IChiSquaredDistribution> d =
             dg_->CreateChiSquaredDistribution(2.5);
-        NSFX_TEST_EXPECT_LE(d->GetMinValue(), 0);
+        NSFX_TEST_EXPECT_EQ(d->GetMinValue(), 0);
         NSFX_TEST_EXPECT_GE(d->GetMaxValue(),
                             (std::numeric_limits<double>::max)());
         NSFX_TEST_EXPECT_EQ(d->GetDegreesOfFreedom(), 2.5);
@@ -415,7 +417,7 @@ struct TestDistributions
     {
         nsfx::Ptr<nsfx::IFisherFDistribution> d =
             dg_->CreateFisherFDistribution(2.0, 3.0);
-        NSFX_TEST_EXPECT_LE(d->GetMinValue(), 0);
+        NSFX_TEST_EXPECT_EQ(d->GetMinValue(), 0);
         NSFX_TEST_EXPECT_GE(d->GetMaxValue(),
                             (std::numeric_limits<double>::max)());
         NSFX_TEST_EXPECT_EQ(d->GetNumerator(), 2.0);
@@ -462,8 +464,8 @@ struct TestDistributions
         NSFX_TEST_EXPECT_EQ(p->GetNumWeights(), 3);
         nsfx::Ptr<nsfx::IDiscreteDistribution> d =
             dg_->CreateDiscreteDistribution(p);
-        NSFX_TEST_EXPECT_LE(d->GetMinValue(), 0);
-        NSFX_TEST_EXPECT_GE(d->GetMaxValue(), 2);
+        NSFX_TEST_EXPECT_EQ(d->GetMinValue(), 0);
+        NSFX_TEST_EXPECT_EQ(d->GetMaxValue(), 2);
         NSFX_TEST_EXPECT_EQ(d->GetNumValues(), 3);
         NSFX_TEST_EXPECT_RC(d->GetProbability(0), 0.5, 0.01);
         NSFX_TEST_EXPECT_RC(d->GetProbability(1), 0.3, 0.01);
@@ -491,8 +493,8 @@ struct TestDistributions
         NSFX_TEST_EXPECT_EQ(p->GetNumIntervals(), 3);
         nsfx::Ptr<nsfx::IPiecewiseConstantDistribution> d =
             dg_->CreatePiecewiseConstantDistribution(p);
-        NSFX_TEST_EXPECT_LE(d->GetMinValue(), 0);
-        NSFX_TEST_EXPECT_GE(d->GetMaxValue(), 3);
+        NSFX_TEST_EXPECT_EQ(d->GetMinValue(), 0);
+        NSFX_TEST_EXPECT_EQ(d->GetMaxValue(), 3);
         NSFX_TEST_EXPECT_EQ(d->GetNumIntervals(), 3);
         NSFX_TEST_EXPECT_RC(d->GetBound(0), 0.0, 0.01);
         NSFX_TEST_EXPECT_RC(d->GetBound(1), 1.0, 0.01);
@@ -525,8 +527,8 @@ struct TestDistributions
         NSFX_TEST_EXPECT_EQ(p->GetNumBounds(), 3);
         nsfx::Ptr<nsfx::IPiecewiseLinearDistribution> d =
             dg_->CreatePiecewiseLinearDistribution(p);
-        NSFX_TEST_EXPECT_LE(d->GetMinValue(), 1);
-        NSFX_TEST_EXPECT_GE(d->GetMaxValue(), 5);
+        NSFX_TEST_EXPECT_EQ(d->GetMinValue(), 1);
+        NSFX_TEST_EXPECT_EQ(d->GetMaxValue(), 5);
         NSFX_TEST_EXPECT_EQ(d->GetNumIntervals(), 2);
         NSFX_TEST_EXPECT_RC(d->GetBound(0), 1.0, 0.01);
         NSFX_TEST_EXPECT_RC(d->GetBound(1), 2.0, 0.01);
@@ -549,8 +551,8 @@ struct TestDistributions
     {
         nsfx::Ptr<nsfx::ITriangleDistribution> d =
             dg_->CreateTriangleDistribution(1, 2, 5);
-        NSFX_TEST_EXPECT_LE(d->GetMinValue(), 1);
-        NSFX_TEST_EXPECT_GE(d->GetMaxValue(), 5);
+        NSFX_TEST_EXPECT_EQ(d->GetMinValue(), 1);
+        NSFX_TEST_EXPECT_EQ(d->GetMaxValue(), 5);
         NSFX_TEST_EXPECT_EQ(d->GetA(), 1.0);
         NSFX_TEST_EXPECT_EQ(d->GetB(), 2.0);
         NSFX_TEST_EXPECT_EQ(d->GetC(), 5.0);
@@ -667,7 +669,7 @@ NSFX_TEST_SUITE(PRNG)
 
 int main(void)
 {
-    nsfx::test::runner::GetLogger()->AddStreamSink(std::cout);
+    nsfx::test::runner::GetLogger()->AddStreamSink(std::cerr);
     nsfx::test::runner::Run();
 
     return 0;

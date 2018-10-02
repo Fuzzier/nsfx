@@ -33,18 +33,18 @@ NSFX_TEST_SUITE(Tag)
             auto it = b.begin();
             for (size_t i = 0; i < 16; ++i)
             {
-                uint8_t v = 0xfe + i;
+                uint8_t v = (uint8_t)(0xfe + i);
                 it.Write<uint8_t>(v);
             }
         }
-        size_t tagId = 1;
+        uint32_t tagId = 1;
         Tag tag(tagId, b);
         NSFX_TEST_EXPECT_EQ(tag.GetId(), tagId);
         NSFX_TEST_EXPECT_EQ(tag.GetValue().GetSize(), 16);
         auto it = tag.GetValue().cbegin();
         for (size_t i = 0; i < 16; ++i)
         {
-            uint8_t v = 0xfe + i;
+            uint8_t v = (uint8_t)(0xfe + i);
             NSFX_TEST_EXPECT_EQ(it.Read<uint8_t>(), v);
         }
     }
@@ -53,7 +53,7 @@ NSFX_TEST_SUITE(Tag)
 
 int main(void)
 {
-    nsfx::test::runner::GetLogger()->AddStreamSink(std::cout);
+    nsfx::test::runner::GetLogger()->AddStreamSink(std::cerr);
     nsfx::test::runner::Run();
 
     return 0;

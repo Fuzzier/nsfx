@@ -49,20 +49,20 @@ struct LeastInt /*{{{*/
                     bits >= 33 && bits <= 64, uint64_t, void>::type
                 >::type
             >::type
-        >::type  UintType;
+        >::type  UIntType;
 
-    static_assert(!std::is_same<UintType, void>::value,
+    static_assert(!std::is_same<UIntType, void>::value,
                   "The number of bits is too large.");
 
-    typedef typename std::make_signed<UintType>::type  IntType;
+    typedef typename std::make_signed<UIntType>::type  IntType;
 
     typedef typename std::conditional<
         bits >= 0 && bits <= 32, uint32_t,
         typename std::conditional<
             bits >= 33 && bits <= 64, uint64_t, void>::type
-        >::type  UintOpType;
+        >::type  UIntOpType;
 
-    typedef typename std::make_signed<UintOpType>::type  IntOpType;
+    typedef typename std::make_signed<UIntOpType>::type  IntOpType;
 
 };/*}}}*/
 

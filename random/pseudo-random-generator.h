@@ -130,8 +130,7 @@ struct RandomNumberGeneratorTraits
  * * \c IPseudoRandomEngine
  * * \c IRandomUInt32Generator (if \c StdRng::result_type is 32-bit unsigned integer)
  * * \c IRandomUInt64Generator (if \c StdRng::result_type is 64-bit unsigned integer)
- * * \c IRandomFloatGenerator  (if \c StdRng::result_type is float)
- * * \c IRandomDoubleGenerator (if \c StdRng::result_type is double)
+ * * \c IRandomDoubleGenerator (if \c StdRng::result_type is float or double)
  * * \c IRandomDistributionGenerator
  */
 template<class StdRng>
@@ -163,7 +162,6 @@ public:
 
     // IRandomUInt32Generator or
     // IRandomUInt64Generator or
-    // IRandomFloatGenerator  or
     // IRandomDoubleGenerator
     virtual ResultType Generate(void) NSFX_OVERRIDE
     {
@@ -186,7 +184,7 @@ public:
     }
 
     // IPseudoRandomEngine
-    virtual void Seed(uint64_t seed) NSFX_OVERRIDE
+    virtual void Seed(uint32_t seed) NSFX_OVERRIDE
     {
         rng_.seed(seed);
     }
@@ -508,7 +506,8 @@ NSFX_REGISTER_CLASS(Xoshiro256StarstarEngine, "edu.uestc.nsfx.Xoshiro256Starstar
  */
 typedef PseudoRandomEngine<nsfx::xoshiro128plus_01>  Xoshiro128Plus01Engine;
 
-NSFX_REGISTER_CLASS(Xoshiro128Plus01Engine, "edu.uestc.nsfx.Xoshiro128Plus01Engine");
+NSFX_REGISTER_CLASS(Xoshiro128Plus01Engine,
+					"edu.uestc.nsfx.Xoshiro128Plus01Engine");
 
 
 ////////////////////////////////////////
@@ -533,7 +532,8 @@ NSFX_REGISTER_CLASS(Xoshiro128Plus01Engine, "edu.uestc.nsfx.Xoshiro128Plus01Engi
  */
 typedef PseudoRandomEngine<nsfx::xoshiro128starstar>  Xoshiro128StarstarEngine;
 
-NSFX_REGISTER_CLASS(Xoshiro128StarstarEngine, "edu.uestc.nsfx.Xoshiro128StarstarEngine");
+NSFX_REGISTER_CLASS(Xoshiro128StarstarEngine,
+					"edu.uestc.nsfx.Xoshiro128StarstarEngine");
 
 
 ////////////////////////////////////////

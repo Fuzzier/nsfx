@@ -52,7 +52,7 @@ NSFX_TEST_SUITE(TagList)
             {
                 // Create an empty list.
                 TagList tl1(4, 100);
-                size_t tagId = 1;
+                uint32_t tagId = 1;
                 const TagIndexArray* tia1 = nullptr;
                 // Fill the array.
                 do
@@ -80,7 +80,7 @@ NSFX_TEST_SUITE(TagList)
             {
                 // Create an empty list.
                 TagList tl1(4, 100);
-                size_t tagId = 1;
+                uint32_t tagId = 1;
                 const TagIndexArray* tia1 = nullptr;
                 // Fill the array.
                 do
@@ -114,7 +114,7 @@ NSFX_TEST_SUITE(TagList)
                 TagBuffer b(16);
                 // Create an empty list.
                 TagList tl1(6, 400);
-                size_t tagId = 1;
+                uint32_t tagId = 1;
                 // Add 4 tags.
                 // |<--------------buffer------------->|
                 // 0        100      200      300      400
@@ -173,7 +173,7 @@ NSFX_TEST_SUITE(TagList)
                 TagBuffer b(16);
                 // Create an empty list.
                 TagList tl1(4, 400);
-                size_t tagId = 1;
+                uint32_t tagId = 1;
                 // Add 4 tags to fill the array.
                 // |<--------------buffer------------->|
                 // 0        100      200      300      400
@@ -219,7 +219,7 @@ NSFX_TEST_SUITE(TagList)
                 TagBuffer b(16);
                 // Create an empty list.
                 TagList tl1(4, 400);
-                size_t tagId = 1;
+                uint32_t tagId = 1;
                 // Add 4 tags to fill the array.
                 // |<--------------buffer------------->|
                 // 0        100      200      300      400
@@ -270,7 +270,7 @@ NSFX_TEST_SUITE(TagList)
                     TagBuffer b(16);
                     // Create an empty list.
                     TagList tl1(5, 400);
-                    size_t tagId = 1;
+                    uint32_t tagId = 1;
                     // Add 4 tags.
                     // |<--------------buffer------------->|
                     // 0        100      200      300      400
@@ -327,7 +327,7 @@ NSFX_TEST_SUITE(TagList)
                     TagBuffer b(16);
                     // Create an empty list.
                     TagList tl1(6, 400);
-                    size_t tagId = 1;
+                    uint32_t tagId = 1;
                     // Add 4 tags.
                     // |<--------------buffer------------->|
                     // 0        100      200      300      400
@@ -392,7 +392,7 @@ NSFX_TEST_SUITE(TagList)
             TagBuffer b(16);
             // Create an empty list.
             TagList tl1(4, 400);
-            size_t tagId = 1;
+            uint32_t tagId = 1;
             // Add 4 tags.
             // |<--------------buffer------------->|
             // 0        100      200      300      400
@@ -437,7 +437,7 @@ NSFX_TEST_SUITE(TagList)
             TagBuffer b(16);
             // Create an empty list.
             TagList tl1(4, 400);
-            size_t tagId = 1;
+            uint32_t tagId = 1;
             // Add 4 tags.
             // |<--------------buffer------------->|
             // 0        100      200      300      400
@@ -496,7 +496,7 @@ NSFX_TEST_SUITE(TagList)
             TagBuffer b(16);
             // Create an empty list.
             TagList tl1(4, 400);
-            size_t tagId = 1;
+            uint32_t tagId = 1;
             // Add 4 tags.
             // |<--------------buffer------------->|
             // 0        100      200      300      400
@@ -541,7 +541,7 @@ NSFX_TEST_SUITE(TagList)
             TagBuffer b(16);
             // Create an empty list.
             TagList tl1(4, 400);
-            size_t tagId = 1;
+            uint32_t tagId = 1;
             // Add 4 tags.
             // |<--------------buffer------------->|
             // 0        100      200      300      400
@@ -592,7 +592,7 @@ NSFX_TEST_SUITE(TagList)
             {
                 // Create an empty list.
                 TagList tl1(4, 400);
-                size_t tagId = 1;
+                uint32_t tagId = 1;
                 // Add 4 tags.
                 // |<--------------buffer------------->|
                 // 0        100      200      300      400
@@ -699,7 +699,7 @@ NSFX_TEST_SUITE(TagList)
 
 int main(void)
 {
-    nsfx::test::runner::GetLogger()->AddStreamSink(std::cout);
+    nsfx::test::runner::GetLogger()->AddStreamSink(std::cerr);
     nsfx::test::runner::Run();
 
     return 0;

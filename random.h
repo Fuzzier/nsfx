@@ -49,19 +49,19 @@
 
 #include <nsfx/random/distribution/i-triangle-distribution.h>
 
+// Pseudo-random number generators.
+#include <nsfx/random/engine/splitmix-engine.h>
+#include <nsfx/random/engine/xoroshiro-engine.h>
+#include <nsfx/random/engine/xoshiro-engine.h>
+
 // Random number generators.
+#include <nsfx/random/i-random-distribution-generator.h>
+
 #include <nsfx/random/i-random-uint32-generator.h>
 #include <nsfx/random/i-random-uint64-generator.h>
 #include <nsfx/random/i-random-double-generator.h>
 
 #include <nsfx/random/i-pseudo-random-engine.h>
-#include <nsfx/random/i-quasi-random-engine.h>
-
-#include <nsfx/random/i-random-distribution-generator.h>
-
-#include <nsfx/random/engine/splitmix-engine.h>
-#include <nsfx/random/engine/xoshiro-engine.h>
-#include <nsfx/random/engine/xoroshiro-engine.h>
 
 #include <nsfx/random/pseudo-random-generator.h>
 

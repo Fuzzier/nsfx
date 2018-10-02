@@ -123,7 +123,7 @@ class StdPiecewiseConstantDistribution :
         typedef double& reference;
 
         WeightIterator(IPiecewiseConstantDistributionParam* param,
-                      uint32_t index) :
+					   uint32_t index) :
             param_(param),
             index_(index)
         {}
@@ -211,7 +211,7 @@ public:
 
     virtual uint32_t GetNumIntervals(void) NSFX_OVERRIDE
     {
-        return densities_.size();
+        return static_cast<uint32_t>(densities_.size());
     }
 
     virtual double GetBound(uint32_t index) NSFX_OVERRIDE

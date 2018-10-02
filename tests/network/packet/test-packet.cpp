@@ -44,7 +44,7 @@ NSFX_TEST_SUITE(Packet)
         auto it = h.begin();
         for (size_t i = 0; i < 100; ++i)
         {
-            uint8_t v = 0xfe + i;
+            uint8_t v = (uint8_t)(0xfe + i);
             it.Write<uint8_t>(v);
         }
         // Add trailer.
@@ -52,20 +52,20 @@ NSFX_TEST_SUITE(Packet)
         it = t.begin();
         for (size_t i = 0; i < 100; ++i)
         {
-            uint8_t v = 0xef + i;
+            uint8_t v = (uint8_t)(0xef + i);
             it.Write<uint8_t>(v);
         }
         // Test
         auto it1 = p0.GetBuffer().cbegin();
         for (size_t i = 0; i < 100; ++i)
         {
-            uint8_t v = 0xfe + i;
+            uint8_t v = (uint8_t)(0xfe + i);
             NSFX_TEST_EXPECT_EQ(it1.Read<uint8_t>(), v);
         }
         it1 += 300;
         for (size_t i = 0; i < 100; ++i)
         {
-            uint8_t v = 0xef + i;
+            uint8_t v = (uint8_t)(0xef + i);
             NSFX_TEST_EXPECT_EQ(it1.Read<uint8_t>(), v);
         }
     }/*}}}*/
@@ -80,7 +80,7 @@ NSFX_TEST_SUITE(Packet)
         auto it = h.begin();
         for (size_t i = 0; i < 100; ++i)
         {
-            uint8_t v = 0xfe + i;
+            uint8_t v = (uint8_t)(0xfe + i);
             it.Write<uint8_t>(v);
         }
         // Add trailer.
@@ -88,7 +88,7 @@ NSFX_TEST_SUITE(Packet)
         it = t.begin();
         for (size_t i = 0; i < 100; ++i)
         {
-            uint8_t v = 0xef + i;
+            uint8_t v = (uint8_t)(0xef + i);
             it.Write<uint8_t>(v);
         }
         // Remove header.
@@ -99,7 +99,7 @@ NSFX_TEST_SUITE(Packet)
         auto it1 = p0.GetBuffer().cbegin();
         for (size_t i = 0; i < 50; ++i)
         {
-            uint8_t v = 0xfe + 50 + i;
+            uint8_t v = (uint8_t)(0xfe + 50 + i);
             NSFX_TEST_EXPECT_EQ(it1.Read<uint8_t>(), v);
         }
         for (size_t i = 0; i < 300; ++i)
@@ -108,7 +108,7 @@ NSFX_TEST_SUITE(Packet)
         }
         for (size_t i = 0; i < 50; ++i)
         {
-            uint8_t v = 0xef + i;
+            uint8_t v = (uint8_t)(0xef + i);
             NSFX_TEST_EXPECT_EQ(it1.Read<uint8_t>(), v);
         }
     }/*}}}*/
@@ -123,7 +123,7 @@ NSFX_TEST_SUITE(Packet)
         auto it = h.begin();
         for (size_t i = 0; i < 100; ++i)
         {
-            uint8_t v = 0xfe + i;
+            uint8_t v = (uint8_t)(0xfe + i);
             it.Write<uint8_t>(v);
         }
         // Add trailer.
@@ -131,7 +131,7 @@ NSFX_TEST_SUITE(Packet)
         it = t.begin();
         for (size_t i = 0; i < 100; ++i)
         {
-            uint8_t v = 0xef + i;
+            uint8_t v = (uint8_t)(0xef + i);
             it.Write<uint8_t>(v);
         }
         // Fragmentation.
@@ -141,7 +141,7 @@ NSFX_TEST_SUITE(Packet)
         auto it1 = f0.GetBuffer().cbegin();
         for (size_t i = 0; i < 50; ++i)
         {
-            uint8_t v = 0xfe + 50 + i;
+            uint8_t v = (uint8_t)(0xfe + 50 + i);
             NSFX_TEST_EXPECT_EQ(it1.Read<uint8_t>(), v);
         }
         for (size_t i = 0; i < 150; ++i)
@@ -155,7 +155,7 @@ NSFX_TEST_SUITE(Packet)
         }
         for (size_t i = 0; i < 50; ++i)
         {
-            uint8_t v = 0xef + i;
+            uint8_t v = (uint8_t)(0xef + i);
             NSFX_TEST_EXPECT_EQ(it1.Read<uint8_t>(), v);
         }
         // Reassembly.
@@ -165,7 +165,7 @@ NSFX_TEST_SUITE(Packet)
         it1 = p1.GetBuffer().cbegin();
         for (size_t i = 0; i < 50; ++i)
         {
-            uint8_t v = 0xfe + 50 + i;
+            uint8_t v = (uint8_t)(0xfe + 50 + i);
             NSFX_TEST_EXPECT_EQ(it1.Read<uint8_t>(), v);
         }
         for (size_t i = 0; i < 300; ++i)
@@ -174,7 +174,7 @@ NSFX_TEST_SUITE(Packet)
         }
         for (size_t i = 0; i < 50; ++i)
         {
-            uint8_t v = 0xef + i;
+            uint8_t v = (uint8_t)(0xef + i);
             NSFX_TEST_EXPECT_EQ(it1.Read<uint8_t>(), v);
         }
         // Reassembly.
@@ -184,7 +184,7 @@ NSFX_TEST_SUITE(Packet)
         it1 = p2.GetBuffer().cbegin();
         for (size_t i = 0; i < 50; ++i)
         {
-            uint8_t v = 0xfe + 50 + i;
+            uint8_t v = (uint8_t)(0xfe + 50 + i);
             NSFX_TEST_EXPECT_EQ(it1.Read<uint8_t>(), v);
         }
         for (size_t i = 0; i < 300; ++i)
@@ -193,7 +193,7 @@ NSFX_TEST_SUITE(Packet)
         }
         for (size_t i = 0; i < 50; ++i)
         {
-            uint8_t v = 0xef + i;
+            uint8_t v = (uint8_t)(0xef + i);
             NSFX_TEST_EXPECT_EQ(it1.Read<uint8_t>(), v);
         }
     }/*}}}*/
@@ -205,7 +205,7 @@ NSFX_TEST_SUITE(Packet)
             nsfx::PacketBuffer b0(1000, 700, 400);
             nsfx::Packet p0(b0);
             // [700 s zs 400 ze e 300]
-            size_t tagId = 1;
+            uint32_t tagId = 1;
             // Add 4 tags.
             // |<--------------buffer------------->|
             // 0        100      200      300      400
@@ -300,7 +300,7 @@ NSFX_TEST_SUITE(Packet)
         nsfx::PacketBuffer b0(1000, 700, 400);
         nsfx::Packet p0(b0);
         // [700 s zs 400 ze e 300]
-        size_t tagId = 1;
+        uint32_t tagId = 1;
         nsfx::TagBuffer tb(16);
         // Add 4 tags.
         // |<--------------buffer------------->|
@@ -427,7 +427,7 @@ NSFX_TEST_SUITE(Packet)
             // |--------|--------|--------|--------|
             // |<-tag1->|                 |<-tag4->|
             // |<------tag2----->|<------tag3----->|
-            size_t tagId = 1;
+            uint32_t tagId = 1;
             p0.AddByteTag(tagId++, tb,   0, 100);
             p0.AddByteTag(tagId++, tb,   0, 200);
             p0.AddPacketTag(tagId++, p0, 200, 200);
@@ -463,7 +463,7 @@ NSFX_TEST_SUITE(Packet)
 
 int main(void)
 {
-    nsfx::test::runner::GetLogger()->AddStreamSink(std::cout);
+    nsfx::test::runner::GetLogger()->AddStreamSink(std::cerr);
     nsfx::test::runner::Run();
 
     return 0;

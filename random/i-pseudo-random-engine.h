@@ -42,7 +42,7 @@ public:
      *
      * @param[in] value The seed value.
      */
-    virtual void Seed(uint64_t value) = 0;
+    virtual void Seed(uint32_t value) = 0;
 
     /**
      * @brief Advances the internal state by \c z notches.

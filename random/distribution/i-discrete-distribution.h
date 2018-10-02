@@ -21,6 +21,7 @@
 #include <nsfx/component/i-object.h>
 #include <nsfx/component/i-user.h>
 #include <nsfx/component/class-registry.h>
+#include <limits> // numeric_limits
 
 
 NSFX_OPEN_NAMESPACE
@@ -60,12 +61,13 @@ public:
 
     virtual uint32_t GetNumWeights(void) NSFX_OVERRIDE
     {
-        return weights_.size();
+        return static_cast<uint32_t>(weights_.size());
     }
 
     virtual void AddWeight(double weight) NSFX_OVERRIDE
     {
         BOOST_ASSERT(weight >= 0);
+        BOOST_ASSERT(weights_.size() < (std::numeric_limits<uint32_t>::max)());
         weights_.push_back(weight);
     }
 
@@ -106,7 +108,7 @@ public:
     /**
      * @brief Generate a new random number.
      */
-    virtual uint32_t Generate(void) = 0;
+    virtual int32_t Generate(void) = 0;
 
     /**
      * @brief Reset the distribution.
@@ -127,7 +129,7 @@ public:
      *
      * @return \c 0.
      */
-    virtual uint32_t GetMinValue(void) = 0;
+    virtual int32_t GetMinValue(void) = 0;
 
     /**
      * @brief The maximum value that can be potentially generated.
@@ -137,7 +139,7 @@ public:
      *
      * @return <code>GetNumValues() - 1</code>.
      */
-    virtual uint32_t GetMaxValue(void) = 0;
+    virtual int32_t GetMaxValue(void) = 0;
 
     /**
      * @brief The parameter <i>n</i> associated with the discrete distribution.

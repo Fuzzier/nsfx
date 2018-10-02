@@ -80,7 +80,7 @@ NSFX_OPEN_NAMESPACE
  * A cookie is obtained when connecting a event sink to an event source, and
  * can be used to disconnect the sink from the event source later.
  */
-typedef size_t  cookie_t;
+typedef uint32_t  cookie_t;
 
 NSFX_CLOSE_NAMESPACE
 

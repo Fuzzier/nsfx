@@ -141,7 +141,7 @@ BasicTag<ValueType>::operator=(BasicTag<ValueType>&& rhs) BOOST_NOEXCEPT
 }
 
 template<class ValueType>
-inline size_t
+inline uint32_t
 BasicTag<ValueType>::GetId(void) const BOOST_NOEXCEPT
 {
     return id_;
