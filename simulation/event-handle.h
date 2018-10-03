@@ -73,7 +73,7 @@ public:
 
     virtual bool IsValid(void) BOOST_NOEXCEPT NSFX_OVERRIDE
     {
-        return sink_;
+        return !!sink_;
     }
 
     virtual void Cancel(void) BOOST_NOEXCEPT NSFX_OVERRIDE
