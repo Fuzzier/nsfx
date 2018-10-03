@@ -29,12 +29,15 @@ NSFX_TEST_SUITE(splitmix)
                             (std::numeric_limits<uint64_t>::max)());
         NSFX_TEST_EXPECT_EQ(rng::default_seed, 1);
         rng r;
+        rng::result_type x = r();
+        r.discard(1000000);
+        r.seed(2);
         for (size_t i = 0; i < 10; ++i)
         {
-            std::cout << "0x" << std::hex << std::setw(16) << std::setfill('0')
-                << r() << std::endl;
+            x = r();
+            NSFX_TEST_EXPECT_GT(x, (rng::min)());
+            NSFX_TEST_EXPECT_LT(x, (rng::max)());
         }
-        r.discard(1000000);
     }
 
 }

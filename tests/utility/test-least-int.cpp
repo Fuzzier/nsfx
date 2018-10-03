@@ -33,8 +33,8 @@ NSFX_TEST_SUITE(LeastInt)/*{{{*/
         typedef boost::ratio_multiply<boost::milli,  FemtoSecond>::type  AttoSecond;
         typedef boost::ratio_multiply<boost::milli,  AttoSecond>::type   ZeptoSecond;
      // typedef boost::ratio_multiply<boost::milli,  ZeptoSecond>::type  YoctoSecond;
-        std::cout << AttoSecond::num << std::endl;
-        std::cout << AttoSecond::den << std::endl;
+        NSFX_TEST_EXPECT_EQ(AttoSecond::num, 1);
+        NSFX_TEST_EXPECT_EQ(AttoSecond::den, 1000000000000000ULL);
     }
 
     NSFX_TEST_CASE(0)
