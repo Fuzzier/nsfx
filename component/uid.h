@@ -38,14 +38,14 @@ public:
         return uid_;
     }
 
-    friend bool operator==(const Uid& lhs, const Uid& rhs);
-    friend bool operator!=(const Uid& lhs, const Uid& rhs);
+    friend bool operator==(const Uid& lhs, const Uid& rhs) BOOST_NOEXCEPT;
+    friend bool operator!=(const Uid& lhs, const Uid& rhs) BOOST_NOEXCEPT;
 
-    friend bool operator==(const Uid& lhs, const char* rhs);
-    friend bool operator!=(const Uid& lhs, const char* rhs);
+    friend bool operator==(const Uid& lhs, const char* rhs) BOOST_NOEXCEPT;
+    friend bool operator!=(const Uid& lhs, const char* rhs) BOOST_NOEXCEPT;
 
-    friend bool operator==(const char* lhs, const Uid& rhs);
-    friend bool operator!=(const char* lhs, const Uid& rhs);
+    friend bool operator==(const char* lhs, const Uid& rhs) BOOST_NOEXCEPT;
+    friend bool operator!=(const char* lhs, const Uid& rhs) BOOST_NOEXCEPT;
 
     template<class Char, class Traits>
     friend std::basic_ostream<Char, Traits>&

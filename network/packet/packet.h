@@ -393,12 +393,12 @@ public:
     // Copyable.
 public:
     Packet(const Packet& rhs) BOOST_NOEXCEPT;
-    Packet& operator=(const Packet& rhs) BOOST_NOEXCEPT;
+    Packet& operator=(const Packet& rhs);
 
     // Movable.
 public:
     Packet(Packet&& rhs) BOOST_NOEXCEPT;
-    Packet& operator=(Packet&& rhs) BOOST_NOEXCEPT;
+    Packet& operator=(Packet&& rhs);
 
     // Buffer.
 public:
@@ -587,7 +587,7 @@ inline Packet::Packet(const PacketBuffer& buffer) BOOST_NOEXCEPT :
     packetTagList_.AddAtEnd(buffer.GetSize());
 }
 
-inline Packet::Packet(const Packet& rhs) :
+inline Packet::Packet(const Packet& rhs) BOOST_NOEXCEPT :
     buffer_(rhs.buffer_),
     byteTagList_(rhs.byteTagList_),
     packetTagList_(rhs.packetTagList_)
@@ -614,7 +614,7 @@ inline Packet::Packet(Packet&& rhs) BOOST_NOEXCEPT :
     rhs.packetTagList_ = PacketTagList();
 }
 
-inline Packet& Packet::operator=(Packet&& rhs) BOOST_NOEXCEPT
+inline Packet& Packet::operator=(Packet&& rhs)
 {
     if (this != &rhs)
     {
