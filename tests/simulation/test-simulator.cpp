@@ -22,6 +22,9 @@
 NSFX_TEST_SUITE(Simulator)
 {
     static int counter = 0;
+    static bool begin = false;
+    static bool run = false;
+
     struct Sink :/*{{{*/
         nsfx::IClockUser,
         nsfx::ISimulatorUser,
@@ -62,36 +65,38 @@ NSFX_TEST_SUITE(Simulator)
 
         virtual void Fire(void) NSFX_OVERRIDE
         {
-            std::cout << clock_->Now() << ": " << ++counter << std::endl;
+            NSFX_TEST_EXPECT(begin);
+            NSFX_TEST_EXPECT(run);
+            ++counter;
             if (counter < 10)
             {
                 scheduler_->ScheduleAt(
-                    clock_->Now() + nsfx::chrono::Seconds(1), this);
+                    clock_->Now() + nsfx::Seconds(1), this);
             }
             else if (counter < 20)
             {
-                scheduler_->ScheduleIn(nsfx::chrono::Seconds(1), this);
+                scheduler_->ScheduleIn(nsfx::Seconds(1), this);
             }
         }
 
         void OnSimulationBegin(void)
         {
-            std::cout << "BEGIN" << std::endl;
+            begin = true;
         }
 
         void OnSimulationRun(void)
         {
-            std::cout << "RUN" << std::endl;
+            run = true;
         }
 
         void OnSimulationPause(void)
         {
-            std::cout << "PAUSE" << std::endl;
+            run = false;
         }
 
         void OnSimulationEnd(void)
         {
-            std::cout << "END" << std::endl;
+            begin = false;
         }
 
         NSFX_INTERFACE_MAP_BEGIN(ThisClass)
@@ -151,19 +156,25 @@ NSFX_TEST_SUITE(Simulator)
             }
 
             // start at 1s.
-            scheduler->ScheduleAt(clock->Now() + nsfx::chrono::Seconds(1), eventSink);
+            scheduler->ScheduleAt(clock->Now() + nsfx::Seconds(1), eventSink);
 
             // run to 1s.
-            simulator->RunUntil(clock->Now() + nsfx::chrono::Seconds(1));
+            simulator->RunUntil(clock->Now() + nsfx::Seconds(1));
             NSFX_TEST_EXPECT_EQ(counter, 1);
+            NSFX_TEST_EXPECT(begin);
+            NSFX_TEST_EXPECT(!run);
 
             // run to 10s.
             simulator->RunFor(nsfx::chrono::Seconds(9));
             NSFX_TEST_EXPECT_EQ(counter, 10);
+            NSFX_TEST_EXPECT(begin);
+            NSFX_TEST_EXPECT(!run);
 
             // run to the end (20s).
             simulator->Run();
             NSFX_TEST_EXPECT_EQ(counter, 20);
+            NSFX_TEST_EXPECT(!begin);
+            NSFX_TEST_EXPECT(!run);
 
         }
         catch (boost::exception& e)

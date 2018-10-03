@@ -22,7 +22,10 @@
 
 NSFX_TEST_SUITE(Timer)
 {
-    static uint32_t count = 0;
+    uint32_t count = 0;
+    nsfx::TimePoint t0(nsfx::Seconds(1));
+    nsfx::Duration  p0(nsfx::Seconds(2));
+
     struct Sink : nsfx::IEventSink<>/*{{{*/
     {
         Sink() {}
@@ -35,8 +38,8 @@ NSFX_TEST_SUITE(Timer)
         // IEventSink<>
         virtual void Fire(void) NSFX_OVERRIDE
         {
+            NSFX_TEST_EXPECT_EQ(clock_->Now(), t0 + p0 * count);
             ++count;
-            std::cout << clock_->Now() << std::endl;
         }
 
         NSFX_INTERFACE_MAP_BEGIN(Sink)
@@ -72,11 +75,12 @@ NSFX_TEST_SUITE(Timer)
             nsfx::Ptr<nsfx::IClockUser>(timer)->Use(clock);
             nsfx::Ptr<nsfx::IEventSchedulerUser>(timer)->Use(scheduler);
 
-            nsfx::TimePoint t0(nsfx::Seconds(1));
-            nsfx::Duration  p0(nsfx::Seconds(2));
             nsfx::Ptr<SinkClass>  sink(new SinkClass(clock));
 
             count = 0;
+            t0 = nsfx::TimePoint(nsfx::Seconds(1));
+            p0 = nsfx::Seconds(2);
+
             timer->StartAt(t0, p0, sink);
             simulator->RunUntil(t0);
             NSFX_TEST_EXPECT_EQ(count, 1);
@@ -86,9 +90,12 @@ NSFX_TEST_SUITE(Timer)
 
             timer->Stop();
 
+            count = 0;
+            t0 = clock->Now();
             p0 = nsfx::Seconds(2);
             timer->StartNow(p0, sink);
             simulator->RunFor(nsfx::Seconds(8));
+            NSFX_TEST_EXPECT_EQ(count, 5);
 
         }
         catch (boost::exception& e)
