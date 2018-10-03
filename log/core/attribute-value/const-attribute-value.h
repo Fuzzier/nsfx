@@ -82,7 +82,7 @@ template<class T, class... Args>
 inline AttributeValue MakeConstantAttributeValue(Args&&... args)
 {
     return AttributeValue(
-        std::shared_ptr<IAttributeValue<T> >(
+        std::shared_ptr<ITypedAttributeValue<T> >(
             std::make_shared<ConstantAttributeValue<T> >(
                 std::forward<Args>(args)...)));
 }
