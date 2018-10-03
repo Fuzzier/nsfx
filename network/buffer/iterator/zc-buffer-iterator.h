@@ -52,19 +52,19 @@ private:
     template<bool reverseEndian>
     struct MakeBoolEndianTag
     {
-        typedef ReverseEndianTag  Type;
+        typedef ReverseEndianTag  type;
     };
 
     template<>
     struct MakeBoolEndianTag<false>
     {
-        typedef KeepEndianTag  Type;
+        typedef KeepEndianTag  type;
     };
 
     template<endian::Order order>
     struct MakeEndianTag
     {
-        typedef typename MakeBoolEndianTag<order != endian::native>::Type  Type;
+        typedef typename MakeBoolEndianTag<order != endian::native>::type  type;
     };
 
     // Area tag.
@@ -75,6 +75,26 @@ private:
     // Read tag.
     template<class T, class areaTag>
     struct ReadTag {};
+
+    // Type.
+    template<class T, bool integral = std::is_integral<T>::value,
+                      bool floating_point = std::is_floating_point<T>::value>
+    struct MakeRegularType
+    {
+        static_assert(integral || floating_point, "Unsupported type.");
+    };
+
+    template<class T>
+    struct MakeRegularType<T, true, false>
+    {
+        typedef typename std::make_unsigned<T>::type  type;
+    };
+
+    template<class T>
+    struct MakeRegularType<T, false, true>
+    {
+        typedef T  type;
+    };
 
     // Xtructors.
 public:
@@ -493,10 +513,8 @@ ZcBufferIterator::WriteInOrder(T data) BOOST_NOEXCEPT
                   std::is_floating_point<T>::value,
                   "Invalid data type.");
     WritableCheck(sizeof (T));
-    typedef typename MakeEndianTag<order>::Type  E;
-    typedef typename std::conditional<
-        std::is_floating_point<T>::value, T,
-        typename std::make_unsigned<T>::type>::type  V;
+    typedef typename MakeEndianTag<order>::type  E;
+    typedef typename MakeRegularType<T>::type  V;
     InternalWrite(static_cast<V>(data), CursorToOffset(), E());
 }
 
@@ -726,7 +744,7 @@ ZcBufferIterator::WriteInOrder(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
 {
     BOOST_ASSERT(bytes);
     WritableCheck(size);
-    typedef typename MakeEndianTag<order>::Type  E;
+    typedef typename MakeEndianTag<order>::type  E;
     InternalWrite(bytes, size, CursorToOffset(), E());
 }
 
@@ -779,10 +797,8 @@ ZcBufferIterator::ReadInOrder(void) BOOST_NOEXCEPT
                   std::is_floating_point<T>::value,
                   "Invalid data type.");
     ReadableCheck(sizeof (T));
-    typedef typename MakeEndianTag<order>::Type  E;
-    typedef typename std::conditional<
-        std::is_floating_point<T>::value, T,
-        typename std::make_unsigned<T>::type>::type  V;
+    typedef typename MakeEndianTag<order>::type  E;
+    typedef typename MakeRegularType<T>::type  V;
     // Read in header area.
     if (cursor_ + sizeof (T) <= zeroStart_)
     {
@@ -1228,7 +1244,7 @@ inline void
 ZcBufferIterator::ReadInOrder(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
 {
     ReadableCheck(size);
-    typedef typename MakeEndianTag<order>::Type  E;
+    typedef typename MakeEndianTag<order>::type  E;
     // Read in header area.
     if (cursor_ + size <= zeroStart_)
     {
