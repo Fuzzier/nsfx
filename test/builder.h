@@ -150,12 +150,12 @@ typedef ::nsfx::test::NullFixture NSFX_ACTIVE_FIXTURE;
     /* Register a test case by defining a static variable. */                   \
     static struct register_name                                                 \
     {                                                                           \
-        register_name(void)                                                         \
+        register_name(void)                                                     \
         {                                                                       \
             /* Use lambda expression to encourage inlining. */                  \
             NSFX_ACTIVE_TEST_SUITE->AddCase(#name, [] { case_name().Run(); });  \
         }                                                                       \
-    } NSFX_TEST_REGISTER_##case_name;                                                         \
+    } NSFX_TEST_REGISTER_##case_name;                                           \
     /* Let user define test runner in braces. */                                \
     void case_name::Run(void)
 
