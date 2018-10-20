@@ -193,9 +193,8 @@ NSFX_OPEN_NAMESPACE
  *    User-defined classes can focus upon implementing dictated interfaces, and
  *    do not implement \c IObject themselves (remain abstract).
  *    The library provides <code>Object<></code> and <code>AggObject<></code>
- *    class templates to envelope the user-defined classes, arming user-defined
- *    classes with a reference count or a controller pointer, and implementing
- *    \c IObject as appropriate.
+ *    class templates that argument the user-defined classes with a reference
+ *    count or a controller pointer, and implement \c IObject as appropriate.
  *    \c ObjectBase is intended to be used by the class templates.
  *    It is not intended to be constructed directly, thus its methods are not
  *    public.
@@ -254,6 +253,58 @@ NSFX_OPEN_NAMESPACE
  *     class.
  *     The lifetime of a \c MemberAggObject is naturally the same as its
  *     controller.
+ *
+ * 7.5 \c MutualObject
+ *     One of the limitations of the component model is that a component cannot
+ *     expose the same interface multiple times with different implementations.
+ *
+ *     For example, when a component wants to schedule multiple event sinks
+ *     via an event scheduler, it faces a problem that these event sinks share
+ *     the same interface (<code>IEventSink<></code>) but have different
+ *     implementations.
+ *
+ *     The first problem is that a component cannot expose an event sink
+ *     interface for multiple times by aggregation, nor by inheritance.
+ *     A natural solution is to create separate objects (event sinks) on heap
+ *     that implement the event sink interface, and connect these event sinks
+ *     to the event sources.
+ *
+ *     Another problem is that the component must have a lifetime as long as
+ *     the event sinks.
+ *     i.e., as long as an event source holds an event sink, the component must
+ *     not be deallocated.
+ *     The key is to let each event sink hold a reference count of the component.
+ *     i.e., let each event sink hold a <code>Ptr<></code> that points to the
+ *     component.
+ *     However, this is not efficient.
+ *
+ *     In most cases, an event source does not query other interfaces from an
+ *     event sink.
+ *     Therefore, the navigability of an event sink is not important.
+ *     What is important is that an event sink shares the same lifetime
+ *     (reference count) of the component.
+ *     \c MutualObject can be used in such cases.
+ *
+ *     A \c MutualObject shares the same reference count with its controller
+ *     that provides the \c MutualObject to other components.
+ *     However, the controller does not expose the interfaces on \c MutualObject,
+ *     nor does the \c MutualObject expose the interfaces on its controller.
+ *     They seem like two different components from the outside.
+ *
+ *     Usually, one must not hold a pointer to a member variable of a dynamic
+ *     object, since the deallocation of the object invalidates the pointer,
+ *     and a dangling pointer is deadly.
+ *     However, a \c MutualObject can be defined as a member variable of the
+ *     controller, since a \c MutualObject shares the same lifetime with the
+ *     controller.
+ *
+ *     The controller is free to provide to other components smart pointers that
+ *     point to the \c MutualObject, although it is a member variable.
+ *     The point is that a smart pointer to the \c MutualObject actually holds
+ *     a reference count of the controller.
+ *     Thus, as long as a smart pointer to the \c MutualObject exists, the
+ *     controller also exists.
+ *
  *
  * @see \c NSFX_INTERFACE_MAP_BEGIN,
  *      \c NSFX_INTERFACE_ENTRY,
@@ -322,7 +373,7 @@ struct AggregatedTag {};
  * @ingroup Component
  * @brief ObjectImpl concept.
  *
- * A class is envelopable if it satisfies the following conditions.
+ * A class conforms to the concept if it satisfies the following conditions.
  * 1. It conforms to \c IObjectConcept.
  * 2. It has a non-private \c InternalQueryInterface() function.
  * 3. It is not derived from \c ObjectBase.
@@ -331,7 +382,7 @@ template<class T>
 struct ObjectImplConcept/*{{{*/
 {
     static_assert(!std::is_base_of<ObjectBase, T>::value,
-                  "An envelopable class must not derive from ObjectBase.");
+                  "An ObjectImpl class must not derive from ObjectBase.");
 
     BOOST_CONCEPT_ASSERT((IObjectConcept<T>));
 
@@ -405,7 +456,7 @@ public:
 
 #endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-    virtual ~Object(void) BOOST_NOEXCEPT {}
+    virtual ~Object(void) {}
 
     // Non-copyable.
 private:
@@ -492,7 +543,7 @@ public:
 
 #endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-    virtual ~StaticObject(void) BOOST_NOEXCEPT {}
+    virtual ~StaticObject(void) {}
 
     // Non-copyable.
 private:
@@ -535,8 +586,6 @@ public:
  * @tparam ObjectImpl A class that conforms to \c ObjectImplConcept.
  *
  * Users cannot use this class directly.
- *
- * @internal
  */
 template<class ObjectImpl>
 class Aggregated NSFX_FINAL :/*{{{*/
@@ -574,7 +623,7 @@ private:
 
 #endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-    virtual ~Aggregated(void) BOOST_NOEXCEPT {}
+    virtual ~Aggregated(void) {}
 
 // Non-copyable.
 private:
@@ -603,8 +652,8 @@ public:
 
     /*}}}*/
 
-    // Make the protected ObjectImpl::InternalQueryInterface() a member of
-    // Aggregated class.
+    // Make the protected ObjectImpl::InternalQueryInterface() a public member
+    // of Aggregated class.
     void* InternalQueryInterface(const Uid& iid)
     {
         return ObjectImpl::InternalQueryInterface(iid);
@@ -641,12 +690,14 @@ public:
  *     The controller shall define a member variable of type
  *     <code>Ptr<IObject></code> or <code>Ptr<AggObject<ObjectImpl> ></code>
  *     to hold the allocated \c AggObject.
- *     (The rule is that <code>Ptr<></code> that holds the allocated \c AggObject
+ *     (The rule is that smart pointer that holds the allocated \c AggObject
  *     does NOT query any of its interfaces except for <code>IObject</code>.)
  *     This pointer must not be given to other objects.
  *     The \c AggObject lives until the controller is destructed.
+ *     The controller must expose the interfaces on \c ObjectImpl as its own
+ *     interfaces.
  * ### Benefits.
- *     The interfaces on an aggregated object can be exposed directly by the
+ *     The interfaces on an aggregated object are exposed directly by the
  *     controller.
  *
  * @code
@@ -746,7 +797,7 @@ public:
 
 #endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-    virtual ~AggObject(void) BOOST_NOEXCEPT {}
+    virtual ~AggObject(void) {}
 
     // Non-copyable.
 private:
@@ -811,7 +862,7 @@ private:
 // MemberAggObject
 /**
  * @ingroup Component
- * @brief An aggregable object that must be used a member variable of its constroller.
+ * @brief An aggregable object that must be used a member variable of its controller.
  *
  * @tparam ObjectImpl A class that conforms to \c ObjectImplConcept.
  *
@@ -829,8 +880,10 @@ private:
  * ### How to use?
  *     A \c MemberAggObject must be defined as a member variable of
  *     the controller class.
+ *     The controller must expose the interfaces on \c ObjectImpl as its own
+ *     interfaces.
  * ### Benefits.
- *     The interfaces on an aggregated object can be exposed directly by the
+ *     The interfaces on an aggregated object are exposed directly by the
  *     controller.
  *     A \c MemberAggObject naturally has the same lifetime as the controller,
  *     which is similar to an \c AggObject.
@@ -859,7 +912,7 @@ public:
 
 #endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-    virtual ~MemberAggObject(void) BOOST_NOEXCEPT {}
+    virtual ~MemberAggObject(void) {}
 
     // Non-copyable.
 private:
@@ -911,6 +964,109 @@ private:
     Aggregated<ObjectImpl> agg_;  /// The aggregated object.
 
 }; // class MemberAggObject /*}}}*/
+
+
+////////////////////////////////////////////////////////////////////////////////
+// MutualObject
+/**
+ * @ingroup Component
+ * @brief A seemingly separate object that can be used a member variable of its controller.
+ *
+ * @tparam ObjectImpl A class that conforms to \c ObjectImplConcept.
+ *
+ * The \c ObjectImpl may implement \c ObjectBase::InternalQueryInterface() via
+ * \c NSFX_INTERFACE_XXX() macros.
+ *
+ * ### When to use?
+ *     \c MutualObject can be used by a controller to provide an object that
+ *     exposes a separate set of interfaces.
+ * ### How to use?
+ *     A \c MutualObject can be defined as a member variable of the controller
+ *     The controller can provide to other objects smart pointers that point to
+ *     the \c MutualObject.
+ *     The controler must not expose the interfaces on a \c MutualObject as its
+ *     own interfaces.
+ * ### Benefits.
+ *     The controller lives as long as other objects hold smart pointers to
+ *     the \c MutualObject.
+ *     It saves a <code>Ptr<></code> to manage lifetime, if the \c MutualObject
+ *     is defined as a member variable.
+ *     There is no need to allocate on heap.
+ */
+template<class ObjectImpl>
+class MutualObject NSFX_FINAL :/*{{{*/
+    private ObjectBase, // Use private inherit as the methods are only used internally.
+    public ObjectImpl
+{
+private:
+    BOOST_CONCEPT_ASSERT((ObjectImplConcept<ObjectImpl>));
+
+public:
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+    template<class...Args>
+    MutualObject(IObject* controller, Args&&... args) :
+        ObjectBase(controller),
+        ObjectImpl(controller, std::forward<Args>(args)...)
+    {
+        if (!controller)
+        {
+            BOOST_THROW_EXCEPTION(BadAggregation());
+        }
+    }
+
+#else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+    MutualObject(IObject* controller) :
+        ObjectBase(controller)
+    {
+        if (!controller)
+        {
+            BOOST_THROW_EXCEPTION(BadAggregation());
+        }
+    }
+
+# define BOOST_PP_ITERATION_PARAMS_1  (4, (1, NSFX_MAX_ARITY, <nsfx/component/object.h>, 5))
+# include BOOST_PP_ITERATE()
+
+#endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+
+    virtual ~MutualObject(void) {}
+
+    // Non-copyable.
+private:
+    BOOST_DELETED_FUNCTION(MutualObject(const MutualObject& ));
+    BOOST_DELETED_FUNCTION(MutualObject& operator=(const MutualObject& ));
+
+    // IObject./*{{{*/
+public:
+    virtual refcount_t AddRef(void) BOOST_NOEXCEPT NSFX_FINAL NSFX_OVERRIDE
+    {
+        return ControllerAddRef();
+    }
+
+    virtual refcount_t Release(void) NSFX_FINAL NSFX_OVERRIDE
+    {
+        return ControllerRelease();
+    }
+
+    /**
+     * @brief Exposes interfaces.
+     *
+     * The interfaces on the controller is not exposed.
+     */
+    virtual void* QueryInterface(const Uid& iid) NSFX_FINAL NSFX_OVERRIDE
+    {
+        return ObjectImpl::InternalQueryInterface(iid);
+    }
+
+    /*}}}*/
+
+    // Methods.
+    ObjectImpl* GetImpl(void)
+    {
+        return static_cast<ObjectImpl*>(this);
+    }
+
+}; // class MutualObject /*}}}*/
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1120,7 +1276,7 @@ StaticObject(BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, && a)) :
 # elif BOOST_PP_ITERATION_FLAGS() == 2
 
 // template<class A0, class A1, ...>
-// AggObject(IObject* controller, A0&& a0, A1&& a1, ...)) :
+// Aggregated(IObject* controller, A0&& a0, A1&& a1, ...)) :
 //     ObjectBase(controller),
 //     ObjectImpl(std::forward<A0>(a0), std::forward<A1>(a1), ...)
 template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
@@ -1151,6 +1307,23 @@ AggObject(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(),
 template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
 MemberAggObject(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, && a)) :
     agg_(controller, BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, )) {}
+
+# elif BOOST_PP_ITERATION_FLAGS() == 5
+
+// template<class A0, class A1, ...>
+// MutualObject(IObject* controller, A0&& a0, A1&& a1, ...)) :
+//     ObjectBase(controller),
+//     ObjectImpl(std::forward<A0>(a0), std::forward<A1>(a1), ...)
+template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
+MutualObject(IObject* controller, BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, && a)) :
+    ObjectBase(controller),
+    ObjectImpl(BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, ))
+{
+    if (!controller)
+    {
+        BOOST_THROW_EXCEPTION(BadAggregation());
+    }
+}
 
 # endif // BOOST_PP_ITERATION_FLAGS() == x
 
