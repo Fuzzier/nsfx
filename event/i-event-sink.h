@@ -96,131 +96,278 @@ NSFX_OPEN_NAMESPACE
  *                         EventSinkCreator<>, CreateEventSink<>()
  * @endcode
  *
- * ## Event sink interface definition and implementation.
+ * # Event sink interface definition and implementation.
  *    The library provides several tools for event sink interface definition
  *    and implementation.
  *
- * ### 1. Define an event sink interface.
- *     The macro \c NSFX_DEFINE_EVENT_SINK_INTERFACE() is provided.
+ * ## 1. Define an event sink interface.
+ *    The macro \c NSFX_DEFINE_EVENT_SINK_INTERFACE() is provided.
  *
- * ### 2. Implement an event sink interface.
- *     The library provides three tiers of tools.
+ * ## 2. Implement an event sink interface.
+ *    The library provides three tiers of tools.
  *
- * #### 2.1 Class templates.
- *      The library provides three class templates that implements \c IEventSink:
- *      \c FunctorBasedEventSink, \c FunctionPointerBasedEventSink and
- *      \c MemberFunctionBasedEventSink.
+ * ### 2.1 Class templates.
+ *     The library provides three class templates that implements \c IEventSink:
+ *     * \c FunctorBasedEventSink
+ *     * \c FunctionPointerBasedEventSink
+ *     * \c MemberFunctionBasedEventSink
  *
- *      Users can specialize these class templates to fit their own needs.
- *      The specialized templates conform to \c EnvelopableConcept, thus they
- *      can be enveloped in \c Object and \c AggObject.
+ *     Users can specialize these class templates to fit their own needs.
+ *     The specialized templates conform to \c ObjectImplConcept, thus they
+ *     can be used with \c Object and \c AggObject.
  *
- *      For example
- *      @code
- *      #include <nsfx/event/event-sink.h>
+ *     For example
+ *     @code
+ *     #include <nsfx/event/event-sink.h>
  *
- *      // Define an event sink interface.
- *      NSFX_DEFINE_EVENT_SINK_INTERFACE(
- *          IMyEventSink, "edu.uestc.nsfx.example.IMyEventSink"
- *          ( char(short, int) ));
+ *     // Define an event sink interface.
+ *     NSFX_DEFINE_EVENT_SINK_INTERFACE(
+ *         IMyEventSink, "edu.uestc.nsfx.example.IMyEventSink"
+ *         ( char(short, int) ));
  *
- *      // Create event sink object:
- *      // Functor based event sink.
- *      struct Functor
- *      {
- *          char operator()(short, int)
- *          {
- *              return '0';
- *          }
- *      };
- *      typedef FunctorBasedEventSink<IMyEventSink, Functor>  MyEventSink1;
- *      typedef Object<MyEventSink1>     MyEventSinkClass1;
- *      Ptr<IMyEventSink> s1(new MyEventSinkClass1(nullptr, Functor()));
+ *     // Create event sink object:
+ *     // Functor based event sink.
+ *     struct Functor
+ *     {
+ *         char operator()(short, int)
+ *         {
+ *             return '0';
+ *         }
+ *     };
+ *     typedef FunctorBasedEventSink<IMyEventSink, Functor>  MyEventSink1;
+ *     typedef Object<MyEventSink1>  MyEventSinkClass1;
+ *     Ptr<IMyEventSink> s1(new MyEventSinkClass1(nullptr, Functor()));
  *
- *      // Function pointer based event sink.
- *      char Bar(short, int)
- *      {
- *          return '0';
- *      }
- *      typedef FunctionPointerBasedEventSink<IMyEventSink>  MyEventSink2;
- *      typedef Object<MyEventSink2>     MyEventSinkClass2;
- *      Ptr<IMyEventSink> s2(new MyEventSinkClass2(nullptr, &Bar));
+ *     // Function pointer based event sink.
+ *     char Bar(short, int)
+ *     {
+ *         return '0';
+ *     }
+ *     typedef FunctionPointerBasedEventSink<IMyEventSink>  MyEventSink2;
+ *     typedef Object<MyEventSink2>  MyEventSinkClass2;
+ *     Ptr<IMyEventSink> s2(new MyEventSinkClass2(nullptr, &Bar));
  *
- *      // Member function based event sink.
- *      struct Obj
- *      {
- *          char Qux(short, int)
- *          {
- *              return '0';
- *          }
- *      };
- *      static Obj o;
- *      typedef MemberFunctionBasedEventSink<IMyEventSink, Obj>  MyEventSink3;
- *      typedef Object<MyEventSink3>     MyEventSinkClass3;
- *      Ptr<IMyEventSink> s3(new MyEventSinkClass3(nullptr, &o, &Obj::Qux));
- *      @endcode
+ *     // Member function based event sink.
+ *     struct Obj
+ *     {
+ *         char Qux(short, int)
+ *         {
+ *             return '0';
+ *         }
+ *     };
+ *     static Obj o;
+ *     typedef MemberFunctionBasedEventSink<IMyEventSink, Obj>  MyEventSink3;
+ *     typedef Object<MyEventSink3>  MyEventSinkClass3;
+ *     Ptr<IMyEventSink> s3(new MyEventSinkClass3(nullptr, &o, &Obj::Qux));
+ *     @endcode
  *
- * #### 2.2 Maker class.
- *      The library provides \c EventSinkCreator class template.
- *      The class template supplies three overloaded function call operators
- *      that create event sink objects.
+ * ### 2.2 Maker class.
+ *     The library provides \c EventSinkCreator class template.
+ *     The class template supplies three overloaded function call operators
+ *     that create event sink objects.
  *
- *      For example
- *      @code
- *      // Functor based event sink.
- *      Ptr<IMyEventSink> s4 = EventSinkCreator<IMyEventSink>()(nullptr,
- *                              [] (short, int) { return '0'; });
+ *     For example
+ *     @code
+ *     // Functor based event sink.
+ *     Ptr<IMyEventSink> s4 =
+ *         EventSinkCreator<IMyEventSink>()(nullptr, [] (short, int) { return '0'; });
  *
- *      // Function pointer based event sink.
- *      char Bar(short, int)
- *      {
- *          return '0';
- *      }
- *      Ptr<IMyEventSink> s5 = EventSinkCreator<IMyEventSink>()(nullptr, &Bar);
+ *     // Function pointer based event sink.
+ *     char Bar(short, int)
+ *     {
+ *         return '0';
+ *     }
+ *     Ptr<IMyEventSink> s5 = EventSinkCreator<IMyEventSink>()(nullptr, &Bar);
  *
- *      // Member function based event sink.
- *      struct Obj
- *      {
- *          char Qux(short, int)
- *          {
- *              return '0';
- *          }
- *      };
- *      static Obj o;
- *      Ptr<IMyEventSink> s6 = EventSinkCreator<IMyEventSink>()(nullptr,
- *                              &f, &Functor::Foo));
- *      @endcode
+ *     // Member function based event sink.
+ *     struct Obj
+ *     {
+ *         char Qux(short, int)
+ *         {
+ *             return '0';
+ *         }
+ *     };
+ *     static Obj o;
+ *     Ptr<IMyEventSink> s6 =
+ *         EventSinkCreator<IMyEventSink>()(nullptr, &o, &Obj::Qux));
+ *     @endcode
  *
- * #### 2.3 Maker function.
- *      The library provides \c CreateEventSink() function template.
- *      The function template supplies three overloaded functions that create
- *      event sink objects.
+ * ### 2.3 Maker function.
+ *     The library provides \c CreateEventSink() function template.
+ *     The function template supplies three overloaded functions that create
+ *     event sink objects.
  *
- *      For example
- *      @code
- *      // Functor based event sink.
- *      Ptr<IMyEventSink> s7 = CreateEventSink<IMyEventSink>(nullptr,
- *                              [] (short, int) { return '0'; });
+ *     For example
+ *     @code
+ *     // Functor based event sink.
+ *     Ptr<IMyEventSink> s7 =
+ *         CreateEventSink<IMyEventSink>(nullptr, [] (short, int) { return '0'; });
  *
- *      // Function pointer based event sink.
- *      char Bar(short, int)
- *      {
- *          return '0';
- *      }
- *      Ptr<IMyEventSink> s8 = CreateEventSink<IMyEventSink>(nullptr, &Bar);
+ *     // Function pointer based event sink.
+ *     char Bar(short, int)
+ *     {
+ *         return '0';
+ *     }
+ *     Ptr<IMyEventSink> s8 = CreateEventSink<IMyEventSink>(nullptr, &Bar);
  *
- *      // Member function based event sink.
- *      struct Obj
- *      {
- *          char Qux(short, int)
- *          {
- *              return '0';
- *          }
- *      };
- *      static Obj o;
- *      Ptr<IMyEventSink> s9 = CreateEventSink<IMyEventSink>(nullptr,
- *                              &f, &Functor::Foo));
- *      @endcode
+ *     // Member function based event sink.
+ *     struct Obj
+ *     {
+ *         char Qux(short, int)
+ *         {
+ *             return '0';
+ *         }
+ *     };
+ *     static Obj o;
+ *     Ptr<IMyEventSink> s9 =
+ *         CreateEventSink<IMyEventSink>(nullptr, &o, &Obj::Qux));
+ *     @endcode
+ *
+ * ## 3. The management of connections.
+ *    The <code>IEvent<></code> interface template provides a \c Connect()
+ *    method which returns a cookie value.
+ *    To disconnect, users call \c Disconnect() and pass the cookie value to
+ *    the event source.
+ *    Users have to manage the cookie value.
+ *
+ * ### 3.1 OPNET and OMNET++
+ *     In OPNET and OMNET++, a module do not invoke methods on other modules
+ *     directly.
+ *     Instead, each module exposes several ports (gates), which are connected
+ *     via connectors, such as data streams in OPNET and channels in OMNET++.
+ *
+ *     A module sends a packet (message) to a port (gate).
+ *     The connector delivers the packet to the peer port (gate), and notifies
+ *     the peer module.
+ *
+ *     Since peer modules are hidden behind ports (gates), the modules do not
+ *     see each other directly.
+ *     Thus, modules are loosely coupled.
+ *
+ *     A port (gate) manages the state of the connection.
+ *     When an input port (gate) is connected to an output port (gate), both
+ *     ports (gates) store the information about their peer ports (gates).
+ *
+ *     However, the management of ports (gates) and connectors significantly
+ *     complicates the system, since users have to name and manage the ports
+ *     (gates) and connectors.
+ *     That is the reason why OPNET provides a GUI modeling tool and a set of
+ *     APIs, and OMNET++ provides a separate NED modeling language, in order to
+ *     make easier the naming and management burden.
+ *
+ *     OPNET only permits static connections among objects.
+ *     In OMNET++, the NED describes static connections among objects, and APIs
+ *     are provided to make runtime connections.
+ *
+ *     OPNET and OMNET++ takes a step even further that the ports (gates)
+ *     accept any kind of packet (message).
+ *     i.e., there is no explicit specification about what kind of information
+ *     must be carried by a packet (message), and it leaves the users to guess,
+ *     look for documents, or even read source codes.
+ *     A specification actually exists, but it is just not stated explicitly.
+ *
+ *     The coupling among modules still remains, in an implicit and shadowy way.
+ *     Even if packets (messages) can be delivered via ports (gates), that does
+ *     not mean the modules are soundly connected with each other.
+ *     Without an explicit specification, there lacks a compile-time or runtime
+ *     sanity check for the correctness of the connections among modules.
+ *     Thus, modules are not easily reused.
+ *
+ *     However, this does make it easier for OPNET and OMNET++ to implement
+ *     inter-process communication between modules, since there is only one
+ *     thing to implement, i.e., the serialization and deserialization of
+ *     packets (messages).
+ *
+ * ### 3.2 NS3
+ *     In NS3, there are two methods for objects to communicate with each other.
+ *
+ *     First, an object may hold a pointer to another object (or its interface),
+ *     and directly invoke the methods on that object (interface).
+ *     Second, an object may provide a callback site (event source), and let
+ *     another object to connect a callback (event sink) to the site.
+ *
+ *     The first method is usually used to send packets downward along the
+ *     protocol layers.
+ *     And the second methods is usually used to forward packets upward along
+ *     the protocol layers.
+ *
+ *     Since the first method is commonly used in NS3, the objects are more
+ *     tightly coupled in NS3 than the modules in OPNET and OMNET++.
+ *
+ *     In order to connect a callback, an object obtains a pointer to the
+ *     object that provides the callback site, and invokes its member functions
+ *     to connect or disconnect the callback.
+ *
+ *     Since each callback site accepts only one callback, the management of
+ *     connections is simple.
+ *     That is, there is no need for a callback site to return a key to
+ *     identify a connection, since there is no need to use a key to disconnect
+ *     a specific connection.
+ *     Thus, no extra information (keys) has to be saved by the object that
+ *     connects a callback to a callback site.
+ *
+ *     By the way, in NS3, the codes that connect objects together are a mess,
+ *     scattered and buried deeply.
+ *
+ * ### 3.3 NSFX
+ *     In NSFX, an event model is specified.
+ *     An event sink is only responsible to react to events.
+ *     An event source provides an event, and allows multiple event sinks to
+ *     connect and listen to the event.
+ *     Since multiple event sinks may be connected to a single event source,
+ *     and a single event sink may be connected to an event source multiple
+ *     times, an event source provides a unique cookie value to identify each
+ *     connection.
+ *     The cookie value can be used to disconnect an event sink from the event
+ *     source.
+ *
+ *     A cookie value does not identify an event sink, since when an event sink
+ *     is connected multiple times to an event source, each connection has a
+ *     different cookie value.
+ *
+ *     Cookie values are unique as regard to the same event source.
+ *     Different event sources may provide the same cookie values to identify
+ *     their own connections.
+ *
+ *     This approach is adopted from Microsoft COM.
+ *
+ *     There are three kind of objects attending the connection between
+ *     an event source and an event sink.
+ *
+ *     1. An event source manages the connections (cookies and sinks) itself.
+ *
+ *     2. An event sink implementated by the users to react to the event.
+ *
+ *        An event sink does not provide any methods to manage a connection.
+ *
+ *     3. An object that manages the connections (cookeis and sinks).
+ *
+ *        When an event sink is connected to an event source, the event source
+ *        provides a cookie value.
+ *        The cookie value shall be managed by the object that holds the event
+ *        sink and performs the connection.
+ *
+ *     <p>
+ *     In OMNET++, the keys are managed by gates, internally.
+ *     Users focus upon the implementation of \c handleMessage(), which is
+ *     a central point of message processing, and a shame that lots of \c if
+ *     and \c switch have to be used there.
+ *
+ *     In OMNET++, when one gate is connected to another gate, both gates have
+ *     to store the state of the connection.
+ *     Since the library provides the implementation of gate, one gate can
+ *     access the private resources of another gate, and stores the state of
+ *     the connection for the peer gate upon connection.
+ *     However, the mechanism in OMNET++ cannot be adopted in NSFX.
+ *
+ *     There is no connection object (port, gate, etc.) responsible for
+ *     the management, since it just complicates the system.
+ *     A separate connection object has to store the event source, the event
+ *     sink, as well as the cookie value.
+ *     To keep the connection valid, it has to occupy one reference count of
+ *     each of the event source and the event sink.
+ *     It is far more clean to let the object that holds the event sink manage
+ *     the cookie value.
  */
 template<class Proto = typename std::remove_pointer<void(void)>::type>
 class IEventSink;
@@ -268,10 +415,9 @@ public:
 ////////////////////////////////////////
 #else // if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-#define BOOST_PP_ITERATION_PARAMS_1  \
-    (3, (0, NSFX_MAX_ARITY, <nsfx/event/i-event-sink.h>))
+# define BOOST_PP_ITERATION_PARAMS_1  (3, (0, NSFX_MAX_ARITY, <nsfx/event/i-event-sink.h>))
 
-#include BOOST_PP_ITERATE()
+# include BOOST_PP_ITERATE()
 
 #endif // defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 

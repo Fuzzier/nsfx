@@ -149,18 +149,19 @@ NSFX_OPEN_NAMESPACE
  *         MyEventClass myEvent_;
  *     };
  *
- *     NSFX_DEFINE_CLASS_UID(MyObject, "edu.uestc.nsfx.example.MyObject");
- *     NSFX_REGISTER_CLASS(MyObject, uid_of<MyObject>());
+ *     NSFX_REGISTER_CLASS(MyObject, "edu.uestc.nsfx.example.MyObject");
  *
  *     // Create an object of the class, and connect a sink to the event.
  *     try
  *     {
- *         Ptr<IObject> o = CreateObject<IObject>(uid_of<MyObject>());
- *         Ptr<IMyEvent>(o)->Connect(CreateEventSink<IMyEventSink>(
- *             nullptr, [] (short s, int i) {
- *                 // Process the event.
- *                 return '0';
- *         }));
+ *         Ptr<IObject> o = CreateObject<IObject>("edu.uestc.nsfx.example.MyObject");
+ *         cookie_t cookie =
+ *             Ptr<IMyEvent>(o)->Connect(CreateEventSink<IMyEventSink>(
+ *                 nullptr, [] (short s, int i) {
+ *                     // Process the event.
+ *                     return '0';
+ *             }));
+ *         Ptr<IMyEvent>(o)->Disconnect(cookie);
  *     }
  *     catch (boost::exception& e)
  *     {
@@ -189,8 +190,10 @@ public:
     /**
      * @brief Connect an event sink.
      *
-     * @return The cookie that can be used to disconnect the event sink.
+     * @return A non-zero cookie value that can be used to disconnect
+     *         the event sink.
      *
+     * @throw InvalidPointer
      * @throw ConnectionLimit
      */
     virtual cookie_t Connect(Ptr<IEventSinkType> sink) = 0;
@@ -198,8 +201,8 @@ public:
     /**
      * @brief Disconnect an event sink.
      *
-     * @remarks The method shall <b>not</b> throw even if the \c cookie does
-     *          not represent a valid connection.
+     * This function does not throw even if the cookie does not represent
+     * a valid connection.
      */
     virtual void Disconnect(cookie_t cookie) = 0;
 

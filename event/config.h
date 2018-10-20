@@ -32,6 +32,18 @@
 NSFX_OPEN_NAMESPACE
 
 
+/**
+ * @ingroup Event
+ * @brief A cookie value that represents an event connection.
+ *
+ * A cookie is returned by an event source when an event sink is connected.
+ * It can be used to disconnect the event sink from the event source.
+ *
+ * A cookie can be initialized to \c 0.
+ */
+typedef uint32_t cookie_t;
+
+
 NSFX_CLOSE_NAMESPACE
 
 

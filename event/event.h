@@ -69,12 +69,12 @@ public:
  * @tparam limit The maximum number of connections.
  *
  * An event class implements <code>IEvent<></code> interface.
- * It implements the two methods \c Connect() and \c Disconnect().
+ * It implements the method \c Connect().
  * It also provides several non-virtual member functions that allow an event
  * source to access the event sinks.
  *
- * Event classes conform to \c EnvelopableConcept, thus they can be enveloped
- * in \c Object and \c AggObject.
+ * Event classes conform to \c ObjectImplConcept, thus they can be used with
+ * \c Object and \c AggObject.
  *
  * @code
  * Proto ---> IEventSink<> ---> user-defined event sink interface
@@ -85,8 +85,19 @@ public:
  *                                              V
  *                                            Event<> (a concrete class)
  * @endcode
+ *
+ * The class provides a \c Visit() function template to visit the event sinks.
+ * Users can use this function template to fire the event.
+ *
+ * The class also provides a \c Fire() function template to fire the event more
+ * directly.
+ * However, the \c Fire() function template performs perfect forwarding if and
+ * only if <b>limit == 1</b>.
+ * For <b>limit > 1</b>, it passes the arguments as <i>l-values</i>.
+ * Therefore, the parameters of the event sink <b>must</b> be <i>l-values</i>,
+ * in order to use \c Fire() for <code>limit > 1</code>.
  */
-template<class IEventName, size_t limit = 0x7fffffff>
+template<class IEventName, uint32_t limit = UINT32_MAX>
 class Event :/*{{{*/
     public IEventName
 {
@@ -98,14 +109,13 @@ class Event :/*{{{*/
     typedef typename IEventType::IEventSinkType  IEventSinkType;
 
 public:
-    Event(void) BOOST_NOEXCEPT :
-        cookie_(0)
-    {
-    }
+    Event(void) :
+        numSinks_(0)
+    {}
 
     virtual ~Event(void) {}
 
-    // IEvent /*{{{*/
+    // IEvent
 public:
     virtual cookie_t Connect(Ptr<IEventSinkType> sink) NSFX_OVERRIDE
     {
@@ -113,33 +123,72 @@ public:
         {
             BOOST_THROW_EXCEPTION(InvalidPointer());
         }
-        if (cookie_ == limit)
+        if (numSinks_ == limit)
         {
             BOOST_THROW_EXCEPTION(ConnectionLimit());
         }
-        sinks_.emplace(++cookie_, std::move(sink));
-        return cookie_;
+        cookie_t cookie = Insert(std::move(sink));
+        if (!cookie)
+        {
+            BOOST_THROW_EXCEPTION(ConnectionLimit());
+        }
+        return cookie;
     }
 
     virtual void Disconnect(cookie_t cookie) NSFX_OVERRIDE
     {
-        sinks_.erase(cookie);
+        if (--cookie < sinks_.size())
+        {
+            if (sinks_[cookie])
+            {
+                --numSinks_;
+                sinks_[cookie] = nullptr;
+            }
+        }
     }
 
-    /*}}}*/
+private:
+    cookie_t Insert(Ptr<IEventSinkType>&& sink)
+    {
+        cookie_t cookie = 0;
+        // If there is a free slot, find and reuse the slot.
+        if (numSinks_ < sinks_.size())
+        {
+            for (uint32_t i = 0; i < sinks_.size(); ++i)
+            {
+                // If this is a free slot.
+                if (!sinks_[i])
+                {
+                    sinks_[i] = std::move(sink);
+                    ++numSinks_;
+                    cookie = i + 1;
+                }
+            }
+        }
+        // If the slots are full, try to extend it.
+        else // if (numSinks_ == sinks_.size())
+        {
+            try
+            {
+                sinks_.emplace_back(std::move(sink));
+                ++numSinks_;
+                cookie = numSinks_;
+            }
+            catch (std::bad_alloc& )
+            {
+                // Leave cookie to be 0.
+            }
+        }
+        return cookie;
+    }
 
 public:
-    void DisconnectAll(void)
-    {
-        sinks_.clear();
-    }
-
     /**
      * @brief Get the number of sinks.
      */
-    size_t GetNumSinks(void) const BOOST_NOEXCEPT
+    uint32_t GetNumSinks(void) const BOOST_NOEXCEPT
     {
-        return sinks_.size();
+        return numSinks_;
     }
 
     /**
@@ -155,17 +204,58 @@ public:
 
         for (auto it = sinks_.cbegin(); it != sinks_.cend(); ++it)
         {
-            visitor(it->second.Get());
+            if (*it)
+            {
+                visitor((*it).Get());
+            }
         }
     }
+
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+    /**
+     * @brief Fire the event.
+     *
+     * @remarks The arguments are perfectly forwarded for the <b>last</b> sink.
+     *          For other sinks, the arguments are forwarded as <i>l-values</i>.
+     */
+    template<class... Args>
+    void Fire(Args&&... args)
+    {
+        for (auto it = sinks_.cbegin(); it != sinks_.cend(); ++it)
+        {
+            if (*it)
+            {
+                (*it)->Fire(args...);
+            }
+        }
+    }
+
+#else // defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+
+    void Fire(void)
+    {
+        for (auto it = sinks_.cbegin(); it != sinks_.cend(); ++it)
+        {
+            if (*it)
+            {
+                (*it)->Fire();
+            }
+        }
+    }
+
+# define BOOST_PP_ITERATION_PARAMS_1  (4, (1, NSFX_MAX_ARITY, <nsfx/event/event.h>, 0))
+
+# include BOOST_PP_ITERATE()
+
+#endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
     NSFX_INTERFACE_MAP_BEGIN(Event)
         NSFX_INTERFACE_ENTRY(IEventType)
     NSFX_INTERFACE_MAP_END()
 
 private:
-    cookie_t  cookie_;
-    unordered_map<cookie_t, Ptr<IEventSinkType> >  sinks_;
+    uint32_t numSinks_;
+    vector<Ptr<IEventSinkType> > sinks_;
 
 }; // class Event /*}}}*/
 
@@ -180,6 +270,27 @@ class Event<IEventName, /* limit = */ 1> :/*{{{*/
     typedef IEventName                           IEventType;
     typedef typename IEventType::Prototype       Prototype;
     typedef typename IEventType::IEventSinkType  IEventSinkType;
+
+    ////////////////////////////////////////
+    class Connection :
+        virtual public IObject
+    {
+    public:
+        Connection(Event* event) :
+            event_(event)
+        {}
+
+        virtual ~Connection(void)
+        {
+            event_->Disconnect();
+        }
+
+        NSFX_INTERFACE_MAP_BEGIN(Connection)
+        NSFX_INTERFACE_MAP_END()
+
+    private:
+        Event* event_;
+    };
 
 public:
     virtual ~Event(void) {}
@@ -197,23 +308,21 @@ public:
             BOOST_THROW_EXCEPTION(ConnectionLimit());
         }
         sink_ = std::move(sink);
-        return 0x7fffffff;
+        return 1;
     }
 
     virtual void Disconnect(cookie_t cookie) NSFX_OVERRIDE
     {
-        sink_ = nullptr;
+        if (cookie == 1)
+        {
+            sink_ = nullptr;
+        }
     }
 
     /*}}}*/
 
 public:
-    void DisconnectAll(void)
-    {
-        sinks_.clear();
-    }
-
-    size_t GetNumSinks(void) const BOOST_NOEXCEPT
+    uint32_t GetNumSinks(void) const BOOST_NOEXCEPT
     {
         return sink_ ? 1 : 0;
     }
@@ -227,6 +336,36 @@ public:
             visitor(sink_.Get());
         }
     }
+
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+    /**
+     * @brief Fire the event.
+     *
+     * @remarks The arguments are perfectly forwarded to the sink.
+     */
+    template<class... Args>
+    void Fire(Args&&... args)
+    {
+        if (sink_)
+        {
+            sink_->Fire(std::forward<Args>(args)...);
+        }
+    }
+
+#else // defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+    void Fire(void)
+    {
+        if (sink_)
+        {
+            sink_->Fire();
+        }
+    }
+
+# define BOOST_PP_ITERATION_PARAMS_1  (4, (1, NSFX_MAX_ARITY, <nsfx/event/event.h>, 1))
+
+# include BOOST_PP_ITERATE()
+
+#endif // !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
     NSFX_INTERFACE_MAP_BEGIN(Event)
         NSFX_INTERFACE_ENTRY(IEventType)
@@ -242,4 +381,45 @@ NSFX_CLOSE_NAMESPACE
 
 
 #endif // EVENT_H__93817278_8437_49D0_9357_68F41D4EDA05
+
+
+////////////////////////////////////////////////////////////////////////////////
+#if defined(BOOST_PP_IS_ITERATING) /*{{{*/
+
+# define NSFX_PP_FORWARD(z, n, d)  std::forward<A ## n>(a ## n)
+
+# if BOOST_PP_ITERATION_FLAGS() == 0
+// template<class A0, class A1, ...>
+// void Fire(A0&& a0, A1&& a1, ...)
+template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
+void Fire(BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, &&a))
+{
+    for (auto it = sinks_.cbegin(); it != sinks_.cend(); ++it)
+    {
+        if (*it)
+        {
+            // (*it)->Fire(a0, a1, ...);
+            (*it)->Fire(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), a));
+        }
+    }
+};
+
+# elif BOOST_PP_ITERATION_FLAGS() == 1
+// template<class A0, class A1, ...>
+// void Fire(A0&& a0, A1&& a1, ...)
+template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
+void Fire(BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, &&a))
+{
+    if (sink_)
+    {
+        // sink_->Fire(std::forward<A0>(a0), std::forward<A1>(a1), ...);
+        sink_->Fire(BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, ));
+    }
+};
+
+# endif // BOOST_PP_ITERATION_FLAGS() == x
+
+# undef NSFX_PP_FORWARD
+
+#endif // defined(BOOST_PP_IS_ITERATING) /*}}}*/
 
