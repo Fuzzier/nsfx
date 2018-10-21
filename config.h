@@ -198,9 +198,16 @@ NSFX_CLOSE_NAMESPACE
 
 #include <cstddef>
 NSFX_OPEN_NAMESPACE
+
 using std::size_t;
 using std::ptrdiff_t;
+
+/**
+ * @ingroup Component
+ * @brief A reference counter that manages the lifetime of an object.
+ */
 typedef ptrdiff_t  refcount_t;
+
 NSFX_CLOSE_NAMESPACE
 
 

@@ -73,14 +73,6 @@
 
 NSFX_OPEN_NAMESPACE
 
-/**
- * @ingroup Component
- * @brief The type of cookie.
- *
- * A cookie is obtained when connecting a event sink to an event source, and
- * can be used to disconnect the sink from the event source later.
- */
-typedef uint32_t  cookie_t;
 
 NSFX_CLOSE_NAMESPACE
 
