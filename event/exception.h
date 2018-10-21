@@ -31,6 +31,12 @@ NSFX_OPEN_NAMESPACE
  */
 struct ConnectionLimit : ComponentException {};
 
+/**
+ * @ingroup Exception
+ * @brief The cookie does not represent a valid connection.
+ */
+struct NoConnection : ComponentException {};
+
 
 NSFX_CLOSE_NAMESPACE
 

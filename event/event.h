@@ -162,6 +162,7 @@ private:
                     sinks_[i] = std::move(sink);
                     ++numSinks_;
                     cookie = i + 1;
+                    break;
                 }
             }
         }
@@ -189,6 +190,15 @@ public:
     uint32_t GetNumSinks(void) const BOOST_NOEXCEPT
     {
         return numSinks_;
+    }
+
+    IEventSinkType* GetSink(cookie_t cookie) const
+    {
+        if (cookie == 0 || cookie > sinks_.size())
+        {
+            BOOST_THROW_EXCEPTION(NoConnection());
+        }
+        return sinks_[--cookie];
     }
 
     /**
@@ -325,6 +335,15 @@ public:
     uint32_t GetNumSinks(void) const BOOST_NOEXCEPT
     {
         return sink_ ? 1 : 0;
+    }
+
+    IEventSinkType* GetSink(cookie_t cookie) const
+    {
+        if (cookie != 1 || !sink_)
+        {
+            BOOST_THROW_EXCEPTION(NoConnection());
+        }
+        return sink_;
     }
 
     template<class Visitor>

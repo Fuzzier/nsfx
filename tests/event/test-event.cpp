@@ -105,105 +105,72 @@ NSFX_TEST_SUITE(Event)
     {
         try
         {
-            nsfx::Ptr<Iv0> sv0_1 = nsfx::EventSinkCreator<Iv0>()(nullptr, &V0);
-            nsfx::Ptr<Iv0> sv0_2 = nsfx::EventSinkCreator<Iv0>()(nullptr, &V0);
+            nsfx::Ptr<Iv0> sv0 = nsfx::EventSinkCreator<Iv0>()(nullptr, &V0);
 
-            nsfx::Ptr<Iv1> sv1_1 = nsfx::EventSinkCreator<Iv1>()(nullptr, &V1);
-            nsfx::Ptr<Iv1> sv1_2 = nsfx::EventSinkCreator<Iv1>()(nullptr, &V1);
+            nsfx::Ptr<Iv1> sv1 = nsfx::EventSinkCreator<Iv1>()(nullptr, &V1);
 
-            nsfx::Ptr<Iv2> sv2_1 = nsfx::EventSinkCreator<Iv2>()(nullptr, &V2);
-            nsfx::Ptr<Iv2> sv2_2 = nsfx::EventSinkCreator<Iv2>()(nullptr, &V2);
+            nsfx::Ptr<Iv2> sv2 = nsfx::EventSinkCreator<Iv2>()(nullptr, &V2);
 
             nsfx::Ptr<Test> test = new nsfx::Object<Test>();
 
-            // Connect.
-            nsfx::cookie_t cv0_1 = nsfx::Ptr<Ev0>(test)->Connect(sv0_1);
-            nsfx::cookie_t cv0_2 = nsfx::Ptr<Ev0>(test)->Connect(sv0_2);
+            ////////////////////////////////////////
+            // V0
+            nsfx::cookie_t cv0[10];
+            for (size_t i = 0; i < 10; ++i)
+            {
+                cv0[i] = nsfx::Ptr<Ev0>(test)->Connect(sv0);
+            }
 
-            nsfx::cookie_t cv1_1 = nsfx::Ptr<Ev1>(test)->Connect(sv1_1);
-            nsfx::cookie_t cv1_2 = nsfx::Ptr<Ev1>(test)->Connect(sv1_2);
+            for (size_t i = 0; i < 10; ++i)
+            {
+                NSFX_TEST_EXPECT_EQ(test->v0_.GetImpl()->GetNumSinks(), 10-i);
+                x = 0;
+                test->VisitV0();
+                NSFX_TEST_EXPECT_EQ(x, 10 - i);
+                nsfx::Ptr<Ev0>(test)->Disconnect(cv0[i]);
+            }
 
-            nsfx::cookie_t cv2_1 = nsfx::Ptr<Ev2>(test)->Connect(sv2_1);
+            ////////////////////////////////////////
+            // V1
+            nsfx::cookie_t cv1[10];
+            for (size_t i = 0; i < 10; ++i)
+            {
+                cv1[i] = nsfx::Ptr<Ev1>(test)->Connect(sv1);
+            }
+
+            for (size_t i = 0; i < 5; ++i)
+            {
+                nsfx::Ptr<Ev1>(test)->Disconnect(cv1[i*2]);
+            }
+
+            for (size_t i = 0; i < 5; ++i)
+            {
+                cv1[i*2] = nsfx::Ptr<Ev1>(test)->Connect(sv1);
+            }
+
+            for (size_t i = 0; i < 10; ++i)
+            {
+                NSFX_TEST_EXPECT_EQ(test->v1_.GetImpl()->GetNumSinks(), 10-i);
+                x = 0;
+                test->VisitV1(2);
+                NSFX_TEST_EXPECT_EQ(x, (10-i)*2);
+                nsfx::Ptr<Ev1>(test)->Disconnect(cv1[i]);
+            }
+
+            ////////////////////////////////////////
+            // V2
+            nsfx::cookie_t cv2;
+            cv2 = nsfx::Ptr<Ev2>(test)->Connect(sv2);
 
             try
             {
-                nsfx::cookie_t cv2_2 = nsfx::Ptr<Ev2>(test)->Connect(sv2_2);
+                nsfx::Ptr<Ev2>(test)->Connect(sv2);
                 NSFX_TEST_EXPECT(false);
             }
             catch (nsfx::ConnectionLimit& )
             {
                 // Should come here.
             }
-
-            ////////////////////////////////////////
-            // V0
-            // Fire event for 2 sinks.
-            x = 0;
-            test->VisitV0();
-            NSFX_TEST_EXPECT_EQ(x, 2);
-            NSFX_TEST_EXPECT_EQ(test->v0_.GetImpl()->GetNumSinks(), 2);
-
-            // Disconnect 1 sink.
-            nsfx::Ptr<Ev0>(test)->Disconnect(cv0_1);
-            NSFX_TEST_EXPECT_EQ(test->v0_.GetImpl()->GetNumSinks(), 1);
-
-            // Fire event for 1 sink.
-            x = 0;
-            test->FireV0();
-            NSFX_TEST_EXPECT_EQ(x, 1);
-
-            // Disconnect 1 sink.
-            nsfx::Ptr<Ev0>(test)->Disconnect(cv0_2);
-            NSFX_TEST_EXPECT_EQ(test->v0_.GetImpl()->GetNumSinks(), 0);
-
-            // Fire event for 0 sinks.
-            x = 0;
-            test->VisitV0();
-            NSFX_TEST_EXPECT_EQ(x, 0);
-
-            ////////////////////////////////////////
-            // V1
-            // Fire event for 2 sinks.
-            x = 0;
-            test->VisitV1(2);
-            NSFX_TEST_EXPECT_EQ(x, 4);
-            NSFX_TEST_EXPECT_EQ(test->v1_.GetImpl()->GetNumSinks(), 2);
-
-            // Disconnect 1 sink.
-            nsfx::Ptr<Ev1>(test)->Disconnect(cv1_2);
-            NSFX_TEST_EXPECT_EQ(test->v1_.GetImpl()->GetNumSinks(), 1);
-
-            // Fire event for 1 sink.
-            x = 0;
-            test->FireV1(2);
-            NSFX_TEST_EXPECT_EQ(x, 2);
-
-            // Disconnect 1 sink.
-            nsfx::Ptr<Ev1>(test)->Disconnect(cv1_1);
-            NSFX_TEST_EXPECT_EQ(test->v1_.GetImpl()->GetNumSinks(), 0);
-
-            // Fire event for 0 sinks.
-            x = 0;
-            test->VisitV1(2);
-            NSFX_TEST_EXPECT_EQ(x, 0);
-
-            ////////////////////////////////////////
-            // V2
-            NSFX_TEST_EXPECT_EQ(test->v2_.GetImpl()->GetNumSinks(), 1);
-
-            // Fire event for 1 sink.
-            x = 0;
-            test->FireV2(3, 1.0);
-            NSFX_TEST_EXPECT_EQ(x, 3);
-
-            // Disconnect 1 sink.
-            nsfx::Ptr<Ev2>(test)->Disconnect(cv2_1);
-            NSFX_TEST_EXPECT_EQ(test->v2_.GetImpl()->GetNumSinks(), 0);
-
-            // Fire event for 0 sinks.
-            x = 0;
-            test->VisitV2(3, 1.0);
-            NSFX_TEST_EXPECT_EQ(x, 0);
 
         }
         catch (boost::exception& e)
