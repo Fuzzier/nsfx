@@ -32,9 +32,6 @@
 #include <nsfx/simulation/i-simulator.h>
 #include <nsfx/simulation/simulator.h>
 
-#include <nsfx/simulation/i-timer.h>
-#include <nsfx/simulation/timer.h>
-
 
 #endif // SIMULATION_H__3558CCE7_4DE5_4B7F_A9CF_44591D238478
 
