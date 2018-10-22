@@ -61,17 +61,17 @@ protected:
     {
     }
 
-    PtrBase(T* p, bool takeRefCount, std::true_type) :
+    PtrBase(T* p, bool addRef, std::true_type) :
         p_(p)
     {
-        if (p_ && !takeRefCount)
+        if (p_ && addRef)
         {
             p->AddRef();
         }
     }
 
     template<class U>
-    PtrBase(U* p, bool takeRefCount, std::false_type) :
+    PtrBase(U* p, bool addRef, std::false_type) :
         p_(nullptr)
     {
         BOOST_CONCEPT_ASSERT((HasUidConcept<T>));
@@ -97,7 +97,7 @@ protected:
                         boost::typeindex::type_id<T>().pretty_name());
                 throw;
             }
-            if (takeRefCount)
+            if (!addRef)
             {
                 p->Release();
             }
@@ -118,18 +118,18 @@ protected:
         }
     }
 
-    void Reset(T* p, bool takeRefCount, std::true_type)
+    void Reset(T* p, bool addRef, std::true_type)
     {
         Reset();
         p_ = p;
-        if (p_ && !takeRefCount)
+        if (p_ && addRef)
         {
             p_->AddRef();
         }
     }
 
     template<class U>
-    void Reset(U* p, bool takeRefCount, std::false_type)
+    void Reset(U* p, bool addRef, std::false_type)
     {
         BOOST_CONCEPT_ASSERT((HasUidConcept<T>));
         BOOST_CONCEPT_ASSERT((IObjectConcept<U>));
@@ -155,7 +155,7 @@ protected:
                         boost::typeindex::type_id<T>().pretty_name());
                 throw;
             }
-            if (takeRefCount)
+            if (!addRef)
             {
                 p->Release();
             }
@@ -175,8 +175,8 @@ protected:
         static_assert(!std::is_same<T, U>::value, "");
         // Query the IObject interface.
         // Do not query other interfaces, since an object may not support them.
-        PtrBase<IObject> lhs(p_, false, std::is_same<IObject, T>::type());
-        PtrBase<IObject> rhs(p,  false, std::is_same<IObject, U>::type());
+        PtrBase<IObject> lhs(p_, true, std::is_same<IObject, T>::type());
+        PtrBase<IObject> rhs(p,  true, std::is_same<IObject, U>::type());
         return (lhs.p_ == rhs.p_);
     }
 
@@ -189,8 +189,6 @@ protected:
  * @brief A smart pointer that manages the lifetime of an object.
  *
  * @tparam T A type that conforms to \c IObjectConcept.
- * @tparam nothrow_ Do not throw \c NoInterface when failed to query an interface
- *                  that is different from \c T.
  *
  * @remarks If the smart pointer is constructed from or assigned to a pointer of
  *          a different type, then the template parameter \c T must also conform
@@ -198,43 +196,45 @@ protected:
  *          Thus, the smart pointer is able to query an interface of type \c T
  *          from the source pointer.
  *
- * ### Strong exception safety.
- *     If the smart point fails to query the interface, \c NoInterface is thrown.
- *     The smart pointer is put into an empty state.
- *     However, the source pointer is intact.
- *     Especially, the reference count of the source pointer is <b>NOT</b> taken.
- *     Thus, users are still <b>responsible to free the source pointer</b> to
- *     prevent memory leak, if the source pointer is not a smart pointer.
- *     <p>
- *     Caution must be taken when writing such code:
- *     @code
- *     Ptr<I>  p(new C);
- *     @endcode
- *     If \c C is different than \c I, then the smart pointer \c p will query
- *     an interface of type \c I from the newly allocated instance of type \c C.
- *     However, if the query fails, there is a memory leak that the instance of
- *     \c C is not deallocated.
- *     <p>
- *     The above code is safe only if the user can make sure that \c C supplies
- *     an interface of \c I.
- *     Otherwise, the following more secure code shall be used:
- *     @code
- *     C* c = new C;
- *     try
- *     {
- *         Ptr<I>  p(c);
- *     }
- *     catch (NoInterface& )
- *     {
- *         delete c;
- *         throw;
- *     }
- *     @endcode
- *     Generally, it is safe to write:
- *     @code
- *     Ptr<C>        c(new C);
- *     Ptr<IObject>  o(new C);
- *     @endcode
+ * # Strong exception safety.
+ *  If the smart point fails to query the interface, \c NoInterface is thrown.
+ *  The smart pointer is put into an empty state.
+ *  However, the source pointer is intact.
+ *  Especially, the reference count of the source pointer is intact.
+ *  Thus, users are still <b>responsible to free the source pointer</b> to
+ *  prevent memory leak, if the source pointer is not a smart pointer.
+ *  <p>
+ *  Caution must be taken when writing such code:
+ *  @code
+ *  Ptr<I>  p(new C);
+ *  @endcode
+ *  <p>
+ *  If \c C is different than \c I, then the smart pointer \c p will query
+ *  an interface of type \c I from the newly allocated instance of type \c C.
+ *  However, if the query fails, there is a <i>memory leak</i> that the
+ *  instance of \c C is not deallocated.
+ *  <p>
+ *  The above code is safe only if the user can make sure that \c C supplies
+ *  an interface of \c I.
+ *  Otherwise, the following more secure code shall be used:
+ *  @code
+ *  C* c = new C;
+ *  try
+ *  {
+ *      Ptr<I>  p(c);
+ *  }
+ *  catch (NoInterface& )
+ *  {
+ *      delete c;
+ *      throw;
+ *  }
+ *  @endcode
+ *  <p>
+ *  Generally, it is safe to write:
+ *  @code
+ *  Ptr<C>        c(new C);
+ *  Ptr<IObject>  o(new C);
+ *  @endcode
  */
 template<class T = IObject>
 class Ptr : private PtrBase<T>/*{{{*/
@@ -265,7 +265,7 @@ public:
      *           pointer.
      */
     Ptr(T* p) :
-        BaseType(p, false, std::is_same<T, T>::type())
+        BaseType(p, true, std::is_same<T, T>::type())
     {
     }
 
@@ -277,8 +277,8 @@ public:
      *           pointer.
      */
     template<class U>
-    explicit Ptr(U* p) :
-        BaseType(p, false, std::is_same<T, U>::type())
+    Ptr(U* p) :
+        BaseType(p, true, std::is_same<T, U>::type())
     {
     }
 
@@ -287,43 +287,42 @@ public:
      *
      * @param p  A pointer to the object that is to be managed by the smart
      *           pointer.
-     * @param takeRefCount If \c true, the pointer \c p gives up one reference
-     *                     count that it held, and may no longer manages the
-     *                     lifetime of the object.
+     * @param addRef If \c false, the pointer \c p gives up one reference
+     *               count to this smart pointer.
      *
      * @remarks When \c U is not the same type as \c T, a pointer of type \c T*
      *          is queried from the pointer \c p, and may result in \c nullptr.
-     *          If \c takeRefCount is \c true at that time, then the pointer
+     *          If \c addRef is \c false at that time, then the pointer
      *          \c p loses one reference count, and the smart pointer under
      *          construction holds also no reference count.
-     *          The user may lose the object completely.
+     *          The object may be leaked.
      */
     template<class U>
-    Ptr(U* p, bool takeRefCount) :
-        BaseType(p, takeRefCount, std::is_same<T, U>::type())
+    Ptr(U* p, bool addRef) :
+        BaseType(p, addRef, std::is_same<T, U>::type())
     {
     }
 
     Ptr(const Ptr& rhs) :
-        BaseType(rhs.p_, false, std::is_same<T, T>::type())
+        BaseType(rhs.p_, true, std::is_same<T, T>::type())
     {
     }
 
     template<class U>
     Ptr(const Ptr<U>& rhs) :
-        BaseType(rhs.p_, false, std::is_same<T, U>::type())
+        BaseType(rhs.p_, true, std::is_same<T, U>::type())
     {
     }
 
     Ptr(Ptr<T>&& rhs) :
-        BaseType(rhs.p_, true, std::is_same<T, T>::type())
+        BaseType(rhs.p_, false, std::is_same<T, T>::type())
     {
         rhs.p_ = nullptr;
     }
 
     template<class U>
     Ptr(Ptr<U>&& rhs) :
-        BaseType(rhs.p_, true, std::is_same<T, U>::type())
+        BaseType(rhs.p_, false, std::is_same<T, U>::type())
     {
         rhs.p_ = nullptr;
     }
@@ -340,26 +339,26 @@ public:
     template<class U>
     Ptr& operator=(U* rhs)
     {
-        BaseType::Reset(rhs, false, std::is_same<T, U>::type());
+        BaseType::Reset(rhs, true, std::is_same<T, U>::type());
         return *this;
     }
 
     Ptr& operator=(const Ptr& rhs)
     {
-        BaseType::Reset(rhs.p_, false, std::is_same<T, T>::type());
+        BaseType::Reset(rhs.p_, true, std::is_same<T, T>::type());
         return *this;
     }
 
     template<class U>
     Ptr& operator=(const Ptr<U>& rhs)
     {
-        BaseType::Reset(rhs.p_, false, std::is_same<T, U>::type());
+        BaseType::Reset(rhs.p_, true, std::is_same<T, U>::type());
         return *this;
     }
 
     Ptr& operator=(Ptr&& rhs)
     {
-        BaseType::Reset(rhs.p_, true, std::is_same<T, T>::type());
+        BaseType::Reset(rhs.p_, false, std::is_same<T, T>::type());
         rhs.p_ = nullptr;
         return *this;
     }
@@ -367,7 +366,7 @@ public:
     template<class U>
     Ptr& operator=(Ptr<U>&& rhs)
     {
-        BaseType::Reset(rhs.p_, true, std::is_same<T, U>::type());
+        BaseType::Reset(rhs.p_, false, std::is_same<T, U>::type());
         rhs.p_ = nullptr;
         return *this;
     }
@@ -479,15 +478,15 @@ public:
      */
     void Reset(T* p)
     {
-        BaseType::Reset(p, false, std::is_same<T, T>::type());
+        BaseType::Reset(p, true, std::is_same<T, T>::type());
     }
 
     /**
      * @brief Reset to the pointer \c p.
      */
-    void Reset(T* p, bool takeRefCount)
+    void Reset(T* p, bool addRef)
     {
-        BaseType::Reset(p, takeRefCount, std::is_same<T, T>::type());
+        BaseType::Reset(p, addRef, std::is_same<T, T>::type());
     }
 
     /**
@@ -496,16 +495,16 @@ public:
     template<class U>
     void Reset(U* p)
     {
-        BaseType::Reset(p, false, std::is_same<T, U>::type());
+        BaseType::Reset(p, true, std::is_same<T, U>::type());
     }
 
     /**
      * @brief Resets to the pointer \c p.
      */
     template<class U>
-    void Reset(U* p, bool takeRefCount)
+    void Reset(U* p, bool addRef)
     {
-        BaseType::Reset(p, takeRefCount, std::is_same<T, U>::type());
+        BaseType::Reset(p, addRef, std::is_same<T, U>::type());
     }
 
     /**

@@ -202,7 +202,7 @@ NSFX_TEST_SUITE(Ptr)
         // from raw pointer, don't take refcount
         try
         {
-            nsfx::Ptr<nsfx::IObject> p(new Object, false);
+            nsfx::Ptr<nsfx::IObject> p(new Object, true);
             NSFX_TEST_EXPECT(p);
             NSFX_TEST_EXPECT(p == p);
             NSFX_TEST_EXPECT_EQ(RefCount(p.Get()), 1);
@@ -224,7 +224,7 @@ NSFX_TEST_SUITE(Ptr)
         {
             Object* o = new Object;
             o->AddRef();
-            nsfx::Ptr<nsfx::IObject> p(o, true);
+            nsfx::Ptr<nsfx::IObject> p(o, false);
             NSFX_TEST_EXPECT(p);
             NSFX_TEST_EXPECT(p == p);
             NSFX_TEST_EXPECT_EQ(RefCount(p.Get()), 1);
@@ -266,7 +266,7 @@ NSFX_TEST_SUITE(Ptr)
         try
         {
             nsfx::IObject* t = new Test;
-            nsfx::Ptr<ITest> q(t, false);
+            nsfx::Ptr<ITest> q(t, true);
             NSFX_TEST_EXPECT(q);
             NSFX_TEST_EXPECT(q == t);
             NSFX_TEST_EXPECT_EQ(RefCount(q.Get()), 1);
@@ -288,7 +288,7 @@ NSFX_TEST_SUITE(Ptr)
         {
             nsfx::IObject* t = new Test;
             t->AddRef();
-            nsfx::Ptr<ITest> q(t, true);
+            nsfx::Ptr<ITest> q(t, false);
             NSFX_TEST_EXPECT(q);
             NSFX_TEST_EXPECT_EQ(RefCount(q.Get()), 1);
         }
@@ -336,7 +336,7 @@ NSFX_TEST_SUITE(Ptr)
             nsfx::Ptr<nsfx::IObject> o(new Object);
             try
             {
-                nsfx::Ptr<ITest> q(o.Get(), false);
+                nsfx::Ptr<ITest> q(o.Get(), true);
                 NSFX_TEST_EXPECT(false);
             }
             catch (nsfx::NoInterface& )
@@ -363,7 +363,7 @@ NSFX_TEST_SUITE(Ptr)
             o->AddRef();
             try
             {
-                nsfx::Ptr<ITest> q(o, true);
+                nsfx::Ptr<ITest> q(o, false);
                 NSFX_TEST_EXPECT(false);
             }
             catch (nsfx::NoInterface& )
@@ -859,7 +859,7 @@ NSFX_TEST_SUITE(Ptr)
             nsfx::Ptr<ITest> o(new Test);
             nsfx::Ptr<ITest> t(new Test);
             nsfx::Ptr<ITest> p(o);
-            p.Reset(t.Get(), false);
+            p.Reset(t.Get(), true);
             NSFX_TEST_EXPECT(p);
             NSFX_TEST_EXPECT_EQ(RefCount(o.Get()), 1);
             NSFX_TEST_EXPECT_EQ(RefCount(t.Get()), 2);
@@ -883,7 +883,7 @@ NSFX_TEST_SUITE(Ptr)
             nsfx::Ptr<ITest> o(new Test);
             nsfx::Ptr<ITest> t(new Test);
             nsfx::Ptr<ITest> p(o);
-            p.Reset(t.Detach(), true);
+            p.Reset(t.Detach(), false);
             NSFX_TEST_EXPECT(p);
             NSFX_TEST_EXPECT(!t);
             NSFX_TEST_EXPECT_EQ(RefCount(o.Get()), 1);
@@ -931,7 +931,7 @@ NSFX_TEST_SUITE(Ptr)
             nsfx::Ptr<nsfx::IObject> o(new Test);
             nsfx::Ptr<nsfx::IObject> t(new Test);
             nsfx::Ptr<ITest> p(o);
-            p.Reset(t.Get(), false);
+            p.Reset(t.Get(), true);
             NSFX_TEST_EXPECT(p);
             NSFX_TEST_EXPECT_EQ(RefCount(o.Get()), 1);
             NSFX_TEST_EXPECT_EQ(RefCount(p.Get()), 2);
@@ -958,7 +958,7 @@ NSFX_TEST_SUITE(Ptr)
             nsfx::IObject* q = t.Detach();
             try
             {
-                p.Reset(q, true);
+                p.Reset(q, false);
             }
             catch (nsfx::NoInterface& )
             {
@@ -991,7 +991,7 @@ NSFX_TEST_SUITE(Ptr)
             nsfx::IObject* q = t.Detach();
             try
             {
-                p.Reset(q, true);
+                p.Reset(q, false);
             }
             catch (nsfx::NoInterface& )
             {
