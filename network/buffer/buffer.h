@@ -210,10 +210,12 @@ public:
     /**
      * @brief Expand the buffer and copy the contents from the specified buffer.
      *
+     * @param[in] src The buffer itself can be passed in as \c src.
+     *
      * @remarks Invalidates existing iterators of the buffer.
      */
     template<bool readOnly, bool copyOnResize, bool zeroArea>
-    void AddAtStart(const BasicBuffer<readOnly, copyOnResize, zeroArea>& src);
+    void AddAtStart(BasicBuffer<readOnly, copyOnResize, zeroArea> src);
 
 private:
     void InternalAddAtStart(size_t size, AdjustOffsetTag) BOOST_NOEXCEPT;
@@ -239,10 +241,12 @@ public:
     /**
      * @brief Expand the buffer and copy the contents from the specified buffer.
      *
+     * @param[in] src The buffer itself can be passed in as \c src.
+     *
      * @remarks Invalidates existing iterators of the buffer.
      */
     template<bool readOnly, bool copyOnResize, bool zeroArea>
-    void AddAtEnd(const BasicBuffer<readOnly, copyOnResize, zeroArea>& src);
+    void AddAtEnd(BasicBuffer<readOnly, copyOnResize, zeroArea> src);
 
 private:
     void InternalAddAtEnd(size_t size, size_t dataSize, AdjustOffsetTag) BOOST_NOEXCEPT;
@@ -672,7 +676,7 @@ inline void Buffer::AddAtStart(const uint8_t* src, size_t size)
 }
 
 template<bool readOnly, bool copyOnResize, bool zeroArea>
-inline void Buffer::AddAtStart(const BasicBuffer<readOnly, copyOnResize, zeroArea>& src)
+inline void Buffer::AddAtStart(BasicBuffer<readOnly, copyOnResize, zeroArea> src)
 {
     size_t size = src.GetSize();
     if (size)
@@ -834,7 +838,7 @@ inline void Buffer::AddAtEnd(const uint8_t* src, size_t size)
 }
 
 template<bool readOnly, bool copyOnResize, bool zeroArea>
-inline void Buffer::AddAtEnd(const BasicBuffer<readOnly, copyOnResize, zeroArea>& src)
+inline void Buffer::AddAtEnd(BasicBuffer<readOnly, copyOnResize, zeroArea> src)
 {
     size_t size = src.GetSize();
     if (size)

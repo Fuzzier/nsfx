@@ -22,6 +22,7 @@
 #include <nsfx/network/packet/tag/basic-tag-list.h>
 #include <boost/core/swap.hpp>
 #include <utility> // move
+#include <memory> // unique_ptr
 
 
 NSFX_OPEN_NAMESPACE
@@ -39,7 +40,10 @@ typedef ConstFixedBuffer         ConstTagBuffer;
  * @ingroup Network
  * @brief A packet.
  *
- * # Packet models
+ * =============
+ * Packet models
+ * =============
+ *
  * ## Packet as solid buffer
  *    The simplest method is to model a packet as a solid buffer, and give
  *    the packet a reference count.
@@ -100,7 +104,10 @@ typedef ConstFixedBuffer         ConstTagBuffer;
  *    It also introduces a complicated message discription language, which
  *    makes the learning curve steeper.
  *
- * # Packet operations
+ * =================
+ * Packet operations
+ * =================
+ *
  *   In reality, a network packet is structured.
  *   Each entity adds its own header or trailer to the packet.
  *   The header or trailer of the packet is processed in a FIFO (first-in
@@ -213,7 +220,10 @@ typedef ConstFixedBuffer         ConstTagBuffer;
  *    And reassembly can be done by adding the buffer of one fragment to the
  *    start or end of the buffer of another fragment.
  *
- * # Tags
+ * ====
+ * Tags
+ * ====
+ *
  *   In a simulation, a packet can carry side information that is not present
  *   in its buffer.
  *   i.e., the information is not transmitted in the real world packet.
@@ -376,6 +386,38 @@ typedef ConstFixedBuffer         ConstTagBuffer;
  *    original packet is also preversed.
  *    It is easy to recover the tags when the encoded packets are decoded.
  *
+ * =============================
+ * Passing a packet via function
+ * =============================
+ *
+ * There are several use cases regarding passing a packet via a function.
+ * 1. A caller may want to pass the ownership of a packet.
+ * 2. An event source may pass a packet to multiple event sinks.
+ *
+ * The key requirement is to make an entity assume the packet is owned by
+ * itself alone.
+ * Any modifications to the packet is not visible to other packets.
+ *
+ * The memory footprint of \c Packet is the size of a pointer, and is ideal
+ * to be used as the function parameters to pass packets.
+ *
+ * Internally, the \c Packet holds a pointer to a \c Packet::Body, which has
+ * a reference counter, a buffer, and tag lists.
+ * Passing a packet is cheap.
+ * If the caller wants to pass the ownership of the packet, it can move the
+ * packet, and transfer the ownership to the callee.
+ *
+ * If an event source wants to send the packet to multiple event sinks, it
+ * passes the packet by value.
+ * In this case, each event sink holds a \c Packet that points to the same
+ * buffer and tag lists.
+ *
+ * The \c Packet provides <i>copy-on-write</i> capability.
+ * When the content of the packet are about to be modified, the \c Packet
+ * checks the reference counter.
+ * If the content is shared, it makes a private copy of the content to make
+ * sure the modification is local to the \c Packet, so the key requirement
+ * is satisfied.
  */
 class Packet
 {
@@ -388,7 +430,9 @@ public:
     /**
      * @brief Create a packet from a buffer.
      */
-    explicit Packet(const PacketBuffer& buffer) BOOST_NOEXCEPT;
+    explicit Packet(const PacketBuffer& buffer);
+
+    ~Packet(void);
 
     // Copyable.
 public:
@@ -498,19 +542,11 @@ public:
      *
      * @param[in] tagId  The id of the tag.
      * @param[in] packet The packet carried by the tag.
+     *                   The packet itself can be passed in as \c packet.
      * @param[in] start  The start of the tagged bytes.
      * @param[in] size   The number of tagged bytes.
-     *
-     * When a packet is added as a packet tag, the tag carries a copy of
-     * the packet.
-     *
-     * @remarks A packet can be added to itelf as a packet tag.
-     *          The packet is copied before the tag is added, and this copy is
-     *          carried by the tag, then the tag is added to the packet.
-     *          i.e., the packet carried by the tag is a separate copy, and
-     *          the tag is not added to this separate copy.
      */
-    void AddPacketTag(uint32_t tagId, const Packet& packet,
+    void AddPacketTag(uint32_t tagId, Packet packet,
                       size_t start, size_t size);
 
     /**
@@ -529,7 +565,7 @@ public:
      *
      * @throw TagNotFound
      */
-    const Packet& GetPacketTag(uint32_t tagId, size_t offset) const;
+    Packet GetPacketTag(uint32_t tagId, size_t offset) const;
 
     /**
      * @brief Copy the tags from a packet.
@@ -540,6 +576,8 @@ public:
      *
      * All tags in this packet are removed, and the tags of the source packet
      * are copied to this packet.
+     *
+     * It has no effect if either packet is empty.
      *
      * @throw InvalidArgument The source packet has a different buffer size.
      */
@@ -557,173 +595,271 @@ public:
 
     // Reassembly.
 public:
-    void AddHeader(const Packet& packet);
-    void AddTrailer(const Packet& packet);
+    /**
+     * @brief Add a packet as the header.
+     *
+     * @param[in] packet The packet itself can be passed in as \c packet.
+     *
+     * The buffer and tags are added.
+     */
+    void AddHeader(Packet packet);
+
+    /**
+     * @brief Add a packet as the trailer.
+     *
+     * @param[in] packet The packet itself can be passed in as \c packet.
+     *
+     * The buffer and tags are added.
+     */
+    void AddTrailer(Packet packet);
+
+    // Clone.
+public:
+    /**
+     * @brief Make a clone.
+     */
+    Packet Clone(void) const;
 
 public:
     void swap(Packet& rhs) BOOST_NOEXCEPT;
 
+    // Body.
 private:
-    PacketBuffer buffer_;
+    void AddRef(void) BOOST_NOEXCEPT;
+    void Release(void);
 
-    typedef BasicTagList<ConstTagBuffer>  ByteTagList;
-    ByteTagList byteTagList_;
+    /**
+     * @brief Make the packet body a private copy.
+     *
+     * This function is called when a packet is about to be modified.
+     */
+    void MakePrivate(void);
 
-    typedef BasicTagList<Packet>  PacketTagList;
-    PacketTagList packetTagList_;
+private:
+    /**
+     * @ingroup Network
+     * @brief The contents of a packet.
+     */
+    struct Body
+    {
+        Body(void) BOOST_NOEXCEPT;
+
+        Body(const Body& rhs) BOOST_NOEXCEPT;
+
+        /**
+         * @brief A reference counter to enable copy-on-write.
+         *
+         * \c refcount_ is is the number of users that shares the body.
+         * When the body is about to be modified, the packet will duplicate
+         * the body, if <code>refcount_ > 1</code>.
+         * Thus, other holders of the packet will not see the modification.
+         */
+        refcount_t refcount_;
+
+        PacketBuffer buffer_;
+
+        typedef BasicTagList<ConstTagBuffer>  ByteTagList;
+        ByteTagList byteTagList_;
+
+        typedef BasicTagList<Packet>  PacketTagList;
+        PacketTagList packetTagList_;
+    };
+
+    Body* body_;
 };
 
 
 ////////////////////////////////////////////////////////////////////////////////
-inline Packet::Packet(void) BOOST_NOEXCEPT
+inline Packet::Body::Body(void) BOOST_NOEXCEPT :
+    refcount_(1)
 {
 }
 
-inline Packet::Packet(const PacketBuffer& buffer) BOOST_NOEXCEPT :
-    buffer_(buffer)
-{
-    // Will not throw for an empty tag list.
-    byteTagList_.AddAtEnd(buffer.GetSize());
-    packetTagList_.AddAtEnd(buffer.GetSize());
-}
-
-inline Packet::Packet(const Packet& rhs) BOOST_NOEXCEPT :
+inline Packet::Body::Body(const Body& rhs) BOOST_NOEXCEPT :
+    refcount_(1),
     buffer_(rhs.buffer_),
     byteTagList_(rhs.byteTagList_),
     packetTagList_(rhs.packetTagList_)
 {
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+inline Packet::Packet(void) BOOST_NOEXCEPT :
+    body_(nullptr)
+{
+}
+
+inline Packet::Packet(const PacketBuffer& buffer) :
+    body_(new Body())
+{
+    body_->buffer_ = buffer;
+    // Will not throw for an empty tag list.
+    body_->byteTagList_.AddAtEnd(buffer.GetSize());
+    body_->packetTagList_.AddAtEnd(buffer.GetSize());
+}
+
+inline Packet::~Packet(void)
+{
+    Release();
+}
+
+inline Packet::Packet(const Packet& rhs) BOOST_NOEXCEPT :
+    body_(rhs.body_)
+{
+    AddRef();
+}
+
 inline Packet& Packet::operator=(const Packet& rhs)
 {
-    if (this != &rhs)
+    if (body_ != rhs.body_)
     {
-        buffer_  = rhs.buffer_;
-        byteTagList_ = rhs.byteTagList_;
-        packetTagList_ = rhs.packetTagList_;
+        Release();
+        body_ = rhs.body_;
+        AddRef();
     }
     return *this;
 }
 
 inline Packet::Packet(Packet&& rhs) BOOST_NOEXCEPT :
-    buffer_(std::move(rhs.buffer_)),
-    byteTagList_(rhs.byteTagList_),
-    packetTagList_(rhs.packetTagList_)
+    body_(rhs.body_)
 {
-    rhs.byteTagList_ = ByteTagList();
-    rhs.packetTagList_ = PacketTagList();
+    rhs.body_ = nullptr;
 }
 
 inline Packet& Packet::operator=(Packet&& rhs)
 {
-    if (this != &rhs)
+    if (body_ != rhs.body_)
     {
-        buffer_  = std::move(rhs.buffer_);
-        byteTagList_ = rhs.byteTagList_;
-        packetTagList_ = rhs.packetTagList_;
-        rhs.byteTagList_ = ByteTagList();
-        rhs.packetTagList_ = PacketTagList();
+        Release();
+        boost::swap(body_, rhs.body_);
     }
     return *this;
 }
 
 inline size_t Packet::GetSize(void) const BOOST_NOEXCEPT
 {
-    return buffer_.GetSize();
+    return body_ ? body_->buffer_.GetSize() : 0;
 }
 
 inline ConstPacketBuffer Packet::GetBuffer(void) const BOOST_NOEXCEPT
 {
-    return buffer_;
+    return body_ ? body_->buffer_ : PacketBuffer();
 }
 
 inline PacketBuffer Packet::AddHeader(size_t size)
 {
-    buffer_.AddAtStart(size);
-    byteTagList_.AddAtStart(size);
-    packetTagList_.AddAtStart(size);
-    return buffer_.MakeFragment(0, size);
+    MakePrivate();
+    body_->buffer_.AddAtStart(size);
+    body_->byteTagList_.AddAtStart(size);
+    body_->packetTagList_.AddAtStart(size);
+    return body_->buffer_.MakeFragment(0, size);
 }
 
 inline PacketBuffer Packet::AddTrailer(size_t size)
 {
-    buffer_.AddAtEnd(size);
-    byteTagList_.AddAtEnd(size);
-    packetTagList_.AddAtEnd(size);
-    return buffer_.MakeFragment(buffer_.GetSize() - size, size);
+    MakePrivate();
+    body_->buffer_.AddAtEnd(size);
+    body_->byteTagList_.AddAtEnd(size);
+    body_->packetTagList_.AddAtEnd(size);
+    return body_->buffer_.MakeFragment(body_->buffer_.GetSize() - size, size);
 }
 
 inline void Packet::AddHeader(const ConstPacketBuffer& buffer)
 {
-    buffer_.AddAtStart(buffer);
-    byteTagList_.AddAtStart(buffer.GetSize());
-    packetTagList_.AddAtStart(buffer.GetSize());
+    MakePrivate();
+    body_->buffer_.AddAtStart(buffer);
+    body_->byteTagList_.AddAtStart(buffer.GetSize());
+    body_->packetTagList_.AddAtStart(buffer.GetSize());
 }
 
 inline void Packet::AddTrailer(const ConstPacketBuffer& buffer)
 {
-    buffer_.AddAtEnd(buffer);
-    byteTagList_.AddAtEnd(buffer.GetSize());
-    packetTagList_.AddAtEnd(buffer.GetSize());
+    MakePrivate();
+    body_->buffer_.AddAtEnd(buffer);
+    body_->byteTagList_.AddAtEnd(buffer.GetSize());
+    body_->packetTagList_.AddAtEnd(buffer.GetSize());
 }
 
 inline void Packet::RemoveHeader(size_t size) BOOST_NOEXCEPT
 {
-    buffer_.RemoveAtStart(size);
-    byteTagList_.RemoveAtStart(size);
-    packetTagList_.RemoveAtStart(size);
+    MakePrivate();
+    body_->buffer_.RemoveAtStart(size);
+    body_->byteTagList_.RemoveAtStart(size);
+    body_->packetTagList_.RemoveAtStart(size);
 }
 
 inline void Packet::RemoveTrailer(size_t size) BOOST_NOEXCEPT
 {
-    buffer_.RemoveAtEnd(size);
-    byteTagList_.RemoveAtEnd(size);
-    packetTagList_.RemoveAtEnd(size);
+    MakePrivate();
+    body_->buffer_.RemoveAtEnd(size);
+    body_->byteTagList_.RemoveAtEnd(size);
+    body_->packetTagList_.RemoveAtEnd(size);
 }
 
 inline void Packet::AddByteTag(uint32_t tagId, const ConstTagBuffer& buffer,
                                size_t start, size_t size)
 {
-    byteTagList_.Insert(tagId, buffer, start, size);
+    MakePrivate();
+    body_->byteTagList_.Insert(tagId, buffer, start, size);
 }
 
 inline bool Packet::HasByteTag(uint32_t tagId, size_t offset) const BOOST_NOEXCEPT
 {
-    return byteTagList_.Exists(tagId, offset);
+    return body_ ? body_->byteTagList_.Exists(tagId, offset) : false;
 }
 
 inline ConstTagBuffer Packet::GetByteTag(uint32_t tagId, size_t offset) const
 {
-    return byteTagList_.Get(tagId, offset).GetValue();
+    if (!body_)
+    {
+        BOOST_THROW_EXCEPTION(TagNotFound());
+    }
+    return body_->byteTagList_.Get(tagId, offset).GetValue();
 }
 
-inline void Packet::AddPacketTag(uint32_t tagId, const Packet& packet,
-                               size_t start, size_t size)
+inline void Packet::AddPacketTag(uint32_t tagId, Packet packet,
+                                 size_t start, size_t size)
 {
-    packetTagList_.Insert(tagId, packet, start, size);
+    // If this packet itself is added in a packet tag, the packet in the tag
+    // must have a separate copy of the packet body.
+    // Otherwise, it forms circular reference counting, and causes memory leaks.
+    // Since the packet is passed by value, it holds a reference count, and
+    // MakePrivate() will ensure the body is copied.
+    MakePrivate();
+    body_->packetTagList_.Insert(tagId, packet, start, size);
 }
 
 inline bool Packet::HasPacketTag(uint32_t tagId, size_t offset) const BOOST_NOEXCEPT
 {
-    return packetTagList_.Exists(tagId, offset);
+    return body_ ? body_->packetTagList_.Exists(tagId, offset) : false;
 }
 
-inline const Packet& Packet::GetPacketTag(uint32_t tagId, size_t offset) const
+inline Packet Packet::GetPacketTag(uint32_t tagId, size_t offset) const
 {
-    return packetTagList_.Get(tagId, offset).GetValue();
+    if (!body_)
+    {
+        BOOST_THROW_EXCEPTION(TagNotFound());
+    }
+    return body_->packetTagList_.Get(tagId, offset).GetValue();
 }
 
 inline void Packet::CopyTagsFrom(const Packet& src)
 {
-    if (buffer_.GetSize() != src.buffer_.GetSize())
+    if (body_ && src.body_)
     {
-        BOOST_THROW_EXCEPTION(
-            InvalidArgument() <<
-            ErrorMessage("Cannot copy tags, since the source packet has "
-                         "a different buffer size."));
+        if (GetSize() != src.GetSize())
+        {
+            BOOST_THROW_EXCEPTION(
+                InvalidArgument() <<
+                ErrorMessage("Cannot copy tags, since the source packet has "
+                             "a different buffer size."));
+        }
+        // Since the packet is passed by value, it holds a reference count, and
+        // MakePrivate() will ensure the body is copied.
+        body_->byteTagList_   = src.body_->byteTagList_;
+        body_->packetTagList_ = src.body_->packetTagList_;
     }
-    byteTagList_ = src.byteTagList_;
-    packetTagList_ = src.packetTagList_;
 }
 
 inline Packet Packet::MakeFragment(size_t start, size_t size) const BOOST_NOEXCEPT
@@ -734,25 +870,75 @@ inline Packet Packet::MakeFragment(size_t start, size_t size) const BOOST_NOEXCE
     return fragment;
 }
 
-inline void Packet::AddHeader(const Packet& packet)
+inline void Packet::AddHeader(Packet packet)
 {
-    buffer_.AddAtStart(packet.buffer_);
-    byteTagList_.AddAtStart(packet.byteTagList_);
-    packetTagList_.AddAtStart(packet.packetTagList_);
+    if (packet.body_)
+    {
+        // Even if this packet itself is passed in, since the packet is passed
+        // by value, it holds a reference count, and MakePrivate() will ensure
+        // the body is copied.
+        MakePrivate();
+        body_->buffer_.AddAtStart(packet.body_->buffer_);
+        body_->byteTagList_.AddAtStart(packet.body_->byteTagList_);
+        body_->packetTagList_.AddAtStart(packet.body_->packetTagList_);
+    }
 }
 
-inline void Packet::AddTrailer(const Packet& packet)
+inline void Packet::AddTrailer(Packet packet)
 {
-    buffer_.AddAtEnd(packet.buffer_);
-    byteTagList_.AddAtEnd(packet.byteTagList_);
-    packetTagList_.AddAtEnd(packet.packetTagList_);
+    if (packet.body_)
+    {
+        // Even if this packet itself is passed in, since the packet is passed
+        // by value, it holds a reference count, and MakePrivate() will ensure
+        // the body is copied.
+        MakePrivate();
+        body_->buffer_.AddAtEnd(packet.body_->buffer_);
+        body_->byteTagList_.AddAtEnd(packet.body_->byteTagList_);
+        body_->packetTagList_.AddAtEnd(packet.body_->packetTagList_);
+    }
 }
 
 inline void Packet::swap(Packet& rhs) BOOST_NOEXCEPT
 {
-    boost::swap(buffer_, rhs.buffer_);
-    boost::swap(byteTagList_, rhs.byteTagList_);
-    boost::swap(packetTagList_, rhs.packetTagList_);
+    boost::swap(body_, rhs.body_);
+}
+
+inline void Packet::AddRef(void) BOOST_NOEXCEPT
+{
+    if (body_)
+    {
+        ++body_->refcount_;
+    }
+}
+
+inline void Packet::Release(void)
+{
+    if (body_)
+    {
+        if (--body_->refcount_ == 0)
+        {
+            delete body_;
+            body_ = nullptr;
+        }
+    }
+}
+
+inline void Packet::MakePrivate(void)
+{
+    if (body_)
+    {
+        if (body_->refcount_ > 1)
+        {
+            std::unique_ptr<Body> copy(new Body(*body_));
+            --body_->refcount_;
+            Body* tmp = copy.release();
+            boost::swap(tmp, body_);
+        }
+    }
+    else
+    {
+        body_ = new Body();
+    }
 }
 
 

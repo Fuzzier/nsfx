@@ -414,7 +414,7 @@ NSFX_TEST_SUITE(Packet)
         NSFX_TEST_EXPECT_EQ(tb.GetStorage()->refCount_, 5);
     }/*}}}*/
 
-    NSFX_TEST_CASE(CopyTags)
+    NSFX_TEST_CASE(CopyTags)/*{{{*/
     {
         nsfx::TagBuffer tb(16);
         {
@@ -457,14 +457,24 @@ NSFX_TEST_SUITE(Packet)
             NSFX_TEST_EXPECT(!p2.HasByteTag(4, 300));
         }
         NSFX_TEST_EXPECT_EQ(tb.GetStorage()->refCount_, 1);
-    }
+    }/*}}}*/
 }
 
 
 int main(void)
 {
-    nsfx::test::runner::GetLogger()->AddStreamSink(std::cerr);
-    nsfx::test::runner::Run();
+    // nsfx::test::runner::GetLogger()->AddStreamSink(std::cerr);
+    for (size_t i = 0; i < 100000; ++i)
+    {
+        nsfx::test::runner::Run();
+    }
+    clock_t t0 = clock();
+    for (size_t i = 0; i < 200000; ++i)
+    {
+        nsfx::test::runner::Run();
+    }
+    clock_t t1 = clock();
+    std::cout << t1 - t0 << std::endl;
 
     return 0;
 }

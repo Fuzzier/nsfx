@@ -286,9 +286,11 @@ public:
     /**
      * @brief Expand the buffer and copy tags.
      *
+     * @param[in] rhs The tag list itself can be passed in as \c rhs.
+     *
      * The size of the buffer is given by \c rhs.
      */
-    void AddAtStart(const BasicTagList& rhs);
+    void AddAtStart(BasicTagList rhs);
 
     /**
      * @brief Shrink the buffer.
@@ -303,9 +305,11 @@ public:
     /**
      * @brief Expand the buffer and copy tags.
      *
+     * @param[in] rhs The tag list itself can be passed in as \c rhs.
+     *
      * The size of the buffer is given by \c rhs.
      */
-    void AddAtEnd(const BasicTagList& rhs);
+    void AddAtEnd(BasicTagList rhs);
 
     /**
      * @brief Shrink the buffer.
@@ -511,7 +515,7 @@ inline void BasicTagList<T>::AddAtStart(size_t size)
 }
 
 template<class T>
-inline void BasicTagList<T>::AddAtStart(const BasicTagList<T>& rhs)
+inline void BasicTagList<T>::AddAtStart(BasicTagList<T> rhs)
 {
     size_t size = rhs.bufferEnd_ - rhs.bufferStart_;
     AddAtStart(size);
@@ -550,7 +554,7 @@ inline void BasicTagList<T>::AddAtEnd(size_t size)
 }
 
 template<class T>
-inline void BasicTagList<T>::AddAtEnd(const BasicTagList<T>& rhs)
+inline void BasicTagList<T>::AddAtEnd(BasicTagList<T> rhs)
 {
     size_t size = rhs.bufferEnd_ - rhs.bufferStart_;
     AddAtEnd(size);
