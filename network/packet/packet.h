@@ -918,8 +918,8 @@ inline void Packet::Release(void)
         if (--body_->refcount_ == 0)
         {
             delete body_;
-            body_ = nullptr;
         }
+        body_ = nullptr;
     }
 }
 
