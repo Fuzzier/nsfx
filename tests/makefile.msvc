@@ -5,11 +5,13 @@ LIBS=ws2_32.lib iphlpapi.lib
 
 !IFDEF RELEASE
 CFLAGS=
-CPPFLAGS=/nologo /W3 /wd4355 /EHsc /Ox /DBOOST_DISABLE_ASSERTS /I"$(NSFX_PATH)/.."
+CPPFLAGS=/nologo /W3 /MD /wd4355 /EHsc /Ox /Zi /arch:sse2 /I"$(NSFX_PATH)/.." \
+		 /DBOOST_MATH_PROMOTE_DOUBLE_POLICY=false /DBOOST_DISABLE_ASSERTS
 LDFLAGS=/NOLOGO /INCREMENTAL:NO
 !ELSE
 CFLAGS=
-CPPFLAGS=/nologo /W3 /wd4355 /EHsc /Od /Zi /DDEBUG /I"$(NSFX_PATH)/.."
+CPPFLAGS=/nologo /W3 /MDd /wd4355 /EHsc /Od /Zi /DDEBUG /I"$(NSFX_PATH)/.." \
+		 /DBOOST_MATH_PROMOTE_DOUBLE_POLICY=false
 LDFLAGS=/NOLOGO /DEBUG /INCREMENTAL:NO
 !ENDIF
 
@@ -85,6 +87,7 @@ UTILITY_HEADERS=                                  \
 	$(NSFX_PATH)/utility/config.h                    \
 	$(NSFX_PATH)/utility/ratio.h                     \
 	$(NSFX_PATH)/utility/endian.h                    \
+	$(NSFX_PATH)/utility/rounding.h                  \
 	$(NSFX_PATH)/utility/least-int.h                 \
 	$(NSFX_PATH)/utility/circular-sequence-number.h  \
 	$(NSFX_PATH)/utility/address-concept.h           \

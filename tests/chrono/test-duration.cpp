@@ -255,6 +255,46 @@ NSFX_TEST_SUITE(Duration)
                             std::numeric_limits<Duration::Rep>::max());
     }
 
+    NSFX_TEST_CASE(Double)
+    {
+        Duration dt;
+
+        // round_to_zero
+        dt = Duration::FromDouble<nsfx::round_to_zero>(0.0000000019);
+        NSFX_TEST_EXPECT_EQ(dt, nsfx::chrono::NanoSeconds(1));
+
+        dt = Duration::FromDouble<nsfx::round_to_zero>(-0.0000000019);
+        NSFX_TEST_EXPECT_EQ(dt, nsfx::chrono::NanoSeconds(-1));
+
+        // round_to_nearest
+        dt = Duration::FromDouble<nsfx::round_to_nearest>(0.0000000014);
+        NSFX_TEST_EXPECT_EQ(dt, nsfx::chrono::NanoSeconds(1));
+
+        dt = Duration::FromDouble<nsfx::round_to_nearest>(0.0000000015);
+        NSFX_TEST_EXPECT_EQ(dt, nsfx::chrono::NanoSeconds(2));
+
+        dt = Duration::FromDouble<nsfx::round_to_nearest>(-0.0000000014);
+        NSFX_TEST_EXPECT_EQ(dt, nsfx::chrono::NanoSeconds(-1));
+
+        dt = Duration::FromDouble<nsfx::round_to_nearest>(-0.0000000015);
+        NSFX_TEST_EXPECT_EQ(dt, nsfx::chrono::NanoSeconds(-2));
+
+        // round_upward
+        dt = Duration::FromDouble<nsfx::round_upward>(0.0000000011);
+        NSFX_TEST_EXPECT_EQ(dt, nsfx::chrono::NanoSeconds(2));
+
+        dt = Duration::FromDouble<nsfx::round_upward>(-0.0000000019);
+        NSFX_TEST_EXPECT_EQ(dt, nsfx::chrono::NanoSeconds(-1));
+
+        // round_downward
+        dt = Duration::FromDouble<nsfx::round_downward>(0.0000000019);
+        NSFX_TEST_EXPECT_EQ(dt, nsfx::chrono::NanoSeconds(1));
+
+        dt = Duration::FromDouble<nsfx::round_downward>(-0.0000000011);
+        NSFX_TEST_EXPECT_EQ(dt, nsfx::chrono::NanoSeconds(-2));
+
+    }
+
 }
 
 

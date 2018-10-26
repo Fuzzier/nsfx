@@ -19,12 +19,16 @@
 
 #include <nsfx/chrono/config.h>
 #include <nsfx/utility/ratio.h>
+#include <nsfx/utility/rounding.h>
 #include <boost/functional/hash.hpp>
 #include <boost/core/swap.hpp>
 #include <boost/ratio.hpp>
 #include <sstream>
 #include <iomanip>
 #include <limits>
+#include <cmath> // ceil, floor
+#include <boost/math/special_functions/trunc.hpp>
+#include <boost/math/special_functions/round.hpp>
 #include <type_traits> // true_type, false_type, is_same, conditional
 
 
@@ -526,7 +530,6 @@ public:
         return *this;
     }
 
-private:
     /*}}}*/
 
     // Comparison./*{{{*/
@@ -694,7 +697,7 @@ public:
 
     // Methods./*{{{*/
     /**
-     * @brief Get the number of periods.
+     * @brief Get the number of fundamental periods.
      */
     BOOST_CONSTEXPR Rep GetCount(void) const BOOST_NOEXCEPT
     {
@@ -773,6 +776,61 @@ public:
      */
     std::string ToString(void) const;
 
+    /*}}}*/
+
+    // Double./*{{{*/
+private:
+    template<RoundingStyle style>
+    struct RoundingStyleTag {};
+
+    static Duration InternalFromDouble(double sec, RoundingStyleTag<round_to_zero>)
+    {
+        Rep count(boost::math::lltrunc(sec / GetResolution()));
+        return Duration(count);
+    }
+
+    static Duration InternalFromDouble(double sec, RoundingStyleTag<round_to_nearest>)
+    {
+        Rep count(boost::math::llround(sec / GetResolution()));
+        return Duration(count);
+    }
+
+    static Duration InternalFromDouble(double sec, RoundingStyleTag<round_upward>)
+    {
+        Rep count(static_cast<Rep>(std::ceil(sec / GetResolution())));
+        return Duration(count);
+    }
+
+    static Duration InternalFromDouble(double sec, RoundingStyleTag<round_downward>)
+    {
+        Rep count(static_cast<Rep>(std::floor(sec / GetResolution())));
+        return Duration(count);
+    }
+
+public:
+    /**
+     * @brief Convert a double value in seconds to a duration.
+     *
+     * @param[in] sec   The duration in seconds.
+     * @param[in] style The rounding style.
+     *
+     * @return \c sec is rounded to an integral number of fundamental periods.
+     */
+    template<RoundingStyle style>
+    static Duration FromDouble(double sec)
+    {
+        return InternalFromDouble(sec, RoundingStyleTag<style>());
+    }
+
+    /**
+     * @brief Convert the duration to a double value in seconds.
+     *
+     * @param[in] sec The duration in seconds.
+     */
+    double ToDouble(void) const
+    {
+        return count_ * GetResolution();
+    }
     /*}}}*/
 
     // Limits./*{{{*/
