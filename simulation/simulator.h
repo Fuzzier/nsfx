@@ -80,7 +80,7 @@ public:
         {
             BOOST_THROW_EXCEPTION(
                 IllegalMethodCall() <<
-                ErrorMessage("Cannot change scheduler after initialization."));
+                ErrorMessage("Cannot change the scheduler after initialization."));
         }
         if (!scheduler)
         {

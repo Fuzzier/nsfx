@@ -111,7 +111,7 @@ NSFX_TEST_SUITE(Event)
 
             nsfx::Ptr<Iv2> sv2 = nsfx::EventSinkCreator<Iv2>()(nullptr, &V2);
 
-            nsfx::Ptr<Test> test = new nsfx::Object<Test>();
+            nsfx::Ptr<nsfx::Object<Test> > test = new nsfx::Object<Test>();
 
             ////////////////////////////////////////
             // V0

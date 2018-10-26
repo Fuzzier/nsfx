@@ -94,8 +94,8 @@ NSFX_TEST_SUITE(ValueFormat)
 
     NSFX_TEST_CASE(Pointer)
     {
-        int* i = (int*)(0x01234567);
-        int* j = (int*)(0x89abcdef);
+        int* i = reinterpret_cast<int*>(size_t(0x01234567));
+        int* j = reinterpret_cast<int*>(size_t(0x89abcdef));
         NSFX_TEST_EXPECT_EQ(i, j) << SHOULD_SEE;
     }
 

@@ -69,7 +69,7 @@ public:
         {
             BOOST_THROW_EXCEPTION(
                 IllegalMethodCall() <<
-                ErrorMessage("Cannot change clock after initialization."));
+                ErrorMessage("Cannot change the clock after initialization."));
         }
         if (!clock)
         {

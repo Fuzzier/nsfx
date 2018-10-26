@@ -5,7 +5,7 @@ LIBS=ws2_32.lib iphlpapi.lib
 
 !IFDEF RELEASE
 CFLAGS=
-CPPFLAGS=/nologo /W3 /MD /wd4355 /EHsc /Ox /Zi /arch:sse2 /I"$(NSFX_PATH)/.." \
+CPPFLAGS=/nologo /W3 /MD /wd4355 /EHsc /Ox /Zi /arch:AVX2 /I"$(NSFX_PATH)/.." \
 		 /DBOOST_MATH_PROMOTE_DOUBLE_POLICY=false /DBOOST_DISABLE_ASSERTS
 LDFLAGS=/NOLOGO /INCREMENTAL:NO
 !ELSE
@@ -344,7 +344,6 @@ simulation :                \
 	test-list-event-scheduler  \
 	test-set-event-scheduler   \
 	test-simulator             \
-	test-timer                 \
 
 SIMULATION_HEADERS=                              \
 	$(TEST_HEADERS)                                 \
@@ -362,8 +361,6 @@ SIMULATION_HEADERS=                              \
 	$(NSFX_PATH)/simulation/set-event-scheduler.h   \
 	$(NSFX_PATH)/simulation/i-simulator.h           \
 	$(NSFX_PATH)/simulation/simulator.h             \
-	$(NSFX_PATH)/simulation/i-timer.h               \
-	$(NSFX_PATH)/simulation/timer.h                 \
 
 ########################################
 test-event-handle : test-event-handle.exe
@@ -395,14 +392,6 @@ test-simulator : test-simulator.exe
 SRC=simulation/test-simulator.cpp
 
 test-simulator.exe : $(SIMULATION_HEADERS) $(SRC)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
-
-########################################
-test-timer : test-timer.exe
-
-SRC=simulation/test-timer.cpp
-
-test-timer.exe : $(SIMULATION_HEADERS) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ################################################################################

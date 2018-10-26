@@ -1006,7 +1006,7 @@ public:
     template<class...Args>
     MutualObject(IObject* controller, Args&&... args) :
         ObjectBase(controller),
-        ObjectImpl(controller, std::forward<Args>(args)...)
+        ObjectImpl(std::forward<Args>(args)...)
     {
         if (!controller)
         {
