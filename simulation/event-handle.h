@@ -76,7 +76,7 @@ public:
         return !!sink_;
     }
 
-    virtual void Cancel(void) BOOST_NOEXCEPT NSFX_OVERRIDE
+    virtual void Cancel(void) NSFX_OVERRIDE
     {
         sink_ = nullptr;
     }

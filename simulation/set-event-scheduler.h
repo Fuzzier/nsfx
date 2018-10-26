@@ -122,13 +122,13 @@ public:
         return set_.size();
     }
 
-    virtual Ptr<IEventHandle> GetNextEvent(void) BOOST_NOEXCEPT NSFX_OVERRIDE
+    virtual Ptr<IEventHandle> GetNextEvent(void) NSFX_OVERRIDE
     {
         EventHandleClass* result = InternalGetNextEvent();
         return Ptr<IEventHandle>(result);
     }
 
-    void FireAndRemoveNextEvent(void) BOOST_NOEXCEPT
+    void FireAndRemoveNextEvent(void)
     {
         EventHandleClass* result = InternalRemoveNextEvent();
         Ptr<EventHandleClass>(result)->Fire();
@@ -145,7 +145,7 @@ private:
         return result;
     }
 
-    EventHandleClass* InternalRemoveNextEvent(void) BOOST_NOEXCEPT
+    EventHandleClass* InternalRemoveNextEvent(void)
     {
         EventHandleClass* result = nullptr;
         if (set_.size() > 0)
@@ -157,7 +157,7 @@ private:
         return result;
     }
 
-    bool IsOrdered(void) const
+    bool IsOrdered(void) const BOOST_NOEXCEPT
     {
         bool ordered = true;
         TimePoint t0;

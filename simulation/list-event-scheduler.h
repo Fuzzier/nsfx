@@ -166,7 +166,7 @@ private:
         return result;
     }
 
-    EventHandleClass* InternalRemoveNextEvent(void) BOOST_NOEXCEPT
+    EventHandleClass* InternalRemoveNextEvent(void)
     {
         EventHandleClass* result = nullptr;
         if (list_.size() > 0)
@@ -177,7 +177,7 @@ private:
         return result;
     }
 
-    bool IsOrdered(void) const
+    bool IsOrdered(void) const BOOST_NOEXCEPT
     {
         bool ordered = true;
         TimePoint t0;
