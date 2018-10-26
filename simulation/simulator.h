@@ -76,13 +76,15 @@ public:
     // IEventSchedulerUser /*{{{*/
     virtual void Use(Ptr<IEventScheduler> scheduler) NSFX_OVERRIDE
     {
+        if (initialized_)
+        {
+            BOOST_THROW_EXCEPTION(
+                IllegalMethodCall() <<
+                ErrorMessage("Cannot change scheduler after initialization."));
+        }
         if (!scheduler)
         {
             BOOST_THROW_EXCEPTION(InvalidPointer());
-        }
-        if (scheduler_)
-        {
-            BOOST_THROW_EXCEPTION(CannotReinitialize());
         }
         scheduler_ = scheduler;
         initialized_ = true;

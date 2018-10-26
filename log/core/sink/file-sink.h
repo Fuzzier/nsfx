@@ -83,7 +83,7 @@ inline void FileSink::Open(const std::string& fileName)
     if (ofs_.is_open())
     {
         BOOST_THROW_EXCEPTION(
-            CannotReinitialize() <<
+            IllegalMethodCall() <<
             ErrorMessage("Cannot set another file name "
                          "while the log file sink has already opened a file."));
     }

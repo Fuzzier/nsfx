@@ -65,9 +65,11 @@ public:
 public:
     virtual void Use(Ptr<IClock> clock) NSFX_OVERRIDE
     {
-        if (clock_)
+        if (initialized_)
         {
-            BOOST_THROW_EXCEPTION(CannotReinitialize());
+            BOOST_THROW_EXCEPTION(
+                IllegalMethodCall() <<
+                ErrorMessage("Cannot change clock after initialization."));
         }
         if (!clock)
         {

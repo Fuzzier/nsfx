@@ -58,9 +58,11 @@ struct Uninitialized : ComponentException {};
 
 /**
  * @ingroup Exception
- * @brief An initialized object cannot be initialized again.
+ * @brief An object cannot be initialized.
+ *
+ * The reasons may be insufficient or conflicting data.
  */
-struct CannotReinitialize : ComponentException {};
+struct CannotInitialize : ComponentException {};
 
 
 ////////////////////////////////////////////////////////////////////////////////
