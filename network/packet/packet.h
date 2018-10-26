@@ -444,6 +444,34 @@ public:
     Packet(Packet&& rhs) BOOST_NOEXCEPT;
     Packet& operator=(Packet&& rhs);
 
+    // Operators.
+    bool operator!(void) const BOOST_NOEXCEPT
+    {
+        return !body_;
+    }
+
+#if !defined(BOOST_NO_CXX11_EXPLICIT_CONVERSION_OPERATORS)
+    explicit operator bool() const BOOST_NOEXCEPT
+    {
+        return !!body_;
+    }
+
+#else // defined(BOOST_NO_CXX11_EXPLICIT_CONVERSION_OPERATORS)
+private:
+    bool ToBool(void) const BOOST_NOEXCEPT
+    {
+        return !!body_;
+    }
+    typedef bool (Packet::* BoolType)(void) const;
+
+public:
+    operator BoolType() const BOOST_NOEXCEPT
+    {
+        return body_ ? &Packet::ToBool : nullptr;
+    }
+
+#endif // !defined(BOOST_NO_CXX11_EXPLICIT_CONVERSION_OPERATORS)
+
     // Buffer.
 public:
     /**
