@@ -481,6 +481,42 @@ public:
         count_(n)
     {}
 
+    /**
+     * @brief Construct a duration.
+     *
+     * @param[in] sec The time length in seconds.
+     */
+    BOOST_CONSTEXPR Duration(double sec, round_to_zero_t) BOOST_NOEXCEPT :
+        count_(boost::math::lltrunc(sec * GetFrequency()))
+    {}
+
+    /**
+     * @brief Construct a duration.
+     *
+     * @param[in] sec The time length in seconds.
+     */
+    BOOST_CONSTEXPR Duration(double sec, round_to_nearest_t) BOOST_NOEXCEPT :
+        count_(boost::math::llround(sec * GetFrequency()))
+    {}
+
+    /**
+     * @brief Construct a duration.
+     *
+     * @param[in] sec The time length in seconds.
+     */
+    BOOST_CONSTEXPR Duration(double sec, round_upward_t) BOOST_NOEXCEPT :
+        count_(static_cast<Rep>(std::ceil(sec * GetFrequency())))
+    {}
+
+    /**
+     * @brief Construct a duration.
+     *
+     * @param[in] sec The time length in seconds.
+     */
+    BOOST_CONSTEXPR Duration(double sec, round_downward_t) BOOST_NOEXCEPT :
+        count_(static_cast<Rep>(std::floor(sec * GetFrequency())))
+    {}
+
     /*}}}*/
 
     // Copyable./*{{{*/
@@ -714,6 +750,16 @@ public:
         return res;
     }
 
+    /**
+     * @brief Get the number of fundamental period per second.
+     */
+    static BOOST_CONSTEXPR double GetFrequency(void) BOOST_NOEXCEPT
+    {
+        static const double freq = static_cast<double>(Res::den)
+                                 / static_cast<double>(Res::num);
+        return freq;
+    }
+
     void swap(Duration& rhs) BOOST_NOEXCEPT
     {
         boost::swap(count_, rhs.count_);
@@ -779,49 +825,7 @@ public:
     /*}}}*/
 
     // Double./*{{{*/
-private:
-    template<RoundingStyle style>
-    struct RoundingStyleTag {};
-
-    static Duration InternalFromDouble(double sec, RoundingStyleTag<round_to_zero>)
-    {
-        Rep count(boost::math::lltrunc(sec / GetResolution()));
-        return Duration(count);
-    }
-
-    static Duration InternalFromDouble(double sec, RoundingStyleTag<round_to_nearest>)
-    {
-        Rep count(boost::math::llround(sec / GetResolution()));
-        return Duration(count);
-    }
-
-    static Duration InternalFromDouble(double sec, RoundingStyleTag<round_upward>)
-    {
-        Rep count(static_cast<Rep>(std::ceil(sec / GetResolution())));
-        return Duration(count);
-    }
-
-    static Duration InternalFromDouble(double sec, RoundingStyleTag<round_downward>)
-    {
-        Rep count(static_cast<Rep>(std::floor(sec / GetResolution())));
-        return Duration(count);
-    }
-
 public:
-    /**
-     * @brief Convert a double value in seconds to a duration.
-     *
-     * @param[in] sec   The duration in seconds.
-     * @param[in] style The rounding style.
-     *
-     * @return \c sec is rounded to an integral number of fundamental periods.
-     */
-    template<RoundingStyle style>
-    static Duration FromDouble(double sec)
-    {
-        return InternalFromDouble(sec, RoundingStyleTag<style>());
-    }
-
     /**
      * @brief Convert the duration to a double value in seconds.
      *

@@ -24,11 +24,23 @@ NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
-enum RoundingStyle
+enum round_to_zero_t
 {
-    round_to_zero,    ///< Toward zero.
-    round_to_nearest, ///< Toward nearest.
-    round_upward,     ///< Toward infinity.
+    round_to_zero     ///< Toward zero.
+};
+
+enum round_to_nearest_t
+{
+    round_to_nearest  ///< Toward nearest.
+};
+
+enum round_upward_t
+{
+    round_upward      ///< Toward infinity.
+};
+
+enum round_downward_t
+{
     round_downward    ///< Toward negative infinity.
 };
 
