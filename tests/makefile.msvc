@@ -31,6 +31,7 @@ clean :
 	del /s /q *.dll
 	del /s /q *.pdb
 	del /s /q *.log
+	del /s /q *.txt
 
 EXCEPTION_HEADERS=                   \
 	$(NSFX_PATH)/config.h               \

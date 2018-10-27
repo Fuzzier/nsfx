@@ -463,16 +463,16 @@ NSFX_TEST_SUITE(Packet)
 
 int main(void)
 {
-    // nsfx::test::runner::GetLogger()->AddStreamSink(std::cerr);
+    nsfx::test::runner::GetLogger()->AddStreamSink(std::cerr);
     // for (size_t i = 0; i < 100000; ++i)
     // {
     //     nsfx::test::runner::Run();
     // }
     // clock_t t0 = clock();
     // for (size_t i = 0; i < 200000; ++i)
-    // {
+    {
         nsfx::test::runner::Run();
-    // }
+    }
     // clock_t t1 = clock();
     // std::cout << t1 - t0 << std::endl;
 
