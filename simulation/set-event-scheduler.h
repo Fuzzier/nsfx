@@ -97,7 +97,10 @@ public:
     virtual Ptr<IEventHandle> ScheduleAt(const TimePoint& t,
                                          Ptr<IEventSink<> > sink) NSFX_OVERRIDE
     {
-        CheckInitialized();
+        if (!initialized_)
+        {
+            BOOST_THROW_EXCEPTION(Uninitialized());
+        }
         if (!sink)
         {
             BOOST_THROW_EXCEPTION(InvalidPointer());
@@ -114,7 +117,8 @@ public:
         Ptr<EventHandleClass> handle(new EventHandleClass(t, std::move(sink)));
         set_.insert(handle);
         // BOOST_ASSERT(IsOrdered());
-        return std::move(handle);
+        return Ptr<IEventHandle>(static_cast<IEventHandle*>(handle.Detach()),
+                                 false);
     }
 
     virtual size_t GetNumEvents(void) BOOST_NOEXCEPT NSFX_OVERRIDE
@@ -125,13 +129,13 @@ public:
     virtual Ptr<IEventHandle> GetNextEvent(void) NSFX_OVERRIDE
     {
         EventHandleClass* result = InternalGetNextEvent();
-        return Ptr<IEventHandle>(result);
+        return static_cast<IEventHandle*>(result);
     }
 
     void FireAndRemoveNextEvent(void)
     {
         EventHandleClass* result = InternalRemoveNextEvent();
-        Ptr<EventHandleClass>(result)->Fire();
+        static_cast<EventHandleClass*>(result)->Fire();
     }
 
 private:
@@ -180,14 +184,6 @@ private:
             {
                 initialized_ = true;
             }
-        }
-    }
-
-    void CheckInitialized(void)
-    {
-        if (!initialized_)
-        {
-            BOOST_THROW_EXCEPTION(Uninitialized());
         }
     }
 
