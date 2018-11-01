@@ -48,8 +48,6 @@ NSFX_TEST_SUITE(ClassRegistry)
 
     };/*}}}*/
 
-    NSFX_DEFINE_CLASS_UID(Test, "edu.uestc.nsfx.test.Test");
-
     refcount_t RefCount(nsfx::IObject* p)/*{{{*/
     {
         refcount_t result = 0;
@@ -73,7 +71,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         // Register with empty factory (throw).
         try
         {
-            registry->Register(nsfx::uid_of<Test>(), nullptr);
+            registry->Register("edu.uestc.nsfx.test.Test", nullptr);
             NSFX_TEST_EXPECT(false);
         }
         catch (nsfx::InvalidPointer& )
@@ -88,7 +86,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         // Get unregistered factory (throw).
         try
         {
-            registry->GetClassFactory(nsfx::uid_of<Test>());
+            registry->GetClassFactory("edu.uestc.nsfx.test.Test");
             NSFX_TEST_EXPECT(false);
         }
         catch (nsfx::ClassNotRegistered& )
@@ -105,7 +103,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         try
         {
             factory = new TestFactoryClass;
-            registry->Register(nsfx::uid_of<Test>(), factory);
+            registry->Register("edu.uestc.nsfx.test.Test", factory);
         }
         catch (boost::exception& e)
         {
@@ -115,7 +113,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         // Register already registered (throw).
         try
         {
-            registry->Register(nsfx::uid_of<Test>(), factory);
+            registry->Register("edu.uestc.nsfx.test.Test", factory);
             NSFX_TEST_EXPECT(false);
         }
         catch (nsfx::ClassIsRegistered& )
@@ -131,7 +129,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         nsfx::Ptr<nsfx::IClassFactory> f;
         try
         {
-            f = registry->GetClassFactory(nsfx::uid_of<Test>());
+            f = registry->GetClassFactory("edu.uestc.nsfx.test.Test");
         }
         catch (boost::exception& e)
         {
@@ -161,10 +159,10 @@ NSFX_TEST_SUITE(ClassRegistry)
         }
 
         // Unregister.
-        registry->Unregister(nsfx::uid_of<Test>());
+        registry->Unregister("edu.uestc.nsfx.test.Test");
         try
         {
-            registry->GetClassFactory(nsfx::uid_of<Test>());
+            registry->GetClassFactory("edu.uestc.nsfx.test.Test");
             NSFX_TEST_EXPECT(false);
         }
         catch (nsfx::ClassNotRegistered& )
@@ -179,9 +177,9 @@ NSFX_TEST_SUITE(ClassRegistry)
         // Unregister all.
         try
         {
-            registry->Register(nsfx::uid_of<Test>(), factory);
+            registry->Register("edu.uestc.nsfx.test.Test", factory);
             registry->UnregisterAll();
-            registry->GetClassFactory(nsfx::uid_of<Test>());
+            registry->GetClassFactory("edu.uestc.nsfx.test.Test");
             NSFX_TEST_EXPECT(false);
         }
         catch (nsfx::ClassNotRegistered& )
@@ -200,7 +198,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         // Register class with default factory.
         try
         {
-            nsfx::RegisterClassFactory<Test>(nsfx::uid_of<Test>());
+            nsfx::RegisterClassFactory<Test>("edu.uestc.nsfx.test.Test");
         }
         catch (boost::exception& e)
         {
@@ -211,7 +209,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         nsfx::Ptr<ITest> t;
         try
         {
-            t = nsfx::CreateObject<ITest>(nsfx::uid_of<Test>(), nullptr);
+            t = nsfx::CreateObject<ITest>("edu.uestc.nsfx.test.Test", nullptr);
             NSFX_TEST_EXPECT(t);
         }
         catch (boost::exception& e)
@@ -220,10 +218,10 @@ NSFX_TEST_SUITE(ClassRegistry)
         }
 
         // Unregister class (template-based).
-        nsfx::UnregisterClassFactory(nsfx::uid_of<Test>());
+        nsfx::UnregisterClassFactory("edu.uestc.nsfx.test.Test");
         try
         {
-            t = nsfx::CreateObject<ITest>(nsfx::uid_of<Test>(), nullptr);
+            t = nsfx::CreateObject<ITest>("edu.uestc.nsfx.test.Test", nullptr);
             NSFX_TEST_EXPECT(false);
         }
         catch (nsfx::ClassNotRegistered& )
@@ -239,7 +237,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         try
         {
             nsfx::Ptr<nsfx::IClassFactory> factory(new TestFactoryClass);
-            nsfx::RegisterClassFactory(nsfx::uid_of<Test>(), factory);
+            nsfx::RegisterClassFactory("edu.uestc.nsfx.test.Test", factory);
         }
         catch (boost::exception& e)
         {
@@ -249,7 +247,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         // Create object.
         try
         {
-            t = nsfx::CreateObject<ITest>(nsfx::uid_of<Test>(), nullptr);
+            t = nsfx::CreateObject<ITest>("edu.uestc.nsfx.test.Test", nullptr);
             NSFX_TEST_EXPECT(t);
         }
         catch (boost::exception& e)
@@ -258,10 +256,10 @@ NSFX_TEST_SUITE(ClassRegistry)
         }
 
         // Unregister class.
-        nsfx::UnregisterClassFactory(nsfx::uid_of<Test>());
+        nsfx::UnregisterClassFactory("edu.uestc.nsfx.test.Test");
         try
         {
-            t = nsfx::CreateObject<ITest>(nsfx::uid_of<Test>(), nullptr);
+            t = nsfx::CreateObject<ITest>("edu.uestc.nsfx.test.Test", nullptr);
             NSFX_TEST_EXPECT(false);
         }
         catch (nsfx::ClassNotRegistered& )
@@ -276,7 +274,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         // // Unregister all classes.
         // try
         // {
-        //     nsfx::RegisterClassFactory<Test>(nsfx::uid_of<Test>());
+        //     nsfx::RegisterClassFactory<Test>("edu.uestc.nsfx.test.Test");
         //     nsfx::UnregisterAllClassFactories();
         // }
         // catch (boost::exception& e)
@@ -285,7 +283,7 @@ NSFX_TEST_SUITE(ClassRegistry)
         // }
         // try
         // {
-        //     t = nsfx::CreateObject<ITest>(nsfx::uid_of<Test>(), nullptr);
+        //     t = nsfx::CreateObject<ITest>("edu.uestc.nsfx.test.Test", nullptr);
         //     NSFX_TEST_EXPECT(false);
         // }
         // catch (nsfx::ClassNotRegistered& )

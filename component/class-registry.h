@@ -26,38 +26,199 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Macros./*{{{*/
+// Macros.
 /**
- * @brief Register a class with a default class factory.
+ * @brief A helper class template that registers a class with a default factory.
  *
- * @param C Must conform to \c HasUidConcept and \c ObjectImplConcept.
- *          Must not use qualified name.
+ * @param C   Must conform to \c HasUidConcept and \c ObjectImplConcept.
+ *            Must not use qualified name.
+ * @param cid The ID of the class.
+ *
+ * ============
+ * Requirements
+ * ============
+ *
+ * The process is that:
+ * 1. Component writers associate a CID with a class.
+ * 2. The CID is registered during the program startup.
+ * 3. Component users use the CID to create instances of the class, and use
+ *    interfaces to manipulate the instances.
+ *
+ * The library provides an inline, self-driven and non-intrusive way for class
+ * registration and instance creation.
+ *
+ * * Inline
+ *
+ *   Component writers use a macro to associate a CID with a class.
+ *   Usually, the macro is written along with the class in the same source
+ *   file.
+ *   They do not write the information in a separate location, such as
+ *   Windows Registry or configuration files.
+ *
+ * * Self-driven
+ *
+ *   The class registration is performed during program startup, since the
+ *   information is coded in the program itself.
+ *   Component users do not need to use loader programs to register the
+ *   clases, or create instances.
+ *   This is specially helpful in an environment that forbids the usage of
+ *   Windows Registry or loader programs.
+ *
+ * * Non-intrusive
+ *
+ *   Similar to IID, the macro to associate a CID with a class is placed
+ *   outside of the class definition.
+ *
+ *   The difference is that, an IID is bound to the type of an interface.
+ *   That is, an interface can have one and only one IID.
+ *   However, a CID is associated loosely with a class.
+ *   That is, a class may have multiple CIDs.
+ *
+ *  * Header friendly
+ *
+ *    The macro must be able to be placed in header files, so the library
+ *    remains header-only.
+ *
+ * ========
+ * Key idea
+ * ========
+ *
+ * 1. Define a helper class whose constructor performs the registration.
+ * 2. Define a static instance of the helper class, so the constructor is
+ *    called during program startup.
+ *
+ * =======
+ * Methods
+ * =======
+ *
+ * ## Global static variable
+ *
+ *    A common method is to defined a static instance of the class directly.
+ *    @code
+ *    static struct MyClassRegister
+ *    {
+ *        MyClassRegister(void)
+ *        {
+ *            ::nsfx::RegisterClassFactory<MyClass>(myCid);
+ *        }
+ *    } s_MyClassRegister;
+ *    @endcode
+ *
+ *    If the code is placed in a header file, each compilation unit that
+ *    includes the header file would have a separate instance of the variable.
+ *    Thus, the constructor must use a static flag to prevent multiple
+ *    registration.
+ *    @code
+ *    static struct MyClassRegister
+ *    {
+ *        MyClassRegister(void)
+ *        {
+ *            static bool registered = false;
+ *            if (!registered)
+ *            {
+ *                ::nsfx::RegisterClassFactory<MyClass>(myCid);
+ *                registered = true;
+ *            }
+ *        }
+ *    } s_MyClassRegister;
+ *    @endcode
+ *
+ * ## Class member static instance.
+ *
+ *    To prevent the use of an additional static flag, the static instance can
+ *    be defined as a class member.
+ *    @code
+ *    struct MyClassRegister
+ *    {
+ *        static struct Worker
+ *        {
+ *            Worker(void)
+ *            {
+ *                ::nsfx::RegisterClassFactory<MyClass>(myCid);
+ *            }
+ *        } worker_;
+ *    };
+ *    MyClassRegister::Worker MyClassRegister::worker_;
+ *    @endcode
+ *
+ *    If the code is placed in a header file, the instance would be defined in
+ *    each compilation unit that includes the header file.
+ *    This results in multiple definition of the instance.
+ *    The work around, a class template can be used in place of the class.
+ *    An implicit instantiation of the class template is also declared.
+ *    @code
+ *    template<class T>
+ *    struct MyClassRegister
+ *    {
+ *        static struct Worker
+ *        {
+ *            Worker(void)
+ *            {
+ *                ::nsfx::RegisterClassFactory<MyClass>(myCid);
+ *            }
+ *        } worker_;
+ *    };
+ *    template<classs T> MyClassRegister<T>::Worker MyClassRegister<T>::worker_;
+ *    template MyClassRegister<MyClass>;
+ *    @endcode
+ *
+ *    However, there is a problem in this method.
+ *    That is, the static instance is local to the compilation unit, and will
+ *    be <b>removed</b> when the object file is archived in a <i>static library</i>.
+ *    To prevent the removal, the static instance must be accessed by some
+ *    entity with external linkage in the source file.
+ *
  *
  * @see \c RegisterClass().
  */
-#define NSFX_REGISTER_CLASS(C, cid)                                   \
-    static struct C ## ClassRegister                                  \
-    {                                                                 \
-        C ## ClassRegister(void)                                      \
-        {                                                             \
-            static bool registered = false;                           \
-            try                                                       \
-            {                                                         \
-                if (!registered)                                      \
-                {                                                     \
-                    ::nsfx::RegisterClassFactory<C>(cid);             \
-                    registered = true;                                \
-                }                                                     \
-            }                                                         \
-            catch (boost::exception& e)                               \
-            {                                                         \
-                std::cerr << diagnostic_information(e) << std::endl;  \
-                throw;                                                \
-            }                                                         \
-        }                                                             \
-    } s_ ## C ## ClassRegister
+#define NSFX_REGISTER_CLASS(C, cid)                                       \
+    template<class T>                                                     \
+    struct C ## Register                                                  \
+    {                                                                     \
+        static struct Worker                                              \
+        {                                                                 \
+            Worker(void)                                                  \
+            {                                                             \
+                try                                                       \
+                {                                                         \
+                    ::nsfx::RegisterClassFactory<C>(cid);                 \
+                }                                                         \
+                catch (boost::exception& e)                               \
+                {                                                         \
+                    std::cerr << diagnostic_information(e) << std::endl;  \
+                    throw;                                                \
+                }                                                         \
+            }                                                             \
+        } worker_;                                                        \
+    };                                                                    \
+    template<class T>                                                     \
+    typename C ## Register<T>::Worker C ## Register<T>::worker_;          \
+    template C ## Register<C>
 
-/*}}}*/
+    // static struct C ## ClassRegister                                  \
+    // {                                                                 \
+    //     C ## ClassRegister(void)                                      \
+    //     {                                                             \
+    //         try                                                       \
+    //         {                                                         \
+    //             static bool registered = false;                       \
+    //             if (!registered)                                      \
+    //             {                                                     \
+    //                 ::nsfx::RegisterClassFactory<C>(cid);             \
+    //                 registered = true;                                \
+    //             }                                                     \
+    //         }                                                         \
+    //         catch (boost::exception& e)                               \
+    //         {                                                         \
+    //             std::cerr << diagnostic_information(e) << std::endl;  \
+    //                 throw;                                            \
+    //         }                                                         \
+    //     }                                                             \
+    // } s_##C##_register;                                               \
+    // extern void C##Foo()                                              \
+    // {                                                                 \
+    //     C ## ClassRegister* s = &s_##C##_register;                    \
+    // }
 
 
 NSFX_OPEN_NAMESPACE
@@ -110,7 +271,7 @@ public:
         static ClassRegistryClass registry;
         // Omit AddRef() as there is no need to do so.
         // Omit QueryInterface() as the implementation is known.
-        return &registry;
+        return static_cast<IClassRegistry*>(registry.GetImpl());
     }
 
     /*}}}*/

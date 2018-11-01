@@ -126,12 +126,11 @@ typedef decltype(nullptr) nullptr_t;
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// NSFX_EXPLICIT
-#if defined(BOOST_NO_CXX11_EXPLICIT_CONVERSION_OPERATORS)
-# define NSFX_EXPLICIT
-#else // if !defined(BOOST_NO_CXX11_EXPLICIT_CONVERSION_OPERATORS)
-# define NSFX_EXPLICIT  explicit
-#endif // defined(BOOST_NO_CXX11_EXPLICIT_CONVERSION_OPERATORS)
+// NSFX_EXPORT, NSFX_IMPORT
+#if defined(NSFX_MSVC)
+# define NSFX_EXPORT __declspec(dllexport)
+# define NSFX_IMPORT __declspec(dllimport)
+#endif // defined(NSFX_MSVC)
 
 
 ////////////////////////////////////////////////////////////////////////////////

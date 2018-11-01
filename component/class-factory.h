@@ -41,7 +41,7 @@ NSFX_OPEN_NAMESPACE
  * Thus, it shall be used in conjunction with \c Object or \c AggObject.
  */
 template<class ObjectImpl>
-class ClassFactory :/*{{{*/
+class ClassFactory :
     public IClassFactory
 {
 private:
@@ -51,7 +51,7 @@ public:
     virtual ~ClassFactory(void) BOOST_NOEXCEPT {}
 
 public:
-    // IClassFactory /*{{{*/
+    // IClassFactory
     virtual void* CreateObject(const Uid& iid, IObject* controller) NSFX_FINAL NSFX_OVERRIDE
     {
         if (controller && iid != uid_of<IObject>())
@@ -85,13 +85,12 @@ public:
         return o->QueryInterface(uid_of<IObject>());
     }
 
-    /*}}}*/
-
+private:
     NSFX_INTERFACE_MAP_BEGIN(ClassFactory)
         NSFX_INTERFACE_ENTRY(IClassFactory)
     NSFX_INTERFACE_MAP_END()
 
-}; // class ClassFactory /*}}}*/
+}; // class ClassFactory
 
 
 NSFX_CLOSE_NAMESPACE
