@@ -66,6 +66,7 @@ NSFX_TEST_SUITE(suite1)
             double k = 0.1;
             NSFX_TEST_EXPECT_AC(i, j, k) << SHOULD_SEE;
             NSFX_TEST_EXPECT_RC(i, j, k) << SHOULD_SEE;
+            NSFX_TEST_MESSAGE() << SHOULD_SEE;
         }
 
     }

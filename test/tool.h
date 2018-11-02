@@ -167,6 +167,21 @@ inline std::string TestFormatValue(T value)
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// Message./*{{{*/
+/**
+ * @ingroup Test
+ *
+ * @brief Output message.
+ */
+#define NSFX_TEST_MESSAGE()                                         \
+    /* Set the message for output. */                               \
+    for (bool go = true; go; go = false)                            \
+    for (std::ostringstream oss; go;                                \
+         ::nsfx::test::runner::ShowMessage(oss.str()), go = false)  \
+        oss
+/*}}}*/
+
+
 // Predicate./*{{{*/
 /**
  * @ingroup Test
@@ -177,8 +192,6 @@ inline std::string TestFormatValue(T value)
  * @param LEVEL tool level.
  * @param DESC description.
  * @param ACT  actual value.
- *
- * @internal
  */
 #define NSFX_TEST_PREDICATE_IMPL(TYPE, LEVEL, DESC, ACT)                        \
     /* If the testing is not stopped.  */                                       \
@@ -235,8 +248,6 @@ inline std::string TestFormatValue(T value)
  * @param DESC description.
  * @param ACT  actual value.
  * @param LIM  expected value.
- *
- * @internal
  */
 #define NSFX_TEST_EQUAL_IMPL(TYPE, LEVEL, DESC, ACT, LIM)                       \
     /* If the testing is not stopped.  */                                       \
@@ -295,8 +306,6 @@ inline std::string TestFormatValue(T value)
  * @param DESC description.
  * @param ACT  actual value.
  * @param LIM  expected value.
- *
- * @internal
  */
 #define NSFX_TEST_NOT_EQUAL_IMPL(TYPE, LEVEL, DESC, ACT, LIM)                   \
     /* If the testing is not stopped.  */                                       \
@@ -355,8 +364,6 @@ inline std::string TestFormatValue(T value)
  * @param DESC description.
  * @param ACT  actual value.
  * @param LIM  expected value.
- *
- * @internal
  */
 #define NSFX_TEST_LESS_THAN_IMPL(TYPE, LEVEL, DESC, ACT, LIM)                   \
     /* If the testing is not stopped.  */                                       \
@@ -415,8 +422,6 @@ inline std::string TestFormatValue(T value)
  * @param DESC description.
  * @param ACT  actual value.
  * @param LIM  expected value.
- *
- * @internal
  */
 #define NSFX_TEST_LESS_EQUAL_IMPL(TYPE, LEVEL, DESC, ACT, LIM)                  \
     /* If the testing is not stopped.  */                                       \
@@ -475,8 +480,6 @@ inline std::string TestFormatValue(T value)
  * @param DESC description.
  * @param ACT  actual value.
  * @param LIM  expected value.
- *
- * @internal
  */
 #define NSFX_TEST_GREATER_THAN_IMPL(TYPE, LEVEL, DESC, ACT, LIM)                \
     /* If the testing is not stopped.  */                                       \
@@ -535,8 +538,6 @@ inline std::string TestFormatValue(T value)
  * @param DESC description.
  * @param ACT  actual value.
  * @param LIM  expected value.
- *
- * @internal
  */
 #define NSFX_TEST_GREATER_EQUAL_IMPL(TYPE, LEVEL, DESC, ACT, LIM)               \
     /* If the testing is not stopped.  */                                       \
@@ -596,8 +597,6 @@ inline std::string TestFormatValue(T value)
  * @param ACT  actual value.
  * @param LIM  expected value.
  * @param TOL  tolerance value.
- *
- * @internal
  */
 #define NSFX_TEST_ABSOLUTE_CLOSENESS_IMPL(TYPE, LEVEL, DESC, ACT, LIM, TOL)             \
     /* If the testing is not stopped.  */                                               \
@@ -661,8 +660,6 @@ inline std::string TestFormatValue(T value)
  * @param ACT  actual value.
  * @param LIM  expected value.
  * @param TOL  tolerance value.
- *
- * @internal
  */
 #define NSFX_TEST_RELATIVE_CLOSENESS_IMPL(TYPE, LEVEL, DESC, ACT, LIM, TOL)             \
     /* If the testing is not stopped.  */                                               \

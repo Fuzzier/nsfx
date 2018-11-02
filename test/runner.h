@@ -105,6 +105,11 @@ public:
         GetActiveCase()->AddResult(std::move(result));
     }
 
+    void CommitMessage(const std::string& message)
+    {
+        ShowMessage(message);
+    }
+
     void Run(void)
     {
         numCases_ = masterSuite_.GetNumberOfCases();
@@ -117,7 +122,7 @@ public:
         ShowSummary();
     }
 
-private:
+public:
     void ShowMessage(const std::string& message)
     {
         struct Visitor /*{{{*/
@@ -138,6 +143,7 @@ private:
         logger_.VisitStreams(Visitor(message));
     }
 
+private:
     void ShowProgress(void)
     {
         struct Visitor /*{{{*/
@@ -155,7 +161,6 @@ private:
         private:
             size_t progress_;
         }; // struct Visitor /*}}}*/
-
 
         bool show = false;
         while ((double)numTestedCases_ / numCases_ * 10 >= nextProgress_)
@@ -367,6 +372,11 @@ bool GetStopFlag(void)
 void CommitResult(Result&& result)
 {
     Runner::GetInstance()->CommitResult(std::move(result));
+}
+
+void ShowMessage(const std::string& message)
+{
+    Runner::GetInstance()->ShowMessage(message);
 }
 
 void Run(void)
