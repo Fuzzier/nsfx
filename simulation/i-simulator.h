@@ -70,6 +70,11 @@ public:
      */
     virtual void RunFor(const Duration& dt) = 0;
 
+    /**
+     * @brief Pause the simulator.
+     */
+    virtual void Pause(void) = 0;
+
 }; // class ISimulator /*}}}*/
 
 

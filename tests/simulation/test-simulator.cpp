@@ -73,6 +73,11 @@ NSFX_TEST_SUITE(Simulator)
                 scheduler_->ScheduleAt(
                     clock_->Now() + nsfx::Seconds(1), this);
             }
+            else if (counter == 15)
+            {
+                scheduler_->ScheduleIn(nsfx::Seconds(1), this);
+                simulator_->Pause();
+            }
             else if (counter < 20)
             {
                 scheduler_->ScheduleIn(nsfx::Seconds(1), this);
@@ -167,6 +172,13 @@ NSFX_TEST_SUITE(Simulator)
             // run to 10s.
             simulator->RunFor(nsfx::chrono::Seconds(9));
             NSFX_TEST_EXPECT_EQ(counter, 10);
+            NSFX_TEST_EXPECT(begin);
+            NSFX_TEST_EXPECT(!run);
+
+            // run to the end (20s).
+            // The simulator will be paused at 15s.
+            simulator->Run();
+            NSFX_TEST_EXPECT_EQ(counter, 15);
             NSFX_TEST_EXPECT(begin);
             NSFX_TEST_EXPECT(!run);
 

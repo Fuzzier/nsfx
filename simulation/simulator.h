@@ -63,6 +63,7 @@ public:
     Simulator(void) BOOST_NOEXCEPT :
         initialized_(false),
         started_(false),
+        paused_(true),
         finished_(false),
         beginEvent_(this),
         runEvent_(this),
@@ -95,7 +96,7 @@ public:
     // IClock /*{{{*/
     virtual TimePoint Now(void) BOOST_NOEXCEPT NSFX_OVERRIDE
     {
-        return t_;
+        return now_;
     }
 
     /*}}}*/
@@ -117,9 +118,10 @@ public:
             BOOST_THROW_EXCEPTION(SimulatorFinished());
         }
         CheckBeginOfSimulation();
+        paused_ = false;
         FireSimulationRunEvent();
         // An external object can schedule events in its event sink.
-        while (true)
+        while (!paused_)
         {
             Ptr<IEventHandle> handle = scheduler_->GetNextEvent();
             if (!handle)
@@ -133,7 +135,8 @@ public:
                 // End the loop if the event is scheduled for a later time.
                 break;
             }
-            t_ = t0;
+            now_ = t0;
+            // Can pause simulation.
             scheduler_->FireAndRemoveNextEvent();
         }
         FireSimulationPauseEvent();
@@ -142,15 +145,20 @@ public:
 
     virtual void RunFor(const Duration& dt) NSFX_OVERRIDE
     {
-        RunUntil(t_ + dt);
+        RunUntil(now_ + dt);
+    }
+
+    virtual void Pause(void) NSFX_OVERRIDE
+    {
+        paused_ = true;
     }
 
     void CheckBeginOfSimulation(void)
     {
         if (!started_)
         {
-            FireSimulationBeginEvent();
             started_ = true;
+            FireSimulationBeginEvent();
         }
     }
 
@@ -158,8 +166,8 @@ public:
     {
         if (!scheduler_->GetNextEvent() && !finished_)
         {
-            FireSimulationEndEvent();
             finished_ = true;
+            FireSimulationEndEvent();
         }
     }
 
@@ -168,26 +176,22 @@ public:
     // Events./*{{{*/
     void FireSimulationBeginEvent(void)
     {
-        beginEvent_.GetImpl()->Visit(
-            [] (ISimulationBeginEventSink* sink){ sink->Fire(); });
+        beginEvent_.GetImpl()->Fire();
     }
 
     void FireSimulationRunEvent(void)
     {
-        runEvent_.GetImpl()->Visit(
-            [] (ISimulationRunEventSink* sink){ sink->Fire(); });
+        runEvent_.GetImpl()->Fire();
     }
 
     void FireSimulationPauseEvent(void)
     {
-        pauseEvent_.GetImpl()->Visit(
-            [] (ISimulationPauseEventSink* sink){ sink->Fire(); });
+        pauseEvent_.GetImpl()->Fire();
     }
 
     void FireSimulationEndEvent(void)
     {
-        endEvent_.GetImpl()->Visit(
-            [] (ISimulationEndEventSink* sink){ sink->Fire(); });
+        endEvent_.GetImpl()->Fire();
     }
 
     /*}}}*/
@@ -203,10 +207,11 @@ public:
     NSFX_INTERFACE_MAP_END()
 
 private:
-    TimePoint  t_;
+    TimePoint  now_;
     Ptr<IEventScheduler>  scheduler_;
     bool  initialized_;
     bool  started_;
+    bool  paused_;
     bool  finished_;
 
     MemberAggObject<Event<ISimulationBeginEvent> >  beginEvent_;
