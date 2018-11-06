@@ -64,7 +64,6 @@ public:
         initialized_(false),
         started_(false),
         paused_(true),
-        finished_(false),
         beginEvent_(this),
         runEvent_(this),
         pauseEvent_(this),
@@ -113,7 +112,7 @@ public:
         {
             BOOST_THROW_EXCEPTION(Uninitialized());
         }
-        if (finished_)
+        if (!scheduler_->GetNumEvents())
         {
             BOOST_THROW_EXCEPTION(SimulatorFinished());
         }
@@ -139,6 +138,7 @@ public:
             // Can pause simulation.
             scheduler_->FireAndRemoveNextEvent();
         }
+        paused_ = true;
         FireSimulationPauseEvent();
         CheckEndOfSimulation();
     }
@@ -164,9 +164,8 @@ public:
 
     void CheckEndOfSimulation(void)
     {
-        if (!scheduler_->GetNextEvent() && !finished_)
+        if (!scheduler_->GetNumEvents())
         {
-            finished_ = true;
             FireSimulationEndEvent();
         }
     }
@@ -212,7 +211,6 @@ private:
     bool  initialized_;
     bool  started_;
     bool  paused_;
-    bool  finished_;
 
     MemberAggObject<Event<ISimulationBeginEvent> >  beginEvent_;
     MemberAggObject<Event<ISimulationRunEvent>   >  runEvent_;
