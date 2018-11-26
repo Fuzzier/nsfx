@@ -184,6 +184,11 @@ private:
     }
 
 public:
+    IEventType* GetIntf(void) BOOST_NOEXCEPT
+    {
+        return this;
+    }
+
     /**
      * @brief Get the number of sinks.
      */
@@ -332,6 +337,11 @@ public:
     /*}}}*/
 
 public:
+    IEventType* GetIntf(void) BOOST_NOEXCEPT
+    {
+        return this;
+    }
+
     uint32_t GetNumSinks(void) const BOOST_NOEXCEPT
     {
         return sink_ ? 1 : 0;

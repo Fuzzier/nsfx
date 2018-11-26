@@ -110,6 +110,13 @@ public:
         return f_(std::forward<Args>(args)...);
     }
 
+public:
+    ISink* GetIntf(void) BOOST_NOEXCEPT
+    {
+        return this;
+    }
+
+private:
     NSFX_INTERFACE_MAP_BEGIN(FunctorBasedEventSink)
         NSFX_INTERFACE_ENTRY(ISink)
     NSFX_INTERFACE_MAP_END()
@@ -140,6 +147,13 @@ public:
         return (*fn_)(std::forward<Args>(args)...);
     }
 
+public:
+    ISink* GetIntf(void) BOOST_NOEXCEPT
+    {
+        return this;
+    }
+
+private:
     NSFX_INTERFACE_MAP_BEGIN(FunctionPointerBasedEventSink)
         NSFX_INTERFACE_ENTRY(ISink)
     NSFX_INTERFACE_MAP_END()
@@ -171,6 +185,13 @@ public:
         return (o_->*ptmf_)(std::forward<Args>(args)...);
     }
 
+public:
+    ISink* GetIntf(void) BOOST_NOEXCEPT
+    {
+        return this;
+    }
+
+private:
     NSFX_INTERFACE_MAP_BEGIN(MemberFunctionBasedEventSink)
         NSFX_INTERFACE_ENTRY(ISink)
     NSFX_INTERFACE_MAP_END()
@@ -354,6 +375,13 @@ public:
         return f_(BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, ));
     }
 
+public:
+    ISink* GetIntf(void) BOOST_NOEXCEPT
+    {
+        return this;
+    }
+
+private:
     NSFX_INTERFACE_MAP_BEGIN(FunctorBasedEventSink)
         NSFX_INTERFACE_ENTRY(ISink)
     NSFX_INTERFACE_MAP_END()
@@ -392,6 +420,13 @@ public:
         return (*fn_)(BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, ));
     }
 
+public:
+    ISink* GetIntf(void) BOOST_NOEXCEPT
+    {
+        return this;
+    }
+
+private:
     NSFX_INTERFACE_MAP_BEGIN(FunctionPointerBasedEventSink)
         NSFX_INTERFACE_ENTRY(ISink)
     NSFX_INTERFACE_MAP_END()
@@ -432,6 +467,13 @@ public:
         return (o_->*ptmf_)(BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, ));
     }
 
+public:
+    ISink* GetIntf(void) BOOST_NOEXCEPT
+    {
+        return this;
+    }
+
+private:
     NSFX_INTERFACE_MAP_BEGIN(MemberFunctionBasedEventSink)
         NSFX_INTERFACE_ENTRY(ISink)
     NSFX_INTERFACE_MAP_END()
