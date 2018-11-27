@@ -72,14 +72,14 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////
-#define NSFX_CHRONO_OPEN_NAMESPACE    \
-    NSFX_OPEN_NAMESPACE             \
-    namespace chrono {
+#define NSFX_CHRONO_OPEN_NAMESPACE  \
+            NSFX_OPEN_NAMESPACE     \
+            namespace chrono {
 
 
 #define NSFX_CHRONO_CLOSE_NAMESPACE   \
-    } /* namespace chrono */          \
-    NSFX_CLOSE_NAMESPACE
+            } /* namespace chrono */  \
+            NSFX_CLOSE_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
