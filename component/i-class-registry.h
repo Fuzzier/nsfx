@@ -46,7 +46,7 @@ public:
      * @param[in] factory The class factory.
      *
      * @throw OutOfMemory
-     * @throw ClassIsRegistered The class is already registered.
+     * @throw ClassAlreadyRegistered The class is already registered.
      * @throw InvalidPointer The factory is \c nullptr.
      */
     virtual void Register(const Uid& cid, Ptr<IClassFactory> factory) = 0;

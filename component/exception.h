@@ -77,7 +77,7 @@ struct ClassNotRegistered : ComponentException {};
  * @ingroup Exception
  * @brief Cannot register a class factory that is already registered.
  */
-struct ClassIsRegistered : ComponentException {};
+struct ClassAlreadyRegistered : ComponentException {};
 
 
 NSFX_CLOSE_NAMESPACE

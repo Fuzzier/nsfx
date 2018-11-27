@@ -116,7 +116,7 @@ NSFX_TEST_SUITE(ClassRegistry)
             registry->Register("edu.uestc.nsfx.test.Test", factory);
             NSFX_TEST_EXPECT(false);
         }
-        catch (nsfx::ClassIsRegistered& )
+        catch (nsfx::ClassAlreadyRegistered& )
         {
             // Should come here.
         }

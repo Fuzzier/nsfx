@@ -291,7 +291,7 @@ public:
         auto result = map_.emplace(cid, std::move(factory));
         if (!result.second)
         {
-            BOOST_THROW_EXCEPTION(ClassIsRegistered() << ClassUidErrorInfo(cid));
+            BOOST_THROW_EXCEPTION(ClassAlreadyRegistered() << ClassUidErrorInfo(cid));
         }
     }
 
