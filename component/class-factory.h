@@ -34,8 +34,8 @@ NSFX_OPEN_NAMESPACE
  *
  * @tparam ObjectImpl A class that conforms to \c ObjectImplConcept.
  *
- * Objects created by a factory are enveloped in \c Object or \c AggObject
- * according to whether a controller is specified.
+ * The factory uses \c Object or \c AggObject to make \c ObjectImpl a concrete
+ * class according to whether a controller is specified.
  *
  * The specialized class template conforms to \c ObjectImplConcept.
  * Thus, it shall be used in conjunction with \c Object or \c AggObject.

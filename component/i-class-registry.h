@@ -67,7 +67,7 @@ public:
      * @brief Get a class factory.
      *
      * @param[in] cid The UID of an object class.
-     *                The class must conform to \c EnvelopableConcept.
+     *                The class must conform to \c ObjectImplConcept.
      *
      * @throw ClassNotRegistered The class is not registered.
      */

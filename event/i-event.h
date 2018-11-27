@@ -120,10 +120,10 @@ NSFX_OPEN_NAMESPACE
  *         // An event class does not have to have an associated a UID.
  *         typedef Event<IMyEvent>  MyEvent;
  *
- *         // Envelope in AggObject<>.
- *         // Set 'autoDelete' to false, so the instances of this class can be
- *         // member variables.
- *         typedef AggObject<IMyEvent, false>  MyEventClass;
+ *         // Make it a concrete class by MemberAggObject<>.
+ *         // Use MemberAggObject<>, so the instance of this class can be
+ *         // a member variable.
+ *         typedef MemberAggObject<MyEvent>  MyEventClass;
  *
  *     public:
  *         MyObject(void) :
@@ -133,9 +133,7 @@ NSFX_OPEN_NAMESPACE
  *         // Define a member function to signal the event.
  *         void SignalMyEvent(short s, int i)
  *         {
- *             myEvent_.GetEnveloped()->Visit([] (IMyEventSink* sink) {
- *                 sink->Fire(s, i);
- *             });
+ *             myEvent_.GetImpl()->Fire(s, i);
  *         }
  *
  *         // Other methods ...

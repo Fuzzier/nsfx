@@ -244,16 +244,17 @@ NSFX_OPEN_NAMESPACE
  * ## 2. Create an object.
  *    The library provides two tiers of tools for object creation.
  *
- * ### 2.1 Envelope classes.
- *     If the type of the concrete class is known, users can use \c Object and
- *     \c AggObject to envelope the class, and use \c new to create an object.
+ * ### 2.1 Make concrete classes.
+ *     If the type of the implementation class is known, users can use
+ *     \c Object or \c AggObject to make it concrete, and use \c new to
+ *     create an object.
  *
  * ### 2.2 Free functions.
  *     If the class has been registered, users can use \c CreateObject()
  *     function template to create an object.
- *     Users just need to know UUID of the concrete class, and do not have to
- *     know the type of the concrete class..
- *     <p>
+ *     Users just need to know UID of the implementation class, and do not have
+ *     to know its type.
+ *
  *     Instead of \c CreateObject(), there are other free functions that create
  *     objects, such as \c CreateEventSink().
  */
