@@ -270,7 +270,7 @@ public:
 
 private:
     uint32_t numSinks_;
-    vector<Ptr<IEventSinkType> > sinks_;
+    vector<Ptr<IEventSinkType>> sinks_;
 
 }; // class Event /*}}}*/
 

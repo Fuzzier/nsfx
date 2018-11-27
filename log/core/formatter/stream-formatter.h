@@ -104,7 +104,7 @@ private:
 template<class Functor>
 inline Ptr<IStreamFormatter> CreateStreamFormatter(Functor&& functor)
 {
-    typedef Object<StreamFormatter<Functor> >  StreamFormatterClass;
+    typedef Object<StreamFormatter<Functor>>  StreamFormatterClass;
     return Ptr<IStreamFormatter>(new StreamFormatterClass(std::move(functor)));
 }
 

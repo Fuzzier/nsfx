@@ -48,7 +48,7 @@ inline const char* GetTypeName(void) BOOST_NOEXCEPT
                   "Cannot access the type in the Sequence, "
                   "since the index is out of bound.");
     typedef typename
-        boost::mpl::at<Sequence, boost::mpl::size_t<index> >::type  Type;
+        boost::mpl::at<Sequence, boost::mpl::size_t<index>>::type  Type;
     return VariantTraits<Type>::GetTypeName();
 }
 
@@ -134,7 +134,7 @@ template<size_t index, class ArgTypeSequence>
 inline void CheckArgumentType(const Variant& arg)
 {
     typedef typename
-        boost::mpl::at<ArgTypeSequence, boost::mpl::size_t<index> >::type  T;
+        boost::mpl::at<ArgTypeSequence, boost::mpl::size_t<index>>::type  T;
     typedef typename std::decay<T>::type  ArgType;
     if (arg.GetType() != VariantTraits<ArgType>::type)
     {

@@ -270,7 +270,7 @@ private:
  */
 typedef xoshiro_engine<uint32_t, 4,
         random::aux::xoshiro_n4_transformer<uint32_t, 9, 11>,
-        random::aux::xoshiro_plus_scrambler<uint32_t, 4, 0, 3> >
+        random::aux::xoshiro_plus_scrambler<uint32_t, 4, 0, 3>>
     xoshiro128plus;
 
 /**
@@ -294,7 +294,7 @@ typedef xoshiro_engine<uint32_t, 4,
  */
 typedef xoshiro_engine<uint32_t, 4,
         random::aux::xoshiro_n4_transformer<uint32_t, 9, 11>,
-        random::aux::xoshiro_starstar_scrambler<uint32_t, 4, 0, 5, 7, 9> >
+        random::aux::xoshiro_starstar_scrambler<uint32_t, 4, 0, 5, 7, 9>>
     xoshiro128starstar;
 
 /**
@@ -324,7 +324,7 @@ typedef xoshiro_engine<uint32_t, 4,
  */
 typedef xoshiro_engine<uint64_t, 4,
         random::aux::xoshiro_n4_transformer<uint64_t, 17, 45>,
-        random::aux::xoshiro_plus_scrambler<uint64_t, 4, 0, 3> >
+        random::aux::xoshiro_plus_scrambler<uint64_t, 4, 0, 3>>
     xoshiro256plus;
 
 /**
@@ -348,7 +348,7 @@ typedef xoshiro_engine<uint64_t, 4,
  */
 typedef xoshiro_engine<uint64_t, 4,
         random::aux::xoshiro_n4_transformer<uint64_t, 17, 45>,
-        random::aux::xoshiro_starstar_scrambler<uint64_t, 4, 1, 5, 7, 9> >
+        random::aux::xoshiro_starstar_scrambler<uint64_t, 4, 1, 5, 7, 9>>
     xoshiro256starstar;
 
 /**
@@ -378,7 +378,7 @@ typedef xoshiro_engine<uint64_t, 4,
  */
 typedef xoshiro_engine<uint64_t, 8,
         random::aux::xoshiro_n8_transformer<uint64_t, 11, 21>,
-        random::aux::xoshiro_plus_scrambler<uint64_t, 8, 0, 2> >
+        random::aux::xoshiro_plus_scrambler<uint64_t, 8, 0, 2>>
     xoshiro512plus;
 
 /**
@@ -403,7 +403,7 @@ typedef xoshiro_engine<uint64_t, 8,
  */
 typedef xoshiro_engine<uint64_t, 8,
         random::aux::xoshiro_n8_transformer<uint64_t, 11, 21>,
-        random::aux::xoshiro_starstar_scrambler<uint64_t, 8, 1, 5, 7, 9> >
+        random::aux::xoshiro_starstar_scrambler<uint64_t, 8, 1, 5, 7, 9>>
     xoshiro512starstar;
 
 
@@ -522,7 +522,7 @@ private:
  */
 typedef xoshiro_01_engine<float, uint32_t, 4,
         random::aux::xoshiro_n4_transformer<uint32_t, 9, 11>,
-        random::aux::xoshiro_plus_scrambler<uint32_t, 4, 0, 3> >
+        random::aux::xoshiro_plus_scrambler<uint32_t, 4, 0, 3>>
     xoshiro128plus_01;
 
 /**
@@ -546,7 +546,7 @@ typedef xoshiro_01_engine<float, uint32_t, 4,
  */
 typedef xoshiro_01_engine<float, uint32_t, 4,
         random::aux::xoshiro_n4_transformer<uint32_t, 9, 11>,
-        random::aux::xoshiro_starstar_scrambler<uint32_t, 4, 0, 5, 7, 9> >
+        random::aux::xoshiro_starstar_scrambler<uint32_t, 4, 0, 5, 7, 9>>
     xoshiro128starstar_01;
 
 /**
@@ -576,7 +576,7 @@ typedef xoshiro_01_engine<float, uint32_t, 4,
  */
 typedef xoshiro_01_engine<double, uint64_t, 4,
         random::aux::xoshiro_n4_transformer<uint64_t, 17, 45>,
-        random::aux::xoshiro_plus_scrambler<uint64_t, 4, 0, 3> >
+        random::aux::xoshiro_plus_scrambler<uint64_t, 4, 0, 3>>
     xoshiro256plus_01;
 
 /**
@@ -600,7 +600,7 @@ typedef xoshiro_01_engine<double, uint64_t, 4,
  */
 typedef xoshiro_01_engine<double, uint64_t, 4,
         random::aux::xoshiro_n4_transformer<uint64_t, 17, 45>,
-        random::aux::xoshiro_starstar_scrambler<uint64_t, 4, 1, 5, 7, 9> >
+        random::aux::xoshiro_starstar_scrambler<uint64_t, 4, 1, 5, 7, 9>>
     xoshiro256starstar_01;
 
 /**
@@ -630,7 +630,7 @@ typedef xoshiro_01_engine<double, uint64_t, 4,
  */
 typedef xoshiro_01_engine<double, uint64_t, 8,
         random::aux::xoshiro_n8_transformer<uint64_t, 11, 21>,
-        random::aux::xoshiro_plus_scrambler<uint64_t, 8, 0, 2> >
+        random::aux::xoshiro_plus_scrambler<uint64_t, 8, 0, 2>>
     xoshiro512plus_01;
 
 /**
@@ -655,7 +655,7 @@ typedef xoshiro_01_engine<double, uint64_t, 8,
  */
 typedef xoshiro_01_engine<double, uint64_t, 8,
         random::aux::xoshiro_n8_transformer<uint64_t, 11, 21>,
-        random::aux::xoshiro_starstar_scrambler<uint64_t, 8, 1, 5, 7, 9> >
+        random::aux::xoshiro_starstar_scrambler<uint64_t, 8, 1, 5, 7, 9>>
     xoshiro512starstar_01;
 
 

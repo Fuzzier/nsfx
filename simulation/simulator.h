@@ -212,10 +212,10 @@ private:
     bool  started_;
     bool  paused_;
 
-    MemberAggObject<Event<ISimulationBeginEvent> >  beginEvent_;
-    MemberAggObject<Event<ISimulationRunEvent>   >  runEvent_;
-    MemberAggObject<Event<ISimulationPauseEvent> >  pauseEvent_;
-    MemberAggObject<Event<ISimulationEndEvent>   >  endEvent_;
+    MemberAggObject<Event<ISimulationBeginEvent>>  beginEvent_;
+    MemberAggObject<Event<ISimulationRunEvent>>    runEvent_;
+    MemberAggObject<Event<ISimulationPauseEvent>>  pauseEvent_;
+    MemberAggObject<Event<ISimulationEndEvent>>    endEvent_;
 
 }; // class Simulator
 

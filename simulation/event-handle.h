@@ -37,7 +37,7 @@ class EventHandle :
 {
 public:
     EventHandle(const TimePoint& t,
-                const Ptr<IEventSink<> >& sink) :
+                const Ptr<IEventSink<>>& sink) :
         id_(GetNextEventId()),
         t_(t),
         sink_(sink),
@@ -45,7 +45,7 @@ public:
     {}
 
     EventHandle(const TimePoint& t,
-                Ptr<IEventSink<> >&& sink) :
+                Ptr<IEventSink<>>&& sink) :
         id_(GetNextEventId()),
         t_(t),
         sink_(std::move(sink)),
@@ -107,7 +107,7 @@ public:
 private:
     event_id_t id_;
     TimePoint  t_;
-    Ptr<IEventSink<> >  sink_;
+    Ptr<IEventSink<>>  sink_;
     bool running_;
 
 }; // class EventHandle

@@ -282,7 +282,7 @@ public:
  * A \c splitmix64 generator is seeded, and its output is used to fill the state.
  */
 typedef xoroshiro_engine<uint32_t, 2, 26, 9, 13,
-        random::aux::xoroshiro_star_scrambler<uint32_t, 2, 0, 0x9e3779bb> >
+        random::aux::xoroshiro_star_scrambler<uint32_t, 2, 0, 0x9e3779bb>>
     xoroshiro64star;
 
 /**
@@ -306,7 +306,7 @@ typedef xoroshiro_engine<uint32_t, 2, 26, 9, 13,
  * A \c splitmix64 generator is seeded, and its output is used to fill the state.
  */
 typedef xoroshiro_engine<uint32_t, 2, 26, 9, 13,
-        random::aux::xoroshiro_starstar_scrambler<uint32_t, 2, 0, 0x9e3779bb, 5, 5> >
+        random::aux::xoroshiro_starstar_scrambler<uint32_t, 2, 0, 0x9e3779bb, 5, 5>>
     xoroshiro64starstar;
 
 /**
@@ -339,7 +339,7 @@ typedef xoroshiro_engine<uint32_t, 2, 26, 9, 13,
  * fill the state.
  */
 typedef xoroshiro_engine<uint64_t, 2, 24, 16, 37,
-        random::aux::xoroshiro_plus_scrambler<uint64_t, 2, 0, 1> >
+        random::aux::xoroshiro_plus_scrambler<uint64_t, 2, 0, 1>>
     xoroshiro128plus;
 
 /**
@@ -364,7 +364,7 @@ typedef xoroshiro_engine<uint64_t, 2, 24, 16, 37,
  * fill the state.
  */
 typedef xoroshiro_engine<uint64_t, 2, 24, 16, 37,
-        random::aux::xoroshiro_starstar_scrambler<uint64_t, 2, 0, 5, 7, 9> >
+        random::aux::xoroshiro_starstar_scrambler<uint64_t, 2, 0, 5, 7, 9>>
     xoroshiro128starstar;
 
 /**
@@ -378,7 +378,7 @@ typedef xoroshiro_engine<uint64_t, 2, 24, 16, 37,
  * fill the state.
  */
 typedef xoroshiro_engine<uint64_t, 16, 25, 27, 36,
-        random::aux::xoroshiro_plus_scrambler<uint64_t, 16, 15, 0> >
+        random::aux::xoroshiro_plus_scrambler<uint64_t, 16, 15, 0>>
     xoroshiro1024plus;
 
 /**
@@ -392,7 +392,7 @@ typedef xoroshiro_engine<uint64_t, 16, 25, 27, 36,
  * fill the state.
  */
 typedef xoroshiro_engine<uint64_t, 16, 25, 27, 36,
-        random::aux::xoroshiro_star_scrambler<uint64_t, 16, 0, 0x9e3779b97f4a7c13ULL> >
+        random::aux::xoroshiro_star_scrambler<uint64_t, 16, 0, 0x9e3779b97f4a7c13ULL>>
     xoroshiro1024star;
 
 /**
@@ -406,7 +406,7 @@ typedef xoroshiro_engine<uint64_t, 16, 25, 27, 36,
  * fill the state.
  */
 typedef xoroshiro_engine<uint64_t, 16, 25, 27, 36,
-        random::aux::xoroshiro_starstar_scrambler<uint64_t, 16, 0, 5, 7, 9> >
+        random::aux::xoroshiro_starstar_scrambler<uint64_t, 16, 0, 5, 7, 9>>
     xoroshiro1024starstar;
 
 
@@ -521,7 +521,7 @@ private:
  * A \c splitmix64 generator is seeded, and its output is used to fill the state.
  */
 typedef xoroshiro_01_engine<float, uint32_t, 2, 26, 9, 13,
-        random::aux::xoroshiro_star_scrambler<uint32_t, 2, 0, 0x9e3779bb> >
+        random::aux::xoroshiro_star_scrambler<uint32_t, 2, 0, 0x9e3779bb>>
     xoroshiro64star_01;
 
 /**
@@ -542,7 +542,7 @@ typedef xoroshiro_01_engine<float, uint32_t, 2, 26, 9, 13,
  * A \c splitmix64 generator is seeded, and its output is used to fill the state.
  */
 typedef xoroshiro_01_engine<float, uint32_t, 2, 26, 9, 13,
-        random::aux::xoroshiro_starstar_scrambler<uint32_t, 2, 0, 0x9e3779bb, 5, 5> >
+        random::aux::xoroshiro_starstar_scrambler<uint32_t, 2, 0, 0x9e3779bb, 5, 5>>
     xoroshiro64starstar_01;
 
 /**
@@ -572,7 +572,7 @@ typedef xoroshiro_01_engine<float, uint32_t, 2, 26, 9, 13,
  * fill the state.
  */
 typedef xoroshiro_01_engine<double, uint64_t, 2, 24, 16, 37,
-        random::aux::xoroshiro_plus_scrambler<uint64_t, 2, 0, 1> >
+        random::aux::xoroshiro_plus_scrambler<uint64_t, 2, 0, 1>>
     xoroshiro128plus_01;
 
 /**
@@ -594,7 +594,7 @@ typedef xoroshiro_01_engine<double, uint64_t, 2, 24, 16, 37,
  * fill the state.
  */
 typedef xoroshiro_01_engine<double, uint64_t, 2, 24, 16, 37,
-        random::aux::xoroshiro_starstar_scrambler<uint64_t, 2, 0, 5, 7, 9> >
+        random::aux::xoroshiro_starstar_scrambler<uint64_t, 2, 0, 5, 7, 9>>
     xoroshiro128starstar_01;
 
 /**
@@ -608,7 +608,7 @@ typedef xoroshiro_01_engine<double, uint64_t, 2, 24, 16, 37,
  * fill the state.
  */
 typedef xoroshiro_01_engine<double, uint64_t, 16, 25, 27, 36,
-        random::aux::xoroshiro_plus_scrambler<uint64_t, 16, 15, 0> >
+        random::aux::xoroshiro_plus_scrambler<uint64_t, 16, 15, 0>>
     xoroshiro1024plus_01;
 
 /**
@@ -622,7 +622,7 @@ typedef xoroshiro_01_engine<double, uint64_t, 16, 25, 27, 36,
  * fill the state.
  */
 typedef xoroshiro_01_engine<double, uint64_t, 16, 25, 27, 36,
-        random::aux::xoroshiro_star_scrambler<uint64_t, 16, 0, 0x9e3779b97f4a7c13ULL> >
+        random::aux::xoroshiro_star_scrambler<uint64_t, 16, 0, 0x9e3779b97f4a7c13ULL>>
     xoroshiro1024star_01;
 
 /**
@@ -636,7 +636,7 @@ typedef xoroshiro_01_engine<double, uint64_t, 16, 25, 27, 36,
  * fill the state.
  */
 typedef xoroshiro_01_engine<double, uint64_t, 16, 25, 27, 36,
-        random::aux::xoroshiro_starstar_scrambler<uint64_t, 16, 0, 5, 7, 9> >
+        random::aux::xoroshiro_starstar_scrambler<uint64_t, 16, 0, 5, 7, 9>>
     xoroshiro1024starstar_01;
 
 

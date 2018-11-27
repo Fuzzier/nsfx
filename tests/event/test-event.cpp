@@ -96,9 +96,9 @@ NSFX_TEST_SUITE(Event)
         NSFX_INTERFACE_MAP_END()
 
     public:
-        nsfx::MemberAggObject<nsfx::Event<Ev0> >  v0_;
-        nsfx::MemberAggObject<nsfx::Event<Ev1> >  v1_;
-        nsfx::MemberAggObject<nsfx::Event<Ev2, 1> >  v2_;
+        nsfx::MemberAggObject<nsfx::Event<Ev0>>  v0_;
+        nsfx::MemberAggObject<nsfx::Event<Ev1>>  v1_;
+        nsfx::MemberAggObject<nsfx::Event<Ev2, 1>>  v2_;
     };
 
     NSFX_TEST_CASE(Connect)
@@ -111,7 +111,7 @@ NSFX_TEST_SUITE(Event)
 
             nsfx::Ptr<Iv2> sv2 = nsfx::EventSinkCreator<Iv2>()(nullptr, &V2);
 
-            nsfx::Ptr<nsfx::Object<Test> > test = new nsfx::Object<Test>();
+            nsfx::Ptr<nsfx::Object<Test>> test = new nsfx::Object<Test>();
 
             ////////////////////////////////////////
             // V0

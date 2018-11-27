@@ -91,7 +91,7 @@ template<class Sequence, size_t index>
 inline void CheckArgumentType(const Variant* arg)
 {
     typedef typename
-        boost::mpl::at<Sequence, boost::mpl::size_t<index> >::type  Arg;
+        boost::mpl::at<Sequence, boost::mpl::size_t<index>>::type  Arg;
     typedef typename std::decay<Arg>::type  ArgType;
     if (arg->GetType() != VariantTraits<ArgType>::type)
     {
@@ -128,7 +128,7 @@ template<class Sequence, class Indices =
 struct CheckArgumentTypeTable;
 
 template<class Sequence, size_t... indices>
-struct CheckArgumentTypeTable<Sequence, boost::mpl::vector_c<size_t, indices...> >
+struct CheckArgumentTypeTable<Sequence, boost::mpl::vector_c<size_t, indices...>>
 {
     typedef const char* (* FunctionType)(const Variant* arg) BOOST_NOEXCEPT;
     static const FunctionType Get(size_t index)

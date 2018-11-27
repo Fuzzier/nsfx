@@ -144,14 +144,14 @@ struct ArgumentType<TimePoint>
 };
 
 template<class I>
-struct ArgumentType<Ptr<I> >
+struct ArgumentType<Ptr<I>>
 {
     static const bool supported = true;
     static const vartype_t type = VT_OBJECT;
 };
 
 template<>
-struct ArgumentType<Ptr<IInterfaceInfo> >
+struct ArgumentType<Ptr<IInterfaceInfo>>
 {
     static const bool supported = true;
     static const vartype_t type = VT_INTERFACE;

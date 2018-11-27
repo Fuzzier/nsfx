@@ -29,8 +29,11 @@ NSFX_OPEN_NAMESPACE
 
 ////////////////////////////////////////////////////////////////////////////////
 // Error info.
-typedef boost::error_info<struct tag_CurrentTime,   TimePoint>  CurrentTimeErrorInfo;
-typedef boost::error_info<struct tag_ScheduledTime, TimePoint>  ScheduledTimeErrorInfo;
+typedef boost::error_info<struct tag_CurrentTime, TimePoint>
+        CurrentTimeErrorInfo;
+
+typedef boost::error_info<struct tag_ScheduledTime, TimePoint>
+        ScheduledTimeErrorInfo;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -60,7 +63,7 @@ public:
      * @throw Uninitialized  The scheduler is not initialized.
      * @throw InvalidPointer The sink is \c nullptr.
      */
-    virtual Ptr<IEventHandle> ScheduleNow(Ptr<IEventSink<> > sink) = 0;
+    virtual Ptr<IEventHandle> ScheduleNow(Ptr<IEventSink<>> sink) = 0;
 
     /**
      * @brief Schedule an event.
@@ -74,7 +77,7 @@ public:
      *                         e.g., it is negative.
      */
     virtual Ptr<IEventHandle> ScheduleIn(const Duration& dt,
-                                         Ptr<IEventSink<> > sink) = 0;
+                                         Ptr<IEventSink<>> sink) = 0;
 
     /**
      * @brief Schedule an event.
@@ -88,7 +91,7 @@ public:
      *                         e.g., it is earlier than the current time.
      */
     virtual Ptr<IEventHandle> ScheduleAt(const TimePoint& t,
-                                         Ptr<IEventSink<> > sink) = 0;
+                                         Ptr<IEventSink<>> sink) = 0;
 
     /**
      * @brief Get the number of events in the scheduler.

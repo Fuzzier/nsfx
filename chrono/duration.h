@@ -48,10 +48,10 @@ struct UnderflowTag {};
 ////////////////////////////////////////
 // Precondition: Unit is a ratio type.
 template<class Unit, intmax_t factor,
-         bool unitGtOne = ratio_greater<Unit, ratio<1> >::value>
+         bool unitGtOne = ratio_greater<Unit, ratio<1>>::value>
 struct MakeSmallerUnitCheckSize
 {
-    typedef typename ratio_multiply<Unit, ratio<1, factor> >::type  type;
+    typedef typename ratio_multiply<Unit, ratio<1, factor>>::type  type;
 };
 
 // Precondition: Unit is a ratio type.
@@ -97,10 +97,10 @@ struct SafeRatioMultiply
 
 // Precondition: Unit is a ratio type.
 template<class Unit, intmax_t factor,
-         bool safe = SafeRatioMultiply<Unit, ratio<factor, 1> >::value>
+         bool safe = SafeRatioMultiply<Unit, ratio<factor, 1>>::value>
 struct MakeBiggerUnitCheckMultiply
 {
-    typedef typename ratio_multiply<Unit, ratio<factor, 1> >::type  type;
+    typedef typename ratio_multiply<Unit, ratio<factor, 1>>::type  type;
 };
 
 // Precondition: Unit is a ratio type.
@@ -1110,28 +1110,28 @@ MilliSeconds(Duration<milli>::Rep n) BOOST_NOEXCEPT
     return Duration<milli>(n);
 }
 
-inline BOOST_CONSTEXPR Duration<ratio<1> >
-Seconds(Duration<ratio<1> >::Rep n) BOOST_NOEXCEPT
+inline BOOST_CONSTEXPR Duration<ratio<1>>
+Seconds(Duration<ratio<1>>::Rep n) BOOST_NOEXCEPT
 {
-    return Duration<ratio<1> >(n);
+    return Duration<ratio<1>>(n);
 }
 
-inline BOOST_CONSTEXPR Duration<ratio<1> >
-Minutes(Duration<ratio<1> >::Rep n) BOOST_NOEXCEPT
+inline BOOST_CONSTEXPR Duration<ratio<1>>
+Minutes(Duration<ratio<1>>::Rep n) BOOST_NOEXCEPT
 {
-    return Duration<ratio<1> >(n * 60);
+    return Duration<ratio<1>>(n * 60);
 }
 
-inline BOOST_CONSTEXPR Duration<ratio<1> >
-Hours(Duration<ratio<1> >::Rep n) BOOST_NOEXCEPT
+inline BOOST_CONSTEXPR Duration<ratio<1>>
+Hours(Duration<ratio<1>>::Rep n) BOOST_NOEXCEPT
 {
-    return Duration<ratio<1> >(n * 3600);
+    return Duration<ratio<1>>(n * 3600);
 }
 
-inline BOOST_CONSTEXPR Duration<ratio<1> >
-Days(Duration<ratio<1> >::Rep n) BOOST_NOEXCEPT
+inline BOOST_CONSTEXPR Duration<ratio<1>>
+Days(Duration<ratio<1>>::Rep n) BOOST_NOEXCEPT
 {
-    return Duration<ratio<1> >(n * 86400);
+    return Duration<ratio<1>>(n * 86400);
 }
 
 /*}}}*/
@@ -1146,7 +1146,7 @@ namespace std /*{{{*/
 
 template<class Res1, class Res2>
 struct common_type<::nsfx::chrono::Duration<Res1>,
-                   ::nsfx::chrono::Duration<Res2> >
+                   ::nsfx::chrono::Duration<Res2>>
 {
     typedef ::nsfx::chrono::Duration<
                 typename ::nsfx::chrono::aux::Common<Res1, Res2>::type> type;

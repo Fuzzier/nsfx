@@ -213,7 +213,7 @@ public:
     {
         BOOST_ASSERT(lb <= ub);
         return Ptr<IUniformIntDistribution>(
-            new Object<StdUniformIntDistribution<ThisClass> >(
+            new Object<StdUniformIntDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), lb, ub));
     }
 
@@ -222,7 +222,7 @@ public:
     {
         BOOST_ASSERT(lb <= ub);
         return Ptr<IUniformRealDistribution>(
-            new Object<StdUniformRealDistribution<ThisClass> >(
+            new Object<StdUniformRealDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), lb, ub));
     }
 
@@ -231,7 +231,7 @@ public:
     {
         BOOST_ASSERT(0 <= prob && prob <= 1);
         return Ptr<IBernoulliDistribution>(
-            new Object<StdBernoulliDistribution<ThisClass> >(
+            new Object<StdBernoulliDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), prob));
     }
 
@@ -240,7 +240,7 @@ public:
     {
         BOOST_ASSERT(0 <= prob && prob <= 1);
         return Ptr<IBinomialDistribution>(
-            new Object<StdBinomialDistribution<ThisClass> >(
+            new Object<StdBinomialDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), numTrials, prob));
     }
 
@@ -249,7 +249,7 @@ public:
     {
         BOOST_ASSERT(0 <= prob && prob <= 1);
         return Ptr<IGeometricDistribution>(
-            new Object<StdGeometricDistribution<ThisClass> >(
+            new Object<StdGeometricDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), prob));
     }
 
@@ -259,7 +259,7 @@ public:
     {
         BOOST_ASSERT(0 <= prob && prob <= 1);
         return Ptr<INegativeBinomialDistribution>(
-            new Object<StdNegativeBinomialDistribution<ThisClass> >(
+            new Object<StdNegativeBinomialDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), numTrials, prob));
     }
 
@@ -268,7 +268,7 @@ public:
     {
         BOOST_ASSERT(mean > 0);
         return Ptr<IPoissonDistribution>(
-            new Object<StdPoissonDistribution<ThisClass> >(
+            new Object<StdPoissonDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), mean));
     }
 
@@ -277,7 +277,7 @@ public:
     {
         BOOST_ASSERT(lambda > 0);
         return Ptr<IExponentialDistribution>(
-            new Object<StdExponentialDistribution<ThisClass> >(
+            new Object<StdExponentialDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), lambda));
     }
 
@@ -287,7 +287,7 @@ public:
         BOOST_ASSERT(shape > 0);
         BOOST_ASSERT(scale > 0);
         return Ptr<IGammaDistribution>(
-            new Object<StdGammaDistribution<ThisClass> >(
+            new Object<StdGammaDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), shape, scale));
     }
 
@@ -297,7 +297,7 @@ public:
         BOOST_ASSERT(shape > 0);
         BOOST_ASSERT(scale > 0);
         return Ptr<IWeibullDistribution>(
-            new Object<StdWeibullDistribution<ThisClass> >(
+            new Object<StdWeibullDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), shape, scale));
     }
 
@@ -306,7 +306,7 @@ public:
     {
         BOOST_ASSERT(scale > 0);
         return Ptr<IExtremeValueDistribution>(
-            new Object<StdExtremeValueDistribution<ThisClass> >(
+            new Object<StdExtremeValueDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), location, scale));
     }
 
@@ -316,7 +316,7 @@ public:
         BOOST_ASSERT(alpha > 0);
         BOOST_ASSERT(beta > 0);
         return Ptr<IBetaDistribution>(
-            new Object<StdBetaDistribution<ThisClass> >(
+            new Object<StdBetaDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), alpha, beta));
     }
 
@@ -326,7 +326,7 @@ public:
         BOOST_ASSERT(mean > 0);
         BOOST_ASSERT(scale > 0);
         return Ptr<ILaplaceDistribution>(
-            new Object<StdLaplaceDistribution<ThisClass> >(
+            new Object<StdLaplaceDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), mean, scale));
     }
 
@@ -335,7 +335,7 @@ public:
     {
         BOOST_ASSERT(stddev > 0);
         return Ptr<INormalDistribution>(
-            new Object<StdNormalDistribution<ThisClass> >(
+            new Object<StdNormalDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), mean, stddev));
     }
 
@@ -344,7 +344,7 @@ public:
     {
         BOOST_ASSERT(stddev > 0);
         return Ptr<ILognormalDistribution>(
-            new Object<StdLognormalDistribution<ThisClass> >(
+            new Object<StdLognormalDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), mean, stddev));
     }
 
@@ -353,7 +353,7 @@ public:
     {
         BOOST_ASSERT(degreesOfFreedom > 0);
         return Ptr<IChiSquaredDistribution>(
-            new Object<StdChiSquaredDistribution<ThisClass> >(
+            new Object<StdChiSquaredDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), degreesOfFreedom));
     }
 
@@ -362,7 +362,7 @@ public:
     {
         BOOST_ASSERT(scale > 0);
         return Ptr<ICauchyDistribution>(
-            new Object<StdCauchyDistribution<ThisClass> >(
+            new Object<StdCauchyDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), location, scale));
     }
 
@@ -372,7 +372,7 @@ public:
         BOOST_ASSERT(numerator > 0);
         BOOST_ASSERT(denominator > 0);
         return Ptr<IFisherFDistribution>(
-            new Object<StdFisherFDistribution<ThisClass> >(
+            new Object<StdFisherFDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), numerator, denominator));
     }
 
@@ -381,7 +381,7 @@ public:
     {
         BOOST_ASSERT(degreesOfFreedom > 0);
         return Ptr<IStudentTDistribution>(
-            new Object<StdStudentTDistribution<ThisClass> >(
+            new Object<StdStudentTDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), degreesOfFreedom));
     }
 
@@ -390,7 +390,7 @@ public:
                 Ptr<IDiscreteDistributionParam> param) NSFX_OVERRIDE
     {
         return Ptr<IDiscreteDistribution>(
-            new Object<StdDiscreteDistribution<ThisClass> >(
+            new Object<StdDiscreteDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), param));
     }
 
@@ -399,7 +399,7 @@ public:
                 Ptr<IPiecewiseConstantDistributionParam> param) NSFX_OVERRIDE
     {
         return Ptr<IPiecewiseConstantDistribution>(
-            new Object<StdPiecewiseConstantDistribution<ThisClass> >(
+            new Object<StdPiecewiseConstantDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), param));
     }
 
@@ -408,7 +408,7 @@ public:
                 Ptr<IPiecewiseLinearDistributionParam> param) NSFX_OVERRIDE
     {
         return Ptr<IPiecewiseLinearDistribution>(
-            new Object<StdPiecewiseLinearDistribution<ThisClass> >(
+            new Object<StdPiecewiseLinearDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), param));
     }
 
@@ -416,7 +416,7 @@ public:
             CreateTriangleDistribution(double a, double b, double c) NSFX_OVERRIDE
     {
         return Ptr<ITriangleDistribution>(
-            new Object<StdTriangleDistribution<ThisClass> >(
+            new Object<StdTriangleDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), a, b, c));
     }
 

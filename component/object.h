@@ -688,7 +688,7 @@ public:
  * ### How to use?
  *     An \c AggObject must be allocated on heap.
  *     The controller shall define a member variable of type
- *     <code>Ptr<IObject></code> or <code>Ptr<AggObject<ObjectImpl> ></code>
+ *     <code>Ptr<IObject></code> or <code>Ptr<AggObject<ObjectImpl>></code>
  *     to hold the allocated \c AggObject.
  *     (The rule is that smart pointer that holds the allocated \c AggObject
  *     does NOT query any of its interfaces except for <code>IObject</code>.)

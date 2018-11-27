@@ -83,19 +83,19 @@ public:
 
     // IEventScheduler /*{{{*/
 public:
-    virtual Ptr<IEventHandle> ScheduleNow(Ptr<IEventSink<> > sink) NSFX_OVERRIDE
+    virtual Ptr<IEventHandle> ScheduleNow(Ptr<IEventSink<>> sink) NSFX_OVERRIDE
     {
         return ThisClass::ScheduleAt(clock_->Now(), std::move(sink));
     }
 
     virtual Ptr<IEventHandle> ScheduleIn(const Duration& dt,
-                                         Ptr<IEventSink<> > sink) NSFX_OVERRIDE
+                                         Ptr<IEventSink<>> sink) NSFX_OVERRIDE
     {
         return ThisClass::ScheduleAt(clock_->Now() + dt, std::move(sink));
     }
 
     virtual Ptr<IEventHandle> ScheduleAt(const TimePoint& t,
-                                         Ptr<IEventSink<> > sink) NSFX_OVERRIDE
+                                         Ptr<IEventSink<>> sink) NSFX_OVERRIDE
     {
         if (!initialized_)
         {
@@ -215,7 +215,7 @@ public:
 private:
     bool  initialized_;
     Ptr<IClock>  clock_;
-    list<Ptr<EventHandleClass> >  list_;
+    list<Ptr<EventHandleClass>>  list_;
 
 }; // class ListEventScheduler
 

@@ -87,7 +87,7 @@ inline Attribute MakeConstantAttribute(Args&&... args)
 {
     return Attribute(
         std::shared_ptr<IAttribute>(
-            std::make_shared<ConstantAttribute<T> >(
+            std::make_shared<ConstantAttribute<T>>(
                 std::forward<Args>(args)...)));
 }
 
@@ -134,11 +134,11 @@ inline Attribute MakeConstantAttribute(
 {
     // return Attribute(
     //     std::shared_ptr<IAttribute>(
-    //         std::make_shared<ConstantAttribute<T> >(
+    //         std::make_shared<ConstantAttribute<T>>(
     //             std::forward<A0>(a0), std::forward<A1>(a1), ...)));
     return Attribute(
         std::shared_ptr<IAttribute>(
-            std::make_shared<ConstantAttribute<T> >(
+            std::make_shared<ConstantAttribute<T>>(
                 BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, ))));
 }
 

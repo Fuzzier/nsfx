@@ -173,7 +173,7 @@ private:
 };
 
 
-BOOST_CONCEPT_ASSERT((TimePointConcept<TimePoint<VirtualClock> >));
+BOOST_CONCEPT_ASSERT((TimePointConcept<TimePoint<VirtualClock>>));
 
 typedef TimePoint<VirtualClock>  VirtualTimePoint;
 

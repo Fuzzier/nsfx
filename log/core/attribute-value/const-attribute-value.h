@@ -82,8 +82,8 @@ template<class T, class... Args>
 inline AttributeValue MakeConstantAttributeValue(Args&&... args)
 {
     return AttributeValue(
-        std::shared_ptr<ITypedAttributeValue<T> >(
-            std::make_shared<ConstantAttributeValue<T> >(
+        std::shared_ptr<ITypedAttributeValue<T>>(
+            std::make_shared<ConstantAttributeValue<T>>(
                 std::forward<Args>(args)...)));
 }
 
@@ -129,12 +129,12 @@ inline AttributeValue MakeConstantAttributeValue(
         BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, &&a))
 {
     // return AttributeValue(
-    //     std::shared_ptr<IAttributeValue<T> >(
-    //         std::make_shared<ConstantAttributeValue<T> >(
+    //     std::shared_ptr<IAttributeValue<T>>(
+    //         std::make_shared<ConstantAttributeValue<T>>(
     //             std::forward<A0>(a0), std::forward<A1>(a1), ...)));
     return AttributeValue(
-        std::shared_ptr<ITypedAttributeValue<T> >(
-            std::make_shared<ConstantAttributeValue<T> >(
+        std::shared_ptr<ITypedAttributeValue<T>>(
+            std::make_shared<ConstantAttributeValue<T>>(
                 BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, ))));
 }
 

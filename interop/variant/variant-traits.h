@@ -85,7 +85,7 @@ NSFX_DEFINE_VARIANT_TRAITS(const char*,  VT_STRING,  false,  false,  "string");
 NSFX_DEFINE_VARIANT_TRAITS(std::string,  VT_STRING,  true,   false,  "string");
 
 template<class Res>
-struct VariantTraits<chrono::Duration<Res> >
+struct VariantTraits<chrono::Duration<Res>>
 {
     static const vartype_t type  = VT_DURATION;
     static const bool      cpp   = true;
@@ -97,7 +97,7 @@ struct VariantTraits<chrono::Duration<Res> >
 };
 
 template<class Clock, class Duration>
-struct VariantTraits<chrono::TimePoint<Clock, Duration> >
+struct VariantTraits<chrono::TimePoint<Clock, Duration>>
 {
     static const vartype_t type  = VT_TIME_POINT;
     static const bool      cpp   = true;
@@ -114,7 +114,7 @@ struct VariantTraits<chrono::TimePoint<Clock, Duration> >
 
 
 template<class I>
-struct VariantTraits<Ptr<I> >
+struct VariantTraits<Ptr<I>>
 {
     static const vartype_t type  = VT_OBJECT;
     static const bool      cpp   = true;

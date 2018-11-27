@@ -72,7 +72,7 @@ private:
 private:
     MemberAggObject<AttributeSet>  attributeSet_;
     MemberAggObject<FilterChain>   filterChain_;
-    MemberAggObject<Event<ILoggerEvent> >  loggerEvent_;
+    MemberAggObject<Event<ILoggerEvent>>  loggerEvent_;
 };
 
 

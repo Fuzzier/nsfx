@@ -33,10 +33,10 @@ NSFX_TEST_SUITE(Simulator)
     {
         typedef Sink  ThisClass;
 
-        typedef nsfx::AggObject<nsfx::MemberFunctionBasedEventSink<nsfx::ISimulationBeginEventSink, ThisClass> >  BeginEventSinkClass;
-        typedef nsfx::AggObject<nsfx::MemberFunctionBasedEventSink<nsfx::ISimulationRunEventSink,   ThisClass> >  RunEventSinkClass;
-        typedef nsfx::AggObject<nsfx::MemberFunctionBasedEventSink<nsfx::ISimulationPauseEventSink, ThisClass> >  PauseEventSinkClass;
-        typedef nsfx::AggObject<nsfx::MemberFunctionBasedEventSink<nsfx::ISimulationEndEventSink,   ThisClass> >  EndEventSinkClass;
+        typedef nsfx::AggObject<nsfx::MemberFunctionBasedEventSink<nsfx::ISimulationBeginEventSink, ThisClass>>  BeginEventSinkClass;
+        typedef nsfx::AggObject<nsfx::MemberFunctionBasedEventSink<nsfx::ISimulationRunEventSink,   ThisClass>>  RunEventSinkClass;
+        typedef nsfx::AggObject<nsfx::MemberFunctionBasedEventSink<nsfx::ISimulationPauseEventSink, ThisClass>>  PauseEventSinkClass;
+        typedef nsfx::AggObject<nsfx::MemberFunctionBasedEventSink<nsfx::ISimulationEndEventSink,   ThisClass>>  EndEventSinkClass;
 
         virtual ~Sink(void) {}
 
@@ -143,7 +143,7 @@ NSFX_TEST_SUITE(Simulator)
             nsfx::Ptr<nsfx::IClock>  clock(simulator);
 
             nsfx::Ptr<SinkClass>  sink(new SinkClass);
-            nsfx::Ptr<nsfx::IEventSink<> >  eventSink(sink);
+            nsfx::Ptr<nsfx::IEventSink<>>  eventSink(sink);
 
             // Wire simulator.
             {

@@ -76,10 +76,10 @@ class AttributeValue
     // Xtructors.
 public:
     template<class T>
-    AttributeValue(const std::shared_ptr<ITypedAttributeValue<T> >& value);
+    AttributeValue(const std::shared_ptr<ITypedAttributeValue<T>>& value);
 
     template<class T>
-    AttributeValue(std::shared_ptr<ITypedAttributeValue<T> >&& value);
+    AttributeValue(std::shared_ptr<ITypedAttributeValue<T>>&& value);
 
     // Methods.
 public:
@@ -98,7 +98,7 @@ private:
 // AttributeValue
 template<class T>
 inline AttributeValue::AttributeValue(
-    const std::shared_ptr<ITypedAttributeValue<T> >& value) :
+    const std::shared_ptr<ITypedAttributeValue<T>>& value) :
         value_(value)
 {
     if (!value_)
@@ -109,7 +109,7 @@ inline AttributeValue::AttributeValue(
 
 template<class T>
 inline AttributeValue::AttributeValue(
-    std::shared_ptr<ITypedAttributeValue<T> >&& value) :
+    std::shared_ptr<ITypedAttributeValue<T>>&& value) :
         value_(std::move(value))
 {
     if (!value_)

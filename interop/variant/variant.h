@@ -152,11 +152,11 @@ private:
 
     template<class Res>
     chrono::Duration<Res>
-    GetValue(ValueTypeTag<chrono::Duration<Res> >) const BOOST_NOEXCEPT;
+    GetValue(ValueTypeTag<chrono::Duration<Res>>) const BOOST_NOEXCEPT;
 
     template<class Clock, class Duration>
     chrono::TimePoint<Clock, Duration>
-    GetValue(ValueTypeTag<chrono::TimePoint<Clock, Duration> >) const BOOST_NOEXCEPT;
+    GetValue(ValueTypeTag<chrono::TimePoint<Clock, Duration>>) const BOOST_NOEXCEPT;
 
 public:
     void Clear(void) BOOST_NOEXCEPT;
@@ -609,14 +609,14 @@ inline std::string Variant::GetValue(ValueTypeTag<std::string>) const BOOST_NOEX
 
 template<class Res>
 inline chrono::Duration<Res>
-Variant::GetValue(ValueTypeTag<chrono::Duration<Res> >) const BOOST_NOEXCEPT
+Variant::GetValue(ValueTypeTag<chrono::Duration<Res>>) const BOOST_NOEXCEPT
 {
     return chrono::Duration<Res>(value_.dt);
 }
 
 template<class Clock, class Duration>
 inline chrono::TimePoint<Clock, Duration>
-Variant::GetValue(ValueTypeTag<chrono::TimePoint<Clock, Duration> >) const BOOST_NOEXCEPT
+Variant::GetValue(ValueTypeTag<chrono::TimePoint<Clock, Duration>>) const BOOST_NOEXCEPT
 {
     return chrono::TimePoint<Clock, Duration>(Duration(value_.t0));
 }

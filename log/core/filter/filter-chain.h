@@ -53,7 +53,7 @@ public:
     NSFX_INTERFACE_MAP_END()
 
 private:
-    vector<Ptr<IFilter> >  filters_;
+    vector<Ptr<IFilter>>  filters_;
 };
 
 

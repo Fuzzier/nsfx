@@ -41,7 +41,7 @@ class FixedLengthAddress
     static_assert(bits >= 1 && bits <= 64,
                   "Invalid number of bits for FixedLengthAddress.");
 
-    BOOST_CONCEPT_ASSERT((AddressConcept<FixedLengthAddress<bits> >));
+    BOOST_CONCEPT_ASSERT((AddressConcept<FixedLengthAddress<bits>>));
 
 public:
     /**

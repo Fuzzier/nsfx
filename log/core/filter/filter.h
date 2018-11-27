@@ -91,7 +91,7 @@ private:
 template<class Functor>
 inline Ptr<IFilter> CreateFilter(Functor&& functor)
 {
-    typedef Object<FunctorBasedFilter<Functor> >  FilterClass;
+    typedef Object<FunctorBasedFilter<Functor>>  FilterClass;
     return Ptr<IFilter>(new FilterClass(std::move(functor)));
 }
 

@@ -568,7 +568,7 @@ inline void swap(Ptr<T>& lhs, T*& rhs) BOOST_NOEXCEPT
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Enables boost::hash<Ptr<T> >.
+// Enables boost::hash<Ptr<T>>.
 /**
  * @ingroup Component
  * @brief Hash value of a smart pointer.
@@ -592,7 +592,7 @@ template<class T>
 struct IsPtr : std::false_type {};
 
 template<class T>
-struct IsPtr<Ptr<T> > : std::true_type {};
+struct IsPtr<Ptr<T>> : std::true_type {};
 
 
 NSFX_CLOSE_NAMESPACE

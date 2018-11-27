@@ -55,7 +55,7 @@ inline const char* GetTypeName(void) BOOST_NOEXCEPT
                   "Cannot access the type in the Sequence, "
                   "since the index is out of bound.");
     typedef typename
-        boost::mpl::at<Sequence, boost::mpl::size_t<index> >::type  Type;
+        boost::mpl::at<Sequence, boost::mpl::size_t<index>>::type  Type;
     return VariantTraits<Type>::GetTypeName();
 }
 
@@ -82,7 +82,7 @@ template<class Sequence, class Indices =
 struct GetTypeNameTable;
 
 template<class Sequence, size_t... indices>
-struct GetTypeNameTable<Sequence, boost::mpl::vector_c<size_t, indices...> >
+struct GetTypeNameTable<Sequence, boost::mpl::vector_c<size_t, indices...>>
 {
     typedef const char* (* FunctionType)(void) BOOST_NOEXCEPT;
     static const FunctionType Get(size_t index)

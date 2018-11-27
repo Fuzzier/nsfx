@@ -1040,7 +1040,7 @@ NSFX_TEST_SUITE(Ptr)
         try
         {
             nsfx::Ptr<ITest> q(new Test);
-            auto h = boost::hash<nsfx::Ptr<ITest> >();
+            auto h = boost::hash<nsfx::Ptr<ITest>>();
             size_t v = h(q);
         }
         catch (boost::exception& e)
@@ -1055,9 +1055,9 @@ NSFX_TEST_SUITE(Ptr)
 
     NSFX_TEST_CASE(IsPtr)
     {
-        NSFX_TEST_EXPECT(nsfx::IsPtr<nsfx::Ptr<nsfx::IObject> >::value);
-        NSFX_TEST_EXPECT(nsfx::IsPtr<nsfx::Ptr<ITest> >::value);
-        NSFX_TEST_EXPECT(nsfx::IsPtr<nsfx::Ptr<Test> >::value);
+        NSFX_TEST_EXPECT(nsfx::IsPtr<nsfx::Ptr<nsfx::IObject>>::value);
+        NSFX_TEST_EXPECT(nsfx::IsPtr<nsfx::Ptr<ITest>>::value);
+        NSFX_TEST_EXPECT(nsfx::IsPtr<nsfx::Ptr<Test>>::value);
     }
 
 }

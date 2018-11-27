@@ -323,7 +323,7 @@ public:
     NSFX_INTERFACE_MAP_END()
 
 private:
-    unordered_map<Uid, Ptr<IClassFactory> >  map_;
+    unordered_map<Uid, Ptr<IClassFactory>>  map_;
 
 }; // class ClassRegistry /*}}}*/
 
@@ -346,7 +346,7 @@ template<class C>
 inline void RegisterClassFactory(const Uid& cid)
 {
     BOOST_CONCEPT_ASSERT((ObjectImplConcept<C>));
-    typedef Object<ClassFactory<C> >  ClassFactoryClass;
+    typedef Object<ClassFactory<C>>  ClassFactoryClass;
     Ptr<IClassFactory> factory(new ClassFactoryClass);
     IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
     BOOST_ASSERT(registry);
