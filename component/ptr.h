@@ -301,7 +301,6 @@ protected:
     template<class U>
     bool IsSameObject(U* p, std::false_type) const
     {
-        BOOST_CONCEPT_ASSERT((HasUidConcept<T>));
         BOOST_CONCEPT_ASSERT((IObjectConcept<U>));
         static_assert(!std::is_same<T, U>::value, "");
         // Query the IObject interface.

@@ -158,6 +158,26 @@ NSFX_TEST_SUITE(Ptr)
         }
     }
 
+    NSFX_TEST_CASE(CompareWithoutUid)
+    {
+        // Object has no UID, but can be compared.
+        try
+        {
+            nsfx::Ptr<Object> o(new Object);
+            nsfx::Ptr<nsfx::IObject> p(o);
+            NSFX_TEST_EXPECT(o == o);
+            NSFX_TEST_EXPECT(o == p);
+        }
+        catch (boost::exception& e)
+        {
+            NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
+        }
+        catch (std::exception& e)
+        {
+            NSFX_TEST_EXPECT(false) << e.what() << std::endl;
+        }
+    }
+
     NSFX_TEST_CASE(ctor0)
     {
         // default to nullptr
