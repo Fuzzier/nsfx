@@ -160,6 +160,37 @@ NSFX_TEST_SUITE(Object)
                 NSFX_TEST_EXPECT_EQ(t->GetImpl()->Internal(), 1);
             }
 
+            // Ptr.
+            {
+                typedef nsfx::Object<Test>  TestClass;
+                nsfx::Ptr<Test> t(new TestClass);
+                NSFX_TEST_EXPECT_EQ(t->GetRefCount(), 1);
+
+                nsfx::Ptr<Test> p1(t.Get());
+                NSFX_TEST_EXPECT_EQ(t->GetRefCount(), 2);
+
+                nsfx::Ptr<Test> p2(t.Get(), true);
+                NSFX_TEST_EXPECT_EQ(t->GetRefCount(), 3);
+
+                nsfx::Ptr<Test> p3(t.Get(), false);
+                NSFX_TEST_EXPECT_EQ(t->GetRefCount(), 3);
+                p3->AddRef();
+
+                nsfx::Ptr<Test> q(new TestClass);
+                p1.Reset(q.Get());
+                NSFX_TEST_EXPECT_EQ(t->GetRefCount(), 3);
+                NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 2);
+
+                p2.Reset(q.Get(), true);
+                NSFX_TEST_EXPECT_EQ(t->GetRefCount(), 2);
+                NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 3);
+
+                p3.Reset(q.Get(), false);
+                NSFX_TEST_EXPECT_EQ(t->GetRefCount(), 1);
+                NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 3);
+                p3->AddRef();
+            }
+
         }
         catch (boost::exception& e)
         {
@@ -216,6 +247,36 @@ NSFX_TEST_SUITE(Object)
                 NSFX_TEST_EXPECT(!deallocated);
                 NSFX_TEST_ASSERT(t.GetImpl());
                 NSFX_TEST_EXPECT_EQ(t.GetImpl()->Internal(), 1);
+            }
+
+            // Ptr.
+            {
+                typedef nsfx::StaticObject<Test>  TestClass;
+                static TestClass t;
+
+                nsfx::Ptr<Test> p1(&t);
+                NSFX_TEST_EXPECT_EQ(t.GetRefCount(), 1);
+
+                nsfx::Ptr<Test> p2(&t, true);
+                NSFX_TEST_EXPECT_EQ(t.GetRefCount(), 1);
+
+                nsfx::Ptr<Test> p3(&t, false);
+                NSFX_TEST_EXPECT_EQ(t.GetRefCount(), 1);
+                p3->AddRef();
+
+                static TestClass q;
+                p1.Reset(&q);
+                NSFX_TEST_EXPECT_EQ(t.GetRefCount(), 1);
+                NSFX_TEST_EXPECT_EQ(q.GetRefCount(), 1);
+
+                p2.Reset(&q, true);
+                NSFX_TEST_EXPECT_EQ(t.GetRefCount(), 1);
+                NSFX_TEST_EXPECT_EQ(q.GetRefCount(), 1);
+
+                p3.Reset(&q, false);
+                NSFX_TEST_EXPECT_EQ(t.GetRefCount(), 1);
+                NSFX_TEST_EXPECT_EQ(q.GetRefCount(), 1);
+                p3->AddRef();
             }
 
         }
@@ -301,6 +362,42 @@ NSFX_TEST_SUITE(Object)
                 NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1); // Share reference count with the controller.
                 NSFX_TEST_EXPECT(!deallocated);
                 q.Reset();
+
+                // Ptr.
+                {
+                    typedef nsfx::AggObject<Test>  TestClass;
+
+                    nsfx::Ptr<nsfx::IObject> c(new WedgeClass);
+                    nsfx::Ptr<nsfx::IObject> d(new WedgeClass);
+
+                    nsfx::Ptr<Test> t(new TestClass(c.Get()));
+                    NSFX_TEST_EXPECT_EQ(t->GetRefCount(), 2);
+
+                    nsfx::Ptr<Test> p1(t.Get());
+                    NSFX_TEST_EXPECT_EQ(t->GetRefCount(), 3);
+
+                    nsfx::Ptr<Test> p2(t.Get(), true);
+                    NSFX_TEST_EXPECT_EQ(t->GetRefCount(), 4);
+
+                    nsfx::Ptr<Test> p3(t.Get(), false);
+                    NSFX_TEST_EXPECT_EQ(t->GetRefCount(), 4);
+                    p3->AddRef();
+
+                    nsfx::Ptr<Test> q(new TestClass(d.Get()));
+                    p1.Reset(q.Get());
+                    NSFX_TEST_EXPECT_EQ(t->GetRefCount(), 4);
+                    NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 3);
+
+                    p2.Reset(q.Get(), true);
+                    NSFX_TEST_EXPECT_EQ(t->GetRefCount(), 3);
+                    NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 4);
+
+                    p3.Reset(q.Get(), false);
+                    NSFX_TEST_EXPECT_EQ(t->GetRefCount(), 2);
+                    NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 4);
+                    p3->AddRef();
+                }
+
             }
             catch (std::exception& )
             {
@@ -382,6 +479,46 @@ NSFX_TEST_SUITE(Object)
                 NSFX_TEST_EXPECT_EQ(q->GetRefCount(), 1); // Share reference count with the controller.
                 NSFX_TEST_EXPECT(!deallocated);
                 q.Reset();
+
+                // Ptr.
+                {
+                    typedef nsfx::MemberAggObject<Test>  TestClass;
+
+                    nsfx::Ptr<WedgeClass> c(new WedgeClass);
+                    nsfx::Ptr<WedgeClass> d(new WedgeClass);
+
+                    TestClass t(c.Get());
+                    NSFX_TEST_EXPECT_EQ(c->GetRefCount(), 1);
+
+                    nsfx::Ptr<Test> p1(&t);
+                    NSFX_TEST_EXPECT_EQ(c->GetRefCount(), 2);
+
+                    nsfx::Ptr<Test> p2(&t, true);
+                    NSFX_TEST_EXPECT_EQ(c->GetRefCount(), 3);
+
+                    nsfx::Ptr<Test> p3(&t, false);
+                    NSFX_TEST_EXPECT_EQ(c->GetRefCount(), 3);
+                    p3->AddRef();
+
+                    TestClass q(d.Get());
+                    p1.Reset(&q);
+                    NSFX_TEST_EXPECT_EQ(c->GetRefCount(), 3);
+                    NSFX_TEST_EXPECT_EQ(d->GetRefCount(), 2);
+
+                    p2.Reset(&q, true);
+                    NSFX_TEST_EXPECT_EQ(c->GetRefCount(), 2);
+                    NSFX_TEST_EXPECT_EQ(d->GetRefCount(), 3);
+
+                    p3.Reset(&q, false);
+                    NSFX_TEST_EXPECT_EQ(c->GetRefCount(), 1);
+                    NSFX_TEST_EXPECT_EQ(d->GetRefCount(), 3);
+                    p3->AddRef();
+
+                    p1.Reset();
+                    p2.Reset();
+                    p3.Reset();
+                }
+
             }
             catch (boost::exception& e)
             {
@@ -465,6 +602,46 @@ NSFX_TEST_SUITE(Object)
                 // Does not expose interfaces of controller object.
                 nsfx::Ptr<IFoobar> p(q);
                 NSFX_TEST_EXPECT(false);
+
+                // Ptr.
+                {
+                    typedef nsfx::MutualObject<Test>  TestClass;
+
+                    nsfx::Ptr<WedgeClass> c(new WedgeClass);
+                    nsfx::Ptr<WedgeClass> d(new WedgeClass);
+
+                    TestClass t(c.Get());
+                    NSFX_TEST_EXPECT_EQ(c->GetRefCount(), 1);
+
+                    nsfx::Ptr<Test> p1(&t);
+                    NSFX_TEST_EXPECT_EQ(c->GetRefCount(), 2);
+
+                    nsfx::Ptr<Test> p2(&t, true);
+                    NSFX_TEST_EXPECT_EQ(c->GetRefCount(), 3);
+
+                    nsfx::Ptr<Test> p3(&t, false);
+                    NSFX_TEST_EXPECT_EQ(c->GetRefCount(), 3);
+                    p3->AddRef();
+
+                    TestClass q(d.Get());
+                    p1.Reset(&q);
+                    NSFX_TEST_EXPECT_EQ(c->GetRefCount(), 3);
+                    NSFX_TEST_EXPECT_EQ(d->GetRefCount(), 2);
+
+                    p2.Reset(&q, true);
+                    NSFX_TEST_EXPECT_EQ(c->GetRefCount(), 2);
+                    NSFX_TEST_EXPECT_EQ(d->GetRefCount(), 3);
+
+                    p3.Reset(&q, false);
+                    NSFX_TEST_EXPECT_EQ(c->GetRefCount(), 1);
+                    NSFX_TEST_EXPECT_EQ(d->GetRefCount(), 3);
+                    p3->AddRef();
+
+                    p1.Reset();
+                    p2.Reset();
+                    p3.Reset();
+                }
+
             }
             catch (nsfx::NoInterface& )
             {

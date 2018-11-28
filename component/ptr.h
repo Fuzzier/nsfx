@@ -19,6 +19,7 @@
 
 #include <nsfx/component/config.h>
 #include <nsfx/component/i-object.h>
+#include <nsfx/component/object.h>
 #include <boost/type_index.hpp>
 #include <boost/core/swap.hpp>
 #include <type_traits> // true_type, false_type, is_same
@@ -104,6 +105,71 @@ protected:
         }
     }
 
+    PtrBase(Object<T>* p, bool addRef) :
+        p_(nullptr)
+    {
+        if (p)
+        {
+            p_ = p->GetImpl();
+            if (addRef)
+            {
+                p_->AddRef();
+            }
+        }
+    }
+
+    PtrBase(StaticObject<T>* p, bool addRef) :
+        p_(nullptr)
+    {
+        if (p)
+        {
+            p_ = p->GetImpl();
+            if (addRef)
+            {
+                p_->AddRef();
+            }
+        }
+    }
+
+    PtrBase(AggObject<T>* p, bool addRef) :
+        p_(nullptr)
+    {
+        if (p)
+        {
+            p_ = p->GetImpl();
+            if (addRef)
+            {
+                p_->AddRef();
+            }
+        }
+    }
+
+    PtrBase(MemberAggObject<T>* p, bool addRef) :
+        p_(nullptr)
+    {
+        if (p)
+        {
+            p_ = p->GetImpl();
+            if (addRef)
+            {
+                p_->AddRef();
+            }
+        }
+    }
+
+    PtrBase(MutualObject<T>* p, bool addRef) :
+        p_(nullptr)
+    {
+        if (p)
+        {
+            p_ = p->GetImpl();
+            if (addRef)
+            {
+                p_->AddRef();
+            }
+        }
+    }
+
     ~PtrBase(void)
     {
         Reset();
@@ -158,6 +224,71 @@ protected:
             if (!addRef)
             {
                 p->Release();
+            }
+        }
+    }
+
+    void Reset(Object<T>* p, bool addRef)
+    {
+        Reset();
+        if (p)
+        {
+            p_ = p->GetImpl();
+            if (addRef)
+            {
+                p_->AddRef();
+            }
+        }
+    }
+
+    void Reset(StaticObject<T>* p, bool addRef)
+    {
+        Reset();
+        if (p)
+        {
+            p_ = p->GetImpl();
+            if (addRef)
+            {
+                p_->AddRef();
+            }
+        }
+    }
+
+    void Reset(AggObject<T>* p, bool addRef)
+    {
+        Reset();
+        if (p)
+        {
+            p_ = p->GetImpl();
+            if (addRef)
+            {
+                p_->AddRef();
+            }
+        }
+    }
+
+    void Reset(MemberAggObject<T>* p, bool addRef)
+    {
+        Reset();
+        if (p)
+        {
+            p_ = p->GetImpl();
+            if (addRef)
+            {
+                p_->AddRef();
+            }
+        }
+    }
+
+    void Reset(MutualObject<T>* p, bool addRef)
+    {
+        Reset();
+        if (p)
+        {
+            p_ = p->GetImpl();
+            if (addRef)
+            {
+                p_->AddRef();
             }
         }
     }
@@ -325,6 +456,56 @@ public:
         BaseType(rhs.p_, false, std::is_same<T, U>::type())
     {
         rhs.p_ = nullptr;
+    }
+
+    Ptr(Object<T>* p) :
+        BaseType(p, true)
+    {
+    }
+
+    Ptr(StaticObject<T>* p) :
+        BaseType(p, true)
+    {
+    }
+
+    Ptr(AggObject<T>* p) :
+        BaseType(p, true)
+    {
+    }
+
+    Ptr(MemberAggObject<T>* p) :
+        BaseType(p, true)
+    {
+    }
+
+    Ptr(MutualObject<T>* p) :
+        BaseType(p, true)
+    {
+    }
+
+    Ptr(Object<T>* p, bool addRef) :
+        BaseType(p, addRef)
+    {
+    }
+
+    Ptr(StaticObject<T>* p, bool addRef) :
+        BaseType(p, addRef)
+    {
+    }
+
+    Ptr(AggObject<T>* p, bool addRef) :
+        BaseType(p, addRef)
+    {
+    }
+
+    Ptr(MemberAggObject<T>* p, bool addRef) :
+        BaseType(p, addRef)
+    {
+    }
+
+    Ptr(MutualObject<T>* p, bool addRef) :
+        BaseType(p, addRef)
+    {
     }
 
     /*}}}*/
@@ -505,6 +686,56 @@ public:
     void Reset(U* p, bool addRef)
     {
         BaseType::Reset(p, addRef, std::is_same<T, U>::type());
+    }
+
+    void Reset(Object<T>* p)
+    {
+        BaseType::Reset(p, true);
+    }
+
+    void Reset(StaticObject<T>* p)
+    {
+        BaseType::Reset(p, true);
+    }
+
+    void Reset(AggObject<T>* p)
+    {
+        BaseType::Reset(p, true);
+    }
+
+    void Reset(MemberAggObject<T>* p)
+    {
+        BaseType::Reset(p, true);
+    }
+
+    void Reset(MutualObject<T>* p)
+    {
+        BaseType::Reset(p, true);
+    }
+
+    void Reset(Object<T>* p, bool addRef)
+    {
+        BaseType::Reset(p, addRef);
+    }
+
+    void Reset(StaticObject<T>* p, bool addRef)
+    {
+        BaseType::Reset(p, addRef);
+    }
+
+    void Reset(AggObject<T>* p, bool addRef)
+    {
+        BaseType::Reset(p, addRef);
+    }
+
+    void Reset(MemberAggObject<T>* p, bool addRef)
+    {
+        BaseType::Reset(p, addRef);
+    }
+
+    void Reset(MutualObject<T>* p, bool addRef)
+    {
+        BaseType::Reset(p, addRef);
     }
 
     /**
