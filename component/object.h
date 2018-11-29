@@ -489,7 +489,7 @@ public:
     /*}}}*/
 
     // Methods.
-    ObjectImpl* GetImpl(void)
+    ObjectImpl* GetImpl(void) BOOST_NOEXCEPT
     {
         return static_cast<ObjectImpl*>(this);
     }
@@ -570,7 +570,7 @@ public:
     /*}}}*/
 
     // Methods.
-    ObjectImpl* GetImpl(void)
+    ObjectImpl* GetImpl(void) BOOST_NOEXCEPT
     {
         return static_cast<ObjectImpl*>(this);
     }
@@ -847,7 +847,7 @@ public:
     /*}}}*/
 
     // Methods.
-    ObjectImpl* GetImpl(void)
+    ObjectImpl* GetImpl(void) BOOST_NOEXCEPT
     {
         return static_cast<ObjectImpl*>(&agg_);
     }
@@ -955,7 +955,7 @@ public:
     /*}}}*/
 
     // Methods.
-    ObjectImpl* GetImpl(void)
+    ObjectImpl* GetImpl(void) BOOST_NOEXCEPT
     {
         return static_cast<ObjectImpl*>(&agg_);
     }
@@ -1061,7 +1061,7 @@ public:
     /*}}}*/
 
     // Methods.
-    ObjectImpl* GetImpl(void)
+    ObjectImpl* GetImpl(void) BOOST_NOEXCEPT
     {
         return static_cast<ObjectImpl*>(this);
     }
