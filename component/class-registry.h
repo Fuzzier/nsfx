@@ -162,18 +162,28 @@
  *    template MyClassRegister<MyClass>;
  *    @endcode
  *
- *    However, there is a problem in this method.
- *    That is, the static instance is local to the compilation unit, and will
- *    be <b>removed</b> when the object file is archived in a <i>static library</i>.
- *    To prevent the removal, the static instance must be accessed by some
- *    entity with external linkage in the source file.
+ * =======
+ * Remarks
+ * =======
  *
+ * If a name is local to a compilation unit, it will be stored in a <i>static
+ * library</i>.
+ * However, the local names will be <b>removed</b> during linking, since they
+ * are neither exported, nor refered by other code.
+ *
+ * To prevent the removal, the local names must be exported with external
+ * linkage, or be refered by some code.
+ * Usually, external tools have to be provided to perform such task.
+ *
+ * Therefore, for code that is built upon this library, it is not recommended
+ * to archive the code into a static library.
+ * Instead, dynamic link library, shared library or executable are perfered.
  *
  * @see \c RegisterClass().
  */
 #define NSFX_REGISTER_CLASS(C, cid)                                       \
     template<class T>                                                     \
-    struct C ## Register                                                  \
+    class Nsfx_ ## C ## _Register                                         \
     {                                                                     \
         static struct Worker                                              \
         {                                                                 \
@@ -191,9 +201,12 @@
             }                                                             \
         } worker_;                                                        \
     };                                                                    \
+    /* Declare the static member variable "worker_". */                   \
     template<class T>                                                     \
-    typename C ## Register<T>::Worker C ## Register<T>::worker_;          \
-    template C ## Register<C>
+    typename Nsfx_ ## C ## _Register<T>::Worker                           \
+             Nsfx_ ## C ## _Register<T>::worker_;                         \
+    /* Explicit instantiation of the template. */                         \
+    template class Nsfx_ ## C ## _Register<C>
 
     // static struct C ## ClassRegister                                  \
     // {                                                                 \
