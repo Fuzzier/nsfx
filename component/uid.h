@@ -26,10 +26,27 @@
 NSFX_OPEN_NAMESPACE
 
 
+////////////////////////////////////////////////////////////////////////////////
+/**
+ * @ingroup Component
+ * @brief A human-readable universal identifier (UID).
+ *
+ * A UID is a string that identifies a class in a hierarchical namespace.
+ * The general form is <code>"<organization>.<module>.<class>"</code>.</br>
+ * e.g., <code>"edu.uestc.nsfx.IObject"</code>.
+ *
+ * The use of string makes debugging much easier.
+ */
 class Uid
 {
 public:
-    Uid(const char* uid) :
+    /**
+     * @brief Construct a UID.
+     *
+     * @param[in] uid It <b>must</b> be a <i>string literal</i> or a string
+     *                with static lifetime.
+     */
+    Uid(const char* uid) BOOST_NOEXCEPT :
         uid_(uid)
     {}
 
@@ -58,6 +75,7 @@ private:
 };
 
 
+////////////////////////////////////////////////////////////////////////////////
 inline bool operator==(const Uid& lhs, const Uid& rhs) BOOST_NOEXCEPT
 {
     return !std::strcmp(lhs.uid_, rhs.uid_);
@@ -97,7 +115,7 @@ operator<<(std::basic_ostream<Char, Traits>& os, const Uid& uid)
 
 inline size_t hash_value(const Uid& uid)
 {
-    size_t length = strlen(uid.uid_);
+    size_t length = std::strlen(uid.uid_);
     return boost::hash_range<const char*>(uid.uid_, uid.uid_ + length);
 }
 
@@ -108,19 +126,15 @@ NSFX_CLOSE_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Component
- * @brief The primary template for class traits.
+ * @brief The traits of a class.
  *
- * The class traits includes a UID (universal identifier).
+ * The traits include a class identifier (IID).
  *
- * A UID is a string that identifies a class in a hierarchical namespace.
- * The general form is <code>"<organization>.<module>.<class>"</code>.</br>
- * e.g., <code>"edu.uestc.nsfx.IObject"</code>.
+ * The primary template is declared without a definition.
+ * Thus, if the template is used without been specialized for the user-defined
+ * class, the compiler reports errors.
  *
- * The primary template is left without a definition.
- * Thus, if the template is used without been specialized for user-defined class,
- * the compiler reports errors.
- *
- * The class template is defined in global namespace, since it is not legal
+ * The class template is defined in the global namespace, since it is not legal
  * to specialize a class template in a parallel namespace (a namespace that
  * is neither \c nsfx, nor enclosed in \c nsfx).
  *
@@ -133,9 +147,10 @@ NSFX_CLOSE_NAMESPACE
  * class NsfxClassTraits<MyClass>
  * {
  * public:
- *     static const char* GetClassName(void)
+ *     static const Uid& GetUid(void) BOOST_NOEXCEPT
  *     {
- *         return "edu.uestc.nsfx.MyClass";
+ *         static const Uid uid("edu.uestc.nsfx.MyClass");
+ *         return uid;
  *     }
  * };
  * @endcode
@@ -149,18 +164,23 @@ class NsfxClassTraits;
 /**
  * @ingroup Component
  *
- * @brief Associate a UID with an class in a non-intrusive way.
+ * @brief Associate a UID with a class in a non-intrusive way.
+ *
+ * @param T   The class.
+ * @param UID The UID of the class.
+ *            It <b>msut</b> be a string literal or a string with static
+ *            lifetime.
  */
-#define NSFX_DEFINE_CLASS_UID(type, uid)        \
-    template<>                                  \
-    class NsfxClassTraits<type>                 \
-    {                                           \
-    public:                                     \
-        static const ::nsfx::Uid& GetUid(void)  \
-        {                                       \
-            static const ::nsfx::Uid  id(uid);  \
-            return id;                          \
-        }                                       \
+#define NSFX_DEFINE_CLASS_UID(T, UID)                          \
+    template<>                                                 \
+    class ::NsfxClassTraits<T>                                 \
+    {                                                          \
+    public:                                                    \
+        static const ::nsfx::Uid& GetUid(void) BOOST_NOEXCEPT  \
+        {                                                      \
+            static const ::nsfx::Uid uid(UID);                 \
+            return uid;                                        \
+        }                                                      \
     }
 
 
@@ -171,14 +191,14 @@ NSFX_OPEN_NAMESPACE
 /**
  * @ingroup Component
  *
- * @brief Get the UID of a class.
+ * @brief Get the UID of an interface.
  *
  * @tparam T A class that has a UID.
  *
  * @remarks \c std::add_pointer is used here to prevent automatical template
  *          argument deduction.
- *          Users have to explicitly specialize this function template in order
- *          to use it.
+ *          Users must explicitly specify the template argument in order to
+ *          call it.
  *
  * @see \c NSFX_DEFINE_CLASS_UID.
  */

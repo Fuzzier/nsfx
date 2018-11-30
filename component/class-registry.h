@@ -28,11 +28,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Macros.
 /**
- * @brief A helper class template that registers a class with a default factory.
+ * @brief A macro that registers a class with a default factory.
  *
- * @param C   Must conform to \c HasUidConcept and \c ObjectImplConcept.
- *            Must not use qualified name.
- * @param cid The ID of the class.
+ * @param T   It <b>must</b> conform to \c ObjectImplConcept.
+ *            It <b>must not</b> be a qualified name.
+ * @param CID The UID of the class.
  *
  * ============
  * Requirements
@@ -128,38 +128,41 @@
  *    To prevent the use of an additional static flag, the static instance can
  *    be defined as a class member.
  *    @code
- *    struct MyClassRegister
+ *    class MyClassRegister
  *    {
- *        static struct Worker
+ *        static struct Helper
  *        {
- *            Worker(void)
+ *            Helper(void)
  *            {
  *                ::nsfx::RegisterClassFactory<MyClass>(myCid);
  *            }
- *        } worker_;
+ *        } helper_;
  *    };
- *    MyClassRegister::Worker MyClassRegister::worker_;
+ *    MyClassRegister::Worker  MyClassRegister::helper_;
  *    @endcode
  *
  *    If the code is placed in a header file, the instance would be defined in
  *    each compilation unit that includes the header file.
  *    This results in multiple definition of the instance.
  *    The work around, a class template can be used in place of the class.
- *    An implicit instantiation of the class template is also declared.
+ *    An explicit instantiation of the class template is also defined.
  *    @code
  *    template<class T>
- *    struct MyClassRegister
+ *    class MyClassRegister
  *    {
- *        static struct Worker
+ *        static struct Helper
  *        {
- *            Worker(void)
+ *            Helper(void)
  *            {
  *                ::nsfx::RegisterClassFactory<MyClass>(myCid);
  *            }
- *        } worker_;
+ *        } helper_;
  *    };
- *    template<classs T> MyClassRegister<T>::Worker MyClassRegister<T>::worker_;
- *    template MyClassRegister<MyClass>;
+ *    // Declare the static member variable.
+ *    template<classs T> typename MyClassRegister<T>::Helper
+ *                                MyClassRegister<T>::helper_;
+ *    // Define an explicit instantiation of the class template.
+ *    template class MyClassRegister<MyClass>;
  *    @endcode
  *
  * =======
@@ -181,17 +184,17 @@
  *
  * @see \c RegisterClass().
  */
-#define NSFX_REGISTER_CLASS(C, cid)                                       \
+#define NSFX_REGISTER_CLASS(T, CID)                                       \
     template<class T>                                                     \
-    class Nsfx_ ## C ## _Register                                         \
+    class Nsfx ## T ## Register                                           \
     {                                                                     \
-        static struct Worker                                              \
+        static struct Helper                                              \
         {                                                                 \
-            Worker(void)                                                  \
+            Helper(void)                                                  \
             {                                                             \
                 try                                                       \
                 {                                                         \
-                    ::nsfx::RegisterClassFactory<C>(cid);                 \
+                    ::nsfx::RegisterClassFactory<T>(CID);                 \
                 }                                                         \
                 catch (boost::exception& e)                               \
                 {                                                         \
@@ -199,39 +202,11 @@
                     throw;                                                \
                 }                                                         \
             }                                                             \
-        } worker_;                                                        \
+        } helper_;                                                        \
     };                                                                    \
-    /* Declare the static member variable "worker_". */                   \
-    template<class T>                                                     \
-    typename Nsfx_ ## C ## _Register<T>::Worker                           \
-             Nsfx_ ## C ## _Register<T>::worker_;                         \
-    /* Explicit instantiation of the template. */                         \
-    template class Nsfx_ ## C ## _Register<C>
-
-    // static struct C ## ClassRegister                                  \
-    // {                                                                 \
-    //     C ## ClassRegister(void)                                      \
-    //     {                                                             \
-    //         try                                                       \
-    //         {                                                         \
-    //             static bool registered = false;                       \
-    //             if (!registered)                                      \
-    //             {                                                     \
-    //                 ::nsfx::RegisterClassFactory<C>(cid);             \
-    //                 registered = true;                                \
-    //             }                                                     \
-    //         }                                                         \
-    //         catch (boost::exception& e)                               \
-    //         {                                                         \
-    //             std::cerr << diagnostic_information(e) << std::endl;  \
-    //                 throw;                                            \
-    //         }                                                         \
-    //     }                                                             \
-    // } s_##C##_register;                                               \
-    // extern void C##Foo()                                              \
-    // {                                                                 \
-    //     C ## ClassRegister* s = &s_##C##_register;                    \
-    // }
+    template<class T> typename Nsfx ## T ## Register<T>::Helper           \
+                               Nsfx ## T ## Register<T>::helper_;         \
+    template class Nsfx ## T ## Register<T>;
 
 
 NSFX_OPEN_NAMESPACE
@@ -271,30 +246,26 @@ NSFX_OPEN_NAMESPACE
  *     Instead of \c CreateObject(), there are other free functions that create
  *     objects, such as \c CreateEventSink().
  */
-class ClassRegistry :/*{{{*/
+class ClassRegistry :
     public IClassRegistry
 {
-    // Static methods. /*{{{*/
+    // Static methods.
 public:
     /**
      * @brief Get the \c IClassRegistry interface.
      */
     static IClassRegistry* GetIClassRegistry(void)
     {
-        typedef StaticObject<ClassRegistry>  ClassRegistryClass;
-        static ClassRegistryClass registry;
+        static StaticObject<ClassRegistry>  registry;
         // Omit AddRef() as there is no need to do so.
         // Omit QueryInterface() as the implementation is known.
-        return static_cast<IClassRegistry*>(registry.GetImpl());
+        return registry.GetImpl();
     }
-
-    /*}}}*/
 
 public:
     virtual ~ClassRegistry(void) BOOST_NOEXCEPT {}
 
-public:
-    // IClassRegistry /*{{{*/
+    // IClassRegistry
     virtual void Register(const Uid& cid, Ptr<IClassFactory> factory) NSFX_FINAL NSFX_OVERRIDE
     {
         if (!factory)
@@ -304,7 +275,9 @@ public:
         auto result = map_.emplace(cid, std::move(factory));
         if (!result.second)
         {
-            BOOST_THROW_EXCEPTION(ClassAlreadyRegistered() << ClassUidErrorInfo(cid));
+            BOOST_THROW_EXCEPTION(
+                ClassAlreadyRegistered() <<
+                ClassUidErrorInfo(cid));
         }
     }
 
@@ -326,12 +299,13 @@ public:
         }
         catch (std::out_of_range& )
         {
-            BOOST_THROW_EXCEPTION(ClassNotRegistered() << ClassUidErrorInfo(cid));
+            BOOST_THROW_EXCEPTION(
+                ClassNotRegistered() <<
+                ClassUidErrorInfo(cid));
         }
     }
 
-    /*}}}*/
-
+private:
     NSFX_INTERFACE_MAP_BEGIN(ClassRegistry)
         NSFX_INTERFACE_ENTRY(IClassRegistry)
     NSFX_INTERFACE_MAP_END()
@@ -339,14 +313,14 @@ public:
 private:
     unordered_map<Uid, Ptr<IClassFactory>>  map_;
 
-}; // class ClassRegistry /*}}}*/
+};
 
 
 NSFX_DEFINE_CLASS_UID(ClassRegistry, "edu.uestc.nsfx.ClassRegistry");
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Free functions./*{{{*/
+// Free functions.
 /**
  * @ingroup Component
  * @brief Register a class with the default class factory.
@@ -363,7 +337,6 @@ inline void RegisterClassFactory(const Uid& cid)
     typedef Object<ClassFactory<C>>  ClassFactoryClass;
     Ptr<IClassFactory> factory(new ClassFactoryClass);
     IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
-    BOOST_ASSERT(registry);
     registry->Register(cid, std::move(factory));
 }
 
@@ -376,7 +349,6 @@ inline void RegisterClassFactory(const Uid& cid)
 inline void RegisterClassFactory(const Uid& cid, Ptr<IClassFactory> factory)
 {
     IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
-    BOOST_ASSERT(registry);
     registry->Register(cid, std::move(factory));
 }
 
@@ -389,7 +361,6 @@ inline void RegisterClassFactory(const Uid& cid, Ptr<IClassFactory> factory)
 inline void UnregisterClassFactory(const Uid& cid)
 {
     IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
-    BOOST_ASSERT(registry);
     registry->Unregister(cid);
 }
 
@@ -417,7 +388,6 @@ inline Ptr<I> CreateObject(const Uid& cid, IObject* controller = nullptr)
     try
     {
         IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
-        BOOST_ASSERT(registry);
         Ptr<IClassFactory> factory = registry->GetClassFactory(cid);
         I* p = static_cast<I*>(factory->CreateObject(uid_of<I>(), controller));
         return Ptr<I>(p, true);
@@ -428,8 +398,6 @@ inline Ptr<I> CreateObject(const Uid& cid, IObject* controller = nullptr)
         throw;
     }
 }
-
-/*}}}*/
 
 
 NSFX_CLOSE_NAMESPACE

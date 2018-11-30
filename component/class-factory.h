@@ -21,6 +21,7 @@
 #include <nsfx/component/i-class-factory.h>
 #include <nsfx/component/object.h>
 #include <nsfx/component/exception.h>
+#include <memory> // unique_ptr
 
 
 NSFX_OPEN_NAMESPACE
@@ -32,65 +33,72 @@ NSFX_OPEN_NAMESPACE
  * @ingroup Component
  * @brief A class factory.
  *
- * @tparam ObjectImpl A class that conforms to \c ObjectImplConcept.
+ * @tparam T A class that conforms to \c ObjectImplConcept.
  *
- * The factory uses \c Object or \c AggObject to make \c ObjectImpl a concrete
- * class according to whether a controller is specified.
+ * The factory uses \c Object or \c AggObject to make \c T a concrete class
+ * according to whether a controller is specified.
  *
  * The specialized class template conforms to \c ObjectImplConcept.
  * Thus, it shall be used in conjunction with \c Object or \c AggObject.
  */
-template<class ObjectImpl>
+template<class T>
 class ClassFactory :
     public IClassFactory
 {
 private:
-    BOOST_CONCEPT_ASSERT((ObjectImplConcept<ObjectImpl>));
+    BOOST_CONCEPT_ASSERT((ObjectImplConcept<T>));
 
 public:
     virtual ~ClassFactory(void) BOOST_NOEXCEPT {}
 
 public:
     // IClassFactory
-    virtual void* CreateObject(const Uid& iid, IObject* controller) NSFX_FINAL NSFX_OVERRIDE
-    {
-        if (controller && iid != uid_of<IObject>())
-        {
-            BOOST_THROW_EXCEPTION(BadAggregation());
-        }
-        return controller ? CreateAggregable(controller)
-                          : CreateNonAggregable(iid);
-    }
+    virtual void* CreateObject(const Uid& iid, IObject* controller) NSFX_FINAL NSFX_OVERRIDE;
 
-    void* CreateNonAggregable(const Uid& iid)
-    {
-        typedef Object<ObjectImpl>  ObjectClass;
-        ObjectClass* o = new ObjectClass;
-        try
-        {
-            void* result = o->QueryInterface(iid);
-            return result;
-        }
-        catch (NoInterface& )
-        {
-            delete o;
-            throw;
-        }
-    }
-
-    void* CreateAggregable(IObject* controller)
-    {
-        typedef AggObject<ObjectImpl>  ObjectClass;
-        ObjectClass* o = new ObjectClass(controller);
-        return o->QueryInterface(uid_of<IObject>());
-    }
+private:
+    void* CreateNonAggregable(const Uid& iid);
+    void* CreateAggregable(IObject* controller);
 
 private:
     NSFX_INTERFACE_MAP_BEGIN(ClassFactory)
         NSFX_INTERFACE_ENTRY(IClassFactory)
     NSFX_INTERFACE_MAP_END()
 
-}; // class ClassFactory
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
+template<class T>
+inline void*
+ClassFactory<T>::CreateObject(const Uid& iid, IObject* controller)
+{
+    if (controller && iid != uid_of<IObject>())
+    {
+        BOOST_THROW_EXCEPTION(BadAggregation());
+    }
+    return controller ? CreateAggregable(controller)
+                      : CreateNonAggregable(iid);
+}
+
+template<class T>
+inline void*
+ClassFactory<T>::CreateNonAggregable(const Uid& iid)
+{
+    typedef Object<T>  ObjectClass;
+    std::unique_ptr<ObjectClass> o(new ObjectClass);
+    void* result = o->QueryInterface(iid);  // May throw NoInterface.
+    o.release();
+    return result;
+}
+
+template<class T>
+inline void*
+ClassFactory<T>::CreateAggregable(IObject* controller)
+{
+    typedef AggObject<T>  ObjectClass;
+    ObjectClass* o = new ObjectClass(controller);
+    return o->QueryInterface(uid_of<IObject>());
+}
 
 
 NSFX_CLOSE_NAMESPACE
