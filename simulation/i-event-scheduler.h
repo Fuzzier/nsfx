@@ -37,18 +37,12 @@ typedef boost::error_info<struct tag_ScheduledTime, TimePoint>
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Types.
-class IEventScheduler;
-class IEventSchedulerUser;
-
-
-////////////////////////////////////////////////////////////////////////////////
 // IEventScheduler.
 /**
  * @ingroup Simulator
- * @brief The event scheduler interface.
+ * @brief An event scheduler.
  */
-class IEventScheduler :/*{{{*/
+class IEventScheduler :
     virtual public IObject
 {
 public:
@@ -121,7 +115,7 @@ public:
      */
     virtual void FireAndRemoveNextEvent(void) = 0;
 
-}; // class IEventScheduler /*}}}*/
+};
 
 
 NSFX_DEFINE_CLASS_UID(IEventScheduler, "edu.uestc.nsfx.IEventScheduler");

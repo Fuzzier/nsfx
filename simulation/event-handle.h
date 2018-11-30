@@ -31,22 +31,28 @@ NSFX_OPEN_NAMESPACE
 /**
  * @ingroup Simulator
  * @brief An event handle.
+ *
+ * * Interfaces
+ *   + Provides
+ *     - \c IEventHandle
  */
 class EventHandle :
     public IEventHandle
 {
 public:
-    EventHandle(const TimePoint& t,
+    EventHandle(event_id_t id,
+                const TimePoint& t,
                 const Ptr<IEventSink<>>& sink) :
-        id_(GetNextEventId()),
+        id_(id),
         t_(t),
         sink_(sink),
         running_(false)
     {}
 
-    EventHandle(const TimePoint& t,
+    EventHandle(event_id_t id,
+                const TimePoint& t,
                 Ptr<IEventSink<>>&& sink) :
-        id_(GetNextEventId()),
+        id_(id),
         t_(t),
         sink_(std::move(sink)),
         running_(false)
@@ -89,6 +95,11 @@ public:
     /*}}}*/
 
 public:
+    IEventHandle* GetIntf(void) BOOST_NOEXCEPT
+    {
+        return this;
+    }
+
     void Fire(void)
     {
         if (sink_)
@@ -100,6 +111,7 @@ public:
         }
     }
 
+private:
     NSFX_INTERFACE_MAP_BEGIN(EventHandle)
         NSFX_INTERFACE_ENTRY(IEventHandle)
     NSFX_INTERFACE_MAP_END()
@@ -110,27 +122,25 @@ private:
     Ptr<IEventSink<>>  sink_;
     bool running_;
 
-}; // class EventHandle
+};
 
 
 ////////////////////////////////////////////////////////////////////////////////
-typedef Object<EventHandle>  EventHandleClass;
-
-inline bool operator==(const Ptr<EventHandleClass>& lhs,
-                       const Ptr<EventHandleClass>& rhs) BOOST_NOEXCEPT
+inline bool operator==(const Ptr<EventHandle>& lhs,
+                       const Ptr<EventHandle>& rhs) BOOST_NOEXCEPT
 {
     BOOST_ASSERT(lhs && rhs);
     return lhs->GetId() == rhs->GetId();
 }
 
-inline bool operator!=(const Ptr<EventHandleClass>& lhs,
-                       const Ptr<EventHandleClass>& rhs) BOOST_NOEXCEPT
+inline bool operator!=(const Ptr<EventHandle>& lhs,
+                       const Ptr<EventHandle>& rhs) BOOST_NOEXCEPT
 {
     return !(lhs == rhs);
 }
 
-inline bool operator<(const Ptr<EventHandleClass>& lhs,
-                      const Ptr<EventHandleClass>& rhs) BOOST_NOEXCEPT
+inline bool operator<(const Ptr<EventHandle>& lhs,
+                      const Ptr<EventHandle>& rhs) BOOST_NOEXCEPT
 {
     BOOST_ASSERT(lhs && rhs);
     TimePoint t0 = lhs->GetTimePoint();
@@ -143,21 +153,21 @@ inline bool operator<(const Ptr<EventHandleClass>& lhs,
     return result;
 }
 
-inline bool operator<=(const Ptr<EventHandleClass>& lhs,
-                       const Ptr<EventHandleClass>& rhs) BOOST_NOEXCEPT
+inline bool operator<=(const Ptr<EventHandle>& lhs,
+                       const Ptr<EventHandle>& rhs) BOOST_NOEXCEPT
 {
     return (lhs == rhs) || (lhs < rhs);
 }
 
-inline bool operator>=(const Ptr<EventHandleClass>& lhs,
-                       const Ptr<EventHandleClass>& rhs) BOOST_NOEXCEPT
+inline bool operator>=(const Ptr<EventHandle>& lhs,
+                       const Ptr<EventHandle>& rhs) BOOST_NOEXCEPT
 {
     BOOST_ASSERT(lhs && rhs);
     return !(lhs < rhs);
 }
 
-inline bool operator>(const Ptr<EventHandleClass>& lhs,
-                      const Ptr<EventHandleClass>& rhs) BOOST_NOEXCEPT
+inline bool operator>(const Ptr<EventHandle>& lhs,
+                      const Ptr<EventHandle>& rhs) BOOST_NOEXCEPT
 {
     return !(lhs <= rhs);
 }

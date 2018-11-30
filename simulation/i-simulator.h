@@ -47,9 +47,9 @@ class ISimulationEndEventSink;
 // ISimulator.
 /**
  * @ingroup Simulator
- * @brief The simulator interface.
+ * @brief A simulator.
  */
-class ISimulator :/*{{{*/
+class ISimulator :
     virtual public IObject
 {
 public:
@@ -57,16 +57,22 @@ public:
 
     /**
      * @brief Run until there is no scheduled alarm.
+     *
+     * @throw NoScheduledEvent There are no events in the scheduler.
      */
     virtual void Run(void) = 0;
 
     /**
      * @brief Run until a specific time point.
+     *
+     * @throw NoScheduledEvent There are no events in the scheduler.
      */
     virtual void RunUntil(const TimePoint& t) = 0;
 
     /**
      * @brief Run for a specific duration.
+     *
+     * @throw NoScheduledEvent There are no events in the scheduler.
      */
     virtual void RunFor(const Duration& dt) = 0;
 
@@ -75,7 +81,7 @@ public:
      */
     virtual void Pause(void) = 0;
 
-}; // class ISimulator /*}}}*/
+};
 
 
 NSFX_DEFINE_CLASS_UID(ISimulator, "edu.uestc.nsfx.ISimulator");

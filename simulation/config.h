@@ -50,6 +50,14 @@ using chrono::Hours;
 using chrono::Days;
 
 
+////////////////////////////////////////////////////////////////////////////////
+/**
+ * @ingroup Simulator
+ * @brief The id of an event.
+ */
+typedef uint64_t  event_id_t;
+
+
 NSFX_CLOSE_NAMESPACE
 
 

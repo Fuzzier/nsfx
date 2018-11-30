@@ -27,18 +27,12 @@ NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Types.
-class IClock;
-class IClockUser;
-
-
-////////////////////////////////////////////////////////////////////////////////
 // IClock.
 /**
  * @ingroup Simulator
- * @brief The clock interface.
+ * @brief A clock.
  */
-class IClock :/*{{{*/
+class IClock :
     virtual public IObject
 {
 public:
@@ -49,7 +43,8 @@ public:
      */
     virtual TimePoint Now(void) = 0;
 
-}; // class IClock /*}}}*/
+};
+
 
 NSFX_DEFINE_CLASS_UID(IClock, "edu.uestc.nsfx.IClock");
 

@@ -52,11 +52,11 @@ NSFX_TEST_SUITE(EventHandle)
         {
             nsfx::TimePoint t1(nsfx::Duration(1));
             nsfx::TimePoint t2(nsfx::Duration(2));
-            Ptr<SinkClass> s1(new SinkClass(t1));
+            Ptr<Sink> s1(new SinkClass(t1));
 
-            Ptr<EventHandleClass>  h1(new EventHandleClass(t1, s1));
-            Ptr<EventHandleClass>  h2(new EventHandleClass(t2, s1));
-            Ptr<EventHandleClass>  h2_1(new EventHandleClass(t2, s1));
+            Ptr<nsfx::EventHandle>  h1(new EventHandleClass(0, t1, s1));
+            Ptr<nsfx::EventHandle>  h2(new EventHandleClass(1, t2, s1));
+            Ptr<nsfx::EventHandle>  h2_1(new EventHandleClass(2, t2, s1));
 
             NSFX_TEST_EXPECT_EQ(h1->GetId(), 0);
             NSFX_TEST_EXPECT_EQ(h2->GetId(), 1);

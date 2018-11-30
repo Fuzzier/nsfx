@@ -30,21 +30,16 @@ NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Types.
-class SetEventScheduler;
-
-
-////////////////////////////////////////////////////////////////////////////////
 // SetEventScheduler.
 /**
  * @ingroup Simulator
  * @brief An event scheduler based on set.
  *
- * ## Interfaces
- * ### Uses
- * * \c IClockUser
- * ### Provides
- * * \c IEventScheduler
+ * * Interfaces
+ *   + Uses
+ *     - \c IClock
+ *   + Provides
+ *     - \c IEventScheduler
  */
 class SetEventScheduler :
     public IClockUser,
@@ -52,11 +47,11 @@ class SetEventScheduler :
 {
 private:
     typedef SetEventScheduler   ThisClass;
-    typedef Object<EventHandle> EventHandleClass;
 
 public:
     SetEventScheduler(void) BOOST_NOEXCEPT :
-        initialized_(false)
+        initialized_(false),
+        nextEventId_(0)
     {}
 
     virtual ~SetEventScheduler(void) {}
@@ -76,7 +71,7 @@ public:
             BOOST_THROW_EXCEPTION(InvalidPointer());
         }
         clock_ = clock;
-        Initialize();
+        initialized_ = true;
     }
 
     /*}}}*/
@@ -114,11 +109,11 @@ public:
                 CurrentTimeErrorInfo(clock_->Now()) <<
                 ScheduledTimeErrorInfo(t));
         }
-        Ptr<EventHandleClass> handle(new EventHandleClass(t, std::move(sink)));
+        Ptr<EventHandle> handle(new Object<EventHandle>(
+                                    nextEventId_++, t, std::move(sink)));
         set_.insert(handle);
         // BOOST_ASSERT(IsOrdered());
-        return Ptr<IEventHandle>(static_cast<IEventHandle*>(handle.Detach()),
-                                 false);
+        return Ptr<IEventHandle>(handle.Detach()->GetIntf(), false);
     }
 
     virtual size_t GetNumEvents(void) BOOST_NOEXCEPT NSFX_OVERRIDE
@@ -128,20 +123,20 @@ public:
 
     virtual Ptr<IEventHandle> GetNextEvent(void) NSFX_OVERRIDE
     {
-        EventHandleClass* result = InternalGetNextEvent();
-        return static_cast<IEventHandle*>(result);
+        EventHandle* result = InternalGetNextEvent();
+        return result->GetIntf();
     }
 
     void FireAndRemoveNextEvent(void)
     {
-        EventHandleClass* result = InternalRemoveNextEvent();
-        static_cast<EventHandleClass*>(result)->Fire();
+        EventHandle* result = InternalRemoveNextEvent();
+        result->Fire();
     }
 
 private:
-    EventHandleClass* InternalGetNextEvent(void) BOOST_NOEXCEPT
+    EventHandle* InternalGetNextEvent(void) BOOST_NOEXCEPT
     {
-        EventHandleClass* result = nullptr;
+        EventHandle* result = nullptr;
         if (set_.size())
         {
             result = set_.begin()->Get();
@@ -149,9 +144,9 @@ private:
         return result;
     }
 
-    EventHandleClass* InternalRemoveNextEvent(void)
+    EventHandle* InternalRemoveNextEvent(void)
     {
-        EventHandleClass* result = nullptr;
+        EventHandle* result = nullptr;
         if (set_.size() > 0)
         {
             auto it = set_.begin();
@@ -176,17 +171,6 @@ private:
     /*}}}*/
 
 private:
-    void Initialize(void)
-    {
-        if (!initialized_)
-        {
-            if (clock_)
-            {
-                initialized_ = true;
-            }
-        }
-    }
-
     NSFX_INTERFACE_MAP_BEGIN(ThisClass)
         NSFX_INTERFACE_ENTRY(IClockUser)
         NSFX_INTERFACE_ENTRY(IEventScheduler)
@@ -195,7 +179,8 @@ private:
 private:
     bool  initialized_;
     Ptr<IClock>  clock_;
-    set<Ptr<EventHandleClass>>  set_;
+    event_id_t   nextEventId_;
+    set<Ptr<EventHandle>>  set_;
 
 }; // class SetEventScheduler
 

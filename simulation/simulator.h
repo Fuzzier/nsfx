@@ -38,21 +38,21 @@ class Simulator;
 // Simulator.
 /**
  * @ingroup Simulator
- * @brief The simulator.
+ * @brief A simulator.
  *
  * This simulator provides a clock, and executes events in the scheduler.
  *
- * ## Interfaces
- * ### Uses
- * * \c IEventSchedulerUser
- * ### Provides
- * * \c IClock
- * * \c ISimulator
- * ### Events
- * * \c ISimulationBeginEvent
- * * \c ISimulationRunEvent
- * * \c ISimulationPauseEvent
- * * \c ISimulationEndEvent
+ * * Interfaces
+ *   + Uses
+ *     - \c IEventScheduler
+ *   + Provides
+ *     - \c IClock
+ *     - \c ISimulator
+ *   + Events
+ *     - \c ISimulationBeginEvent
+ *     - \c ISimulationRunEvent
+ *     - \c ISimulationPauseEvent
+ *     - \c ISimulationEndEvent
  */
 class Simulator :
     public IEventSchedulerUser,
@@ -74,6 +74,7 @@ public:
     virtual ~Simulator(void) {}
 
     // IEventSchedulerUser /*{{{*/
+public:
     virtual void Use(Ptr<IEventScheduler> scheduler) NSFX_OVERRIDE
     {
         if (initialized_)
@@ -93,6 +94,7 @@ public:
     /*}}}*/
 
     // IClock /*{{{*/
+public:
     virtual TimePoint Now(void) BOOST_NOEXCEPT NSFX_OVERRIDE
     {
         return now_;
@@ -101,6 +103,7 @@ public:
     /*}}}*/
 
     // ISimulator /*{{{*/
+public:
     virtual void Run(void) NSFX_OVERRIDE
     {
         RunUntil(TimePoint::Max());
@@ -114,7 +117,7 @@ public:
         }
         if (!scheduler_->GetNumEvents())
         {
-            BOOST_THROW_EXCEPTION(SimulatorFinished());
+            BOOST_THROW_EXCEPTION(NoScheduledEvent());
         }
         CheckBeginOfSimulation();
         paused_ = false;
@@ -153,6 +156,7 @@ public:
         paused_ = true;
     }
 
+private:
     void CheckBeginOfSimulation(void)
     {
         if (!started_)
@@ -173,6 +177,7 @@ public:
     /*}}}*/
 
     // Events./*{{{*/
+private:
     void FireSimulationBeginEvent(void)
     {
         beginEvent_.GetImpl()->Fire();
@@ -195,6 +200,7 @@ public:
 
     /*}}}*/
 
+private:
     NSFX_INTERFACE_MAP_BEGIN(Simulator)
         NSFX_INTERFACE_ENTRY(IEventSchedulerUser)
         NSFX_INTERFACE_ENTRY(IClock)
@@ -217,7 +223,7 @@ private:
     MemberAggObject<Event<ISimulationPauseEvent>>  pauseEvent_;
     MemberAggObject<Event<ISimulationEndEvent>>    endEvent_;
 
-}; // class Simulator
+};
 
 
 NSFX_REGISTER_CLASS(Simulator, "edu.uestc.nsfx.Simulator");

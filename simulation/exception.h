@@ -26,9 +26,9 @@ NSFX_OPEN_NAMESPACE
 
 /**
  * @ingroup Exception
- * @brief Cannot run a finished simulator.
+ * @brief Cannot run the simulator since the scheduler has no events.
  */
-struct SimulatorFinished : ComponentException {};
+struct NoScheduledEvent : ComponentException {};
 
 
 NSFX_CLOSE_NAMESPACE
