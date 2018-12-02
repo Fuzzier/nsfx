@@ -138,15 +138,17 @@ NSFX_TEST_SUITE(Event)
                 cv1[i] = nsfx::Ptr<Ev1>(test)->Connect(sv1);
             }
 
-            for (size_t i = 0; i < 5; ++i)
-            {
-                nsfx::Ptr<Ev1>(test)->Disconnect(cv1[i*2]);
-            }
+            nsfx::Ptr<Ev1>(test)->Disconnect(cv1[8]);
+            nsfx::Ptr<Ev1>(test)->Disconnect(cv1[7]);
+            nsfx::Ptr<Ev1>(test)->Disconnect(cv1[9]);
+            nsfx::Ptr<Ev1>(test)->Disconnect(cv1[0]);
+            nsfx::Ptr<Ev1>(test)->Disconnect(cv1[1]);
 
-            for (size_t i = 0; i < 5; ++i)
-            {
-                cv1[i*2] = nsfx::Ptr<Ev1>(test)->Connect(sv1);
-            }
+            cv1[0] = nsfx::Ptr<Ev1>(test)->Connect(sv1);
+            cv1[1] = nsfx::Ptr<Ev1>(test)->Connect(sv1);
+            cv1[7] = nsfx::Ptr<Ev1>(test)->Connect(sv1);
+            cv1[8] = nsfx::Ptr<Ev1>(test)->Connect(sv1);
+            cv1[9] = nsfx::Ptr<Ev1>(test)->Connect(sv1);
 
             for (size_t i = 0; i < 10; ++i)
             {

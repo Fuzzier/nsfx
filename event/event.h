@@ -110,7 +110,8 @@ class Event :/*{{{*/
 
 public:
     Event(void) :
-        numSinks_(0)
+        numSinks_(0),
+        last_(0)
     {}
 
     virtual ~Event(void) {}
@@ -143,6 +144,10 @@ public:
             {
                 --numSinks_;
                 sinks_[cookie] = nullptr;
+                while (last_ && !sinks_[last_-1])
+                {
+                    --last_;
+                }
             }
         }
     }
@@ -162,6 +167,10 @@ private:
                     sinks_[i] = std::move(sink);
                     ++numSinks_;
                     cookie = i + 1;
+                    if (last_ < cookie)
+                    {
+                        last_ = cookie;
+                    }
                     break;
                 }
             }
@@ -174,6 +183,7 @@ private:
                 sinks_.emplace_back(std::move(sink));
                 ++numSinks_;
                 cookie = numSinks_;
+                last_  = cookie;
             }
             catch (std::bad_alloc& )
             {
@@ -217,46 +227,59 @@ public:
     {
         BOOST_CONCEPT_ASSERT((EventSinkVisitorConcept<Visitor, IEventSinkType>));
 
-        for (auto it = sinks_.cbegin(); it != sinks_.cend(); ++it)
+        for (size_t i = 0; i < last_; ++i)
         {
-            if (*it)
+            if (sinks_[i])
             {
-                visitor((*it).Get());
+                visitor(sinks_[i].Get());
             }
         }
     }
 
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+    void Fire(void)
+    {
+        if (last_)
+        {
+            size_t i = 0;
+            while (i < last_)
+            {
+                if (sinks_[i])
+                {
+                    sinks_[i]->Fire();
+                }
+                ++i;
+            }
+        }
+    }
+
     /**
      * @brief Fire the event.
      *
+     * @param[in] args Must be copyable.
+     *
      * @remarks The arguments are perfectly forwarded for the <b>last</b> sink.
-     *          For other sinks, the arguments are forwarded as <i>l-values</i>.
+     *          For other sinks, the arguments are copied.
      */
     template<class... Args>
     void Fire(Args&&... args)
     {
-        for (auto it = sinks_.cbegin(); it != sinks_.cend(); ++it)
+        if (last_)
         {
-            if (*it)
+            size_t i = 0;
+            while (i < last_ - 1)
             {
-                (*it)->Fire(args...);
+                if (sinks_[i])
+                {
+                    sinks_[i]->Fire(args...);
+                }
+                ++i;
             }
+            sinks_[i]->Fire(std::forward<Args>(args)...);
         }
     }
 
 #else // defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-
-    void Fire(void)
-    {
-        for (auto it = sinks_.cbegin(); it != sinks_.cend(); ++it)
-        {
-            if (*it)
-            {
-                (*it)->Fire();
-            }
-        }
-    }
 
 # define BOOST_PP_ITERATION_PARAMS_1  (4, (1, NSFX_MAX_ARITY, <nsfx/event/event.h>, 0))
 
@@ -270,6 +293,7 @@ public:
 
 private:
     uint32_t numSinks_;
+    uint32_t last_; // The cookie of the last non-null sink.
     vector<Ptr<IEventSinkType>> sinks_;
 
 }; // class Event /*}}}*/
@@ -423,13 +447,20 @@ NSFX_CLOSE_NAMESPACE
 template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
 void Fire(BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, &&a))
 {
-    for (auto it = sinks_.cbegin(); it != sinks_.cend(); ++it)
+    if (last_)
     {
-        if (*it)
+        size_t i = 0;
+        while (i < last_)
         {
-            // (*it)->Fire(a0, a1, ...);
-            (*it)->Fire(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), a));
+            if (sinks_[i])
+            {
+                // sinks_[i]->Fire(a0, a1, ...);
+                sinks_[i]->Fire(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), a));
+            }
+            ++i;
         }
+        // sinks_[i]->Fire(std::forward<A0>(a0), std::forward<A1>(a1), ...);
+        sinks_[i]->Fire(BOOST_PP_ENUM(BOOST_PP_ITERATION(), NSFX_PP_FORWARD, ));
     }
 };
 
