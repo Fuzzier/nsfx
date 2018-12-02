@@ -26,57 +26,58 @@ NSFX_OPEN_NAMESPACE
 
 ////////////////////////////////////////////////////////////////////////////////
 // Types.
-#if !defined(NSFX_PACKET_USES_SOLID_BUFFER)
+#if !defined(NSFX_PACKET_USES_ZERO_COMPRESSED_BUFFER)
 /**
  * @ingroup Network
  * @brief The buffer of a packet.
  *
- * @remarks By default, this is \c ZcBuffer.
+ * @remarks By default, this is \c Buffer.
  *          <p>
- *          If \c NSFX_PACKET_USES_SOLID_BUFFER is defined, this is \c Buffer.
+ *          If \c NSFX_PACKET_USES_ZERO_COMPRESSED_BUFFER is defined, this is
+ *          \c Buffer.
  */
-typedef ZcBuffer  PacketBuffer;
+typedef Buffer  PacketBuffer;
 
 /**
  * @ingroup Network
  * @brief The read-only buffer of a packet.
  *
- * @remarks By default, this is \c ConstZcBuffer.
+ * @remarks By default, this is \c ConstBuffer.
  *          <p>
- *          If \c NSFX_PACKET_USES_SOLID_BUFFER is defined, this is
+ *          If \c NSFX_PACKET_USES_ZERO_COMPRESSED_BUFFER is defined, this is
  *          \c ConstBuffer.
  */
-typedef ConstZcBuffer  ConstPacketBuffer;
+typedef ConstBuffer  ConstPacketBuffer;
 
 /**
  * @ingroup Network
  * @brief The iterator of a packet buffer.
  *
- * @remarks By default, this is \c ZcBufferIterator.
+ * @remarks By default, this is \c BufferIterator.
  *          <p>
- *          If \c NSFX_PACKET_USES_SOLID_BUFFER is defined, this is
+ *          If \c NSFX_PACKET_USES_ZERO_COMPRESSED_BUFFER is defined, this is
  *          \c BufferIterator.
  */
-typedef ZcBufferIterator  PacketBufferIterator;
+typedef BufferIterator  PacketBufferIterator;
 
 /**
  * @ingroup Network
  * @brief The read-only iterator of a packet buffer.
  *
- * @remarks By default, this is \c ConstZcBufferIterator.
+ * @remarks By default, this is \c ConstBufferIterator.
  *          <p>
- *          If \c NSFX_PACKET_USES_SOLID_BUFFER is defined, this is
+ *          If \c NSFX_PACKET_USES_ZERO_COMPRESSED_BUFFER is defined, this is
  *          \c ConstBufferIterator.
  */
-typedef ConstZcBufferIterator  ConstPacketBufferIterator;
+typedef ConstBufferIterator  ConstPacketBufferIterator;
 
-#else // defined(NSFX_PACKET_USES_SOLID_BUFFER)
-typedef Buffer                 PacketBuffer;
-typedef ConstBuffer            ConstPacketBuffer;
-typedef BufferIterator         PacketBufferIterator;
-typedef ConstBufferIterator    ConstPacketBufferIterator;
+#else // defined(NSFX_PACKET_USES_ZERO_COMPRESSED_BUFFER)
+typedef ZcBuffer                 PacketBuffer;
+typedef ConstZcBuffer            ConstPacketBuffer;
+typedef ZcBufferIterator         PacketBufferIterator;
+typedef ConstZcBufferIterator    ConstPacketBufferIterator;
 
-#endif // !defined(NSFX_PACKET_USES_SOLID_BUFFER)
+#endif // !defined(NSFX_PACKET_USES_ZERO_COMPRESSED_BUFFER)
 
 
 NSFX_CLOSE_NAMESPACE
