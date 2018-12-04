@@ -236,7 +236,6 @@ public:
         }
     }
 
-#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
     void Fire(void)
     {
         if (last_)
@@ -253,6 +252,7 @@ public:
         }
     }
 
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
     /**
      * @brief Fire the event.
      *
