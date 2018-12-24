@@ -450,7 +450,7 @@ void Fire(BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), A, &&a))
     if (last_)
     {
         size_t i = 0;
-        while (i < last_)
+        while (i < last_ - 1)
         {
             if (sinks_[i])
             {
