@@ -30,12 +30,13 @@
 
 /**
  * @page Component Component-based programming
+ *
  * A component is an object that provides and uses various interfaces.
  * The behavior of a component is defined by the interfaces it provides and uses.
  *
- * ===============================
+ * ==================================
  * Component, object and interface
- * ===============================
+ * ==================================
  *
  *   An interface always represents the object that implements it.
  *   A component can be an aggregation of objects.
@@ -44,6 +45,7 @@
  *   `is-a' means the component is the object that implements the interface.
  *   `has-a' means the component aggregates an object that implements the
  *   interface.
+ *
  *   @code
  *   interface
  *      | implemented by
@@ -71,11 +73,12 @@
  * Interface navigability
  * ======================
  *
- * ## 1. How to obtain different interfaces on a component?
+ * ## How to obtain different interfaces on a component?
  *
- * ### 1.1 Use concrete class and downcast
+ * ### Use concrete class and downcast
  *     The primary form of interface implementation is to create a concrete
- *     class that inherits from pure abstract bases, and implements the methods.
+ *     class that inherits from pure abstract bases, and implements the pure
+ *     virtual functions.
  *     Such classes can be large and heavy, since a class inherits from all
  *     interfaces it exposes, and presents to users a huge table of virtual
  *     functions, along with a set of non-virtual functions.
@@ -84,26 +87,26 @@
  *     are just coupled tightly together within a class.
  *
  *     Another key problem is that this approach lacks <b>navigability</b>.
- *     If one holds a pointer to the object, one can safely upcast it to one of
- *     the interfaces it derives from.
+ *     If one holds a pointer to the object, one can safely <i>upcast</i> it to
+ *     one of the interfaces it derives from.
  *     However, if one holds a pointer to an interface on the object, one have
- *     to downcast the interface to the object, then downcast to obtain the
- *     other interfaces on that object.
+ *     to <i>downcast</i> the interface to the object, then downcast to obtain
+ *     the other interfaces on that object.
  *
- *     The key is that interfaces are generally not aware of each other.
- *     i.e., they do not know whether they are on the same component or not.
+ *     The key is that interfaces are generally independent of each other.
+ *     i.e., they do not know whether they are exposed by the same component.
  *     The users generally have to know the concrete type of the object and use
  *     member functions or type casts to obtain the interfaces.
  *     When other objects want to use the object, they either have to know its
- *     concrete type, or the provider have to extract and pass all necessary
- *     interfaces.
+ *     concrete type in order to obtain its interfaces, or the users have to
+ *     extract and provide all necessary interfaces of the object.
  *
  *     It is very inconvenient and error prone.
  *     It emphasizes upon inheritance, and discourages encapsulation.
  *     Microsoft Component Model (COM) offers practical methods to solve these
  *     problems.
  *
- * ### 1.2 Hide objects behind a navigator interface
+ * ### Hide objects behind a navigator interface
  *     A dictated navigator interface \c IObject is defined to query interfaces
  *     on a component.
  *     The method \c IObject::QueryInterface() is defined for this purpose.
@@ -114,169 +117,15 @@
  *
  *     Object factories can be used to obtain the \c IObject interface on
  *     components, which completely hides their implementations.
- *     The users can query the required interfaces in a safe way, as an
- *     exception is thrown when an interface is not supported.
+ *     The users can query the required interfaces in a safe way, as exception
+ *     can be thrown when an interface is not supported.
  *
- * ## 2. Make all interfaces navigable
+ * ## Make all interfaces navigable
  *    All interfaces inherit from the \c IObject interface, and provide
  *    navigability for the component.
  *
  *    Virtual inheritance has to be used, since all interfaces extends the
  *    \c IObject interface.
- *
- * ==========================
- * Interface identifier (IID)
- * ==========================
- *
- * An interface is \c IObject or an interface that extends \c IObject.
- * An interface <b>must</b> have a UID (unique identifier) that identifies it.
- * The UID that identifies an interface is the IID (interface identifier) of
- * the interface.
- *
- *   An IID is a human-readable string literal that describes the hierarchical
- *   namespaces where the interface is defined, and the name of the interface.
- *   The general format of UID is <code>"<organization>.<module>.<name>"</code>.
- *   e.g., <code>"edu.uestc.nsfx.IObject"</code> is the IID of \c IObject.
- *
- * ## Define an interface identifier
- *    The library provides several tools to associate an interface with a UID.
- *    In general, the class template <code>NsfxClassTraits<></code> is
- *    specialized for the interface, which provides a static member function
- *    that returns the IID of the interface.
- *
- * ## Obtain an interface identifier
- *    Once associated, users no longer have to write the whole IID.
- *    Instead, users can use <code>uid_of<IXxx>()</code> to obtain the IID of
- *    the interface \c IXxx.
- *
- * ## Query an interface via IID
- *   The IID is passed to \c IObject::QueryInterface() to obtain the interface.
- *
- * ===============
- * Component class
- * ===============
- *
- * A component class is the C++ class that implements the \c IObject interface.
- *
- * ## Gray-box reuse
- *    If the type (C++ class) of the component class is visible, users can
- *    reuse the class as a gray-box.
- *    i.e., users can access not only the interfaces provided by the component
- *    class, but also all public members of it.
- *
- *    A gray-box reusable component class <b>can</b> have non-default
- *    constructors.
- *    Gray-box reuse is used to implement a component.
- *    Many components provided by the library are gray-box reusable.
- *
- * ## Black-box reuse
- *    In black-box reuse scheme, users do not know the type of the component
- *    class.
- *    The component class is presented to users in binary form.
- *    Users can create components of the class, and reuse the component via
- *    its interfaces.
- *
- *    A black-box reusable component class <b>must</b> have a default
- *    constructor.
- *
- * ### General requirement
- *     To allow users to access a component class, the writer of a component
- *     class must give the class an identifier, and register a class factory to
- *     a name service (a class registry) provided by the library.
- *
- *     Users query the name service for the class factory, and create components
- *     via the class factory.
- *
- * ### Class identifier (CID)
- *     A component class <b>should</b> have a UID that identifies it.
- *     The UID that identifies an component class is the CID (class identifier)
- *     of the component class.
- *     A CID is a string that has a similar format as an IID.
- *
- * ### Class factory
- *     The library adopts abstract class factory pattern.
- *     The \c IClassFactory interface offers a method \c IClassFactory::Create()
- *     that allows users to create a component via a CID.
- *     If the component is aggregated, a non-null controller pointer must be
- *     also specified.
- *
- *     The library provides a class template <code>ClassFactory<C></code> that
- *     implements a default class factory.
- *     The default class factory uses the default constructor of the component
- *     class to create a component.
- *
- * ### Class registry
- *     The writer of a component class <b>must</b> register a class factory
- *     to the class registry to enable black-box reuse.
- *
- *     The library provides \c IClassRegistry interface, and implements the
- *     interface by \c ClassRegistry class.
- *     The class registry is a singleton.
- *
- *     The the writer of a component class use \c NSFX_REGISTER_CLASS() macro
- *     to register the component class with a CID.
- *
- *     Users call <code>CreateObject<IXxx>()</code> function template to create
- *     a component.
- *
- * ======================
- * Component organization
- * ======================
- *
- * The components are organized into a hierarchical structure.
- *
- * ## Root component
- *    Each hierarchy has a root component.
- *    There can be multiple hierarchies in a program.
- *
- * ## Naming a component
- *    A component <b>should</b> have a name.
- *
- * ## Access a component
- *    A component can be accessed by its hierarchical full path.
- *
- * ==========
- * Reflection
- * ==========
- *
- * A component can expose meta-data about itself.
- *
- * ## Meta-data of a component
- *    * CID of the component class
- *    * IID of the provided interfaces
- *
- *    The library do not provide tools to invoke the methods of interfaces in a
- *    type-neutral way.
- *    The reasons are as follows.
- *    * Interfaces are always visible to users.
- *    * Users can always obtain the \c IObject interface of a component.
- *    * Users can always obtain other interfaces via the \c IObject interface.
- *
- *    Type-neutral invocation is mainly aimed to enable cross-language
- *    inter-operability (scripting language, GUI, etc.).
- *
- * ## Providing meta-data
- *    The library provides \c IObjectMetaData interface.
- *
- * ================
- * Interoperability
- * ================
- *
- * Interoperability is a allow users to invoke the methods of interfaces on
- * a component in a type-neutral way.
- *
- * ## Internal to C++
- *    It is fairly easy to invoke a method of an interface on a component in C++.
- *    * Interfaces (pure abstract classes) are always visible to users.
- *    * Users can always obtain the \c IObject interface of a component.
- *    * Users can always obtain other interfaces via the \c IObject interface.
- *
- * ## Outside of C++
- *    Type-neutral invocability is mainly aimed to enable cross-language
- *    inter-operability (scripting language, GUI, etc.).
- *
- *    A separate interface can be provided.
- *    e.g., \c IDispatch.
  *
  * ===================
  * Lifetime management
@@ -285,20 +134,19 @@
  *   Only deterministic methods are considered.
  *   A garbage collector is not considered right now.
  *
- *   Please note that, if an object is created by the library, it must be freed
- *   by means provided by the library.
- *   e.g., one cannot create an object via \c CreateObject() function, and free
- *   the object via \c delete.
+ *   Please note that, if an object is created by the library, it must be
+ *   deallocated by the means provided by the library.
+ *   e.g., one cannot create an object via \c CreateObject() function, and
+ *   deallocate the object via \c delete.
  *
- * ## 2.1 Implicit transfer of responsibility
+ * ## Implicit transfer of responsibility
  *    Transfer the responsibility of deallocating an object when a raw-pointer
  *    is transferred.
  *
  *    This approach must <b>never</b> be used.
- *    Use \c std::unique_ptr, \c std::shared_ptr or \c boost::intrusive_ptr
- *    to enforce the transfer of responsibility.
+ *    Use \c std::unique_ptr to enforce the transfer of responsibility.
  *
- * ## 2.2 Creator-based management
+ * ## Creator-based management
  *    When an object is created, the creator is responsible to deallocate the
  *    object.
  *    The creator must not be deallocated until the created object is no longer
@@ -314,13 +162,14 @@
  *    Therefore, hierarchical organization is commonly used in this management
  *    scheme.
  *
- * ### 2.3 Reference counting
+ * ### Reference counting
  *     Use a reference count to manage object lifetime, either intrusively or
  *     non-intrusively.
  *     It eliminates the need to transfer the responsibility of deallocation,
  *     and formulates a distributed lifetime management scheme.
  *     Users can use \c std::shared_ptr and \c std::weak_ptr for non-intrusive
- *     reference counting.
+ *     reference counting, or \c boost::intrusive_ptr for intrusive reference
+ *     counting.
  *
  *     The use of non-intrusive reference count provided by a smart pointer also
  *     has a problem.
@@ -349,7 +198,7 @@
  *     It can be solved by actively/explicitly notify every client of a component
  *     to release the reference count they hold.
  *
- * ### 2.4. Transfer of reference counts across functions.
+ * ### Transfer of reference counts across functions.
  *     When a pointer to an object is passed into a function call, the caller
  *     must guarantee that the object remains valid until the function returns.
  *     Usually, the caller increments the reference count by one before calling
@@ -392,53 +241,249 @@
  *     container, a <b>free pointer</b> to the internal object can be returned
  *     as a non-void raw pointer.
  *     It is user's responsibility to ensure that the container remains valid.
- *     Usually, the user holds a smart pointer to the container to keep it valid.
  *
- * ## 3. Conclusion.
+ * ## Conclusion.
  *    Performance and flexibility are conflicting aspects.
  *    To improve performance, more responsibilities are shifted to the users.
  *    And the code becomes more error-prone, since the users will almost always
  *    forget certain oral rules sometime somewhere.
  *
  *    The library is not performance hunger.
- *    Try not to shift burdens to the users.
+ *    Try not to shift burdens to users.
  *    Intrusive reference counting is welcome.
  *    Objects are hidden behind interfaces exposed by components.
+ *
+ * ==========================
+ * Interface identifier (IID)
+ * ==========================
+ *
+ *   An interface is \c IObject or an interface that extends \c IObject.
+ *   An interface <b>must</b> have a UID (unique identifier).
+ *   The UID of an interface is also called an IID (interface identifier).
+ *
+ *   An IID is a human-readable string literal that describes the hierarchical
+ *   namespaces where the interface is defined, as well as the name of the
+ *   interface.
+ *   The general format of UID is <code>"<organization>.<module>.<name>"</code>.
+ *   e.g., <code>"edu.uestc.nsfx.IObject"</code> is the IID of \c IObject.
+ *
+ * ## Define an interface identifier
+ *    The library provides several tools to associate an interface with a UID.
+ *    In general, the class template <code>NsfxClassTraits<></code> is
+ *    specialized for an interface, which provides a static member function
+ *    that returns the IID of the interface.
+ *
+ * ## Obtain an interface identifier
+ *    Once associated, users no longer have to write the whole IID.
+ *    Instead, users can use <code>uid_of<IXxx>()</code> to obtain the IID of
+ *    the interface \c IXxx.
+ *
+ * ## Query an interface via IID
+ *    The IID is passed to \c IObject::QueryInterface() to obtain the interface.
+ *
+ * ===============
+ * Component class
+ * ===============
+ *   A component class is the C++ class that implements the \c IObject interface.
+ *
+ * ## Gray-box reuse
+ *    If the type (C++ class) of the component class is visible, users can
+ *    reuse the class as a gray-box.
+ *    i.e., users can access not only the interfaces provided by the component
+ *    class, but also all public members of it.
+ *
+ *    A gray-box reusable component class <b>can</b> have non-default
+ *    constructors.
+ *    Gray-box reuse is used to implement a component.
+ *    Many components provided by the library are gray-box reusable.
+ *
+ * ## Black-box reuse
+ *    In black-box reuse scheme, users do not know the type of the component
+ *    class.
+ *    Instead, the \c IObject interface is given to users, and users can query
+ *    required interfaces on the component.
+ *    The component class is presented to users in binary form.
+ *
+ *    A black-box reusable component class <b>must</b> have a default
+ *    constructor.
+ *
+ * ## Class identifier (CID)
+ *    Since users have no access to the concrete type of a component, there
+ *    must be an alternative way for the users to identify the component class
+ *    and create component instances.
+ *
+ *    A black-box reusable component class <b>must</b> have a UID.
+ *    The UID that identifies an component class is also called a CID (class
+ *    identifier).
+ *    A CID is a string that has a similar format as an IID.
+ *
+ *    To allow users to create a component, the writer of a component class
+ *    must give the component class a CID.
+ *    The library provides a class registry.
+ *    The class factory is registered to the class registry, and the CID is
+ *    used as the index of the class factory.
+ *
+ *    Users use a CID to find the class factory, and create component instances
+ *    via the class factory.
+ *
+ * ## Class factory
+ *    The library adopts abstract class factory pattern.
+ *    The \c IClassFactory interface offers a method \c IClassFactory::Create()
+ *    that allows users to create a component instance via a CID.
+ *    If the component instance is to be aggregated, a non-null controller
+ *    pointer must also be provided.
+ *
+ *    The library provides a class template <code>ClassFactory<C></code> that
+ *    implements a default class factory.
+ *    The default class factory uses the default constructor of the component
+ *    class to create a component instance.
+ *    Therefore, a component instance created by a class factory is usually
+ *    <i>uninitialized</i>.
+ *
+ * ## Class registry
+ *    The writer of a component class <b>must</b> register a class factory
+ *    to the class registry to enable black-box reuse.
+ *
+ *    The library provides \c IClassRegistry interface, and implements the
+ *    interface by \c ClassRegistry class.
+ *    The class registry is a singleton.
+ *
+ *    The the writer of a component class use \c NSFX_REGISTER_CLASS() macro
+ *    to register the component class with a CID.
+ *
+ *    Users call <code>CreateObject<IXxx>()</code> function template to create
+ *    a component instance, and obtain a pointer to \c IXxx interface of the
+ *    component.
+ *
+ * ==============
+ * Initialization
+ * ==============
+ *
+ *   When a component is created, it is usually uninitialized.
+ *   For a component to initialize, it must acquire all required resources.
+ *   For example, the required interfaces have to be provided to the component,
+ *   and the configuration parameters have to be assigned to the component.
+ *
+ *   When an uninitialized component is used, it <b>shall</b> throw
+ *   \c Uninitialized exception.
+ *
+ *   There are two initialization methods.
+ *
+ * ## Explicit initialization
+ *    A component exposes \c IInitializable interface.
+ *    The interface has a single method \c Initialize().
+ *    When the required resources have been assigned to the component, users
+ *    call \c IInitializable::Initialize() to initialize the component.
+ *
+ *    If there are insufficient resources, or there are conflicting data, the
+ *    component <b>shall</b> throw \c CannotInitialize exception.
+ *
+ * ## Lazy initialization
+ *    A component does not expose \c IInitializable interface.
+ *    Instead, when the required resources are assigned, the component checks
+ *    whether it has acquired all resources.
+ *    If so, the component performs initialization automatically.
  *
  * ======
  * Wiring
  * ======
  *
- *   TinyOS provides practical methods to wire components together.
+ * The behavior of a component is defined by the interfaces it provides and uses.
+ * A component that provides interfaces is a <i>provider</i> or <i>server</i>.
+ * A component that uses interfaces is a <i>user</i> or <i>client</i>.
+ * A client <i>uses</i> interfaces on its providers.
+ * A provider <i>provides</i> interfaces to the clients.
+ * Such action is called <i>wiring</i>.
+ * Therefore, wiring is part of initialization.
  *
- *   A component usually depends upon other components to work.
- *   A component that provides interfaces is a <b>provider</b> or <b>server</b>.
- *   A component that uses/requires interfaces is a <b>user</b> or <b>client</b>.
- *   A client <b>uses</b> interfaces on its providers.
- *   A provider <b>provides</b> interfaces for the clients.
- *   The action to associate a client with its provides is called <b>wiring</b>.
+ * A component class can be registered via \c NSFX_REGISTER_CLASS().
+ * An uninitialized component of the class can be created via \c CreateObject().
+ * The component cannot initialize itself, since it does not and cannot know
+ * which components are providing interfaces to it.
+ * The component that does wiring is called a <i>composer</i>.
  *
- *   A component class can be registered via \c NSFX_REGISTER_CLASS().
- *   An uninitialized component of the class can be created via \c CreateObject().
- *   The component cannot initialize itself, since it does not and can not know
- *   what components are wired to it.
- *   The component that does wiring is called a <b>weaver</b>.
+ * ## Wiring in TinyOS
+ *    TinyOS provides a method to wire components together.
+ *    In TinyOS, wiring is function linking.
+ *    That is, linking a called function to its calling sites.
  *
- *   To initialize the object, the class must provide means for wiring.
- *   However, such a component can only be manipulated via its interfaces.
- *   i.e., it must provide interfaces that allow the weaver component to pass
- *   in the required interfaces on the providers.
+ *    TinyOS provides an intuitive way of thinking.
+ *    A component is viewed as a chip (integrated circuit) with many pins (legs).
+ *    A wire is a metal line that connects the pins of chips.
  *
- * ## The <i>'User'</i> interfaces.
- *    Each interface should define an associated <i>`User'</i> interface.
- *    e.g., for an interface \c IClock, an associated interface \c IClockUser
- *    should be defined, and it has a single method \c Use(Ptr<IClock>) that
- *    allows a weaver component to provide a clock to its user.
- *    If a component uses a clock, it should expose the interface to acquire
+ *    @code
+ *     --------   wire   --------
+ *    |        |--------|        |
+ *    | chip 1 |        | chip 2 |
+ *    |        |---+----|        |
+ *     --------    |     --------
+ *                 |
+ *             --------
+ *            |        |
+ *            | chip 3 |
+ *            |        |
+ *             --------
+ *    @endcode
+ *
+ *    Although it does not fully reflect the component programming paradigm in
+ *    C++, it provides a good direction.
+ *    To support bi-directional communications, TinyOS introduces an interface
+ *    model that contains both commands and events.
+ *
+ *    In TinyOS, for performance reasons, wiring is performed at compile time.
+ *    It does no support runtime wiring.
+ *
+ * ## Models of wiring
+ *    Runtime wiring can be more complicated due to constrants.
+ *    There are two kinds of design models.
+ *
+ * ### Model 1: component-aware wiring
+ *     When an interface is provided to a component (a client), the client
+ *     assumes that a component (a server) is provided.
+ *     Thus, the client can query any interface provided by the server.
+ *
+ * ### Model 2: interface-only wiring
+ *     The channel does not make any assumption about the component that
+ *     provides the used interface.
+ *     Thus, it must not query other interfaces from it.
+ *     This is the method used in TinyOS.
+ *
+ * ## The convention of wiring
+ *    If a component uses an \c IObject interface, it is a component-aware
+ *    wiring.
+ *    If a component uses a specific interface, it is an interface-only wiring.
+ *
+ *    Please note that, component-aware wiring can sometimes be mimiced by
+ *    providing a large interface that aggregates some/all interfaces of the
+ *    component.
+ *    It is not recommended to do so, as an interface shall focus upon a single
+ *    task to improve cohesion, while making a large interface that aggregates
+ *    several independent interfaces together is dull.
+ *
+ * ## The <i>'User'</i> interfaces
+ *    To initialize the object, the class must provide means for wiring.
+ *    However, a component can only be manipulated via its interfaces.
+ *    i.e., it must provide interfaces that allow the composer to provide the
+ *    required interfaces for the client.
+ *
+ *    For each interface, an associated <i>`User'</i> interface can be defined.
+ *    For example, for an interface \c IClock, an associated interface
+ *    \c IClockUser can be defined.
+ *    It has a single method \c Use(Ptr<IClock>) that allows a composer to
+ *    provide a clock to its user.
+ *    If a component requires a clock, it shall expose the interface to acquire
  *    a clock.
  *
+ *    When a component exposes a \c IXxxUser interface, it <i>requires</i> an
+ *    \c IXxx interface to behave correctly.
+ *    That is, it cannot perform its task before the interface is provided.
+ *    It has a strong dependency upon the required interface.
+ *
+ *    This is a different relationship between an event source and event sinks.
+ *    An event does not depend upon event sinks.
+ *
  *    A component can expose a combination of <i>`User'</i> interfaces.
- *    A wiring component is responsible to query the interfaces that are used by
+ *    The composer is responsible to query the interfaces that are used by
  *    the components being wired.
  *
  *    @code
@@ -448,16 +493,19 @@
  *       IXxx --- provided to ---> IXxxUser
  *                     A
  *                     |
- *              wiring component
+ *             composer component
  *    @endcode
  *
  * =====
  * Event
  * =====
  *
+ * The event model specifies how callbacks are used.
+ *
  * ## All-in-one event.
- *    The practice of providing an all-in-one event sink interface becomes quite
+ *    The practice of providing an all-in-one event sink interface can be quite
  *    frustrating.
+ *
  *    @code
  *    IXxxAllInOneEventSink
  *       | defines
@@ -468,15 +516,15 @@
  *          event sink component
  *    @endcode
  *
- *    In that way, users are expected to implement all callback methods on the
- *    interface, thus have to listen to all events, even if not all of the events
- *    are interested.
+ *    In that way, an event sinks are expected to implement all callback methods
+ *    of the event.
+ *    Thus, an event sink has to listen to all events, even if some of the
+ *    events are not interested.
  *
  * ## Many-to-one event.
  *    A workaround is to define an event sink interface with a single callback
- *    method, along with a set of bit flags that identify the events.
- *    Users can connect to interested events by giving the event source a bit
- *    mask, and the callback carries a bit flag that identifies the event.
+ *    method, along with a set of data that specify the properties of the event.
+ *
  *    @code
  *    IXxxManyToOneEventSink
  *       | defines
@@ -490,16 +538,17 @@
  *    This approach is not elegant, since users have to use 'if-else' or
  *    'switch-case' to filter and catch the events.
  *    Event processing is not in a one-to-one way, but in a many-to-one way.
- *    i.e., the callback is a centralized hot spot of conditional branches.
+ *    i.e., the callback is a centralized hotspot of conditional branches.
  *
  *    Another problem is that, the designers have to unify the arguments for
- *    different events.
+ *    different kind of events.
  *
  * ## One-to-one event.
- *    To maximize flexibility, the granularity of event sink interfaces must be
- *    minimized.
+ *    To maximize flexibility, the granularity of event sink interfaces shall
+ *    be minimized.
  *    i.e., each event sink interface exposes only one event, and contains only
  *    one callback method.
+ *
  *    @code
  *    IXxxEventSink
  *       | defines
@@ -511,8 +560,8 @@
  *    @endcode
  *
  *    This way, users can connect to any combination of events as they want.
- *    It consumes more memory, but provides a cleaner way to connect and process
- *    events.
+ *    It consumes more memory, but provides a cleaner way to connect to and
+ *    process events.
  *
  * ### Event and sinks.
  *     The responsibility of an event sink interface is to provide a virtual
@@ -524,15 +573,12 @@
  *     to the event source.
  *
  *     An event interface provides two methods, <code>Connect()</code> and
- *     <code>Disconnect</code>.
- *     An event source component exposes a combination of event interfaces.
- *     The event sink components query the event interfaces, and connect their
- *     event sinks.
+ *     <code>Disconnect()</code>.
+ *     An event source component exposes multiple event interfaces.
+ *     The event sink components exposes event sink interfaces.
+ *     The connection between an event source and an event sink is performed by
+ *     a composer component.
  *
- *     An event sink component exposes a <i>'User'</i> interface to use the
- *     event source component.
- *     The wiring component provides the event source to the event sink.
- *     It is the event sink's responsibility to perform the connection.
  *     @code
  *     IXxxEventSink                IXxxEvent
  *        | defines                    | defines
@@ -541,183 +587,285 @@
  *           | implemented by             | exposed by
  *           V                            V
  *           event sink component         event source component
- *           (user) ---- connects to ---> (provider)
+ *                  |                     A
+ *                  |                     |
+ *                  ---- connected to -----
+ *                            A
+ *                            |
+ *                    composer component
  *     @endcode
  *
- * ### Expose <i>`User'</i>, instead of <i>`Sink'</i>.
- *     A component shall not expose a <i>`Sink'</i> interface directly.
- *     Instead, it shall expose a <i>`User'</i> interface.
- *     When an interface is obtained from the <i>`User'</i> interface, it can
- *     query the <i>'Event'</i> interface of interest, and offer an event sink
- *     <i>internally</i>, and connect the event sink to the interface.
- *     A wiring component does not take care of the connections of sinks.
+ * ==========
+ * Connection
+ * ==========
+ *
+ * A component depends upon the required interfaces.
+ * The coupling between a component and its required interfaces is tight.
+ * Wiring is the realization of this kind of dependency.
+ *
+ * Besides, the event model specifies a loosely coupled relationship between
+ * an event source and the event sinks.
+ * An event source shall work without event sinks, so even if no one processes
+ * the signalled event, the event source shall not go wrong.
+ * Also, an event sink shall work without event sources, so even if no events
+ * are signalled, the event sink shall not go wrong.
+ *
+ * However, the connection between two components can involve more than one
+ * interface, and the event model is usually not enough to deal with this kind
+ * of connection.
+ *
+ * For example, multiple nodes can connect to a channel.
+ * The channel must know the location of the nodes in order to calculate the
+ * proprogation delay and pathloss.
+ * Each transmitter must offer an event interface that transmits signals to
+ * the channel.
+ * Each receiver must also offer an event sink interface to receive signals.
+ * Therefore, the connection involves at least three interfaces that must be
+ * provided as a bundle that represent a single node.
+ *
+ * Thus, the channel can provide a connection interface like this:
+ * @code
+ * class IChannelConnection : virtual public IObject
+ * {
+ *     virtual ~IChannelConnection(void) {}
+ *     cookie_t Connect(Ptr<ILocatable>,
+ *                      Ptr<ISignalTxEvent>,
+ *                      Ptr<ISignalRxEventSink>) = 0;
+ *     void Disconnect(cookie_t cookie) = 0;
+ * };
+ * @endcode
+ *
+ * The nodes and channel are loosely coupled, as a node can operate without
+ * connecting to a channel, and a channel can operate with no nodes connecting
+ * to it.
+ *
+ * Connection is a more general kind of loosely coupled relationship among
+ * components, compared to the event model.
+ * Unlike the event model, there is no <i>Sink</i> interface for a connection.
+ * @code
+ * interfaces                   IXxxConnection
+ *       | implemented by       | defines
+ *       |                      V
+ *       |                      Connect(interfaces), Disconnect()
+ *       |                            | exposed by
+ *       V                            V
+ *       connecting component         connectable component
+ *              |                     A
+ *              |                     |
+ *              ---- connected to -----
+ *                        A
+ *                        |
+ *                composer component
+ * @endcode
+ *
+ * A composer is not only responsible for initializing components (including
+ * wiring), but also connecting components together.
  *
  * =============
  * Disposability
  * =============
  *
- * Disposability means that one can dynamically plug a component into and
- * unplug the component from the system of inter-connected components.
+ * Disposability means that a component can be dynamically unplugged from
+ * a system of inter-wired and inter-connected components at runtime.
  *
  * ## Key problem
  *    The key problem of disposability is how to prevent functionally dependent
  *    components from malfunctioning when a component is disposed.
  *    A functionally dependent component is a client component that <b>requires</b>
- *    the interfaces of the disposed provider component.
- *    <p>
- *    e.g., a MAC layer component requires a clock and a scheduler to work.
- *    However, without a physical layer or a network layer, it can run without
- *    fatal error, even if it cannot receive nor send any packet.
- *    Although, it can be considered as a configuration error in some situations.
- *    Whether a component is required is determined by the requirement of the
- *    system.
- *    <p>
+ *    the interfaces of provided by the disposed component.
+ *    That is, the key problem is how to <b>de-wiring</b> of components.
+ *
  *    The whole matter of error avoidance, detection and solution usually
  *    extends out of the scope the library itself.
- *    However, the library must provide means to support disposability to
+ *    However, the library must provide guidelines to support disposability to
  *    prevent fatal runtime errors, while the prevention of other kinds of
  *    errors are out of the scope of the library.
  *
  * ## Disposal strategy
- *    The disposing process often involves a sub-system of components that have
- *    functional dependencies.
- *    The key difficulty of disposability is that a single component within the
- *    sub-system often lacks a sufficiently large and far sight to conduct the
- *    disposing process.
- *    The reasons is that a component is to be reused, but it is hard foretell
- *    the requirements of the system where the component is to be reused, and
- *    the component does not know how it is wired with other components.
- *    <p>
- *    To allow disposal in a distributed way is not an easy task.
- *    e.g., when a component is disposed, it may notify all of its client
- *    components, and these components may dispose successively.
+ *    The disposing process involves disconnection and de-wiring of components.
+ *
+ *    Since a de-wired component does not acquire enough resources to work,
+ *    it cannot fulfill any commands or react to any events issued by the
+ *    connected peers.
+ *    Therefore, disconnection <b>shall</b> be performed before de-wiring.
+ *
+ *    The key difficulty of disposability is that a component within the system
+ *    often lacks the information about which components are connecting to it or
+ *    using it.
+ *    Thus, to perform disposal in a purely distributed way is not an easy task.
+ *    For example, when a component is disposed, it may notify all of its client
+ *    components, and these components may react by disposing themselves
+ *    successively.
  *    However, if the programmer just want to replace the disposed component
- *    with another component, this becomes an over-reaction.
+ *    with another component, it becomes an over-reaction.
+ *
  *    Therefore, the disposal of components often requires a dictated strategy
- *    that is executed by a dictated component (usually the weaver component).
- *    A component that supports disposal shall be conservative that it only
- *    releases the resources held by itself.
- *    <p>
+ *    that is executed by a dictated component, which is usually the composer
+ *    component or some other components that has enough information to do so.
+ *    A component that supports disposing itself shall be <i>conservative</i>
+ *    that it only releases the resources held by itself.
+ *
  *    A disposal strategy often has spatial, temporal and procedural aspects.
  *    The spatial aspect determines the boundary of disposal.
  *    The boundary of disposal is the set of components involved in a disposal.
- *    The temporal aspect determines the time span of disposal, permanent or
- *    temporary.
- *    e.g., a component is permanently removed from the system; or the system
- *    is temporarily missing a component, and the disposed component is
- *    substituted by another component right away, so the functionally dependent
- *    components are working as usual.
+ *    It identifies which components are to be disconnected or de-wired.
+ *    The temporal aspect determines the time span of disposal.
+ *    Usually, during disposal, the system is temporarily at an unworking state,
+ *    and does not perform any other tasks.
  *    The procedural aspect involves the actions performed before, during and
  *    after the disposal.
- *    e.g., the reactions performed by a client component when a functionally
- *    dependent component disconnects from it.
- *    Usually, they shall do nothing in the reaction.
  *
  * ### Batch disposal
  *     The disposal of components can be performed in batch, i.e., a sub-system
  *     of components is disposed.
- *     Usually, the sub-system is a dependency closure, i.e., no other
- *     components are functionally dependent on the sub-system of components.
- *     The client components within the sub-system do not have to perform
- *     special actions upon the disconnection of the provider component, since
- *     the client components will be disposed along with it.
- *     <p>
- *     For a sub-system of components, if all other components only listen to
- *     the events of the component, the sub-system can be considered as a
- *     dependency closure.
- *     <p>
- *     e.g., a node is disposed from a network.
+ *     Usually, the sub-system is a <i>dependency closure</i>, i.e., no other
+ *     components are functionally dependent upon the sub-system of components.
+ *     The sub-system is loosely coupled with other sub-systems via connection.
+ *
+ *     For example, when a node is to be removed from a network, first it is
+ *     disconnected from the channel, then the components within the node are
+ *     disposed and deallocated.
  *
  * ### Substitution
  *     If a provider component is disposed, and the client components still
- *     runs, then one should give the client components a substitution in
+ *     work, then one must provide the client components a substitution in
  *     replacement of the disposed component.
- *     The task <b>should</b> be performed by their parent component, who
- *     allocated and wired them.
+ *     The task may be performed by the composer component that had created and
+ *     wired them.
+ *
+ * ### Distributed disposal (not supported)
+ *     Purely distributed disposal is not easy, as it requires a component to
+ *     have full information about the connections and dependency that it
+ *     involves.
+ *     Thus, it is not formally supported by the library.
+ *
+ * #### Method 1: IDisposeEvent
+ *      One way is to let a component provide an \c IDisposeEvent interface,
+ *      and every client of the component listens to the event.
+ *      When a component is about to dispose, it fires the event to notify its
+ *      clients.
+ *      However, by the nature of event, its clients may or may not listen to
+ *      the event.
+ *      The requirement may be enforced by letting the component use an
+ *      \c IDisposeEventSink interface, and let each client provide the
+ *      interface.
+ *      This is also semantically ill, as the component uses undetermined times
+ *      of a single interface \c IDisposeEventSink.
+ *
+ * #### Method 2: Make every command interface an event sink
+ *      Another way is to make every command interface an event sink.
+ *      When a client component wants to use a command interface, it provides
+ *      an event interface.
+ *
+ *      This method seemingly decouples the provider and client more thoroughly.
+ *      When the provider is disposed, it disconnects the sink interface from
+ *      the event of its clients.
+ *      Each client is notified about the event of disconnection.
+ *      After the disconnection, when client fires the event, there is natually
+ *      no sink to perform the task, and there is not dangling pointer.
+ *
+ *      However, it does not make enough distinction between tight and loose
+ *      coupling that exist objectively among objects.
+ *      For example, to query a clock about the current time, a component have
+ *      to fire an event, and obtain the current time returned by the clock.
+ *      The problem is that, for an event, there can be no or mutliple clocks
+ *      that react to the event, which would be semantically ill.
+ *      The tight coupling that the component depends upon a single clock still
+ *      exists, which is <b>not</b> captured by a pure event-based model.
+ *
+ *      The library does not make every interface an event.
+ *      The seemingly loosely coupled design framework would create an illusion
+ *      that the "provides/requires" relationship can be eliminated from among
+ *      components.
+ *      On the contrary, such design framework actually fails to capture the
+ *      relationship.
+ *      the relationships among components are objective, and good programming
+ *      frameworks shall reveal and make them evident, instead of making them
+ *      vague.
  *
  * ## Rules of disposal
- *    A disposing component does:
- *    * Disconnect from all events.
- *    * Release all objects it holds.
- *    <p>
- *    The component does not:
- *    * Disconnect the event sinks.
+ *    A component exposes \c IDisposable interface, which has a single method
+ *    \c Dispose(), which <b>must</b> perform the following actions:
+ *    * Cancel all scheduled events.
+ *    * Disconnect from all events and connections.
+ *    * Release all interfaces it holds.
+ *      + Release all used interfaces.
+ *      + Release all connected event sinks and interfaces.
+ *    * Become uninitialized.
  *
- * ### Disconnect from all events
- *     The disposing component disconnects from all events.
- *     It also cancels all scheduled events.
+ *    There are several aspects to notify:
+ *    * A component <b>do not</b> release or deallocate itself during disposal.
+ *    * Disposal <b>shall</b> be performed by an independent (neither connected
+ *      nor wired) component.
  *
- * ### Release all objects
- *     The disposing component releases a reference count of each object, and
- *     reset the pointer to \c nullptr.
+ *    For example, when an event source invokes an event sink, the event sink
+ *    must be careful if it wants to dispose the event source, as the event
+ *    source may still be executing the loop to invoke event sinks.
  *
- * ### Disconnect no event sinks
- *     The disposing component does not disconnect any event sinks.
+ * =========================
+ * Component organization
+ * =========================
  *
- *     The correct approaches include:
- *     * Dispose the client components.
- *       The client components disconnect from and release the disposing
- *       component.
- *     * Provide the client components with another component in substitution
- *       of the disposing component.
- *       The client components disconnect from and release the disposing
- *       component, and connect to the substitution component.
+ *   The components are organized into a hierarchical structure.
  *
- * ### Notices
- *     The library does not make every interface an event.
+ * ## Root component
+ *    Each hierarchy has a root component.
+ *    There can be multiple hierarchies in a program.
  *
- *     In certain software systems, all interfaces are events.
- *     For exaple, OMNET++ uses such approach.
+ * ## Naming a component
+ *    A component <b>should</b> have a name.
  *
- *     A provider implements a command interface as an event sink, and all
- *     clients use the interface by sending events that signals the event sink
- *     to perform certain tasks.
+ * ## Access a component
+ *    A component can be accessed by its hierarchical full path.
  *
- *     The problem still exists that one cannot just dispose the provider by
- *     disconnect it from all events of its clients.
- *     Since the clients still hold pointers to the disposed provider, the
- *     pointer becomes a dangling pointer; or if the pointer holds a reference
- *     count of the provider, the provider is not deallocated, and there is
- *     memory/resource leak.
+ * =============
+ * Reflection
+ * =============
  *
- * ## Dangling pointer prevention
- *    When one wants to dispose a component, the
- *    its client components <b>must</b> be notified, and discard the dangling
- *    pointer that points to the interface on the disposed component.
- *    <p>
- *    It is passive when a client component uses a command interface of a
- *    provider component.
- *    Since the provider does not know the set of its client, it cannot be
- *    disposed at will.
+ *   A component can expose meta-data about itself.
  *
- * ### Method 1: IDisposeEvent
- *     One way is to let every component provide an IDisposeEvent interface,
- *     and every client of the component listens to the event.
- *     When a component is about to dispose, it fires the event to notify its
- *     clients.
- *     This method relies upon programmers to remember to connect to and
- *     process the event.
+ *   Meta-data of a component
+ *   * CID of the component class
+ *   * IID of the provided interfaces
  *
- * ### Method 2: Make every command interface an event sink
- *     Another way is to make every command interface an event sink.
- *     When a client component wants to use a command interface, it provides
- *     an event interface.
- *     Its parent component wires the provider and the client.
- *     i.e., the provider connects its event sink to the event of the client.
- *     When the client wants the provider to perform the command, it fires the
- *     event to notify the provider.
- *     <p>
- *     This method decouples the provider and client more thoroughly.
- *     When the provider is disposed, it disconnects the sink interface from
- *     the event of its clients.
- *     Each client is notified about the event of disconnection.
- *     After the disconnection, when client fires the event, there is natually
- *     no sink to perform the task, and there is not dangling pointer.
+ *    Type-neutral invocation is mainly aimed to enable cross-language
+ *    inter-operability (scripting language, GUI, etc.).
+ *
+ *   The library provides \c IObjectMetaData interface to provide metadata.
+ *
+ * ================
+ * Interoperability
+ * ================
+ *
+ *   Interoperability is a allow users to invoke the methods of interfaces on
+ *   a component in a type-neutral way.
+ *
+ * ## Internal to C++
+ *    It is fairly easy to invoke a method of an interface on a component in C++.
+ *    * Interfaces (pure abstract classes) are always visible to users.
+ *    * Users can always obtain the \c IObject interface of a component.
+ *    * Users can always obtain other interfaces via the \c IObject interface.
+ *
+ * ## Outside of C++
+ *    Type-neutral invocability is mainly aimed to enable cross-language
+ *    inter-operability (scripting language, GUI, etc.).
+ *
+ *    A separate interface can be provided.
+ *    e.g., \c IDispatch.
  *
  */
 
+
 NSFX_OPEN_NAMESPACE
 
+/**
+ * @ingroup Component
+ * @brief The type of cookie.
+ *
+ * A cookie is obtained when connecting a event sink to an event source, and
+ * can be used to disconnect the sink from the event source later.
+ */
+typedef uint32_t  cookie_t;
 
 NSFX_CLOSE_NAMESPACE
 
