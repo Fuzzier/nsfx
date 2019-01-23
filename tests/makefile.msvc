@@ -35,17 +35,17 @@ clean :
     del /s /q *.log
     del /s /q *.txt
 
-EXCEPTION_HEADERS=                   \
+EXCEPTION_HEADERS=                      \
     $(NSFX_PATH)/config.h               \
     $(NSFX_PATH)/exception/exception.h  \
 
 ################################################################################
 # test
-test :       \
+test :          \
     test-case   \
     test-suite  \
 
-TEST_HEADERS=                         \
+TEST_HEADERS=                            \
     $(EXCEPTION_HEADERS)                 \
     $(NSFX_PATH)/test.h                  \
     $(NSFX_PATH)/test/config.h           \
@@ -79,12 +79,12 @@ test-suite.exe : $(TEST_HEADERS) $(SRC)
 
 ################################################################################
 # utility
-utility :                       \
+utility :                          \
     test-least-int                 \
     test-circular-sequence-number  \
     test-fixed-length-address      \
 
-UTILITY_HEADERS=                                  \
+UTILITY_HEADERS=                                     \
     $(EXCEPTION_HEADERS)                             \
     $(NSFX_PATH)/utility.h                           \
     $(NSFX_PATH)/utility/config.h                    \
@@ -122,11 +122,11 @@ test-fixed-length-address.exe : $(UTILITY_HEADERS) $(SRC)
 
 ################################################################################
 # chrono
-chrono :                  \
+chrono :                     \
     test-duration            \
     test-virtual-time-point  \
 
-CHRONO_HEADERS=                            \
+CHRONO_HEADERS=                               \
     $(TEST_HEADERS)                           \
     $(NSFX_PATH)/config.h                     \
     $(NSFX_PATH)/chrono/config.h              \
@@ -152,14 +152,14 @@ test-virtual-time-point.exe : $(CHRONO_HEADERS) $(SRC)
 
 ################################################################################
 # component
-component :           \
+component :              \
     test-uid             \
     test-ptr             \
     test-object          \
     test-class-factory   \
     test-class-registry  \
 
-COMPONENT_HEADERS=                          \
+COMPONENT_HEADERS=                             \
     $(TEST_HEADERS)                            \
     $(NSFX_PATH)/component.h                   \
     $(NSFX_PATH)/component/config.h            \
@@ -216,20 +216,22 @@ test-class-registry.exe : $(COMPONENT_HEADERS) $(SRC)
 
 ################################################################################
 # event
-event :           \
-    test-event-sink  \
-    test-event       \
+event :                   \
+    test-event-sink       \
+    test-event            \
+    test-connection-pool  \
 
-EVENT_HEADERS=                      \
-    $(TEST_HEADERS)                    \
-    $(COMPONENT_HEADERS)               \
-    $(NSFX_PATH)/event.h               \
-    $(NSFX_PATH)/event/config.h        \
-    $(NSFX_PATH)/event/exception.h     \
-    $(NSFX_PATH)/event/i-event-sink.h  \
-    $(NSFX_PATH)/event/event-sink.h    \
-    $(NSFX_PATH)/event/i-event.h       \
-    $(NSFX_PATH)/event/event.h         \
+EVENT_HEADERS=                            \
+    $(TEST_HEADERS)                       \
+    $(COMPONENT_HEADERS)                  \
+    $(NSFX_PATH)/event.h                  \
+    $(NSFX_PATH)/event/config.h           \
+    $(NSFX_PATH)/event/exception.h        \
+    $(NSFX_PATH)/event/i-event-sink.h     \
+    $(NSFX_PATH)/event/event-sink.h       \
+    $(NSFX_PATH)/event/i-event.h          \
+    $(NSFX_PATH)/event/event.h            \
+    $(NSFX_PATH)/event/connection-pool.h  \
 
 ########################################
 test-event : test-event.exe
@@ -247,9 +249,17 @@ SRC=event/test-event-sink.cpp
 test-event-sink.exe : $(EVENT_HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
+########################################
+test-connection-pool : test-connection-pool.exe
+
+SRC=event/test-connection-pool.cpp
+
+test-connection-pool.exe : $(EVENT_HEADERS) $(SRC)
+    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
 ################################################################################
 # log
-log :                        \
+log :                           \
     test-const-attribute-value  \
     test-const-attribute        \
     test-record                 \
@@ -257,7 +267,7 @@ log :                        \
     test-logger                 \
     test-timestamp-attribute    \
 
-LOG_HEADERS=                                                    \
+LOG_HEADERS=                                                       \
     $(TEST_HEADERS)                                                \
     $(COMPONENT_HEADERS)                                           \
     $(EVENT_HEADERS)                                               \
@@ -342,13 +352,13 @@ test-timestamp-attribute.exe : $(LOG_HEADERS) $(SRC)
 
 ################################################################################
 # simulation
-simulation :                \
+simulation :                   \
     test-event-handle          \
     test-list-event-scheduler  \
     test-set-event-scheduler   \
     test-simulator             \
 
-SIMULATION_HEADERS=                              \
+SIMULATION_HEADERS=                                 \
     $(TEST_HEADERS)                                 \
     $(CHRONO_HEADERS)                               \
     $(COMPONENT_HEADERS)                            \
@@ -403,7 +413,7 @@ network :   \
     buffer  \
     packet  \
 
-buffer :                  \
+buffer :                     \
     test-buffer              \
     test-const-buffer        \
     test-zc-buffer           \
@@ -413,14 +423,14 @@ buffer :                  \
     test-buffer-iterator     \
     test-zc-buffer-iterator  \
 
-packet:                \
+packet:                   \
     test-tag              \
     test-tag-index        \
     test-tag-index-array  \
     test-tag-list         \
     test-packet           \
 
-NETWORK_HEADERS=                                                  \
+NETWORK_HEADERS=                                                     \
     $(TEST_HEADERS)                                                  \
     $(NSFX_PATH)/network.h                                           \
     $(NSFX_PATH)/network/config.h                                    \
@@ -552,14 +562,14 @@ test-packet.exe : $(NETWORK_HEADERS) $(SRC)
 
 ################################################################################
 # random
-random :                       \
+random :                          \
     test-rot                      \
     test-splitmix-engine          \
     test-xoshiro-engine           \
     test-xoroshiro-engine         \
     test-pseudo-random-generator  \
 
-RANDOM_HEADERS=                                                          \
+RANDOM_HEADERS=                                                             \
     $(TEST_HEADERS)                                                         \
     $(COMPONENT_HEADERS)                                                    \
     $(NSFX_PATH)/random.h                                                   \
