@@ -22,6 +22,7 @@
 #include <nsfx/event/exception.h>
 #include <nsfx/component/object.h>
 #include <nsfx/component/ptr.h>
+#include <boost/concept_check.hpp>
 #include <type_traits> // decay
 
 
@@ -66,7 +67,7 @@ public:
  *
  * @tparam IEventName The type of a user-defined event sink interface that
  *                    conforms to \c IEventSinkConcept.
- * @tparam limit The maximum number of connections.
+ * @tparam capacity The maximum number of connections.
  *
  * An event class implements <code>IEvent<></code> interface.
  * It implements the method \c Connect().
@@ -92,17 +93,20 @@ public:
  * The class also provides a \c Fire() function template to fire the event more
  * directly.
  * However, the \c Fire() function template performs perfect forwarding if and
- * only if <b>limit == 1</b>.
- * For <b>limit > 1</b>, it passes the arguments as <i>l-values</i>.
+ * only if <b>capacity == 1</b>.
+ * For <b>capacity > 1</b>, it passes the arguments as <i>l-values</i>.
  * Therefore, the parameters of the event sink <b>must</b> be <i>l-values</i>,
- * in order to use \c Fire() for <code>limit > 1</code>.
+ * in order to use \c Fire() for <code>capacity > 1</code>.
  */
-template<class IEventName, uint32_t limit = UINT32_MAX>
+template<class IEventName, uint32_t capacity = UINT32_MAX>
 class Event :/*{{{*/
     public IEventName
 {
     BOOST_CONCEPT_ASSERT((IEventConcept<IEventName>));
-    static_assert(limit > 0, "Invalid limit value for Event class template.");
+    static_assert(capacity > 0,
+                  "Invalid capacity value for Event class template.");
+    static_assert(sizeof (cookie_t) >= sizeof (capacity),
+                  "Invalid cookie_t type.");
 
     typedef IEventName                           IEventType;
     typedef typename IEventType::Prototype       Prototype;
@@ -124,7 +128,7 @@ public:
         {
             BOOST_THROW_EXCEPTION(InvalidPointer());
         }
-        if (numSinks_ == limit)
+        if (numSinks_ == capacity)
         {
             BOOST_THROW_EXCEPTION(ConnectionLimit());
         }
@@ -213,7 +217,12 @@ public:
         {
             BOOST_THROW_EXCEPTION(NoConnection());
         }
-        return sinks_[--cookie];
+        IEventSinkType* sink = sinks_[--cookie];
+        if (!sink)
+        {
+            BOOST_THROW_EXCEPTION(NoConnection());
+        }
+        return sink;
     }
 
     /**
@@ -301,7 +310,7 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 template<class IEventName>
-class Event<IEventName, /* limit = */ 1> :/*{{{*/
+class Event<IEventName, /* capacity = */ 1> :/*{{{*/
     public IEventName
 {
     BOOST_CONCEPT_ASSERT((IEventConcept<IEventName>));
@@ -309,27 +318,6 @@ class Event<IEventName, /* limit = */ 1> :/*{{{*/
     typedef IEventName                           IEventType;
     typedef typename IEventType::Prototype       Prototype;
     typedef typename IEventType::IEventSinkType  IEventSinkType;
-
-    ////////////////////////////////////////
-    class Connection :
-        virtual public IObject
-    {
-    public:
-        Connection(Event* event) :
-            event_(event)
-        {}
-
-        virtual ~Connection(void)
-        {
-            event_->Disconnect();
-        }
-
-        NSFX_INTERFACE_MAP_BEGIN(Connection)
-        NSFX_INTERFACE_MAP_END()
-
-    private:
-        Event* event_;
-    };
 
 public:
     virtual ~Event(void) {}
