@@ -101,7 +101,7 @@ NSFX_TEST_SUITE(Event)
         nsfx::MemberAggObject<nsfx::Event<Ev2, 1>>  v2_;
     };
 
-    NSFX_TEST_CASE(Connect)
+    NSFX_TEST_CASE(Test)
     {
         try
         {
@@ -144,6 +144,16 @@ NSFX_TEST_SUITE(Event)
             nsfx::Ptr<Ev1>(test)->Disconnect(cv1[0]);
             nsfx::Ptr<Ev1>(test)->Disconnect(cv1[1]);
 
+            try
+            {
+                test->v1_.GetImpl()->GetSink(cv1[8]);
+                NSFX_TEST_EXPECT(false);
+            }
+            catch (nsfx::NoConnection& )
+            {
+                // Should come here.
+            }
+
             cv1[0] = nsfx::Ptr<Ev1>(test)->Connect(sv1);
             cv1[1] = nsfx::Ptr<Ev1>(test)->Connect(sv1);
             cv1[7] = nsfx::Ptr<Ev1>(test)->Connect(sv1);
@@ -161,8 +171,10 @@ NSFX_TEST_SUITE(Event)
 
             ////////////////////////////////////////
             // V2
+            NSFX_TEST_EXPECT_EQ(test->v2_.GetImpl()->GetNumSinks(), 0);
             nsfx::cookie_t cv2;
             cv2 = nsfx::Ptr<Ev2>(test)->Connect(sv2);
+            NSFX_TEST_EXPECT_EQ(test->v2_.GetImpl()->GetNumSinks(), 1);
 
             try
             {
@@ -173,6 +185,14 @@ NSFX_TEST_SUITE(Event)
             {
                 // Should come here.
             }
+
+            x = 0;
+            test->VisitV2(3, 0.1);
+            NSFX_TEST_EXPECT_EQ(x, 3);
+
+            x = 0;
+            test->FireV2(3, 0.1);
+            NSFX_TEST_EXPECT_EQ(x, 3);
 
         }
         catch (boost::exception& e)

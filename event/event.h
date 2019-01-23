@@ -217,12 +217,12 @@ public:
         {
             BOOST_THROW_EXCEPTION(NoConnection());
         }
-        IEventSinkType* sink = sinks_[--cookie];
+        const Ptr<IEventSinkType> sink = sinks_[--cookie];
         if (!sink)
         {
             BOOST_THROW_EXCEPTION(NoConnection());
         }
-        return sink;
+        return sink.Get();
     }
 
     /**
@@ -365,7 +365,7 @@ public:
         {
             BOOST_THROW_EXCEPTION(NoConnection());
         }
-        return sink_;
+        return sink_.Get();
     }
 
     template<class Visitor>
