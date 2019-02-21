@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Test Event.
+ * @brief Test Portainer.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -14,12 +14,12 @@
  */
 
 #include <nsfx/test.h>
-#include <nsfx/event/connection-pool.h>
+#include <nsfx/event/portainer.h>
 #include <iostream>
 #include <set>
 
 
-NSFX_TEST_SUITE(ConnectionPool)
+NSFX_TEST_SUITE(Portainer)
 {
     // Default constructible, copy assignable.
     class Item
@@ -47,77 +47,55 @@ NSFX_TEST_SUITE(ConnectionPool)
         int i_;
     };
 
-    NSFX_TEST_CASE(Connect)
+    NSFX_TEST_CASE(Add)
     {
         try
         {
-            nsfx::ConnectionPool<Item, 3> cp;
-            NSFX_TEST_EXPECT_EQ(cp.GetNumConnections(), 0);
+            nsfx::Portainer<Item, 3> ct;
+            NSFX_TEST_EXPECT_EQ(ct.GetSize(), 0);
 
             ////////////////////////////////////////
             // Cannot insert empty item.
             Item a;
-            try
-            {
-                cp.Connect(a);
-                NSFX_TEST_EXPECT(false);
-            }
-            catch (nsfx::InvalidArgument& )
-            {
-                // Should come here.
-            }
+            NSFX_TEST_EXPECT_EQ(ct.Add(a), 0);
+            NSFX_TEST_EXPECT_EQ(ct.GetSize(), 0);
 
             ////////////////////////////////////////
-            // Connect.
+            // Add.
             nsfx::cookie_t cookies[3];
             Item b(1);
-            cookies[0] = cp.Connect(b); // copy
-            cookies[1] = cp.Connect(b);
-            cookies[2] = cp.Connect(Item(2)); // move
-            NSFX_TEST_EXPECT_EQ(cp.GetNumConnections(), 3);
+            cookies[0] = ct.Add(b); // copy
+            cookies[1] = ct.Add(b);
+            cookies[2] = ct.Add(Item(2)); // move
+            NSFX_TEST_EXPECT_EQ(ct.GetSize(), 3);
             NSFX_TEST_EXPECT_EQ(cookies[0], 1);
             NSFX_TEST_EXPECT_EQ(cookies[1], 2);
             NSFX_TEST_EXPECT_EQ(cookies[2], 3);
 
             ////////////////////////////////////////
             // Connection limit reached.
-            try
-            {
-                cp.Connect(Item(3));
-                NSFX_TEST_EXPECT(false);
-            }
-            catch (nsfx::ConnectionLimit& )
-            {
-                // Should come here.
-            }
+            NSFX_TEST_EXPECT_EQ(ct.Add(Item(3)), 0);
+            NSFX_TEST_EXPECT_EQ(ct.GetSize(), 3);
 
             ////////////////////////////////////////
-            // Disconnect.
-            cp.Disconnect(cookies[1]);
-            NSFX_TEST_EXPECT_EQ(cp.GetNumConnections(), 2);
-            try
-            {
-                cp.GetConnection(cookies[1]);
-                NSFX_TEST_EXPECT(false);
-            }
-            catch (nsfx::NoConnection& )
-            {
-                // Should come here.
-            }
+            // Remove.
+            ct.Remove(cookies[1]);
+            NSFX_TEST_EXPECT_EQ(ct.GetSize(), 2);
+            NSFX_TEST_EXPECT(!ct.Get(cookies[1]));
 
             ////////////////////////////////////////
-            // Connect again.
-            cookies[1] = cp.Connect(Item(4));
-            NSFX_TEST_EXPECT_EQ(cp.GetNumConnections(), 3);
+            // Add again.
+            cookies[1] = ct.Add(Item(4));
+            NSFX_TEST_EXPECT_EQ(ct.GetSize(), 3);
             NSFX_TEST_EXPECT_EQ(cookies[1], 2);
 
             ////////////////////////////////////////
             // Visit connections.
-            cp.Disconnect(cookies[1]);
+            ct.Remove(cookies[1]);
             std::set<int> s;
             s.insert(1);
             s.insert(2);
-            cp.Visit([&] (const Item& c) {
+            ct.Visit([&] (const Item& c) {
                 NSFX_TEST_EXPECT(s.count(c.Get()) == 1);
                 s.erase(c.Get());
             });
@@ -132,71 +110,49 @@ NSFX_TEST_SUITE(ConnectionPool)
         }
     }
 
-    NSFX_TEST_CASE(Connect1)
+    NSFX_TEST_CASE(Add1)
     {
         try
         {
-            nsfx::ConnectionPool<Item, 1> cp;
-            NSFX_TEST_EXPECT_EQ(cp.GetNumConnections(), 0);
+            nsfx::Portainer<Item, 1> ct;
+            NSFX_TEST_EXPECT_EQ(ct.GetSize(), 0);
 
             ////////////////////////////////////////
             // Cannot insert empty item.
             Item a;
-            try
-            {
-                cp.Connect(a);
-                NSFX_TEST_EXPECT(false);
-            }
-            catch (nsfx::InvalidArgument& )
-            {
-                // Should come here.
-            }
+            NSFX_TEST_EXPECT_EQ(ct.Add(a), 0);
+            NSFX_TEST_EXPECT_EQ(ct.GetSize(), 0);
 
             ////////////////////////////////////////
-            // Connect.
+            // Add.
             nsfx::cookie_t cookie;
             Item b(1);
-            cookie = cp.Connect(b); // copy
-            NSFX_TEST_EXPECT_EQ(cp.GetNumConnections(), 1);
+            cookie = ct.Add(b); // copy
+            NSFX_TEST_EXPECT_EQ(ct.GetSize(), 1);
             NSFX_TEST_EXPECT_EQ(cookie, 1);
 
             ////////////////////////////////////////
             // Connection limit reached.
-            try
-            {
-                cp.Connect(Item(2));
-                NSFX_TEST_EXPECT(false);
-            }
-            catch (nsfx::ConnectionLimit& )
-            {
-                // Should come here.
-            }
+            NSFX_TEST_EXPECT_EQ(ct.Add(Item(2)), 0);
+            NSFX_TEST_EXPECT_EQ(ct.GetSize(), 1);
 
             ////////////////////////////////////////
-            // Disconnect.
-            cp.Disconnect(cookie);
-            NSFX_TEST_EXPECT_EQ(cp.GetNumConnections(), 0);
-            try
-            {
-                cp.GetConnection(cookie);
-                NSFX_TEST_EXPECT(false);
-            }
-            catch (nsfx::NoConnection& )
-            {
-                // Should come here.
-            }
+            // Remove.
+            ct.Remove(cookie);
+            NSFX_TEST_EXPECT_EQ(ct.GetSize(), 0);
+            NSFX_TEST_EXPECT(!ct[cookie]);
 
             ////////////////////////////////////////
-            // Connect again.
-            cookie = cp.Connect(Item(3));
-            NSFX_TEST_EXPECT_EQ(cp.GetNumConnections(), 1);
+            // Add again.
+            cookie = ct.Add(Item(3));
+            NSFX_TEST_EXPECT_EQ(ct.GetSize(), 1);
             NSFX_TEST_EXPECT_EQ(cookie, 1);
 
             ////////////////////////////////////////
             // Visit connections.
             std::set<int> s;
             s.insert(3);
-            cp.Visit([&] (const Item& c) {
+            ct.Visit([&] (const Item& c) {
                 NSFX_TEST_EXPECT(s.count(c.Get()) == 1);
                 s.erase(c.Get());
             });

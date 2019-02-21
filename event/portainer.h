@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Event support for Network Simulation Frameworks.
+ * @brief Connection support for Network Simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -13,8 +13,8 @@
  *   All rights reserved.
  */
 
-#ifndef CONNECTION_POOL_H__4606C8A1_1EBE_11E9_A0FD_989096D393BD
-#define CONNECTION_POOL_H__4606C8A1_1EBE_11E9_A0FD_989096D393BD
+#ifndef PORTAINER_H__5FE8D42F_B6A3_42A3_AC0B_2E75F6E36966
+#define PORTAINER_H__5FE8D42F_B6A3_42A3_AC0B_2E75F6E36966
 
 
 #include <nsfx/event/config.h>
@@ -31,12 +31,12 @@ NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// ConnectionItemConcept
+// PortainableItemConcept
 template<class T>
-class ConnectionItemConcept
+class PortainableItemConcept
 {
 public:
-    BOOST_CONCEPT_USAGE(ConnectionItemConcept)
+    BOOST_CONCEPT_USAGE(PortainableItemConcept)
     {
         IsDefaultConstructible();
         IsCopyAssignable();
@@ -64,29 +64,29 @@ public:
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// ConnectionItemVisitorConcept.
+// PortainableItemVisitorConcept.
 /**
  * @ingroup Event
- * @brief Connection item visitor concept.
+ * @brief Portainer item visitor concept.
  *
  * @tparam Visitor The type of a callable object.
  *                 The prototype is <code>void(const T&)</code>.
- * @tparam T       The type of items stored in \c ConnectionItemPool.
+ * @tparam T       The type of items stored in the \c Portainer.
  */
 template<class Visitor, class T>
-class ConnectionItemVisitorConcept
+class PortainableItemVisitorConcept
 {
 public:
-    BOOST_CONCEPT_USAGE(ConnectionItemVisitorConcept)
+    BOOST_CONCEPT_USAGE(PortainableItemVisitorConcept)
     {
         Test();
     }
 
     void Test(void)
     {
-        T* item = nullptr;
+        T* port = nullptr;
         typename std::decay<Visitor>::type* visitor = nullptr;
-        (*visitor)(*item);
+        (*visitor)(*port);
     }
 };
 
@@ -99,95 +99,62 @@ public:
  * This class is used by connectable components to store the information of
  * connections, and generate cookies for each connection.
  *
- * The container can be viewed as a vector of slots.
- * Each slot can store an item which holds the information of a connection.
+ * The container can be viewed as a vector of items (ports).
+ * Each port stores the information of a connection.
  *
  * When a connection is to be established, the connectable component requests
- * this container to find a free slot to store the information (an item).
- * The 1-based index of the slot is used as the cookie of the connection.
+ * this container to find a free slot to store the information (a port).
+ * The 1-based index of the slot is used as the cookie of the item.
  *
  * When a connection is to be closed, the connectable component requests this
- * container to remove the information (the item) from the slot whose 1-based
- * index matches the cookie value.
+ * container to remove the information (the port) whose 1-based index matches
+ * the cookie value.
  *
- * @tparam T        The type of items.
- *                  It <b>must</b> satisfy \c ConnectionItemConcept.
+ * @tparam T        The type of stored items.
+ *                  It <b>must</b> satisfy \c PortainableItemConcept.
  *                  The default value of \c T <b>must</b> be \c false, and
  *                  <b>must</b> hold no resources.
+ *                  e.g., a smart pointer.
  * @tparam capacity The capacity of the container.
  */
 template<class T, uint32_t capacity = UINT32_MAX>/*{{{*/
-class ConnectionPool
+class Portainer
 {
-    BOOST_CONCEPT_ASSERT((ConnectionItemConcept<T>));
+    BOOST_CONCEPT_ASSERT((PortainableItemConcept<T>));
     static_assert(capacity > 0,
-                  "Invalid capacity for ConnectionPool class template.");
+                  "Invalid capacity for Portainer class template.");
     static_assert(sizeof (cookie_t) >= sizeof (uint32_t),
                   "Invalid cookie_t type.");
 
 public:
-    ConnectionPool(void) :
+    Portainer(void) :
         size_(0),
         last_(0)
     {
     }
 
 public:
-    cookie_t Connect(const T& item)
+    cookie_t Add(const T& item)
     {
-        if (!item)
+        cookie_t cookie = 0;
+        if (!!item && size_ < capacity)
         {
-            BOOST_THROW_EXCEPTION(InvalidArgument());
-        }
-        if (size_ == capacity)
-        {
-            BOOST_THROW_EXCEPTION(ConnectionLimit());
-        }
-        cookie_t cookie = Insert(item);
-        if (!cookie)
-        {
-            BOOST_THROW_EXCEPTION(ConnectionLimit());
+            cookie = InternalAdd(item);
         }
         return cookie;
     }
 
-    cookie_t Connect(T&& item)
+    cookie_t Add(T&& item)
     {
-        if (!item)
+        cookie_t cookie = 0;
+        if (!!item && size_ < capacity)
         {
-            BOOST_THROW_EXCEPTION(InvalidArgument());
-        }
-        if (size_ == capacity)
-        {
-            BOOST_THROW_EXCEPTION(ConnectionLimit());
-        }
-        cookie_t cookie = Insert(std::move(item));
-        if (!cookie)
-        {
-            BOOST_THROW_EXCEPTION(ConnectionLimit());
+            cookie = InternalAdd(std::move(item));
         }
         return cookie;
     }
 
-    template<class Visitor>
-    void Disconnect(cookie_t cookie, Visitor&& visitor)
-    {
-        BOOST_CONCEPT_ASSERT((ConnectionItemVisitorConcept<Visitor, T>));
-        if (--cookie < items_.size())
-        {
-            if (!!items_[cookie])
-            {
-                --size_;
-                items_[cookie] = T();  // default constructible, copy assignable
-                while (last_ && !items_[last_-1])
-                {
-                    --last_;
-                }
-            }
-        }
-    }
-
-    void Disconnect(cookie_t cookie)
+    void Remove(cookie_t cookie)
     {
         if (--cookie < items_.size())
         {
@@ -205,7 +172,7 @@ public:
 
 private:
     template<class T_>
-    cookie_t Insert(T_&& item)
+    cookie_t InternalAdd(T_&& item)
     {
         cookie_t cookie = 0;
         // If there is a free slot, find and reuse the slot.
@@ -248,25 +215,23 @@ private:
 
 public:
     /**
-     * @brief Get the number of connections.
+     * @brief Get the number of items.
      */
-    uint32_t GetNumConnections(void) const BOOST_NOEXCEPT
+    uint32_t GetSize(void) const BOOST_NOEXCEPT
     {
         return size_;
     }
 
-    const T& GetConnection(cookie_t cookie) const
+    T Get(cookie_t cookie) const
     {
-        if (cookie == 0 || cookie > items_.size())
-        {
-            BOOST_THROW_EXCEPTION(NoConnection());
-        }
-        const T& item = items_[--cookie];
-        if (!item)
-        {
-            BOOST_THROW_EXCEPTION(NoConnection());
-        }
-        return item;
+        return (cookie > 0 && cookie <= items_.size())
+             ? items_[--cookie]  // copy assignable
+             : T();              // default constructible
+    }
+
+    T operator[](cookie_t cookie) const
+    {
+        return Get(cookie);
     }
 
     /**
@@ -278,7 +243,7 @@ public:
     template<class Visitor>
     void Visit(Visitor&& visitor) const
     {
-        BOOST_CONCEPT_ASSERT((ConnectionItemVisitorConcept<Visitor, T>));
+        BOOST_CONCEPT_ASSERT((PortainableItemVisitorConcept<Visitor, T>));
 
         for (size_t i = 0; i < last_; ++i)
         {
@@ -299,43 +264,37 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 template<class T>/*{{{*/
-class ConnectionPool<T, /* capacity = */ 1>
+class Portainer<T, /* capacity = */ 1>
 {
-    BOOST_CONCEPT_ASSERT((ConnectionItemConcept<T>));
+    BOOST_CONCEPT_ASSERT((PortainableItemConcept<T>));
 
 public:
-    ConnectionPool(void) {}
+    Portainer(void) {}
 
 public:
-    cookie_t Connect(const T& item)
+    cookie_t Add(const T& item)
     {
-        if (!item)
+        cookie_t cookie = 0;
+        if (!!item && !item_)
         {
-            BOOST_THROW_EXCEPTION(InvalidArgument());
+            item_ = item;
+            cookie = 1;
         }
-        if (!!item_)
-        {
-            BOOST_THROW_EXCEPTION(ConnectionLimit());
-        }
-        item_ = item;
-        return 1;
+        return cookie;
     }
 
-    cookie_t Connect(T&& item)
+    cookie_t Add(T&& item)
     {
-        if (!item)
+        cookie_t cookie = 0;
+        if (!!item && !item_)
         {
-            BOOST_THROW_EXCEPTION(InvalidArgument());
+            item_ = std::move(item);
+            cookie = 1;
         }
-        if (!!item_)
-        {
-            BOOST_THROW_EXCEPTION(ConnectionLimit());
-        }
-        item_ = std::move(item);
-        return 1;
+        return cookie;
     }
 
-    void Disconnect(cookie_t cookie)
+    void Remove(cookie_t cookie)
     {
         if (cookie == 1)
         {
@@ -345,20 +304,23 @@ public:
 
 public:
     /**
-     * @brief Get the number of connections.
+     * @brief Get the number of items.
      */
-    uint32_t GetNumConnections(void) const BOOST_NOEXCEPT
+    uint32_t GetSize(void) const BOOST_NOEXCEPT
     {
         return !item_ ? 0 : 1;
     }
 
-    const T& GetConnection(cookie_t cookie) const
+    T Get(cookie_t cookie) const
     {
-        if (cookie != 1 || !item_)
-        {
-            BOOST_THROW_EXCEPTION(NoConnection());
-        }
-        return item_;
+        return (cookie == 1)
+             ? item_
+             : T();
+    }
+
+    T operator[](cookie_t cookie) const
+    {
+        return Get(cookie);
     }
 
     /**
@@ -370,7 +332,7 @@ public:
     template<class Visitor>
     void Visit(Visitor&& visitor) const
     {
-        BOOST_CONCEPT_ASSERT((ConnectionItemVisitorConcept<Visitor, T>));
+        BOOST_CONCEPT_ASSERT((PortainableItemVisitorConcept<Visitor, T>));
         if (!!item_)
         {
             visitor(item_);
@@ -386,5 +348,5 @@ private:
 NSFX_CLOSE_NAMESPACE
 
 
-#endif // CONNECTION_POOL_H__4606C8A1_1EBE_11E9_A0FD_989096D393BD
+#endif // PORTAINER_H__5FE8D42F_B6A3_42A3_AC0B_2E75F6E36966
 

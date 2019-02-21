@@ -216,22 +216,22 @@ test-class-registry.exe : $(COMPONENT_HEADERS) $(SRC)
 
 ################################################################################
 # event
-event :                   \
-    test-event-sink       \
-    test-event            \
-    test-connection-pool  \
+event :              \
+    test-event-sink  \
+    test-event       \
+    test-portainer   \
 
-EVENT_HEADERS=                            \
-    $(TEST_HEADERS)                       \
-    $(COMPONENT_HEADERS)                  \
-    $(NSFX_PATH)/event.h                  \
-    $(NSFX_PATH)/event/config.h           \
-    $(NSFX_PATH)/event/exception.h        \
-    $(NSFX_PATH)/event/i-event-sink.h     \
-    $(NSFX_PATH)/event/event-sink.h       \
-    $(NSFX_PATH)/event/i-event.h          \
-    $(NSFX_PATH)/event/event.h            \
-    $(NSFX_PATH)/event/connection-pool.h  \
+EVENT_HEADERS=                         \
+    $(TEST_HEADERS)                    \
+    $(COMPONENT_HEADERS)               \
+    $(NSFX_PATH)/event.h               \
+    $(NSFX_PATH)/event/config.h        \
+    $(NSFX_PATH)/event/exception.h     \
+    $(NSFX_PATH)/event/i-event-sink.h  \
+    $(NSFX_PATH)/event/event-sink.h    \
+    $(NSFX_PATH)/event/i-event.h       \
+    $(NSFX_PATH)/event/event.h         \
+    $(NSFX_PATH)/event/portainer.h     \
 
 ########################################
 test-event : test-event.exe
@@ -250,11 +250,11 @@ test-event-sink.exe : $(EVENT_HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
-test-connection-pool : test-connection-pool.exe
+test-portainer : test-portainer.exe
 
-SRC=event/test-connection-pool.cpp
+SRC=event/test-portainer.cpp
 
-test-connection-pool.exe : $(EVENT_HEADERS) $(SRC)
+test-portainer.exe : $(EVENT_HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ################################################################################

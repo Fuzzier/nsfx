@@ -26,6 +26,8 @@
 #include <nsfx/event/i-event.h>
 #include <nsfx/event/event.h>
 
+#include <nsfx/event/portainer.h>
+
 
 #endif // EVENT_H__A144D68C_F756_4043_8212_1E563AE1D32B
 
