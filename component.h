@@ -34,6 +34,9 @@
 #include <nsfx/component/i-class-registry.h>
 #include <nsfx/component/class-registry.h>
 
+#include <nsfx/component/i-initializable.h>
+#include <nsfx/component/i-disposable.h>
+
 
 #endif // COMPONENT_H__8C0FC172_57F7_4306_A0F8_16027B30D4A5
 
