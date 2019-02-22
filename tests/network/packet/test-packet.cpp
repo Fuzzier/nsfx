@@ -22,7 +22,7 @@ NSFX_TEST_SUITE(Packet)
 {
     NSFX_TEST_CASE(Ctor)/*{{{*/
     {
-        nsfx::PacketBuffer b0(1000, 700, 300);
+        nsfx::PacketBuffer b0(1000, 300, 700);
         // [700 s zs 300 ze e 300]
         b0.AddAtStart(100);
         // [600 s 100 zs 300 ze e 300]
@@ -36,7 +36,7 @@ NSFX_TEST_SUITE(Packet)
 
     NSFX_TEST_CASE(Add)/*{{{*/
     {
-        nsfx::PacketBuffer b0(1000, 700, 300);
+        nsfx::PacketBuffer b0(1000, 300, 700);
         // [700 s zs 300 ze e 300]
         nsfx::Packet p0(b0);
         // Add header.
@@ -72,7 +72,7 @@ NSFX_TEST_SUITE(Packet)
 
     NSFX_TEST_CASE(Remove)/*{{{*/
     {
-        nsfx::PacketBuffer b0(1000, 700, 300);
+        nsfx::PacketBuffer b0(1000, 300, 700);
         // [700 s zs 300 ze e 300]
         nsfx::Packet p0(b0);
         // Add header.
@@ -115,7 +115,7 @@ NSFX_TEST_SUITE(Packet)
 
     NSFX_TEST_CASE(ReassembleFragments)/*{{{*/
     {
-        nsfx::PacketBuffer b0(1000, 700, 300);
+        nsfx::PacketBuffer b0(1000, 300, 700);
         // [700 s zs 300 ze e 300]
         nsfx::Packet p0(b0);
         // Add header.
@@ -202,7 +202,7 @@ NSFX_TEST_SUITE(Packet)
     {
         nsfx::TagBuffer tb(16);
         {
-            nsfx::PacketBuffer b0(1000, 700, 400);
+            nsfx::PacketBuffer b0(1000, 400, 700);
             nsfx::Packet p0(b0);
             // [700 s zs 400 ze e 300]
             uint32_t tagId = 1;
@@ -297,7 +297,7 @@ NSFX_TEST_SUITE(Packet)
 
     NSFX_TEST_CASE(PacketTag)/*{{{*/
     {
-        nsfx::PacketBuffer b0(1000, 700, 400);
+        nsfx::PacketBuffer b0(1000, 400, 700);
         nsfx::Packet p0(b0);
         // [700 s zs 400 ze e 300]
         uint32_t tagId = 1;
@@ -313,7 +313,7 @@ NSFX_TEST_SUITE(Packet)
         p0.AddByteTag(tagId++, tb, 200, 200);
         p0.AddByteTag(tagId++, tb, 300, 100);
         {
-            nsfx::PacketBuffer b1(1000, 700, 400);
+            nsfx::PacketBuffer b1(1000, 400, 700);
             nsfx::Packet p1(b1);
             // [700 s zs 400 ze e 300]
             tagId = 1;
@@ -418,7 +418,7 @@ NSFX_TEST_SUITE(Packet)
     {
         nsfx::TagBuffer tb(16);
         {
-            nsfx::PacketBuffer b0(1000, 700, 400);
+            nsfx::PacketBuffer b0(1000, 400, 700);
             nsfx::Packet p0(b0);
             // [700 s zs 400 ze e 300]
             // Add 4 tags.
@@ -433,7 +433,7 @@ NSFX_TEST_SUITE(Packet)
             p0.AddPacketTag(tagId++, p0, 200, 200);
             p0.AddByteTag(tagId++, tb, 300, 100);
 
-            nsfx::PacketBuffer b1(1000, 700, 400);
+            nsfx::PacketBuffer b1(1000, 400, 700);
             nsfx::Packet p1(b1);
             // Add 2 tags.
             // |<--------------buffer------------->|

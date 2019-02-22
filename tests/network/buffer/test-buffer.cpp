@@ -67,7 +67,7 @@ NSFX_TEST_SUITE(Buffer)
 
         NSFX_TEST_CASE(Ctor3)
         {
-            nsfx::Buffer b0(1000, 700, 300);
+            nsfx::Buffer b0(1000, 300, 700);
             // [700 s zs 300 ze e 300]
             NSFX_TEST_EXPECT_EQ(b0.GetSize(), 300);
             NSFX_TEST_EXPECT_EQ(b0.GetInternalSize(), b0.GetSize());
@@ -150,7 +150,7 @@ NSFX_TEST_SUITE(Buffer)
     {
         NSFX_TEST_CASE(CopyCtor)
         {
-            nsfx::Buffer b0(1000, 700, 300);
+            nsfx::Buffer b0(1000, 300, 700);
             // [700 s zs 300 ze e 300]
             b0.AddAtStart(100);
             // [600 s 100 zs 300 ze e 300]
@@ -184,7 +184,7 @@ NSFX_TEST_SUITE(Buffer)
 
         NSFX_TEST_CASE(CopyAssign)
         {
-            nsfx::Buffer b0(1000, 700, 300);
+            nsfx::Buffer b0(1000, 300, 700);
             // [700 s zs 300 ze e 300]
             b0.AddAtStart(100);
             // [600 s 100 zs 300 ze e 300]
@@ -234,7 +234,7 @@ NSFX_TEST_SUITE(Buffer)
     {
         NSFX_TEST_CASE(MoveCtor)
         {
-            nsfx::Buffer b0(1000, 700, 300);
+            nsfx::Buffer b0(1000, 300, 700);
             // [700 s zs 300 ze e 300]
             b0.AddAtStart(100);
             // [600 s 100 zs 300 ze e 300]
@@ -263,7 +263,7 @@ NSFX_TEST_SUITE(Buffer)
 
         NSFX_TEST_CASE(MoveAssign)
         {
-            nsfx::Buffer b0(1000, 700, 300);
+            nsfx::Buffer b0(1000, 300, 700);
             // [700 s zs 300 ze e 300]
             b0.AddAtStart(100);
             // [600 s 100 zs 300 ze e 300]
@@ -308,7 +308,7 @@ NSFX_TEST_SUITE(Buffer)
     {
         NSFX_TEST_CASE(Segmented)
         {
-            nsfx::Buffer b0(1000, 700, 300);
+            nsfx::Buffer b0(1000, 300, 700);
             // [700 s zs 300 ze e 300]
             b0.AddAtStart(100);
             // [600 s 100 zs 300 ze e 300]
@@ -447,7 +447,7 @@ NSFX_TEST_SUITE(Buffer)
             {
                 NSFX_TEST_CASE(PreHeaderBigEnough)
                 {
-                    nsfx::Buffer b0(1000, 700, 300);
+                    nsfx::Buffer b0(1000, 300, 700);
                     // [700 s zs 300 ze e 300]
                     const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
                     b0.AddAtEnd(100);
@@ -470,7 +470,7 @@ NSFX_TEST_SUITE(Buffer)
 
                 NSFX_TEST_CASE(CapacityBigEnough)
                 {
-                    nsfx::Buffer b0(1000, 700, 300);
+                    nsfx::Buffer b0(1000, 300, 700);
                     // [700 s zs 300 ze e 300]
                     const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
                     b0.AddAtEnd(100);
@@ -493,7 +493,7 @@ NSFX_TEST_SUITE(Buffer)
 
                 NSFX_TEST_CASE(CapacityNotEnough)
                 {
-                    nsfx::Buffer b0(1000, 700, 300);
+                    nsfx::Buffer b0(1000, 300, 700);
                     // [700 s zs 300 ze e 300 ]
                     const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
                     b0.AddAtEnd(100);
@@ -521,7 +521,7 @@ NSFX_TEST_SUITE(Buffer)
                 {
                     NSFX_TEST_CASE(PreHeaderBigEnough)
                     {
-                        nsfx::Buffer b0(1000, 700, 300);
+                        nsfx::Buffer b0(1000, 300, 700);
                         // b0 [700 s zs 300 ze e 300]
                         b0.AddAtStart(100);
                         b0.AddAtEnd(100);
@@ -548,7 +548,7 @@ NSFX_TEST_SUITE(Buffer)
 
                     NSFX_TEST_CASE(PreHeaderNotEnough)
                     {
-                        nsfx::Buffer b0(1000, 700, 300);
+                        nsfx::Buffer b0(1000, 300, 700);
                         // b0 [700 s zs 300 ze e 300]
                         b0.AddAtStart(100);
                         b0.AddAtEnd(100);
@@ -578,7 +578,7 @@ NSFX_TEST_SUITE(Buffer)
                 {
                     NSFX_TEST_CASE(PreHeaderBigEnough)
                     {
-                        nsfx::Buffer b0(1000, 700, 300);
+                        nsfx::Buffer b0(1000, 300, 700);
                         // b0 [700 s zs 300 ze e 300]
                         b0.AddAtStart(100);
                         b0.AddAtEnd(100);
@@ -605,7 +605,7 @@ NSFX_TEST_SUITE(Buffer)
 
                     NSFX_TEST_CASE(PreHeaderNotEnough)
                     {
-                        nsfx::Buffer b0(1000, 700, 300);
+                        nsfx::Buffer b0(1000, 300, 700);
                         // b0 [700 s zs 300 ze e 300]
                         b0.AddAtStart(100);
                         b0.AddAtEnd(100);
@@ -642,7 +642,7 @@ NSFX_TEST_SUITE(Buffer)
                 s[i] = v;
             }
 
-            nsfx::Buffer b0(1000, 700, 300);
+            nsfx::Buffer b0(1000, 300, 700);
             // b0 [700 s zs 300 ze e 300]
             b0.AddAtStart(s, 100);
             b0.AddAtEnd(100);
@@ -665,7 +665,7 @@ NSFX_TEST_SUITE(Buffer)
 
         NSFX_TEST_CASE(AddBuffer)
         {
-            nsfx::Buffer s(1000, 700, 0);
+            nsfx::Buffer s(1000, 0, 700);
             s.AddAtStart(100);
             s.AddAtEnd(100);
             // s [600 s 100 zs ze 100 e 200]
@@ -681,7 +681,7 @@ NSFX_TEST_SUITE(Buffer)
                 it.Write<uint8_t>(v);
             }
 
-            nsfx::Buffer b0(1000, 700, 300);
+            nsfx::Buffer b0(1000, 300, 700);
             b0.AddAtEnd(100);
             b0.AddAtStart(s);
             // s [100 s 200 zs 300 ze 100 e 200]
@@ -764,7 +764,7 @@ NSFX_TEST_SUITE(Buffer)
             {
                 NSFX_TEST_CASE(PostTrailerBigEnough)
                 {
-                    nsfx::Buffer b0(1000, 700, 300);
+                    nsfx::Buffer b0(1000, 300, 700);
                     // [700 s zs 300 ze e 300]
                     const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
                     b0.AddAtStart(100);
@@ -787,7 +787,7 @@ NSFX_TEST_SUITE(Buffer)
 
                 NSFX_TEST_CASE(CapacityBigEnough)
                 {
-                    nsfx::Buffer b0(1000, 700, 300);
+                    nsfx::Buffer b0(1000, 300, 700);
                     // [700 s zs 300 ze e 300]
                     const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
                     b0.AddAtStart(100);
@@ -810,7 +810,7 @@ NSFX_TEST_SUITE(Buffer)
 
                 NSFX_TEST_CASE(CapacityNotEnough)
                 {
-                    nsfx::Buffer b0(1000, 700, 300);
+                    nsfx::Buffer b0(1000, 300, 700);
                     // [ 700 s zs 300 ze e 300 ]
                     const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
                     b0.AddAtStart(100);
@@ -838,7 +838,7 @@ NSFX_TEST_SUITE(Buffer)
                 {
                     NSFX_TEST_CASE(PostTrailerBigEnough)
                     {
-                        nsfx::Buffer b0(1000, 700, 300);
+                        nsfx::Buffer b0(1000, 300, 700);
                         // b0 [700 s zs 300 ze e 300]
                         b0.AddAtStart(100);
                         b0.AddAtEnd(100);
@@ -865,7 +865,7 @@ NSFX_TEST_SUITE(Buffer)
 
                     NSFX_TEST_CASE(PostTrailerNotEnough)
                     {
-                        nsfx::Buffer b0(1000, 700, 300);
+                        nsfx::Buffer b0(1000, 300, 700);
                         // b0 [700 s zs 300 ze e 300]
                         b0.AddAtStart(100);
                         b0.AddAtEnd(100);
@@ -895,7 +895,7 @@ NSFX_TEST_SUITE(Buffer)
                 {
                     NSFX_TEST_CASE(PostTrailerBigEnough)
                     {
-                        nsfx::Buffer b0(1000, 700, 300);
+                        nsfx::Buffer b0(1000, 300, 700);
                         // b0 [700 s zs 300 ze e 300]
                         b0.AddAtStart(100);
                         b0.AddAtEnd(100);
@@ -922,7 +922,7 @@ NSFX_TEST_SUITE(Buffer)
 
                     NSFX_TEST_CASE(PostTrailerNotEnough)
                     {
-                        nsfx::Buffer b0(1000, 700, 300);
+                        nsfx::Buffer b0(1000, 300, 700);
                         // b0 [700 s zs 300 ze e 300]
                         b0.AddAtStart(100);
                         b0.AddAtEnd(100);
@@ -959,7 +959,7 @@ NSFX_TEST_SUITE(Buffer)
                 s[i] = v;
             }
 
-            nsfx::Buffer b0(1000, 700, 300);
+            nsfx::Buffer b0(1000, 300, 700);
             // b0 [700 s zs 300 ze e 300]
             b0.AddAtStart(100);
             b0.AddAtEnd(s, 100);
@@ -979,7 +979,7 @@ NSFX_TEST_SUITE(Buffer)
 
         NSFX_TEST_CASE(AddBuffer)
         {
-            nsfx::Buffer s(1000, 700, 0);
+            nsfx::Buffer s(1000, 0, 700);
             s.AddAtStart(100);
             s.AddAtEnd(100);
             // s [600 s 100 zs ze 100 e 200]
@@ -995,7 +995,7 @@ NSFX_TEST_SUITE(Buffer)
                 it.Write<uint8_t>(v);
             }
 
-            nsfx::Buffer b0(1000, 700, 300);
+            nsfx::Buffer b0(1000, 300, 700);
             b0.AddAtEnd(s);
             b0.AddAtStart(100);
             // s [200 s 100 zs 300 ze 200 e 100]
@@ -1022,7 +1022,7 @@ NSFX_TEST_SUITE(Buffer)
     {
         NSFX_TEST_CASE(MakeFragment)
         {
-            nsfx::Buffer b0(1000, 700, 300);
+            nsfx::Buffer b0(1000, 300, 700);
             // [700 s zs 300 ze e 300 ]
             const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
             b0.AddAtEnd(100);
@@ -1077,7 +1077,7 @@ NSFX_TEST_SUITE(Buffer)
     {
         NSFX_TEST_CASE(MakeRealBuffer)
         {
-            nsfx::Buffer b0(1000, 700, 300);
+            nsfx::Buffer b0(1000, 300, 700);
             // [700 s zs 300 ze e 300 ]
             const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
             b0.AddAtEnd(100);
@@ -1120,7 +1120,7 @@ NSFX_TEST_SUITE(Buffer)
 
         NSFX_TEST_CASE(Realize)
         {
-            nsfx::Buffer b0(1000, 700, 300);
+            nsfx::Buffer b0(1000, 300, 700);
             // [700 s zs 300 ze e 300 ]
             const nsfx::Buffer::BufferStorage* s0 = b0.GetStorage();
             b0.AddAtEnd(100);

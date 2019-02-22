@@ -79,8 +79,8 @@ public:
      *
      * The initial capacity of the buffer is <code>reserved + zeroSize</code>.
      *
-     * The zero data is located at the end of the storage,
-     * optimizing for adding data at the head of the storage.
+     * The zero data is located at the <i>end</i> of the storage,
+     * optimized for adding data at the head of the storage.
      */
     BasicBuffer(size_t reserved, size_t zeroSize);
 
@@ -89,14 +89,14 @@ public:
      *
      * @param[in] reserved  The size of reserved space of the buffer in addition
      *                      to zero data.
+     * @param[in] zeroSize  The size of the zero data.
      * @param[in] zeroStart The start of the zero data.
      *                      <p>
      *                      <code>zeroStart <= reserved</code>.
-     * @param[in] zeroSize  The size of the zero data.
      *
      * The initial capacity of the buffer is <code>reserved + zeroSize</code>.
      */
-    BasicBuffer(size_t reserved, size_t zeroStart, size_t zeroSize);
+    BasicBuffer(size_t reserved, size_t zeroSize, size_t zeroStart);
 
     // Deep copy.
 public:
@@ -390,7 +390,7 @@ inline Buffer::BasicBuffer(size_t reserved, size_t zeroSize) :
     }
 }
 
-inline Buffer::BasicBuffer(size_t reserved, size_t zeroStart, size_t zeroSize)
+inline Buffer::BasicBuffer(size_t reserved, size_t zeroSize, size_t zeroStart)
 {
     BOOST_ASSERT_MSG(zeroStart <= reserved,
                      "Cannot construct a Buffer, since the start of "

@@ -87,7 +87,7 @@ public:
      *
      * The zero-compressed data area is empty in this buffer.
      * The zero-compressed data area is located at the end of the storage,
-     * optimizing for adding data toward the head of the storage.
+     * optimized for adding data toward the head of the storage.
      */
     explicit BasicBuffer(size_t capacity);
 
@@ -97,8 +97,8 @@ public:
      * @param[in] capacity The initial apacity of the buffer.
      * @param[in] zeroSize The size of the zero-compressed data area.
      *
-     * The zero-compressed data area is located at the end of the storage,
-     * optimizing for adding data at the head of the storage.
+     * The zero-compressed data area is located at the <i>end</i> of the
+     * storage, optimized for adding data toward the head of the storage.
      */
     BasicBuffer(size_t capacity, size_t zeroSize);
 
@@ -106,12 +106,12 @@ public:
      * @brief Create a buffer.
      *
      * @param[in] capacity   The initial apacity of the buffer.
+     * @param[in] zeroSize   The size of the zero-compressed data area.
      * @param[in] zeroStart  The start of the zero-compressed data area.
      *                       <p>
      *                       <code>zeroStart <= capacity</code>.
-     * @param[in] zeroSize   The size of the zero-compressed data area.
      */
-    BasicBuffer(size_t capacity, size_t zeroStart, size_t zeroSize);
+    BasicBuffer(size_t capacity, size_t zeroSize, size_t zeroStart);
 
     // Conversions.
 public:
@@ -417,7 +417,7 @@ inline ZcBuffer::BasicBuffer(size_t capacity, size_t zeroSize) :
     }
 }
 
-inline ZcBuffer::BasicBuffer(size_t capacity, size_t zeroStart, size_t zeroSize)
+inline ZcBuffer::BasicBuffer(size_t capacity, size_t zeroSize, size_t zeroStart)
 {
     BOOST_ASSERT_MSG(zeroStart <= capacity,
                      "Cannot construct a ZcBuffer, since the start of "

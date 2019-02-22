@@ -23,7 +23,7 @@ NSFX_TEST_SUITE(BufferIterator)
 {
     NSFX_TEST_CASE(Ctor)/*{{{*/
     {
-        nsfx::Buffer b0(1000, 700, 300);
+        nsfx::Buffer b0(1000, 300, 700);
         // [700 s zs 300 ze e 300]
         b0.AddAtStart(100);
         b0.AddAtEnd(100);
@@ -42,7 +42,7 @@ NSFX_TEST_SUITE(BufferIterator)
 
     NSFX_TEST_CASE(CopyCtor)/*{{{*/
     {
-        nsfx::Buffer b0(1000, 700, 300);
+        nsfx::Buffer b0(1000, 300, 700);
         // [700 s zs 300 ze e 300]
         b0.AddAtStart(100);
         b0.AddAtEnd(100);
@@ -57,7 +57,7 @@ NSFX_TEST_SUITE(BufferIterator)
 
     NSFX_TEST_CASE(CopyAssign)/*{{{*/
     {
-        nsfx::Buffer b0(1000, 700, 300);
+        nsfx::Buffer b0(1000, 300, 700);
         // [700 s zs 300 ze e 300]
         b0.AddAtStart(100);
         b0.AddAtEnd(100);
@@ -73,7 +73,7 @@ NSFX_TEST_SUITE(BufferIterator)
 
     NSFX_TEST_CASE(Compare)/*{{{*/
     {
-        nsfx::Buffer b0(1000, 700, 300);
+        nsfx::Buffer b0(1000, 300, 700);
         // [700 s zs 300 ze e 300]
         nsfx::BufferIterator it0 = b0.begin();
         nsfx::BufferIterator it1 = b0.end();
@@ -98,7 +98,7 @@ NSFX_TEST_SUITE(BufferIterator)
 
     NSFX_TEST_CASE(MoveAround)/*{{{*/
     {
-        nsfx::Buffer b0(1000, 700, 300);
+        nsfx::Buffer b0(1000, 300, 700);
         // [700 s zs 300 ze e 300]
         nsfx::BufferIterator it = b0.begin();
 
@@ -132,7 +132,7 @@ NSFX_TEST_SUITE(BufferIterator)
         {
             NSFX_TEST_CASE(InHeaderArea)
             {
-                nsfx::Buffer b0(1000, 700, 300);
+                nsfx::Buffer b0(1000, 300, 700);
                 // [700 s zs 300 ze e 300]
                 b0.AddAtStart(100);
                 b0.AddAtEnd(100);
@@ -189,7 +189,7 @@ NSFX_TEST_SUITE(BufferIterator)
 
             NSFX_TEST_CASE(HeaderToZeroArea)
             {
-                nsfx::Buffer b0(1000, 700, 300);
+                nsfx::Buffer b0(1000, 300, 700);
                 // [700 s zs 300 ze e 300]
                 b0.AddAtStart(100);
                 b0.AddAtEnd(100);
@@ -230,7 +230,7 @@ NSFX_TEST_SUITE(BufferIterator)
 
             NSFX_TEST_CASE(InZeroArea)
             {
-                nsfx::Buffer b0(1000, 700, 300);
+                nsfx::Buffer b0(1000, 300, 700);
                 // [700 s zs 300 ze e 300]
                 b0.AddAtStart(100);
                 b0.AddAtEnd(100);
@@ -271,7 +271,7 @@ NSFX_TEST_SUITE(BufferIterator)
 
             NSFX_TEST_CASE(ZeroToTrailingArea)
             {
-                nsfx::Buffer b0(1000, 700, 300);
+                nsfx::Buffer b0(1000, 300, 700);
                 // [700 s zs 300 ze e 300]
                 b0.AddAtStart(100);
                 b0.AddAtEnd(100);
@@ -312,7 +312,7 @@ NSFX_TEST_SUITE(BufferIterator)
 
             NSFX_TEST_CASE(InTrailingArea)
             {
-                nsfx::Buffer b0(1000, 700, 300);
+                nsfx::Buffer b0(1000, 300, 700);
                 // [700 s zs 300 ze e 300]
                 b0.AddAtStart(100);
                 b0.AddAtEnd(100);
@@ -371,7 +371,7 @@ NSFX_TEST_SUITE(BufferIterator)
 
         NSFX_TEST_CASE(Endian)
         {
-            nsfx::Buffer b0(1000, 700, 300);
+            nsfx::Buffer b0(1000, 300, 700);
             // [700 s zs 300 ze e 300]
             b0.AddAtStart(100);
             // [600 s 100 zs 300 ze e 300]
@@ -646,7 +646,7 @@ NSFX_TEST_SUITE(BufferIterator)
 
         NSFX_TEST_CASE(AroundBuffer)
         {
-            nsfx::Buffer b0(1000, 700, 300);
+            nsfx::Buffer b0(1000, 300, 700);
             // [700 s zs 300 ze e 300]
             b0.AddAtStart(100);
             b0.AddAtEnd(100);
@@ -691,7 +691,7 @@ NSFX_TEST_SUITE(ConstBufferIterator)
 {
     NSFX_TEST_CASE(Ctor)/*{{{*/
     {
-        nsfx::Buffer b0(1000, 700, 300);
+        nsfx::Buffer b0(1000, 300, 700);
         // [700 s zs 300 ze e 300]
         b0.AddAtStart(100);
         b0.AddAtEnd(100);
@@ -710,7 +710,7 @@ NSFX_TEST_SUITE(ConstBufferIterator)
 
     NSFX_TEST_CASE(CopyCtor)/*{{{*/
     {
-        nsfx::Buffer b0(1000, 700, 300);
+        nsfx::Buffer b0(1000, 300, 700);
         // [700 s zs 300 ze e 300]
         b0.AddAtStart(100);
         b0.AddAtEnd(100);
@@ -731,7 +731,7 @@ NSFX_TEST_SUITE(ConstBufferIterator)
 
     NSFX_TEST_CASE(CopyAssign)/*{{{*/
     {
-        nsfx::Buffer b0(1000, 700, 300);
+        nsfx::Buffer b0(1000, 300, 700);
         // [700 s zs 300 ze e 300]
         b0.AddAtStart(100);
         b0.AddAtEnd(100);
@@ -753,7 +753,7 @@ NSFX_TEST_SUITE(ConstBufferIterator)
 
     NSFX_TEST_CASE(Compare)/*{{{*/
     {
-        nsfx::Buffer b0(1000, 700, 300);
+        nsfx::Buffer b0(1000, 300, 700);
         // [700 s zs 300 ze e 300]
         nsfx::ConstBufferIterator it0 = b0.cbegin();
         nsfx::ConstBufferIterator it1 = b0.cend();
@@ -778,7 +778,7 @@ NSFX_TEST_SUITE(ConstBufferIterator)
 
     NSFX_TEST_CASE(MoveAround)/*{{{*/
     {
-        nsfx::Buffer b0(1000, 700, 300);
+        nsfx::Buffer b0(1000, 300, 700);
         // [700 s zs 300 ze e 300]
         nsfx::ConstBufferIterator it = b0.cbegin();
 
@@ -812,7 +812,7 @@ NSFX_TEST_SUITE(ConstBufferIterator)
         {
             NSFX_TEST_CASE(InHeaderArea)
             {
-                nsfx::Buffer b0(1000, 700, 300);
+                nsfx::Buffer b0(1000, 300, 700);
                 // [700 s zs 300 ze e 300]
                 b0.AddAtStart(100);
                 b0.AddAtEnd(100);
@@ -840,7 +840,7 @@ NSFX_TEST_SUITE(ConstBufferIterator)
 
             NSFX_TEST_CASE(HeaderToZeroArea)
             {
-                nsfx::Buffer b0(1000, 700, 300);
+                nsfx::Buffer b0(1000, 300, 700);
                 // [700 s zs 300 ze e 300]
                 b0.AddAtStart(100);
                 b0.AddAtEnd(100);
@@ -868,7 +868,7 @@ NSFX_TEST_SUITE(ConstBufferIterator)
 
             NSFX_TEST_CASE(InZeroArea)
             {
-                nsfx::Buffer b0(1000, 700, 300);
+                nsfx::Buffer b0(1000, 300, 700);
                 // [700 s zs 300 ze e 300]
                 b0.AddAtStart(100);
                 b0.AddAtEnd(100);
@@ -896,7 +896,7 @@ NSFX_TEST_SUITE(ConstBufferIterator)
 
             NSFX_TEST_CASE(ZeroToTrailingArea)
             {
-                nsfx::Buffer b0(1000, 700, 300);
+                nsfx::Buffer b0(1000, 300, 700);
                 // [700 s zs 300 ze e 300]
                 b0.AddAtStart(100);
                 b0.AddAtEnd(100);
@@ -924,7 +924,7 @@ NSFX_TEST_SUITE(ConstBufferIterator)
 
             NSFX_TEST_CASE(InTrailingArea)
             {
-                nsfx::Buffer b0(1000, 700, 300);
+                nsfx::Buffer b0(1000, 300, 700);
                 // [700 s zs 300 ze e 300]
                 b0.AddAtStart(100);
                 b0.AddAtEnd(100);
@@ -954,7 +954,7 @@ NSFX_TEST_SUITE(ConstBufferIterator)
 
         NSFX_TEST_CASE(Endian)
         {
-            nsfx::Buffer b0(1000, 700, 300);
+            nsfx::Buffer b0(1000, 300, 700);
             // [700 s zs 300 ze e 300]
             b0.AddAtStart(100);
             // [600 s 100 zs 300 ze e 300]
@@ -1218,7 +1218,7 @@ NSFX_TEST_SUITE(ConstBufferIterator)
 
         NSFX_TEST_CASE(AroundBuffer)
         {
-            nsfx::Buffer b0(1000, 700, 300);
+            nsfx::Buffer b0(1000, 300, 700);
             // [700 s zs 300 ze e 300]
             b0.AddAtStart(100);
             b0.AddAtEnd(100);

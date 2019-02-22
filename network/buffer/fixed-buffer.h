@@ -55,6 +55,8 @@ public:
      * @brief Create a buffer.
      *
      * @param[in] size The size of the buffer.
+     *
+     * The buffer is not filled with zeros.
      */
     explicit BasicBuffer(size_t size);
 
