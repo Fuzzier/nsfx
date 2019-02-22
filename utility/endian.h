@@ -31,11 +31,11 @@ namespace endian
 enum Order
 {
     little, big,
-#if defined(BOOST_LITTLE_ENDIAN)
+#if defined(BOOST_ENDIAN_LITTLE_BYTE)
     native = little
-#else // if defined(BOOST_BIG_ENDIAN)
+#elif defined(BOOST_ENDIAN_BIG_BYTE)
     native = big
-#endif // defined(BOOST_LITTLE_ENDIAN)
+#endif // defined(BOOST_ENDIAN_LITTLE_BYTE)
 };
 
 

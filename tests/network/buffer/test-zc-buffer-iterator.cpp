@@ -332,7 +332,7 @@ NSFX_TEST_SUITE(ZcBufferIterator)
             double   nd  = *(reinterpret_cast<double*>(&n64));
             double   rd  = *(reinterpret_cast<double*>(&r64));
             // l: little, b: big
-#if defined(BOOST_LITTLE_ENDIAN)
+#if defined(BOOST_ENDIAN_LITTLE_BYTE)
             uint8_t  l8  = n8;
             uint8_t  b8  = r8;
             uint16_t l16 = n16;
@@ -345,7 +345,7 @@ NSFX_TEST_SUITE(ZcBufferIterator)
             float    bf  = rf;
             double   ld  = nd;
             double   bd  = rd;
-#else // if defined(BOOST_BIG_ENDIAN)
+#else // if defined(BOOST_ENDIAN_BIG_BYTE)
             uint8_t  l8  = r8;
             uint8_t  b8  = n8;
             uint16_t l16 = r16;
@@ -358,7 +358,7 @@ NSFX_TEST_SUITE(ZcBufferIterator)
             float    bf  = nf;
             double   ld  = rd;
             double   bd  = nd;
-#endif // defined(BOOST_LITTLE_ENDIAN)
+#endif // defined(BOOST_ENDIAN_LITTLE_BYTE)
 
             // native
             it.Write<int8_t>(n8);
@@ -968,7 +968,7 @@ NSFX_TEST_SUITE(ConstZcBufferIterator)
             double   nd  = *(reinterpret_cast<double*>(&n64));
             double   rd  = *(reinterpret_cast<double*>(&r64));
             // l: little, b: big
-#if defined(BOOST_LITTLE_ENDIAN)
+#if defined(BOOST_ENDIAN_LITTLE_BYTE)
             uint8_t  l8  = n8;
             uint8_t  b8  = r8;
             uint16_t l16 = n16;
@@ -981,7 +981,7 @@ NSFX_TEST_SUITE(ConstZcBufferIterator)
             float    bf  = rf;
             double   ld  = nd;
             double   bd  = rd;
-#else // if defined(BOOST_BIG_ENDIAN)
+#else // if defined(BOOST_ENDIAN_BIG_BYTE)
             uint8_t  l8  = r8;
             uint8_t  b8  = n8;
             uint16_t l16 = r16;
@@ -994,7 +994,7 @@ NSFX_TEST_SUITE(ConstZcBufferIterator)
             float    bf  = nf;
             double   ld  = rd;
             double   bd  = nd;
-#endif // defined(BOOST_LITTLE_ENDIAN)
+#endif // defined(BOOST_ENDIAN_LITTLE_BYTE)
 
             // native
             it.Write<int8_t>(n8);
