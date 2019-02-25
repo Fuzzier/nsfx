@@ -55,12 +55,6 @@ NSFX_TEST_SUITE(Portainer)
             NSFX_TEST_EXPECT_EQ(ct.GetSize(), 0);
 
             ////////////////////////////////////////
-            // Cannot insert empty item.
-            Item a;
-            NSFX_TEST_EXPECT_EQ(ct.Add(a), 0);
-            NSFX_TEST_EXPECT_EQ(ct.GetSize(), 0);
-
-            ////////////////////////////////////////
             // Add.
             nsfx::cookie_t cookies[3];
             Item b(1);
@@ -115,12 +109,6 @@ NSFX_TEST_SUITE(Portainer)
         try
         {
             nsfx::Portainer<Item, 1> ct;
-            NSFX_TEST_EXPECT_EQ(ct.GetSize(), 0);
-
-            ////////////////////////////////////////
-            // Cannot insert empty item.
-            Item a;
-            NSFX_TEST_EXPECT_EQ(ct.Add(a), 0);
             NSFX_TEST_EXPECT_EQ(ct.GetSize(), 0);
 
             ////////////////////////////////////////

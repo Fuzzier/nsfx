@@ -136,8 +136,9 @@ public:
 public:
     cookie_t Add(const T& item)
     {
+        BOOST_ASSERT(!!item);
         cookie_t cookie = 0;
-        if (!!item && size_ < capacity)
+        if (size_ < capacity)
         {
             cookie = InternalAdd(item);
         }
@@ -146,8 +147,9 @@ public:
 
     cookie_t Add(T&& item)
     {
+        BOOST_ASSERT(!!item);
         cookie_t cookie = 0;
-        if (!!item && size_ < capacity)
+        if (size_ < capacity)
         {
             cookie = InternalAdd(std::move(item));
         }
@@ -274,8 +276,9 @@ public:
 public:
     cookie_t Add(const T& item)
     {
+        BOOST_ASSERT(!!item);
         cookie_t cookie = 0;
-        if (!!item && !item_)
+        if (!item_)
         {
             item_ = item;
             cookie = 1;
@@ -285,8 +288,9 @@ public:
 
     cookie_t Add(T&& item)
     {
+        BOOST_ASSERT(!!item);
         cookie_t cookie = 0;
-        if (!!item && !item_)
+        if (!item_)
         {
             item_ = std::move(item);
             cookie = 1;
