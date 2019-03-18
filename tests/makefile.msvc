@@ -576,8 +576,12 @@ RANDOM_HEADERS=                                                             \
     $(NSFX_PATH)/random/config.h                                            \
     $(NSFX_PATH)/random/detail/rot.h                                        \
     $(NSFX_PATH)/random/detail/is-power-2.h                                 \
-    $(NSFX_PATH)/random/distribution/i-uniform-int-distribution.h           \
-    $(NSFX_PATH)/random/distribution/i-uniform-real-distribution.h          \
+    $(NSFX_PATH)/random/distribution/i-uniform-uint32-distribution.h        \
+    $(NSFX_PATH)/random/distribution/i-uniform-int32-distribution.h         \
+    $(NSFX_PATH)/random/distribution/i-uniform-uint64-distribution.h        \
+    $(NSFX_PATH)/random/distribution/i-uniform-int64-distribution.h         \
+    $(NSFX_PATH)/random/distribution/i-uniform-double-distribution.h        \
+    $(NSFX_PATH)/random/distribution/i-uniform-float-distribution.h         \
     $(NSFX_PATH)/random/distribution/i-bernoulli-distribution.h             \
     $(NSFX_PATH)/random/distribution/i-binomial-distribution.h              \
     $(NSFX_PATH)/random/distribution/i-geometric-distribution.h             \
@@ -599,8 +603,12 @@ RANDOM_HEADERS=                                                             \
     $(NSFX_PATH)/random/distribution/i-piecewise-constant-distribution.h    \
     $(NSFX_PATH)/random/distribution/i-piecewise-linear-distribution.h      \
     $(NSFX_PATH)/random/distribution/i-triangle-distribution.h              \
-    $(NSFX_PATH)/random/distribution/std-uniform-int-distribution.h         \
-    $(NSFX_PATH)/random/distribution/std-uniform-real-distribution.h        \
+    $(NSFX_PATH)/random/distribution/std-uniform-uint32-distribution.h      \
+    $(NSFX_PATH)/random/distribution/std-uniform-int32-distribution.h       \
+    $(NSFX_PATH)/random/distribution/std-uniform-uint64-distribution.h      \
+    $(NSFX_PATH)/random/distribution/std-uniform-int64-distribution.h       \
+    $(NSFX_PATH)/random/distribution/std-uniform-double-distribution.h      \
+    $(NSFX_PATH)/random/distribution/std-uniform-float-distribution.h       \
     $(NSFX_PATH)/random/distribution/std-bernoulli-distribution.h           \
     $(NSFX_PATH)/random/distribution/std-binomial-distribution.h            \
     $(NSFX_PATH)/random/distribution/std-geometric-distribution.h           \

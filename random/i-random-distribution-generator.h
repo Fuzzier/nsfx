@@ -22,8 +22,12 @@
 #include <nsfx/component/i-user.h>
 #include <nsfx/component/ptr.h>
 
-#include <nsfx/random/distribution/i-uniform-int-distribution.h>
-#include <nsfx/random/distribution/i-uniform-real-distribution.h>
+#include <nsfx/random/distribution/i-uniform-uint32-distribution.h>
+#include <nsfx/random/distribution/i-uniform-int32-distribution.h>
+#include <nsfx/random/distribution/i-uniform-uint64-distribution.h>
+#include <nsfx/random/distribution/i-uniform-int64-distribution.h>
+#include <nsfx/random/distribution/i-uniform-double-distribution.h>
+#include <nsfx/random/distribution/i-uniform-float-distribution.h>
 
 #include <nsfx/random/distribution/i-bernoulli-distribution.h>
 #include <nsfx/random/distribution/i-binomial-distribution.h>
@@ -62,8 +66,12 @@ NSFX_OPEN_NAMESPACE
  *
  * # Supported statistical distributions
  * ## Uniform distributions
- * * \c IUniformIntDistribution
- * * \c IUniformRealDistribution
+ * * \c IUniformUint32Distribution
+ * * \c IUniformInt32Distribution
+ * * \c IUniformUint64Distribution
+ * * \c IUniformInt64Distribution
+ * * \c IUniformDoubleDistribution
+ * * \c IUniformFloatDistribution
  * ## Bernoulli distributions
  * * \c IBernoulliDistribution
  * * \c IBinomialDistribution
@@ -107,8 +115,47 @@ public:
      * The possible values the distribution can generate is within
      * <i>[lb, ub]</i>.
      */
-    virtual Ptr<IUniformIntDistribution>
-            CreateUniformIntDistribution(int32_t lb, int32_t ub) = 0;
+    virtual Ptr<IUniformUint32Distribution>
+            CreateUniformUint32Distribution(uint32_t lb, uint32_t ub) = 0;
+
+    /**
+     * @brief Create a discrete uniform distribution.
+     *
+     * @param[in] lb The lower bound of the range.
+     * @param[in] ub The upper bound of the range.
+     *            It <b>must</b> be greater than or equal to \c lb.
+     *
+     * The possible values the distribution can generate is within
+     * <i>[lb, ub]</i>.
+     */
+    virtual Ptr<IUniformInt32Distribution>
+            CreateUniformInt32Distribution(int32_t lb, int32_t ub) = 0;
+
+    /**
+     * @brief Create a discrete uniform distribution.
+     *
+     * @param[in] lb The lower bound of the range.
+     * @param[in] ub The upper bound of the range.
+     *            It <b>must</b> be greater than or equal to \c lb.
+     *
+     * The possible values the distribution can generate is within
+     * <i>[lb, ub]</i>.
+     */
+    virtual Ptr<IUniformUint64Distribution>
+            CreateUniformUint64Distribution(uint64_t lb, uint64_t ub) = 0;
+
+    /**
+     * @brief Create a discrete uniform distribution.
+     *
+     * @param[in] lb The lower bound of the range.
+     * @param[in] ub The upper bound of the range.
+     *            It <b>must</b> be greater than or equal to \c lb.
+     *
+     * The possible values the distribution can generate is within
+     * <i>[lb, ub]</i>.
+     */
+    virtual Ptr<IUniformInt64Distribution>
+            CreateUniformInt64Distribution(int64_t lb, int64_t ub) = 0;
 
     /**
      * @brief Create a continous uniform distribution.
@@ -120,8 +167,21 @@ public:
      * The possible values the distribution can generate is within
      * <i>[lb, ub)</i>.
      */
-    virtual Ptr<IUniformRealDistribution>
-            CreateUniformRealDistribution(double lb, double ub) = 0;
+    virtual Ptr<IUniformDoubleDistribution>
+            CreateUniformDoubleDistribution(double lb, double ub) = 0;
+
+    /**
+     * @brief Create a continous uniform distribution.
+     *
+     * @param[in] lb The lower bound of the range.
+     * @param[in] ub The upper bound of the range.
+     *            It <b>must</b> be greater than or equal to \c lb.
+     *
+     * The possible values the distribution can generate is within
+     * <i>[lb, ub)</i>.
+     */
+    virtual Ptr<IUniformFloatDistribution>
+            CreateUniformFloatDistribution(float lb, float ub) = 0;
 
     /**
      * @brief Create a Bernoulli distribution.

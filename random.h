@@ -20,8 +20,12 @@
 #include <nsfx/random/config.h>
 
 // Distributions.
-#include <nsfx/random/distribution/i-uniform-int-distribution.h>
-#include <nsfx/random/distribution/i-uniform-real-distribution.h>
+#include <nsfx/random/distribution/i-uniform-uint32-distribution.h>
+#include <nsfx/random/distribution/i-uniform-int32-distribution.h>
+#include <nsfx/random/distribution/i-uniform-uint64-distribution.h>
+#include <nsfx/random/distribution/i-uniform-int64-distribution.h>
+#include <nsfx/random/distribution/i-uniform-double-distribution.h>
+#include <nsfx/random/distribution/i-uniform-float-distribution.h>
 
 #include <nsfx/random/distribution/i-bernoulli-distribution.h>
 #include <nsfx/random/distribution/i-binomial-distribution.h>

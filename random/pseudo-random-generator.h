@@ -27,8 +27,12 @@
 
 #include <nsfx/random/i-random-distribution-generator.h>
 
-#include <nsfx/random/distribution/std-uniform-int-distribution.h>
-#include <nsfx/random/distribution/std-uniform-real-distribution.h>
+#include <nsfx/random/distribution/std-uniform-uint32-distribution.h>
+#include <nsfx/random/distribution/std-uniform-int32-distribution.h>
+#include <nsfx/random/distribution/std-uniform-uint64-distribution.h>
+#include <nsfx/random/distribution/std-uniform-int64-distribution.h>
+#include <nsfx/random/distribution/std-uniform-double-distribution.h>
+#include <nsfx/random/distribution/std-uniform-float-distribution.h>
 
 #include <nsfx/random/distribution/std-bernoulli-distribution.h>
 #include <nsfx/random/distribution/std-binomial-distribution.h>
@@ -208,21 +212,57 @@ public:
     }
 
 public:
-    virtual Ptr<IUniformIntDistribution>
-            CreateUniformIntDistribution(int32_t lb, int32_t ub) NSFX_OVERRIDE
+    virtual Ptr<IUniformUint32Distribution>
+            CreateUniformUint32Distribution(uint32_t lb, uint32_t ub) NSFX_OVERRIDE
     {
         BOOST_ASSERT(lb <= ub);
-        return Ptr<IUniformIntDistribution>(
-            new Object<StdUniformIntDistribution<ThisClass>>(
+        return Ptr<IUniformUint32Distribution>(
+            new Object<StdUniformUint32Distribution<ThisClass>>(
                 Ptr<ThisClass>(this), lb, ub));
     }
 
-    virtual Ptr<IUniformRealDistribution>
-            CreateUniformRealDistribution(double lb, double ub) NSFX_OVERRIDE
+    virtual Ptr<IUniformInt32Distribution>
+            CreateUniformInt32Distribution(int32_t lb, int32_t ub) NSFX_OVERRIDE
     {
         BOOST_ASSERT(lb <= ub);
-        return Ptr<IUniformRealDistribution>(
-            new Object<StdUniformRealDistribution<ThisClass>>(
+        return Ptr<IUniformInt32Distribution>(
+            new Object<StdUniformInt32Distribution<ThisClass>>(
+                Ptr<ThisClass>(this), lb, ub));
+    }
+
+    virtual Ptr<IUniformUint64Distribution>
+            CreateUniformUint64Distribution(uint64_t lb, uint64_t ub) NSFX_OVERRIDE
+    {
+        BOOST_ASSERT(lb <= ub);
+        return Ptr<IUniformUint64Distribution>(
+            new Object<StdUniformUint64Distribution<ThisClass>>(
+                Ptr<ThisClass>(this), lb, ub));
+    }
+
+    virtual Ptr<IUniformInt64Distribution>
+            CreateUniformInt64Distribution(int64_t lb, int64_t ub) NSFX_OVERRIDE
+    {
+        BOOST_ASSERT(lb <= ub);
+        return Ptr<IUniformInt64Distribution>(
+            new Object<StdUniformInt64Distribution<ThisClass>>(
+                Ptr<ThisClass>(this), lb, ub));
+    }
+
+    virtual Ptr<IUniformDoubleDistribution>
+            CreateUniformDoubleDistribution(double lb, double ub) NSFX_OVERRIDE
+    {
+        BOOST_ASSERT(lb <= ub);
+        return Ptr<IUniformDoubleDistribution>(
+            new Object<StdUniformDoubleDistribution<ThisClass>>(
+                Ptr<ThisClass>(this), lb, ub));
+    }
+
+    virtual Ptr<IUniformFloatDistribution>
+            CreateUniformFloatDistribution(float lb, float ub) NSFX_OVERRIDE
+    {
+        BOOST_ASSERT(lb <= ub);
+        return Ptr<IUniformFloatDistribution>(
+            new Object<StdUniformFloatDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), lb, ub));
     }
 

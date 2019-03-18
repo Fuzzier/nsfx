@@ -45,8 +45,12 @@ struct TestDistributions
 
     void Test(void)
     {
-        TestUniformIntDistribution();
-        TestUniformRealDistribution();
+        TestUniformUint32Distribution();
+        TestUniformInt32Distribution();
+        TestUniformUint64Distribution();
+        TestUniformInt64Distribution();
+        TestUniformDoubleDistribution();
+        TestUniformFloatDistribution();
         TestBernoulliDistribution();
         TestBinomialDistribution();
         TestGeometricDistribution();
@@ -70,10 +74,31 @@ struct TestDistributions
         TestTriangleDistribution();
     }
 
-    void TestUniformIntDistribution(void)
+    void TestUniformUint32Distribution()
     {
-        nsfx::Ptr<nsfx::IUniformIntDistribution> d =
-            dg_->CreateUniformIntDistribution(-100, 100);
+        nsfx::Ptr<nsfx::IUniformUint32Distribution> d =
+            dg_->CreateUniformUint32Distribution(0, 100);
+        NSFX_TEST_EXPECT_EQ(d->GetMinValue(), 0);
+        NSFX_TEST_EXPECT_EQ(d->GetMaxValue(), 100);
+        NSFX_TEST_EXPECT_EQ(d->GetLowerBound(), 0);
+        NSFX_TEST_EXPECT_EQ(d->GetUpperBound(), 100);
+        double count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            uint32_t x = d->Generate();
+            count += x;
+            NSFX_TEST_EXPECT_GE(x, 0UL);
+            NSFX_TEST_EXPECT_LE(x, 100UL);
+        }
+        double expected = 100 / 2.0;
+        NSFX_TEST_EXPECT_AC(expected, count / N, 1) << "uniform uint32";
+        d->Reset();
+    }
+
+    void TestUniformInt32Distribution()
+    {
+        nsfx::Ptr<nsfx::IUniformInt32Distribution> d =
+            dg_->CreateUniformInt32Distribution(-100, 100);
         NSFX_TEST_EXPECT_EQ(d->GetMinValue(), -100);
         NSFX_TEST_EXPECT_EQ(d->GetMaxValue(),  100);
         NSFX_TEST_EXPECT_EQ(d->GetLowerBound(), -100);
@@ -81,20 +106,62 @@ struct TestDistributions
         double count = 0;
         for (size_t i = 0; i < N; ++i)
         {
-            int x = d->Generate();
+            int32_t x = d->Generate();
             count += x;
-            NSFX_TEST_EXPECT_GE(x, -100);
-            NSFX_TEST_EXPECT_LE(x,  100);
+            NSFX_TEST_EXPECT_GE(x, -100L);
+            NSFX_TEST_EXPECT_LE(x,  100L);
         }
         double expected = 0;
-        NSFX_TEST_EXPECT_AC(expected, count / N, 1) << "uniform int";
+        NSFX_TEST_EXPECT_AC(expected, count / N, 1) << "uniform int32";
         d->Reset();
     }
 
-    void TestUniformRealDistribution(void)
+    void TestUniformUint64Distribution()
     {
-        nsfx::Ptr<nsfx::IUniformRealDistribution> d =
-            dg_->CreateUniformRealDistribution(-100, 100);
+        nsfx::Ptr<nsfx::IUniformUint64Distribution> d =
+            dg_->CreateUniformUint64Distribution(0, 100);
+        NSFX_TEST_EXPECT_EQ(d->GetMinValue(), 0);
+        NSFX_TEST_EXPECT_EQ(d->GetMaxValue(), 100);
+        NSFX_TEST_EXPECT_EQ(d->GetLowerBound(), 0);
+        NSFX_TEST_EXPECT_EQ(d->GetUpperBound(), 100);
+        double count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            uint64_t x = d->Generate();
+            count += x;
+            NSFX_TEST_EXPECT_GE(x, 0ULL);
+            NSFX_TEST_EXPECT_LE(x, 100ULL);
+        }
+        double expected = 100 / 2.0;
+        NSFX_TEST_EXPECT_AC(expected, count / N, 1) << "uniform uint64";
+        d->Reset();
+    }
+
+    void TestUniformInt64Distribution()
+    {
+        nsfx::Ptr<nsfx::IUniformInt64Distribution> d =
+            dg_->CreateUniformInt64Distribution(-100, 100);
+        NSFX_TEST_EXPECT_EQ(d->GetMinValue(), -100);
+        NSFX_TEST_EXPECT_EQ(d->GetMaxValue(),  100);
+        NSFX_TEST_EXPECT_EQ(d->GetLowerBound(), -100);
+        NSFX_TEST_EXPECT_EQ(d->GetUpperBound(),  100);
+        double count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            int64_t x = d->Generate();
+            count += x;
+            NSFX_TEST_EXPECT_GE(x, -100LL);
+            NSFX_TEST_EXPECT_LE(x,  100LL);
+        }
+        double expected = 0;
+        NSFX_TEST_EXPECT_AC(expected, count / N, 1) << "uniform int64";
+        d->Reset();
+    }
+
+    void TestUniformDoubleDistribution(void)
+    {
+        nsfx::Ptr<nsfx::IUniformDoubleDistribution> d =
+            dg_->CreateUniformDoubleDistribution(-100, 100);
         NSFX_TEST_EXPECT_EQ(d->GetMinValue(), -100);
         NSFX_TEST_EXPECT_EQ(d->GetMaxValue(),  100);
         NSFX_TEST_EXPECT_EQ(d->GetLowerBound(), -100);
@@ -108,7 +175,28 @@ struct TestDistributions
             NSFX_TEST_EXPECT_LT(x,  100);
         }
         double expected = 0;
-        NSFX_TEST_EXPECT_AC(expected, count / N, 1) << "uniform real";
+        NSFX_TEST_EXPECT_AC(expected, count / N, 1) << "uniform double";
+        d->Reset();
+    }
+
+    void TestUniformFloatDistribution(void)
+    {
+        nsfx::Ptr<nsfx::IUniformFloatDistribution> d =
+            dg_->CreateUniformFloatDistribution(-100, 100);
+        NSFX_TEST_EXPECT_EQ(d->GetMinValue(), -100);
+        NSFX_TEST_EXPECT_EQ(d->GetMaxValue(),  100);
+        NSFX_TEST_EXPECT_EQ(d->GetLowerBound(), -100);
+        NSFX_TEST_EXPECT_EQ(d->GetUpperBound(),  100);
+        double count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            float x = d->Generate();
+            count += x;
+            NSFX_TEST_EXPECT_GE(x, -100);
+            NSFX_TEST_EXPECT_LT(x,  100);
+        }
+        double expected = 0;
+        NSFX_TEST_EXPECT_AC(expected, count / N, 1) << "uniform float";
         d->Reset();
     }
 

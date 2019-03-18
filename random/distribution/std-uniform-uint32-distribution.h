@@ -5,22 +5,22 @@
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
- * @date    2018-09-24
+ * @date    2019-03-18
  *
- * @copyright Copyright (c) 2018.
+ * @copyright Copyright (c) 2019.
  *   National Key Laboratory of Science and Technology on Communications,
  *   University of Electronic Science and Technology of China.
  *   All rights reserved.
  */
 
-#ifndef STD_UNIFORM_REAL_DISTRIBUTION_H__D99597F6_4339_49F6_9CFB_220EE5660DFC
-#define STD_UNIFORM_REAL_DISTRIBUTION_H__D99597F6_4339_49F6_9CFB_220EE5660DFC
+#ifndef STD_UNIFORM_UINT32_DISTRIBUTION_H__EC9BC948_8532_4BF2_A55E_64FDBF79EA5F
+#define STD_UNIFORM_UINT32_DISTRIBUTION_H__EC9BC948_8532_4BF2_A55E_64FDBF79EA5F
 
 
 #include <nsfx/random/config.h>
-#include <nsfx/random/distribution/i-uniform-real-distribution.h>
+#include <nsfx/random/distribution/i-uniform-uint32-distribution.h>
 #include <nsfx/component/object.h>
-#include <boost/random/uniform_real_distribution.hpp>
+#include <boost/random/uniform_int_distribution.hpp>
 
 
 NSFX_OPEN_NAMESPACE
@@ -29,7 +29,7 @@ NSFX_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Random
- * @brief A uniform distribution.
+ * @brief A discrete uniform distribution.
  *
  * @tparam StdRng A <code>StdRandomNumberEngine<></code> or
  *                a <code>StdRandomDevice</code>.
@@ -38,27 +38,27 @@ NSFX_OPEN_NAMESPACE
  *                a pointer to the underlying random number engine or random
  *                device.
  *
- * Provides \c IUniformRealDistribution.
+ * Provides \c IUniformUint32Distribution.
  */
 template<class StdRng>
-class StdUniformRealDistribution :
-    public IUniformRealDistribution
+class StdUniformUint32Distribution :
+    public IUniformUint32Distribution
 {
-    typedef StdUniformRealDistribution ThisClass;
-    typedef boost::random::uniform_real_distribution<double> DistributionType;
+    typedef StdUniformUint32Distribution ThisClass;
+    typedef boost::random::uniform_int_distribution<uint32_t> DistributionType;
     typedef StdRng RngType;
 
 public:
-    StdUniformRealDistribution(Ptr<RngType> rng, double lb, double ub) :
+    StdUniformUint32Distribution(Ptr<RngType> rng, uint32_t lb, uint32_t ub) :
         rng_(rng),
         dist_(lb, ub)
     {
         BOOST_ASSERT(rng);
     }
 
-    virtual ~StdUniformRealDistribution(void) {}
+    virtual ~StdUniformUint32Distribution(void) {}
 
-    virtual double Generate(void) NSFX_OVERRIDE
+    virtual uint32_t Generate(void) NSFX_OVERRIDE
     {
         return dist_(rng_->GetRng());
     }
@@ -68,28 +68,28 @@ public:
         return dist_.reset();
     }
 
-    virtual double GetMinValue(void) NSFX_OVERRIDE
+    virtual uint32_t GetMinValue(void) NSFX_OVERRIDE
     {
         return (dist_.min)();
     }
 
-    virtual double GetMaxValue(void) NSFX_OVERRIDE
+    virtual uint32_t GetMaxValue(void) NSFX_OVERRIDE
     {
         return (dist_.max)();
     }
 
-    virtual double GetLowerBound(void) NSFX_OVERRIDE
+    virtual uint32_t GetLowerBound(void) NSFX_OVERRIDE
     {
         return dist_.a();
     }
 
-    virtual double GetUpperBound(void) NSFX_OVERRIDE
+    virtual uint32_t GetUpperBound(void) NSFX_OVERRIDE
     {
         return dist_.b();
     }
 
     NSFX_INTERFACE_MAP_BEGIN(ThisClass)
-        NSFX_INTERFACE_ENTRY(IUniformRealDistribution)
+        NSFX_INTERFACE_ENTRY(IUniformUint32Distribution)
     NSFX_INTERFACE_MAP_END()
 
 private:
@@ -101,5 +101,5 @@ private:
 NSFX_CLOSE_NAMESPACE
 
 
-#endif // STD_UNIFORM_REAL_DISTRIBUTION_H__D99597F6_4339_49F6_9CFB_220EE5660DFC
+#endif // STD_UNIFORM_UINT32_DISTRIBUTION_H__EC9BC948_8532_4BF2_A55E_64FDBF79EA5F
 
