@@ -25,6 +25,7 @@ NSFX_OPEN_NAMESPACE
 
 /**
  * @defgroup Network
+ * @brief Network support.
  */
 
 

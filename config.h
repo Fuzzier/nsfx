@@ -262,7 +262,7 @@ NSFX_CLOSE_NAMESPACE
 // Endian-ness.
 #include <boost/predef/other/endian.h>
 
-#if !defined(BOOST_ENDIAN_LITTLE_BYTE) && !defined(BOOST_ENDIAN_BIG_BYTE)
+#if !BOOST_ENDIAN_BIG_BYTE && !BOOST_ENDIAN_LITTLE_BYTE
 # error  Unsupported endianness.
 #endif
 

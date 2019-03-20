@@ -46,25 +46,19 @@ public:
 
 private:
     // Endian tag.
-    struct ReverseEndianTag {};
     struct KeepEndianTag {};
+    struct ReverseEndianTag {};
 
-    template<bool reverseEndian>
-    struct MakeBoolEndianTag
-    {
-        typedef ReverseEndianTag  type;
-    };
-
-    template<>
-    struct MakeBoolEndianTag<false>
+    template<class endian_t, bool = endian_traits<endian_t>::is_native>
+    struct MakeEndianTag
     {
         typedef KeepEndianTag  type;
     };
 
-    template<endian::Order order>
-    struct MakeEndianTag
+    template<class endian_t>
+    struct MakeEndianTag<endian_t, /* is_native = */false>
     {
-        typedef typename MakeBoolEndianTag<order != endian::native>::type  type;
+        typedef ReverseEndianTag  type;
     };
 
     // Area tag.
@@ -152,9 +146,14 @@ private:
      * @brief Write data in specified endian order.
      *
      * @tparam T Must be an integral type.
+     * @tparam endian_t  Use one of the pre-defined enumeration values to
+     *                   automatically deduce this type.
+     *                   * \c big_endian
+     *                   * \c little_endian
+     *                   * \c native_endian
      */
-    template<class T, endian::Order order>
-    void WriteInOrder(T data) BOOST_NOEXCEPT;
+    template<class T, class endian_t>
+    void WriteInOrder(T data, endian_t) BOOST_NOEXCEPT;
 
     void InternalWrite(uint8_t  value, size_t offset, KeepEndianTag) BOOST_NOEXCEPT;
     void InternalWrite(uint16_t value, size_t offset, KeepEndianTag) BOOST_NOEXCEPT;
@@ -188,8 +187,8 @@ public:
     void WriteB(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
 
 private:
-    template<endian::Order order>
-    void WriteInOrder(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+    template<class endian_t>
+    void WriteInOrder(const uint8_t* bytes, size_t size, endian_t) BOOST_NOEXCEPT;
 
     void InternalWrite(const uint8_t* bytes, size_t size, size_t offset, KeepEndianTag) BOOST_NOEXCEPT;
     void InternalWrite(const uint8_t* bytes, size_t size, size_t offset, ReverseEndianTag) BOOST_NOEXCEPT;
@@ -225,9 +224,14 @@ private:
      * @brief Read data in the specified endian order.
      *
      * @tparam T Must be an integral type.
+     * @tparam endian_t  Use one of the pre-defined enumeration values to
+     *                   automatically deduce this type.
+     *                   * \c big_endian
+     *                   * \c little_endian
+     *                   * \c native_endian
      */
-    template<class T, endian::Order order>
-    T ReadInOrder(void) BOOST_NOEXCEPT;
+    template<class T, class endian_t>
+    T ReadInOrder(endian_t) BOOST_NOEXCEPT;
 
     uint8_t  InternalRead(size_t offset, ReadTag<uint8_t,  InSolidAreaTag>, KeepEndianTag) BOOST_NOEXCEPT;
     uint16_t InternalRead(size_t offset, ReadTag<uint16_t, InSolidAreaTag>, KeepEndianTag) BOOST_NOEXCEPT;
@@ -261,8 +265,8 @@ public:
     void ReadB(uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
 
 private:
-    template<endian::Order order>
-    void ReadInOrder(uint8_t* bytes, size_t size) BOOST_NOEXCEPT;
+    template<class endian_t>
+    void ReadInOrder(uint8_t* bytes, size_t size, endian_t) BOOST_NOEXCEPT;
 
     void InternalRead(uint8_t* bytes, size_t size, size_t offset, InSolidAreaTag, KeepEndianTag) BOOST_NOEXCEPT;
     void InternalRead(uint8_t* bytes, size_t size, size_t offset, InSolidAreaTag, ReverseEndianTag) BOOST_NOEXCEPT;
@@ -414,33 +418,33 @@ template<class T>
 inline void
 BufferIterator::Write(typename boost::type_identity<T>::type  data) BOOST_NOEXCEPT
 {
-    WriteInOrder<T, endian::native>(data);
+    WriteInOrder<T>(data, native_endian);
 }
 
 template<class T>
 inline void
 BufferIterator::WriteL(typename boost::type_identity<T>::type  data) BOOST_NOEXCEPT
 {
-    WriteInOrder<T, endian::little>(data);
+    WriteInOrder<T>(data, little_endian);
 }
 
 template<class T>
 inline void
 BufferIterator::WriteB(typename boost::type_identity<T>::type  data) BOOST_NOEXCEPT
 {
-    WriteInOrder<T, endian::big>(data);
+    WriteInOrder<T>(data, big_endian);
 }
 
-template<class T, endian::Order order>
+template<class T, class endian_t>
 inline void
-BufferIterator::WriteInOrder(T data) BOOST_NOEXCEPT
+BufferIterator::WriteInOrder(T data, endian_t) BOOST_NOEXCEPT
 {
     static_assert(std::is_integral<T>::value ||
                   std::is_floating_point<T>::value,
                   "Invalid data type.");
     WritableCheck(sizeof (T));
-    typedef typename MakeEndianTag<order>::type  E;
-    typedef typename MakeRegularType<T>::type  V;
+    typedef typename MakeEndianTag<endian_t>::type  E;
+    typedef typename MakeRegularType<T>::type       V;
     InternalWrite(static_cast<V>(data), cursor_, E());
 }
 
@@ -649,28 +653,28 @@ BufferIterator::InternalWrite(double value, size_t offset, ReverseEndianTag) BOO
 inline void
 BufferIterator::Write(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
 {
-    WriteInOrder<endian::native>(bytes, size);
+    WriteInOrder(bytes, size, native_endian);
 }
 
 inline void
 BufferIterator::WriteL(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
 {
-    WriteInOrder<endian::little>(bytes, size);
+    WriteInOrder(bytes, size, little_endian);
 }
 
 inline void
 BufferIterator::WriteB(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
 {
-    WriteInOrder<endian::big>(bytes, size);
+    WriteInOrder(bytes, size, big_endian);
 }
 
-template<endian::Order order>
+template<class endian_t>
 inline void
-BufferIterator::WriteInOrder(const uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+BufferIterator::WriteInOrder(const uint8_t* bytes, size_t size, endian_t) BOOST_NOEXCEPT
 {
     BOOST_ASSERT(bytes);
     WritableCheck(size);
-    typedef typename MakeEndianTag<order>::type  E;
+    typedef typename MakeEndianTag<endian_t>::type  E;
     InternalWrite(bytes, size, cursor_, E());
 }
 
@@ -698,33 +702,33 @@ template<class T>
 inline T
 BufferIterator::Read(void) BOOST_NOEXCEPT
 {
-    return ReadInOrder<T, endian::native>();
+    return ReadInOrder<T>(native_endian);
 }
 
 template<class T>
 inline T
 BufferIterator::ReadL(void) BOOST_NOEXCEPT
 {
-    return ReadInOrder<T, endian::little>();
+    return ReadInOrder<T>(little_endian);
 }
 
 template<class T>
 inline T
 BufferIterator::ReadB(void) BOOST_NOEXCEPT
 {
-    return ReadInOrder<T, endian::big>();
+    return ReadInOrder<T>(big_endian);
 }
 
-template<class T, endian::Order order>
+template<class T, class endian_t>
 inline T
-BufferIterator::ReadInOrder(void) BOOST_NOEXCEPT
+BufferIterator::ReadInOrder(endian_t) BOOST_NOEXCEPT
 {
     static_assert(std::is_integral<T>::value ||
                   std::is_floating_point<T>::value,
                   "Invalid data type.");
     ReadableCheck(sizeof (T));
-    typedef typename MakeEndianTag<order>::type  E;
-    typedef typename MakeRegularType<T>::type  V;
+    typedef typename MakeEndianTag<endian_t>::type  E;
+    typedef typename MakeRegularType<T>::type       V;
     typedef ReadTag<V, InSolidAreaTag>  R;
     return InternalRead(cursor_, R(), E());
 }
@@ -938,28 +942,28 @@ BufferIterator::InternalRead(size_t offset, ReadTag<double, InSolidAreaTag>, Rev
 inline void
 BufferIterator::Read(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
 {
-    ReadInOrder<endian::native>(bytes, size);
+    ReadInOrder(bytes, size, native_endian);
 }
 
 inline void
 BufferIterator::ReadL(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
 {
-    ReadInOrder<endian::little>(bytes, size);
+    ReadInOrder(bytes, size, little_endian);
 }
 
 inline void
 BufferIterator::ReadB(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
 {
-    ReadInOrder<endian::big>(bytes, size);
+    ReadInOrder(bytes, size, big_endian);
 }
 
-template<endian::Order order>
+template<class endian_t>
 inline void
-BufferIterator::ReadInOrder(uint8_t* bytes, size_t size) BOOST_NOEXCEPT
+BufferIterator::ReadInOrder(uint8_t* bytes, size_t size, endian_t) BOOST_NOEXCEPT
 {
     BOOST_ASSERT(bytes);
     ReadableCheck(size);
-    typedef typename MakeEndianTag<order>::type  E;
+    typedef typename MakeEndianTag<endian_t>::type  E;
     InternalRead(bytes, size, cursor_, InSolidAreaTag(), E());
 }
 

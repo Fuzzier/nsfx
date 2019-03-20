@@ -23,23 +23,64 @@
 NSFX_OPEN_NAMESPACE
 
 
-namespace endian
-{
-
-
 ////////////////////////////////////////////////////////////////////////////////
-enum Order
+enum big_endian_t
 {
-    little, big,
-#if defined(BOOST_ENDIAN_LITTLE_BYTE)
-    native = little
-#elif defined(BOOST_ENDIAN_BIG_BYTE)
-    native = big
-#endif // defined(BOOST_ENDIAN_LITTLE_BYTE)
+    big_endian
+};
+
+enum little_endian_t
+{
+    little_endian
+};
+
+enum native_endian_t
+{
+    native_endian
 };
 
 
-} // namespace endian
+////////////////////////////////////////
+// Traits.
+template<class endian_t>
+struct endian_traits;
+
+template<>
+struct endian_traits<big_endian_t>
+{
+#if BOOST_ENDIAN_BIG_BYTE
+    BOOST_STATIC_CONSTANT(bool, is_native = true);
+#elif BOOST_ENDIAN_LITTLE_BYTE
+    BOOST_STATIC_CONSTANT(bool, is_native = false);
+#endif // BOOST_ENDIAN_*_BYTE
+    BOOST_STATIC_CONSTANT(bool, is_big_endian = true);
+    BOOST_STATIC_CONSTANT(bool, is_little_endian = false);
+};
+
+template<>
+struct endian_traits<little_endian_t>
+{
+#if BOOST_ENDIAN_BIG_BYTE
+    BOOST_STATIC_CONSTANT(bool, is_native = false);
+#elif BOOST_ENDIAN_LITTLE_BYTE
+    BOOST_STATIC_CONSTANT(bool, is_native = true);
+#endif // BOOST_ENDIAN_*_BYTE
+    BOOST_STATIC_CONSTANT(bool, is_big_endian = false);
+    BOOST_STATIC_CONSTANT(bool, is_little_endian = true);
+};
+
+template<>
+struct endian_traits<native_endian_t>
+{
+    BOOST_STATIC_CONSTANT(bool, is_native = true);
+#if BOOST_ENDIAN_BIG_BYTE
+    BOOST_STATIC_CONSTANT(bool, is_big_endian = true);
+    BOOST_STATIC_CONSTANT(bool, is_little_endian = false);
+#elif BOOST_ENDIAN_LITTLE_BYTE
+    BOOST_STATIC_CONSTANT(bool, is_big_endian = false);
+    BOOST_STATIC_CONSTANT(bool, is_little_endian = true);
+#endif // BOOST_ENDIAN_*_BYTE
+};
 
 
 NSFX_CLOSE_NAMESPACE
