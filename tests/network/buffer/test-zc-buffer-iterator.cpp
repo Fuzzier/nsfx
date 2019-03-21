@@ -23,7 +23,7 @@ NSFX_TEST_SUITE(ZcBufferIterator)
 {
     NSFX_TEST_CASE(Ctor)/*{{{*/
     {
-        nsfx::ZcBuffer b0(1000, 300, 700);
+        nsfx::ZcBuffer b0(700, 300, 300);
         // [700 s zs 300 ze e 300]
         b0.AddAtStart(100);
         b0.AddAtEnd(100);
@@ -42,7 +42,7 @@ NSFX_TEST_SUITE(ZcBufferIterator)
 
     NSFX_TEST_CASE(CopyCtor)/*{{{*/
     {
-        nsfx::ZcBuffer b0(1000, 300, 700);
+        nsfx::ZcBuffer b0(700, 300, 300);
         // [700 s zs 300 ze e 300]
         b0.AddAtStart(100);
         b0.AddAtEnd(100);
@@ -57,7 +57,7 @@ NSFX_TEST_SUITE(ZcBufferIterator)
 
     NSFX_TEST_CASE(CopyAssign)/*{{{*/
     {
-        nsfx::ZcBuffer b0(1000, 300, 700);
+        nsfx::ZcBuffer b0(700, 300, 300);
         // [700 s zs 300 ze e 300]
         b0.AddAtStart(100);
         b0.AddAtEnd(100);
@@ -73,7 +73,7 @@ NSFX_TEST_SUITE(ZcBufferIterator)
 
     NSFX_TEST_CASE(Compare)/*{{{*/
     {
-        nsfx::ZcBuffer b0(1000, 300, 700);
+        nsfx::ZcBuffer b0(700, 300, 300);
         // [700 s zs 300 ze e 300]
         nsfx::ZcBufferIterator it0 = b0.begin();
         nsfx::ZcBufferIterator it1 = b0.end();
@@ -98,7 +98,7 @@ NSFX_TEST_SUITE(ZcBufferIterator)
 
     NSFX_TEST_CASE(MoveAround)/*{{{*/
     {
-        nsfx::ZcBuffer b0(1000, 300, 700);
+        nsfx::ZcBuffer b0(700, 300, 300);
         // [700 s zs 300 ze e 300]
         nsfx::ZcBufferIterator it = b0.begin();
 
@@ -132,7 +132,7 @@ NSFX_TEST_SUITE(ZcBufferIterator)
         {
             NSFX_TEST_CASE(InHeaderArea)
             {
-                nsfx::ZcBuffer b0(1000, 300, 700);
+                nsfx::ZcBuffer b0(700, 300, 300);
                 // [700 s zs 300 ze e 300]
                 b0.AddAtStart(100);
                 b0.AddAtEnd(100);
@@ -176,7 +176,7 @@ NSFX_TEST_SUITE(ZcBufferIterator)
 
             NSFX_TEST_CASE(HeaderToZeroArea)
             {
-                nsfx::ZcBuffer b0(1000, 300, 700);
+                nsfx::ZcBuffer b0(700, 300, 300);
                 // [700 s zs 300 ze e 300]
                 b0.AddAtStart(100);
                 b0.AddAtEnd(100);
@@ -204,7 +204,7 @@ NSFX_TEST_SUITE(ZcBufferIterator)
 
             NSFX_TEST_CASE(InZeroArea)
             {
-                nsfx::ZcBuffer b0(1000, 300, 700);
+                nsfx::ZcBuffer b0(700, 300, 300);
                 // [700 s zs 300 ze e 300]
                 b0.AddAtStart(100);
                 b0.AddAtEnd(100);
@@ -232,7 +232,7 @@ NSFX_TEST_SUITE(ZcBufferIterator)
 
             NSFX_TEST_CASE(ZeroToTrailingArea)
             {
-                nsfx::ZcBuffer b0(1000, 300, 700);
+                nsfx::ZcBuffer b0(700, 300, 300);
                 // [700 s zs 300 ze e 300]
                 b0.AddAtStart(100);
                 b0.AddAtEnd(100);
@@ -260,7 +260,7 @@ NSFX_TEST_SUITE(ZcBufferIterator)
 
             NSFX_TEST_CASE(InTrailingArea)
             {
-                nsfx::ZcBuffer b0(1000, 300, 700);
+                nsfx::ZcBuffer b0(700, 300, 300);
                 // [700 s zs 300 ze e 300]
                 b0.AddAtStart(100);
                 b0.AddAtEnd(100);
@@ -306,7 +306,7 @@ NSFX_TEST_SUITE(ZcBufferIterator)
 
         NSFX_TEST_CASE(Endian)
         {
-            nsfx::ZcBuffer b0(1000, 300, 700);
+            nsfx::ZcBuffer b0(700, 300, 300);
             // [700 s zs 300 ze e 300]
             b0.AddAtStart(100);
             // [600 s 100 zs 300 ze e 300]
@@ -569,7 +569,7 @@ NSFX_TEST_SUITE(ZcBufferIterator)
 
         NSFX_TEST_CASE(AroundZcBuffer)
         {
-            nsfx::ZcBuffer b0(1000, 300, 700);
+            nsfx::ZcBuffer b0(700, 300, 300);
             // [700 s zs 300 ze e 300]
             b0.AddAtStart(100);
             b0.AddAtEnd(100);
@@ -613,7 +613,7 @@ NSFX_TEST_SUITE(ConstZcBufferIterator)
 {
     NSFX_TEST_CASE(Ctor)/*{{{*/
     {
-        nsfx::ZcBuffer b0(1000, 300, 700);
+        nsfx::ZcBuffer b0(700, 300, 300);
         // [700 s zs 300 ze e 300]
         b0.AddAtStart(100);
         b0.AddAtEnd(100);
@@ -632,7 +632,7 @@ NSFX_TEST_SUITE(ConstZcBufferIterator)
 
     NSFX_TEST_CASE(CopyCtor)/*{{{*/
     {
-        nsfx::ZcBuffer b0(1000, 300, 700);
+        nsfx::ZcBuffer b0(700, 300, 300);
         // [700 s zs 300 ze e 300]
         b0.AddAtStart(100);
         b0.AddAtEnd(100);
@@ -653,7 +653,7 @@ NSFX_TEST_SUITE(ConstZcBufferIterator)
 
     NSFX_TEST_CASE(CopyAssign)/*{{{*/
     {
-        nsfx::ZcBuffer b0(1000, 300, 700);
+        nsfx::ZcBuffer b0(700, 300, 300);
         // [700 s zs 300 ze e 300]
         b0.AddAtStart(100);
         b0.AddAtEnd(100);
@@ -675,7 +675,7 @@ NSFX_TEST_SUITE(ConstZcBufferIterator)
 
     NSFX_TEST_CASE(Compare)/*{{{*/
     {
-        nsfx::ZcBuffer b0(1000, 300, 700);
+        nsfx::ZcBuffer b0(700, 300, 300);
         // [700 s zs 300 ze e 300]
         nsfx::ConstZcBufferIterator it0 = b0.cbegin();
         nsfx::ConstZcBufferIterator it1 = b0.cend();
@@ -700,7 +700,7 @@ NSFX_TEST_SUITE(ConstZcBufferIterator)
 
     NSFX_TEST_CASE(MoveAround)/*{{{*/
     {
-        nsfx::ZcBuffer b0(1000, 300, 700);
+        nsfx::ZcBuffer b0(700, 300, 300);
         // [700 s zs 300 ze e 300]
         nsfx::ConstZcBufferIterator it = b0.cbegin();
 
@@ -734,7 +734,7 @@ NSFX_TEST_SUITE(ConstZcBufferIterator)
         {
             NSFX_TEST_CASE(InHeaderArea)
             {
-                nsfx::ZcBuffer b0(1000, 300, 700);
+                nsfx::ZcBuffer b0(700, 300, 300);
                 // [700 s zs 300 ze e 300]
                 b0.AddAtStart(100);
                 b0.AddAtEnd(100);
@@ -775,7 +775,7 @@ NSFX_TEST_SUITE(ConstZcBufferIterator)
 
             NSFX_TEST_CASE(HeaderToZeroArea)
             {
-                nsfx::ZcBuffer b0(1000, 300, 700);
+                nsfx::ZcBuffer b0(700, 300, 300);
                 // [700 s zs 300 ze e 300]
                 b0.AddAtStart(100);
                 b0.AddAtEnd(100);
@@ -816,7 +816,7 @@ NSFX_TEST_SUITE(ConstZcBufferIterator)
 
             NSFX_TEST_CASE(InZeroArea)
             {
-                nsfx::ZcBuffer b0(1000, 300, 700);
+                nsfx::ZcBuffer b0(700, 300, 300);
                 // [700 s zs 300 ze e 300]
                 b0.AddAtStart(100);
                 b0.AddAtEnd(100);
@@ -857,7 +857,7 @@ NSFX_TEST_SUITE(ConstZcBufferIterator)
 
             NSFX_TEST_CASE(ZeroToTrailingArea)
             {
-                nsfx::ZcBuffer b0(1000, 300, 700);
+                nsfx::ZcBuffer b0(700, 300, 300);
                 // [700 s zs 300 ze e 300]
                 b0.AddAtStart(100);
                 b0.AddAtEnd(100);
@@ -898,7 +898,7 @@ NSFX_TEST_SUITE(ConstZcBufferIterator)
 
             NSFX_TEST_CASE(InTrailingArea)
             {
-                nsfx::ZcBuffer b0(1000, 300, 700);
+                nsfx::ZcBuffer b0(700, 300, 300);
                 // [700 s zs 300 ze e 300]
                 b0.AddAtStart(100);
                 b0.AddAtEnd(100);
@@ -941,7 +941,7 @@ NSFX_TEST_SUITE(ConstZcBufferIterator)
 
         NSFX_TEST_CASE(Endian)
         {
-            nsfx::ZcBuffer b0(1000, 300, 700);
+            nsfx::ZcBuffer b0(700, 300, 300);
             // [700 s zs 300 ze e 300]
             b0.AddAtStart(100);
             // [600 s 100 zs 300 ze e 300]
@@ -1205,7 +1205,7 @@ NSFX_TEST_SUITE(ConstZcBufferIterator)
 
         NSFX_TEST_CASE(AroundZcBuffer)
         {
-            nsfx::ZcBuffer b0(1000, 300, 700);
+            nsfx::ZcBuffer b0(700, 300, 300);
             // [700 s zs 300 ze e 300]
             b0.AddAtStart(100);
             b0.AddAtEnd(100);

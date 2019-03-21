@@ -54,15 +54,14 @@ class BasicTag
 public:
     typedef ValueType  TagValue;
 
-    // Xtructors.
 public:
     /**
      * @brief Create a tag.
      *
      * @param[in] id     The id of the tag.
-     * @param[in] buffer The tag buffer.
+     * @param[in] value  The tag value.
      */
-    BasicTag(uint32_t id, const ValueType& buffer);
+    BasicTag(uint32_t id, const ValueType& value);
 
     // Copyable.
 public:
@@ -81,7 +80,7 @@ public:
     uint32_t GetId(void) const BOOST_NOEXCEPT;
 
     /**
-     * @brief Get a read-only iterator of the tag buffer.
+     * @brief Get value of the tag.
      */
     const ValueType& GetValue(void) const BOOST_NOEXCEPT;
 

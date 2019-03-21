@@ -677,12 +677,12 @@ private:
         /**
          * @brief A reference counter to enable copy-on-write.
          *
-         * \c refcount_ is is the number of users that shares the body.
+         * \c refCount_ is is the number of users that shares the body.
          * When the body is about to be modified, the packet will duplicate
-         * the body, if <code>refcount_ > 1</code>.
+         * the body, if <code>refCount_ > 1</code>.
          * Thus, other holders of the packet will not see the modification.
          */
-        refcount_t refcount_;
+        refcount_t refCount_;
 
         PacketBuffer buffer_;
 
@@ -699,12 +699,12 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 inline Packet::Body::Body(void) BOOST_NOEXCEPT :
-    refcount_(1)
+    refCount_(1)
 {
 }
 
 inline Packet::Body::Body(const Body& rhs) BOOST_NOEXCEPT :
-    refcount_(1),
+    refCount_(1),
     buffer_(rhs.buffer_),
     byteTagList_(rhs.byteTagList_),
     packetTagList_(rhs.packetTagList_)
@@ -935,7 +935,7 @@ inline void Packet::AddRef(void) BOOST_NOEXCEPT
 {
     if (body_)
     {
-        ++body_->refcount_;
+        ++body_->refCount_;
     }
 }
 
@@ -943,7 +943,7 @@ inline void Packet::Release(void)
 {
     if (body_)
     {
-        if (--body_->refcount_ == 0)
+        if (--body_->refCount_ == 0)
         {
             delete body_;
         }
@@ -955,10 +955,10 @@ inline void Packet::MakePrivate(void)
 {
     if (body_)
     {
-        if (body_->refcount_ > 1)
+        if (body_->refCount_ > 1)
         {
             std::unique_ptr<Body> copy(new Body(*body_));
-            --body_->refcount_;
+            --body_->refCount_;
             Body* tmp = copy.release();
             boost::swap(tmp, body_);
         }

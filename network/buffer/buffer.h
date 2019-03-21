@@ -73,30 +73,27 @@ public:
     /**
      * @brief Create a buffer.
      *
-     * @param[in] reserved The size of reserved space of the buffer in addition
-     *                     to zero data.
-     * @param[in] zeroSize The size of the zero data.
+     * @param[in] startSize The size of reserved space at the start of the buffer.
+     * @param[in] zeroSize  The size of the zero data.
      *
-     * The initial capacity of the buffer is <code>reserved + zeroSize</code>.
+     * The initial capacity of the buffer is <code>startSize + zeroSize</code>.
      *
      * The zero data is located at the <i>end</i> of the storage,
      * optimized for adding data at the head of the storage.
      */
-    BasicBuffer(size_t reserved, size_t zeroSize);
+    BasicBuffer(size_t startSize, size_t zeroSize);
 
     /**
      * @brief Create a buffer.
      *
-     * @param[in] reserved  The size of reserved space of the buffer in addition
-     *                      to zero data.
+     * @param[in] startSize The size of reserved space at the start of the buffer.
      * @param[in] zeroSize  The size of the zero data.
-     * @param[in] zeroStart The start of the zero data.
-     *                      <p>
-     *                      <code>zeroStart <= reserved</code>.
+     * @param[in] endSize   The size of reserved space at the end of the buffer.
      *
-     * The initial capacity of the buffer is <code>reserved + zeroSize</code>.
+     * The initial capacity of the buffer is
+     * <code>startSize + zeroSize + endSize</code>.
      */
-    BasicBuffer(size_t reserved, size_t zeroSize, size_t zeroStart);
+    BasicBuffer(size_t startSize, size_t zeroSize, size_t endSize);
 
     // Deep copy.
 public:
@@ -215,7 +212,7 @@ public:
      * @remarks Invalidates existing iterators of the buffer.
      */
     template<bool readOnly, bool copyOnResize, bool zeroArea>
-    void AddAtStart(BasicBuffer<readOnly, copyOnResize, zeroArea> src);
+    void AddAtStart(const BasicBuffer<readOnly, copyOnResize, zeroArea>& src);
 
 private:
     void InternalAddAtStart(size_t size, AdjustOffsetTag) BOOST_NOEXCEPT;
@@ -246,7 +243,7 @@ public:
      * @remarks Invalidates existing iterators of the buffer.
      */
     template<bool readOnly, bool copyOnResize, bool zeroArea>
-    void AddAtEnd(BasicBuffer<readOnly, copyOnResize, zeroArea> src);
+    void AddAtEnd(const BasicBuffer<readOnly, copyOnResize, zeroArea>& src);
 
 private:
     void InternalAddAtEnd(size_t size, size_t dataSize, AdjustOffsetTag) BOOST_NOEXCEPT;
@@ -377,10 +374,10 @@ inline Buffer::BasicBuffer(size_t capacity) :
     }
 }
 
-inline Buffer::BasicBuffer(size_t reserved, size_t zeroSize) :
-    storage_(BufferStorage::Allocate(reserved + zeroSize)),
-    start_(reserved),
-    end_(reserved + zeroSize)
+inline Buffer::BasicBuffer(size_t startSize, size_t zeroSize) :
+    storage_(BufferStorage::Allocate(startSize + zeroSize)),
+    start_(startSize),
+    end_(startSize + zeroSize)
 {
     if (storage_)
     {
@@ -390,19 +387,16 @@ inline Buffer::BasicBuffer(size_t reserved, size_t zeroSize) :
     }
 }
 
-inline Buffer::BasicBuffer(size_t reserved, size_t zeroSize, size_t zeroStart)
+inline Buffer::BasicBuffer(size_t startSize, size_t zeroSize, size_t endSize)
 {
-    BOOST_ASSERT_MSG(zeroStart <= reserved,
-                     "Cannot construct a Buffer, since the start of "
-                     "the zero data is beyond the end of the buffer storage.");
-    storage_ = BufferStorage::Allocate(reserved + zeroSize);
-    start_   = zeroStart;
-    end_     = zeroStart + zeroSize;
+    storage_ = BufferStorage::Allocate(startSize + zeroSize + endSize);
+    start_   = startSize;
+    end_     = startSize + zeroSize;
     if (storage_)
     {
         storage_->dirtyStart_ = start_;
         storage_->dirtyEnd_   = end_;
-        std::memset(storage_->bytes_ + zeroStart, 0, zeroSize);
+        std::memset(storage_->bytes_ + start_, 0, zeroSize);
     }
 }
 
@@ -676,7 +670,8 @@ inline void Buffer::AddAtStart(const uint8_t* src, size_t size)
 }
 
 template<bool readOnly, bool copyOnResize, bool zeroArea>
-inline void Buffer::AddAtStart(BasicBuffer<readOnly, copyOnResize, zeroArea> src)
+inline void
+Buffer::AddAtStart(const BasicBuffer<readOnly, copyOnResize, zeroArea>& src)
 {
     size_t size = src.GetSize();
     if (size)
@@ -838,7 +833,8 @@ inline void Buffer::AddAtEnd(const uint8_t* src, size_t size)
 }
 
 template<bool readOnly, bool copyOnResize, bool zeroArea>
-inline void Buffer::AddAtEnd(BasicBuffer<readOnly, copyOnResize, zeroArea> src)
+inline void
+Buffer::AddAtEnd(const BasicBuffer<readOnly, copyOnResize, zeroArea>& src)
 {
     size_t size = src.GetSize();
     if (size)

@@ -94,24 +94,27 @@ public:
     /**
      * @brief Create a buffer.
      *
-     * @param[in] capacity The initial apacity of the buffer.
-     * @param[in] zeroSize The size of the zero-compressed data area.
+     * @param[in] startSize The size of reserved space at the start of the buffer.
+     * @param[in] zeroSize  The size of the zero data.
+     *
+     * The initial capacity of the buffer is <code>startSize + zeroSize</code>.
      *
      * The zero-compressed data area is located at the <i>end</i> of the
      * storage, optimized for adding data toward the head of the storage.
      */
-    BasicBuffer(size_t capacity, size_t zeroSize);
+    BasicBuffer(size_t startSize, size_t zeroSize);
 
     /**
      * @brief Create a buffer.
      *
-     * @param[in] capacity   The initial apacity of the buffer.
-     * @param[in] zeroSize   The size of the zero-compressed data area.
-     * @param[in] zeroStart  The start of the zero-compressed data area.
-     *                       <p>
-     *                       <code>zeroStart <= capacity</code>.
+     * @param[in] startSize The size of reserved space at the start of the buffer.
+     * @param[in] zeroSize  The size of the zero data.
+     * @param[in] endSize   The size of reserved space at the end of the buffer.
+     *
+     * The initial capacity of the buffer is
+     * <code>startSize + zeroSize + endSize</code>.
      */
-    BasicBuffer(size_t capacity, size_t zeroSize, size_t zeroStart);
+    BasicBuffer(size_t startSize, size_t zeroSize, size_t endSize);
 
     // Conversions.
 public:
@@ -403,12 +406,12 @@ inline ZcBuffer::BasicBuffer(size_t capacity) :
     }
 }
 
-inline ZcBuffer::BasicBuffer(size_t capacity, size_t zeroSize) :
-    storage_(BufferStorage::Allocate(capacity)),
-    start_(capacity),
-    zeroStart_(capacity),
-    zeroEnd_(capacity + zeroSize),
-    end_(capacity + zeroSize)
+inline ZcBuffer::BasicBuffer(size_t startSize, size_t zeroSize) :
+    storage_(BufferStorage::Allocate(startSize)),
+    start_(startSize),
+    zeroStart_(startSize),
+    zeroEnd_(startSize + zeroSize),
+    end_(startSize + zeroSize)
 {
     if (storage_)
     {
@@ -417,17 +420,13 @@ inline ZcBuffer::BasicBuffer(size_t capacity, size_t zeroSize) :
     }
 }
 
-inline ZcBuffer::BasicBuffer(size_t capacity, size_t zeroSize, size_t zeroStart)
+inline ZcBuffer::BasicBuffer(size_t startSize, size_t zeroSize, size_t endSize)
 {
-    BOOST_ASSERT_MSG(zeroStart <= capacity,
-                     "Cannot construct a ZcBuffer, since the start of "
-                     "the zero-compressed data area is beyond the end of "
-                     "the buffer storage.");
-    storage_   = BufferStorage::Allocate(capacity);
-    start_     = zeroStart;
-    zeroStart_ = zeroStart;
-    zeroEnd_   = zeroStart + zeroSize;
-    end_       = zeroStart + zeroSize;
+    storage_   = BufferStorage::Allocate(startSize + endSize);
+    start_     = startSize;
+    zeroStart_ = startSize;
+    zeroEnd_   = startSize + zeroSize;
+    end_       = startSize + zeroSize;
     if (storage_)
     {
         storage_->dirtyStart_ = start_;
