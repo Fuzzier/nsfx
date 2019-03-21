@@ -42,17 +42,22 @@ class Simulator;
  *
  * This simulator provides a clock, and executes events in the scheduler.
  *
- * * Interfaces
- *   + Uses
- *     - \c IEventScheduler
- *   + Provides
- *     - \c IClock
- *     - \c ISimulator
- *   + Events
- *     - \c ISimulationBeginEvent
- *     - \c ISimulationRunEvent
- *     - \c ISimulationPauseEvent
- *     - \c ISimulationEndEvent
+ * # Uid
+ * @code
+ * "edu.uestc.nsfx.SetEventScheduler"
+ * @endcode
+ *
+ * # Interfaces
+ * * Uses
+ *   + \c IEventScheduler
+ * * Provides
+ *   + \c IClock
+ *   + \c ISimulator
+ * * Events
+ *   + \c ISimulationBeginEvent
+ *   + \c ISimulationRunEvent
+ *   + \c ISimulationPauseEvent
+ *   + \c ISimulationEndEvent
  */
 class Simulator :
     public IEventSchedulerUser,

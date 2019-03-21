@@ -35,11 +35,16 @@ NSFX_OPEN_NAMESPACE
  * @ingroup Simulator
  * @brief An event scheduler based on list.
  *
- * * Interfaces
- *   + Uses
- *     - \c IClock
- *   + Provides
- *     - \c IEventScheduler
+ * # Uid
+ * @code
+ * "edu.uestc.nsfx.ListEventScheduler"
+ * @endcode
+ *
+ * # Interfaces
+ * * Uses
+ *   + \c IClock
+ * * Provides
+ *   + \c IEventScheduler
  */
 class ListEventScheduler :
     public IClockUser,

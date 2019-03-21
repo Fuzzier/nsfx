@@ -35,6 +35,12 @@ NSFX_STATISTICS_OPEN_NAMESPACE
  * @brief A probe.
  *
  * A probe provides a probe event.
+ *
+ * # Interfaces
+ * * Provides
+ *   + \c IProbeContainer
+ * * Events
+ *   + \c IProbeEvent
  */
 class Probe :
     public IProbe

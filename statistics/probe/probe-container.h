@@ -34,6 +34,10 @@ NSFX_STATISTICS_OPEN_NAMESPACE
 /**
  * @ingroup Statistics
  * @brief A container of probes.
+ *
+ * # Interfaces
+ * * Provides
+ *   + \c IProbeContainer
  */
 class ProbeContainer :
     public IProbeContainer

@@ -35,11 +35,16 @@ NSFX_OPEN_NAMESPACE
  * @ingroup Simulator
  * @brief An event scheduler based on set.
  *
- * * Interfaces
- *   + Uses
- *     - \c IClock
- *   + Provides
- *     - \c IEventScheduler
+ * # Uid
+ * @code
+ * "edu.uestc.nsfx.SetEventScheduler"
+ * @endcode
+ *
+ * # Interfaces
+ * * Uses
+ *   + \c IClock
+ * * Provides
+ *   + \c IEventScheduler
  */
 class SetEventScheduler :
     public IClockUser,

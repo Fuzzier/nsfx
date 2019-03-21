@@ -32,6 +32,10 @@ NSFX_STATISTICS_OPEN_NAMESPACE
 /**
  * @ingroup Statistics
  * @brief An enumerator of probes.
+ *
+ * # Interfaces
+ * * Provides
+ *   + \c IProbeEnumerator
  */
 class ProbeEnumerator :
     public IProbeEnumerator

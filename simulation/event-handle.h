@@ -32,9 +32,9 @@ NSFX_OPEN_NAMESPACE
  * @ingroup Simulator
  * @brief An event handle.
  *
- * * Interfaces
- *   + Provides
- *     - \c IEventHandle
+ * # Interfaces
+ * * Provides
+ *   + \c IEventHandle
  */
 class EventHandle :
     public IEventHandle

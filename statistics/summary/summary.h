@@ -36,11 +36,16 @@ NSFX_STATISTICS_OPEN_NAMESPACE
  * @ingroup Statistics
  * @brief The summary of sample.
  *
- * * Interfaces
- *   + Provides
- *     - \c ISummary
- *   + Event sinks
- *     - \c IProbeEventSink
+ * # Uid
+ * @code
+ * "edu.uestc.nsfx.statistics.Summary"
+ * @endcode
+ *
+ * # Interfaces
+ * * Provides
+ *   + \c ISummary
+ * * Event sinks
+ *   + \c IProbeEventSink
  */
 class Summary :
     public ISummary
@@ -79,7 +84,6 @@ private:
     double sum_;
     double sqrSum_;
 };
-
 
 NSFX_REGISTER_CLASS(Summary, "edu.uestc.nsfx.statistics.Summary");
 
