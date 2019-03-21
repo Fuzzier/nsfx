@@ -1,40 +1,67 @@
+###
+ # @file
+ #
+ # @brief Makefile for tests.
+ #
+ # @version 1.0
+ # @author  Wei Tang <gauchyler@uestc.edu.cn>
+ # @date    2018-09-30
+ #
+ # @copyright Copyright (c) 2018.
+ #   National Key Laboratory of Science and Technology on Communications,
+ #   University of Electronic Science and Technology of China.
+ #   All rights reserved.
+ ##
+
 NSFX_PATH=..
 CC=cl.exe
 LD=link.exe
 LIBS=ws2_32.lib iphlpapi.lib
+AR=lib.exe
+
+# disable warning C4355: 'this' pointer is used in constructor.
+# disable warning C4819: file contains non-ascii characters.
 
 !IFDEF RELEASE
-CFLAGS=
-CPPFLAGS=/nologo /W3 /MD /wd4355 /EHsc /Ox /Zi /arch:AVX2 /I"$(NSFX_PATH)/.." \
+CFLAGS=/nologo
+CPPFLAGS=/EHsc /W3 /MD /Ox /Zi /arch:AVX2 /wd4355 wd4819 /I"$(NSFX_PATH)/.." \
          /DBOOST_MATH_PROMOTE_DOUBLE_POLICY=false /DBOOST_DISABLE_ASSERTS
 LDFLAGS=/NOLOGO /INCREMENTAL:NO
+ARFLAGS=/NOLOGO
 !ELSE
-CFLAGS=
-CPPFLAGS=/nologo /W3 /MDd /wd4355 /EHsc /Od /Zi /DDEBUG /I"$(NSFX_PATH)/.." \
+CFLAGS=/nologo
+CPPFLAGS=/EHsc /W3 /MD /Od /Zi /DDEBUG /wd4355 /wd4819 /I"$(NSFX_PATH)/.." \
          /DBOOST_MATH_PROMOTE_DOUBLE_POLICY=false
 LDFLAGS=/NOLOGO /DEBUG /INCREMENTAL:NO
+ARFLAGS=/NOLOGO
 !ENDIF
 
-.PHONY: all clean run \
-    test utility chrono component event log simulation network random \
-    statistics
-
-all : test utility chrono component event log simulation network random \
-      statistics
-
-run :
-    for /f %d in ('dir /b *.exe') do (%d)
+.PHONY: all clean run                                              \
+        test utility chrono component event log random statistics  \
+        simulation network                                         \
 
 clean :
-    del /s /q *.exe
-    del /s /q *.obj
-    del /s /q *.ilk
-    del /s /q *.exp
-    del /s /q *.dll
-    del /s /q *.pdb
-    del /s /q *.log
-    del /s /q *.txt
+    del /s /q *.obj 1>nul 2>nul
+    del /s /q *.pdb 1>nul 2>nul
+    del /s /q *.ilk 1>nul 2>nul
+    del /s /q *.exp 1>nul 2>nul
+    del /s /q *.exe 1>nul 2>nul
+    del /s /q *.dll 1>nul 2>nul
+    del /s /q *.log 1>nul 2>nul
+    del /s /q *.txt 1>nul 2>nul
 
+all : test utility chrono                    \
+      component event random statistics log  \
+      simulation network                     \
+
+!CMDSWITCHES +I
+run :
+    for /f "delims=" %d in ('dir /b *.exe 2^>nul') do @( \
+        echo ====== %~d ====== & \
+        "%~d" )
+!CMDSWITCHES -I
+
+################################################################################
 EXCEPTION_HEADERS=                      \
     $(NSFX_PATH)/config.h               \
     $(NSFX_PATH)/exception/exception.h  \
@@ -46,7 +73,6 @@ test :          \
     test-suite  \
 
 TEST_HEADERS=                            \
-    $(EXCEPTION_HEADERS)                 \
     $(NSFX_PATH)/test.h                  \
     $(NSFX_PATH)/test/config.h           \
     $(NSFX_PATH)/test/visitor-concept.h  \
@@ -60,13 +86,18 @@ TEST_HEADERS=                            \
     $(NSFX_PATH)/test/builder.h          \
     $(NSFX_PATH)/test/tool-iterate.h     \
     $(NSFX_PATH)/test/tool.h             \
+    $(EXCEPTION_HEADERS)                 \
+
+HEADERS=                  \
+    $(TEST_HEADERS)       \
+    $(EXCEPTION_HEADERS)  \
 
 ########################################
 test-case : test-case.exe
 
 SRC=test/test-case.cpp
 
-test-case.exe : $(TEST_HEADERS) $(SRC)
+test-case.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -74,7 +105,7 @@ test-suite : test-suite.exe
 
 SRC=test/test-suite.cpp
 
-test-suite.exe : $(TEST_HEADERS) $(SRC)
+test-suite.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ################################################################################
@@ -85,7 +116,6 @@ utility :                          \
     test-fixed-length-address      \
 
 UTILITY_HEADERS=                                     \
-    $(EXCEPTION_HEADERS)                             \
     $(NSFX_PATH)/utility.h                           \
     $(NSFX_PATH)/utility/config.h                    \
     $(NSFX_PATH)/utility/ratio.h                     \
@@ -96,12 +126,16 @@ UTILITY_HEADERS=                                     \
     $(NSFX_PATH)/utility/address-concept.h           \
     $(NSFX_PATH)/utility/fixed-length-address.h      \
 
+HEADERS=                  \
+    $(UTILITY_HEADERS)    \
+    $(TEST_HEADERS)       \
+
 ########################################
 test-least-int : test-least-int.exe
 
 SRC=utility/test-least-int.cpp
 
-test-least-int.exe : $(UTILITY_HEADERS) $(SRC)
+test-least-int.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -109,7 +143,7 @@ test-circular-sequence-number : test-circular-sequence-number.exe
 
 SRC=utility/test-circular-sequence-number.cpp
 
-test-circular-sequence-number.exe : $(UTILITY_HEADERS) $(SRC)
+test-circular-sequence-number.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -117,7 +151,7 @@ test-fixed-length-address : test-fixed-length-address.exe
 
 SRC=utility/test-fixed-length-address.cpp
 
-test-fixed-length-address.exe : $(UTILITY_HEADERS) $(SRC)
+test-fixed-length-address.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ################################################################################
@@ -127,19 +161,23 @@ chrono :                     \
     test-virtual-time-point  \
 
 CHRONO_HEADERS=                               \
-    $(TEST_HEADERS)                           \
     $(NSFX_PATH)/config.h                     \
     $(NSFX_PATH)/chrono/config.h              \
     $(NSFX_PATH)/chrono/duration.h            \
     $(NSFX_PATH)/chrono/time-point.h          \
     $(NSFX_PATH)/chrono/virtual-time-point.h  \
+    $(UTILITY_HEADERS)                        \
+
+HEADERS=                  \
+    $(CHRONO_HEADERS)     \
+    $(TEST_HEADERS)       \
 
 ########################################
 test-duration : test-duration.exe
 
 SRC=chrono/test-duration.cpp
 
-test-duration.exe : $(CHRONO_HEADERS) $(SRC)
+test-duration.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -147,7 +185,7 @@ test-virtual-time-point : test-virtual-time-point.exe
 
 SRC=chrono/test-virtual-time-point.cpp
 
-test-virtual-time-point.exe : $(CHRONO_HEADERS) $(SRC)
+test-virtual-time-point.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ################################################################################
@@ -160,7 +198,6 @@ component :              \
     test-class-registry  \
 
 COMPONENT_HEADERS=                             \
-    $(TEST_HEADERS)                            \
     $(NSFX_PATH)/component.h                   \
     $(NSFX_PATH)/component/config.h            \
     $(NSFX_PATH)/component/exception.h         \
@@ -174,12 +211,17 @@ COMPONENT_HEADERS=                             \
     $(NSFX_PATH)/component/i-class-registry.h  \
     $(NSFX_PATH)/component/class-registry.h    \
 
+HEADERS=                  \
+    $(COMPONENT_HEADERS)  \
+    $(CHRONO_HEADERS)     \
+    $(TEST_HEADERS)       \
+
 ########################################
 test-uid : test-uid.exe
 
 SRC=component/test-uid.cpp
 
-test-uid.exe : $(COMPONENT_HEADERS) $(SRC)
+test-uid.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -187,7 +229,7 @@ test-ptr : test-ptr.exe
 
 SRC=component/test-ptr.cpp
 
-test-ptr.exe : $(COMPONENT_HEADERS) $(SRC)
+test-ptr.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -195,7 +237,7 @@ test-object : test-object.exe
 
 SRC=component/test-object.cpp
 
-test-object.exe : $(COMPONENT_HEADERS) $(SRC)
+test-object.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -203,7 +245,7 @@ test-class-factory : test-class-factory.exe
 
 SRC=component/test-class-factory.cpp
 
-test-class-factory.exe : $(COMPONENT_HEADERS) $(SRC)
+test-class-factory.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -211,7 +253,7 @@ test-class-registry : test-class-registry.exe
 
 SRC=component/test-class-registry.cpp
 
-test-class-registry.exe : $(COMPONENT_HEADERS) $(SRC)
+test-class-registry.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ################################################################################
@@ -222,8 +264,6 @@ event :              \
     test-portainer   \
 
 EVENT_HEADERS=                         \
-    $(TEST_HEADERS)                    \
-    $(COMPONENT_HEADERS)               \
     $(NSFX_PATH)/event.h               \
     $(NSFX_PATH)/event/config.h        \
     $(NSFX_PATH)/event/exception.h     \
@@ -233,12 +273,18 @@ EVENT_HEADERS=                         \
     $(NSFX_PATH)/event/event.h         \
     $(NSFX_PATH)/event/portainer.h     \
 
+HEADERS=                  \
+    $(EVENT_HEADERS)      \
+    $(COMPONENT_HEADERS)  \
+    $(CHRONO_HEADERS)     \
+    $(TEST_HEADERS)       \
+
 ########################################
 test-event : test-event.exe
 
 SRC=event/test-event.cpp
 
-test-event.exe : $(EVENT_HEADERS) $(SRC)
+test-event.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -246,7 +292,7 @@ test-event-sink : test-event-sink.exe
 
 SRC=event/test-event-sink.cpp
 
-test-event-sink.exe : $(EVENT_HEADERS) $(SRC)
+test-event-sink.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -254,7 +300,7 @@ test-portainer : test-portainer.exe
 
 SRC=event/test-portainer.cpp
 
-test-portainer.exe : $(EVENT_HEADERS) $(SRC)
+test-portainer.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ################################################################################
@@ -268,10 +314,6 @@ log :                           \
     test-timestamp-attribute    \
 
 LOG_HEADERS=                                                       \
-    $(TEST_HEADERS)                                                \
-    $(COMPONENT_HEADERS)                                           \
-    $(EVENT_HEADERS)                                               \
-    $(CHRONO_HEADERS)                                              \
     $(NSFX_PATH)/log.h                                             \
     $(NSFX_PATH)/log/config.h                                      \
     $(NSFX_PATH)/log/core/exception.h                              \
@@ -302,12 +344,18 @@ LOG_HEADERS=                                                       \
     $(NSFX_PATH)/log/default/timestamp-attribute.h                 \
     $(NSFX_PATH)/log/default/tool.h                                \
 
+HEADERS=                  \
+    $(EVENT_HEADERS)      \
+    $(COMPONENT_HEADERS)  \
+    $(CHRONO_HEADERS)     \
+    $(TEST_HEADERS)       \
+
 ########################################
 test-const-attribute-value : test-const-attribute-value.exe
 
 SRC=log/test-const-attribute-value.cpp
 
-test-const-attribute-value.exe : $(LOG_HEADERS) $(SRC)
+test-const-attribute-value.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -315,7 +363,7 @@ test-const-attribute : test-const-attribute.exe
 
 SRC=log/test-const-attribute.cpp
 
-test-const-attribute.exe : $(LOG_HEADERS) $(SRC)
+test-const-attribute.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -323,7 +371,7 @@ test-record : test-record.exe
 
 SRC=log/test-record.cpp
 
-test-record.exe : $(LOG_HEADERS) $(SRC)
+test-record.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -331,7 +379,7 @@ test-filter : test-filter.exe
 
 SRC=log/test-filter.cpp
 
-test-filter.exe : $(LOG_HEADERS) $(SRC)
+test-filter.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -339,7 +387,7 @@ test-logger : test-logger.exe
 
 SRC=log/test-logger.cpp
 
-test-logger.exe : $(LOG_HEADERS) $(SRC)
+test-logger.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -347,7 +395,7 @@ test-timestamp-attribute : test-timestamp-attribute.exe
 
 SRC=log/test-timestamp-attribute.cpp
 
-test-timestamp-attribute.exe : $(LOG_HEADERS) $(SRC)
+test-timestamp-attribute.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ################################################################################
@@ -359,10 +407,6 @@ simulation :                   \
     test-simulator             \
 
 SIMULATION_HEADERS=                                 \
-    $(TEST_HEADERS)                                 \
-    $(CHRONO_HEADERS)                               \
-    $(COMPONENT_HEADERS)                            \
-    $(EVENT_HEADERS)                                \
     $(NSFX_PATH)/simulation.h                       \
     $(NSFX_PATH)/simulation/config.h                \
     $(NSFX_PATH)/simulation/exception.h             \
@@ -375,12 +419,19 @@ SIMULATION_HEADERS=                                 \
     $(NSFX_PATH)/simulation/i-simulator.h           \
     $(NSFX_PATH)/simulation/simulator.h             \
 
+HEADERS=                   \
+    $(SIMULATION_HEADERS)  \
+    $(EVENT_HEADERS)       \
+    $(COMPONENT_HEADERS)   \
+    $(CHRONO_HEADERS)      \
+    $(TEST_HEADERS)        \
+
 ########################################
 test-event-handle : test-event-handle.exe
 
 SRC=simulation/test-event-handle.cpp
 
-test-event-handle.exe : $(SIMULATION_HEADERS) $(SRC)
+test-event-handle.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -388,7 +439,7 @@ test-list-event-scheduler : test-list-event-scheduler.exe
 
 SRC=simulation/test-list-event-scheduler.cpp
 
-test-list-event-scheduler.exe : $(SIMULATION_HEADERS) $(SRC)
+test-list-event-scheduler.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -396,7 +447,7 @@ test-set-event-scheduler : test-set-event-scheduler.exe
 
 SRC=simulation/test-set-event-scheduler.cpp
 
-test-set-event-scheduler.exe : $(SIMULATION_HEADERS) $(SRC)
+test-set-event-scheduler.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -404,7 +455,7 @@ test-simulator : test-simulator.exe
 
 SRC=simulation/test-simulator.cpp
 
-test-simulator.exe : $(SIMULATION_HEADERS) $(SRC)
+test-simulator.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ################################################################################
@@ -431,7 +482,6 @@ packet:                   \
     test-packet           \
 
 NETWORK_HEADERS=                                                     \
-    $(TEST_HEADERS)                                                  \
     $(NSFX_PATH)/network.h                                           \
     $(NSFX_PATH)/network/config.h                                    \
     $(NSFX_PATH)/network/buffer.h                                    \
@@ -456,12 +506,20 @@ NETWORK_HEADERS=                                                     \
     $(NSFX_PATH)/network/packet/tag/basic-tag-list.h                 \
     $(NSFX_PATH)/network/packet/packet.h                             \
 
+HEADERS=                   \
+    $(NETWORK_HEADERS)     \
+    $(SIMULATION_HEADERS)  \
+    $(EVENT_HEADERS)       \
+    $(COMPONENT_HEADERS)   \
+    $(CHRONO_HEADERS)      \
+    $(TEST_HEADERS)        \
+
 ########################################
 test-buffer : test-buffer.exe
 
 SRC=network/buffer/test-buffer.cpp
 
-test-buffer.exe : $(NETWORK_HEADERS) $(SRC)
+test-buffer.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -469,7 +527,7 @@ test-const-buffer : test-const-buffer.exe
 
 SRC=network/buffer/test-const-buffer.cpp
 
-test-const-buffer.exe : $(NETWORK_HEADERS) $(SRC)
+test-const-buffer.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -477,7 +535,7 @@ test-zc-buffer : test-zc-buffer.exe
 
 SRC=network/buffer/test-zc-buffer.cpp
 
-test-zc-buffer.exe : $(NETWORK_HEADERS) $(SRC)
+test-zc-buffer.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -485,7 +543,7 @@ test-const-zc-buffer : test-const-zc-buffer.exe
 
 SRC=network/buffer/test-const-zc-buffer.cpp
 
-test-const-zc-buffer.exe : $(NETWORK_HEADERS) $(SRC)
+test-const-zc-buffer.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -493,7 +551,7 @@ test-fixed-buffer : test-fixed-buffer.exe
 
 SRC=network/buffer/test-fixed-buffer.cpp
 
-test-fixed-buffer.exe : $(NETWORK_HEADERS) $(SRC)
+test-fixed-buffer.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -501,7 +559,7 @@ test-const-fixed-buffer : test-const-fixed-buffer.exe
 
 SRC=network/buffer/test-const-fixed-buffer.cpp
 
-test-const-fixed-buffer.exe : $(NETWORK_HEADERS) $(SRC)
+test-const-fixed-buffer.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -509,7 +567,7 @@ test-buffer-iterator : test-buffer-iterator.exe
 
 SRC=network/buffer/test-buffer-iterator.cpp
 
-test-buffer-iterator.exe : $(NETWORK_HEADERS) $(SRC)
+test-buffer-iterator.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -517,7 +575,7 @@ test-zc-buffer-iterator : test-zc-buffer-iterator.exe
 
 SRC=network/buffer/test-zc-buffer-iterator.cpp
 
-test-zc-buffer-iterator.exe : $(NETWORK_HEADERS) $(SRC)
+test-zc-buffer-iterator.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -525,7 +583,7 @@ test-tag : test-tag.exe
 
 SRC=network/packet/test-tag.cpp
 
-test-tag.exe : $(NETWORK_HEADERS) $(SRC)
+test-tag.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -533,7 +591,7 @@ test-tag-index : test-tag-index.exe
 
 SRC=network/packet/test-tag-index.cpp
 
-test-tag-index.exe : $(NETWORK_HEADERS) $(SRC)
+test-tag-index.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -541,7 +599,7 @@ test-tag-index-array : test-tag-index-array.exe
 
 SRC=network/packet/test-tag-index-array.cpp
 
-test-tag-index-array.exe : $(NETWORK_HEADERS) $(SRC)
+test-tag-index-array.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -549,7 +607,7 @@ test-tag-list : test-tag-list.exe
 
 SRC=network/packet/test-tag-list.cpp
 
-test-tag-list.exe : $(NETWORK_HEADERS) $(SRC)
+test-tag-list.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -557,7 +615,7 @@ test-packet : test-packet.exe
 
 SRC=network/packet/test-packet.cpp
 
-test-packet.exe : $(NETWORK_HEADERS) $(SRC)
+test-packet.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ################################################################################
@@ -570,8 +628,6 @@ random :                          \
     test-pseudo-random-generator  \
 
 RANDOM_HEADERS=                                                             \
-    $(TEST_HEADERS)                                                         \
-    $(COMPONENT_HEADERS)                                                    \
     $(NSFX_PATH)/random.h                                                   \
     $(NSFX_PATH)/random/config.h                                            \
     $(NSFX_PATH)/random/detail/rot.h                                        \
@@ -640,12 +696,17 @@ RANDOM_HEADERS=                                                             \
     $(NSFX_PATH)/random/i-pseudo-random-engine.h                            \
     $(NSFX_PATH)/random/pseudo-random-generator.h                           \
 
+HEADERS=                   \
+    $(RANDOM_HEADERS)      \
+    $(COMPONENT_HEADERS)   \
+    $(TEST_HEADERS)        \
+
 ########################################
 test-rot : test-rot.exe
 
 SRC=random/test-rot.cpp
 
-test-rot.exe : $(RANDOM_HEADERS) $(SRC)
+test-rot.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -653,7 +714,7 @@ test-splitmix-engine : test-splitmix-engine.exe
 
 SRC=random/test-splitmix-engine.cpp
 
-test-splitmix-engine.exe : $(RANDOM_HEADERS) $(SRC)
+test-splitmix-engine.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -661,7 +722,7 @@ test-xoshiro-engine : test-xoshiro-engine.exe
 
 SRC=random/test-xoshiro-engine.cpp
 
-test-xoshiro-engine.exe : $(RANDOM_HEADERS) $(SRC)
+test-xoshiro-engine.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -669,7 +730,7 @@ test-xoroshiro-engine : test-xoroshiro-engine.exe
 
 SRC=random/test-xoroshiro-engine.cpp
 
-test-xoroshiro-engine.exe : $(RANDOM_HEADERS) $(SRC)
+test-xoroshiro-engine.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -677,9 +738,8 @@ test-pseudo-random-generator : test-pseudo-random-generator.exe
 
 SRC=random/test-pseudo-random-generator.cpp
 
-test-pseudo-random-generator.exe : $(RANDOM_HEADERS) $(SRC)
+test-pseudo-random-generator.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
-
 
 ################################################################################
 # statistics
@@ -688,8 +748,6 @@ statistics :      \
     test-summary  \
 
 STATISTICS_HEADERS=                                     \
-    $(TEST_HEADERS)                                     \
-    $(COMPONENT_HEADERS)                                \
     $(NSFX_PATH)/statistics.h                           \
     $(NSFX_PATH)/statistics/config.h                    \
     $(NSFX_PATH)/statistics/exception.h                 \
@@ -703,12 +761,18 @@ STATISTICS_HEADERS=                                     \
     $(NSFX_PATH)/statistics/summary/i-summary.h         \
     $(NSFX_PATH)/statistics/summary/summary.h           \
 
+HEADERS=                   \
+    $(STATISTICS_HEADERS)  \
+    $(EVENT_HEADERS)       \
+    $(COMPONENT_HEADERS)   \
+    $(TEST_HEADERS)        \
+
 ########################################
 test-probe : test-probe.exe
 
 SRC=statistics/test-probe.cpp
 
-test-probe.exe : $(STATISTICS_HEADERS) $(SRC)
+test-probe.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -716,6 +780,6 @@ test-summary : test-summary.exe
 
 SRC=statistics/test-summary.cpp
 
-test-summary.exe : $(STATISTICS_HEADERS) $(SRC)
+test-summary.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
