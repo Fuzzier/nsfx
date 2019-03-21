@@ -39,8 +39,8 @@ NSFX_TEST_SUITE(Probe)
             std::string n2 = "number of bits received";
 
             Ptr<ProbeContainer> pc(new Object<ProbeContainer>());
-            Ptr<Probe> p1 = pc->Insert(n1);
-            Ptr<Probe> p2 = pc->Insert(n2);
+            Ptr<Probe> p1 = pc->Add(n1);
+            Ptr<Probe> p2 = pc->Add(n2);
 
             Ptr<ISummary> s = nsfx::CreateObject<ISummary>(
                                 "edu.uestc.nsfx.statistics.Summary");

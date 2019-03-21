@@ -51,7 +51,7 @@ public:
 public:
     bool Has(const std::string& name) const;
     Ptr<Probe> Get(const std::string& name) const;
-    Ptr<Probe> Insert(const std::string& name);
+    Ptr<Probe> Add(const std::string& name);
     void Remove(const std::string& name);
 
 private:
@@ -113,7 +113,7 @@ inline Ptr<Probe> ProbeContainer::Get(const std::string& name) const
     return it->second;
 }
 
-inline Ptr<Probe> ProbeContainer::Insert(const std::string& name)
+inline Ptr<Probe> ProbeContainer::Add(const std::string& name)
 {
     auto result = items_.emplace(name, nullptr);
     if (!result.second)

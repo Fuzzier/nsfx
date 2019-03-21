@@ -39,8 +39,8 @@ NSFX_TEST_SUITE(Probe)
 
             Ptr<ProbeContainer> pc(new Object<ProbeContainer>());
 
-            Ptr<Probe> p1 = pc->Insert(n1);
-            Ptr<Probe> p2 = pc->Insert(n2);
+            Ptr<Probe> p1 = pc->Add(n1);
+            Ptr<Probe> p2 = pc->Add(n2);
             NSFX_TEST_EXPECT_EQ(p1->GetName(),n1);
             NSFX_TEST_EXPECT_EQ(p2->GetName(),n2);
 
@@ -80,8 +80,8 @@ NSFX_TEST_SUITE(Probe)
             items.emplace(n2);
 
             Ptr<ProbeContainer> pc(new Object<ProbeContainer>());
-            pc->Insert(n1);
-            pc->Insert(n2);
+            pc->Add(n1);
+            pc->Add(n2);
 
             Ptr<IProbeEnumerator> pe = pc->GetEnumerator();
             while (pe->HasNext())
