@@ -151,6 +151,21 @@ NSFX_TEST_SUITE(ValueFormat)
         NSFX_TEST_EXPECT_RC(i, j, k) << SHOULD_SEE;
     }
 
+    NSFX_TEST_CASE(StringLiteral)
+    {
+        std::string s = "1234";
+        const char* t = "5678";
+        NSFX_TEST_EXPECT_EQ(s, t) << SHOULD_SEE;
+        NSFX_TEST_EXPECT_EQ(t, s) << SHOULD_SEE;
+    }
+
+    NSFX_TEST_CASE(CharArray)
+    {
+        std::string s = "1234";
+        NSFX_TEST_EXPECT_EQ(s, "5678") << SHOULD_SEE;
+        NSFX_TEST_EXPECT_EQ("5678", s) << SHOULD_SEE;
+    }
+
 }
 
 
@@ -175,7 +190,7 @@ int main(void)
     nsfx::test::runner::GetLogger()->AddFileSink("test.log");
     nsfx::test::runner::Run();
 
-    std::cout << "The total number of test failures should be 16." << std::endl;
+    std::cout << "The total number of test failures should be 20." << std::endl;
 
     return 0;
 }

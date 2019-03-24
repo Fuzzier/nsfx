@@ -71,7 +71,7 @@ struct ValueFormatter
 };
 
 template<>
-struct ValueFormatter<bool, true>
+struct ValueFormatter<bool>
 {
     std::string operator()(bool value) const
     {
@@ -151,6 +151,28 @@ struct ValueFormatter<T*, false>
         std::ostringstream oss;
         oss << "0x" << std::setw(sizeof (T*) * 2) << std::setfill('0')
             << std::hex << std::nouppercase << value;
+        return oss.str();
+    }
+};
+
+template<>
+struct ValueFormatter<const char*>
+{
+    std::string operator()(const char* value) const
+    {
+        std::ostringstream oss;
+        oss << "\"" << value << "\"";
+        return oss.str();
+    }
+};
+
+template<>
+struct ValueFormatter<std::string>
+{
+    std::string operator()(const std::string& value) const
+    {
+        std::ostringstream oss;
+        oss << "\"" << value << "\"";
         return oss.str();
     }
 };
@@ -725,10 +747,11 @@ template<class Actual>
 class NSFX_TEST_TOOL_CHECKER /*{{{*/
 {
 public:
-    NSFX_TEST_TOOL_CHECKER(const Actual& actual) :
-        actual_(actual)
+    template<class A>
+    NSFX_TEST_TOOL_CHECKER(A&& actual) :
+        actual_(std::forward<A>(actual))
     {
-        result_ = NSFX_TEST_TOOL_OPERATOR actual_;
+        result_ = (NSFX_TEST_TOOL_OPERATOR actual_);
     }
 
     // Methods.
@@ -753,20 +776,20 @@ public:
         return result_;
     }
 
-
     // Properties.
 private:
-    const Actual& actual_;
-    bool result_;
+    bool   result_;
+    Actual actual_;
 
 }; /*}}}*/
 
 // MakeChecker
 template<class Actual>
-inline NSFX_TEST_TOOL_CHECKER<Actual>
-NSFX_TEST_TOOL_MAKE_CHECKER(const Actual& actual)
+inline NSFX_TEST_TOOL_CHECKER<typename std::decay<Actual>::type>
+NSFX_TEST_TOOL_MAKE_CHECKER(Actual&& actual)
 {
-    return NSFX_TEST_TOOL_CHECKER<Actual>(actual);
+    typedef typename std::decay<Actual>::type  A;
+    return NSFX_TEST_TOOL_CHECKER<A>(std::forward<Actual>(actual));
 }
 
 #elif (NSFX_TEST_TOOL_NUM_OPERANDS == 2)
@@ -776,9 +799,10 @@ template<class Actual, class Limit>
 class NSFX_TEST_TOOL_CHECKER /*{{{*/
 {
 public:
-    NSFX_TEST_TOOL_CHECKER(const Actual& actual, const Limit& limit) :
-        actual_(actual),
-        limit_(limit)
+    template<class A, class L>
+    NSFX_TEST_TOOL_CHECKER(A&& actual, L&& limit) :
+        actual_(std::forward<A>(actual)),
+        limit_(std::forward<L>(limit))
     {
         result_ = (actual_ NSFX_TEST_TOOL_OPERATOR limit_);
     }
@@ -805,21 +829,24 @@ public:
         return result_;
     }
 
-
     // Properties.
 private:
-    const Actual& actual_;
-    const Limit& limit_;
-    bool result_;
+    bool   result_;
+    Actual actual_;
+    Limit  limit_;
 
 };/*}}}*/
 
 // MakeChecker
 template<class Actual, class Limit>
-inline NSFX_TEST_TOOL_CHECKER<Actual, Limit>
-NSFX_TEST_TOOL_MAKE_CHECKER(const Actual& actual, const Limit& limit)
+inline NSFX_TEST_TOOL_CHECKER<typename std::decay<Actual>::type,
+                              typename std::decay<Limit>::type>
+NSFX_TEST_TOOL_MAKE_CHECKER(Actual&& actual, Limit&& limit)
 {
-    return NSFX_TEST_TOOL_CHECKER<Actual, Limit>(actual, limit);
+    typedef typename std::decay<Actual>::type  A;
+    typedef typename std::decay<Limit>::type   L;
+    return NSFX_TEST_TOOL_CHECKER<A, L>(std::forward<Actual>(actual),
+                                        std::forward<Limit>(limit));
 }
 
 #elif (NSFX_TEST_TOOL_NUM_OPERANDS == 3)
@@ -829,10 +856,11 @@ template<class Actual, class Limit, class Tol>
 class NSFX_TEST_TOOL_CHECKER /*{{{*/
 {
 public:
-    NSFX_TEST_TOOL_CHECKER(const Actual& actual, const Limit& limit, const Tol& tol) :
-        actual_(actual),
-        limit_(limit),
-        tol_(tol)
+    template<class A, class L, class T>
+    NSFX_TEST_TOOL_CHECKER(A&& actual, L&& limit, T&& tol) :
+        actual_(std::forward<A>(actual)),
+        limit_(std::forward<L>(limit)),
+        tol_(std::forward<T>(tol))
     {
 # if (NSFX_TEST_TOOL_OPERATOR == 0) // Absolute closeness
         result_ = !((tol_ < actual_ - limit_) || (tol_ < limit_ - actual_));
@@ -877,22 +905,28 @@ public:
         return result_;
     }
 
-
     // Properties.
 private:
-    const Actual& actual_;
-    const Limit& limit_;
-    const Tol& tol_;
-    bool result_;
+    bool   result_;
+    Actual actual_;
+    Limit  limit_;
+    Tol    tol_;
 
 }; /*}}}*/
 
 // MakeChecker
 template<class Actual, class Limit, class Tol>
-inline NSFX_TEST_TOOL_CHECKER<Actual, Limit, Tol>
-NSFX_TEST_TOOL_MAKE_CHECKER(const Actual& actual, const Limit& limit, const Tol& tol)
+inline NSFX_TEST_TOOL_CHECKER<typename std::decay<Actual>::type,
+                              typename std::decay<Limit>::type,
+                              typename std::decay<Tol>::type>
+NSFX_TEST_TOOL_MAKE_CHECKER(Actual&& actual, Limit&& limit, Tol&& tol)
 {
-    return NSFX_TEST_TOOL_CHECKER<Actual, Limit, Tol>(actual, limit, tol);
+    typedef typename std::decay<Actual>::type  A;
+    typedef typename std::decay<Limit>::type   L;
+    typedef typename std::decay<Tol>::type     T;
+    return NSFX_TEST_TOOL_CHECKER<A, L, T>(std::forward<Actual>(actual),
+                                           std::forward<Limit>(limit),
+                                           std::forward<Tol>(tol));
 }
 
 #endif // (NSFX_TEST_TOOL_NUM_OPERANDS == n)
