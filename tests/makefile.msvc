@@ -113,7 +113,6 @@ test-suite.exe : $(HEADERS) $(SRC)
 utility :                          \
     test-least-int                 \
     test-circular-sequence-number  \
-    test-fixed-length-address      \
 
 UTILITY_HEADERS=                                     \
     $(NSFX_PATH)/utility.h                           \
@@ -123,8 +122,6 @@ UTILITY_HEADERS=                                     \
     $(NSFX_PATH)/utility/rounding.h                  \
     $(NSFX_PATH)/utility/least-int.h                 \
     $(NSFX_PATH)/utility/circular-sequence-number.h  \
-    $(NSFX_PATH)/utility/address-concept.h           \
-    $(NSFX_PATH)/utility/fixed-length-address.h      \
 
 HEADERS=                  \
     $(UTILITY_HEADERS)    \
@@ -144,14 +141,6 @@ test-circular-sequence-number : test-circular-sequence-number.exe
 SRC=utility/test-circular-sequence-number.cpp
 
 test-circular-sequence-number.exe : $(HEADERS) $(SRC)
-    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
-
-########################################
-test-fixed-length-address : test-fixed-length-address.exe
-
-SRC=utility/test-fixed-length-address.cpp
-
-test-fixed-length-address.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ################################################################################
@@ -399,226 +388,6 @@ test-timestamp-attribute.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ################################################################################
-# simulation
-simulation :                   \
-    test-event-handle          \
-    test-list-event-scheduler  \
-    test-set-event-scheduler   \
-    test-simulator             \
-
-SIMULATION_HEADERS=                                 \
-    $(NSFX_PATH)/simulation.h                       \
-    $(NSFX_PATH)/simulation/config.h                \
-    $(NSFX_PATH)/simulation/exception.h             \
-    $(NSFX_PATH)/simulation/i-clock.h               \
-    $(NSFX_PATH)/simulation/i-event-handle.h        \
-    $(NSFX_PATH)/simulation/event-handle.h          \
-    $(NSFX_PATH)/simulation/i-event-scheduler.h     \
-    $(NSFX_PATH)/simulation/list-event-scheduler.h  \
-    $(NSFX_PATH)/simulation/set-event-scheduler.h   \
-    $(NSFX_PATH)/simulation/i-simulator.h           \
-    $(NSFX_PATH)/simulation/simulator.h             \
-
-HEADERS=                   \
-    $(SIMULATION_HEADERS)  \
-    $(EVENT_HEADERS)       \
-    $(COMPONENT_HEADERS)   \
-    $(CHRONO_HEADERS)      \
-    $(TEST_HEADERS)        \
-
-########################################
-test-event-handle : test-event-handle.exe
-
-SRC=simulation/test-event-handle.cpp
-
-test-event-handle.exe : $(HEADERS) $(SRC)
-    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
-
-########################################
-test-list-event-scheduler : test-list-event-scheduler.exe
-
-SRC=simulation/test-list-event-scheduler.cpp
-
-test-list-event-scheduler.exe : $(HEADERS) $(SRC)
-    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
-
-########################################
-test-set-event-scheduler : test-set-event-scheduler.exe
-
-SRC=simulation/test-set-event-scheduler.cpp
-
-test-set-event-scheduler.exe : $(HEADERS) $(SRC)
-    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
-
-########################################
-test-simulator : test-simulator.exe
-
-SRC=simulation/test-simulator.cpp
-
-test-simulator.exe : $(HEADERS) $(SRC)
-    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
-
-################################################################################
-# network
-network :   \
-    buffer  \
-    packet  \
-
-buffer :                     \
-    test-buffer              \
-    test-const-buffer        \
-    test-zc-buffer           \
-    test-const-zc-buffer     \
-    test-fixed-buffer        \
-    test-const-fixed-buffer  \
-    test-buffer-iterator     \
-    test-zc-buffer-iterator  \
-
-packet:                   \
-    test-tag              \
-    test-tag-index        \
-    test-tag-index-array  \
-    test-tag-list         \
-    test-packet           \
-
-NETWORK_HEADERS=                                                     \
-    $(NSFX_PATH)/network.h                                           \
-    $(NSFX_PATH)/network/config.h                                    \
-    $(NSFX_PATH)/network/buffer.h                                    \
-    $(NSFX_PATH)/network/buffer/storage/basic-buffer-storage.h       \
-    $(NSFX_PATH)/network/buffer/iterator/basic-buffer-iterator.h     \
-    $(NSFX_PATH)/network/buffer/iterator/buffer-iterator.h           \
-    $(NSFX_PATH)/network/buffer/iterator/const-buffer-iterator.h     \
-    $(NSFX_PATH)/network/buffer/iterator/zc-buffer-iterator.h        \
-    $(NSFX_PATH)/network/buffer/iterator/const-zc-buffer-iterator.h  \
-    $(NSFX_PATH)/network/buffer/basic-buffer.h                       \
-    $(NSFX_PATH)/network/buffer/buffer.h                             \
-    $(NSFX_PATH)/network/buffer/const-buffer.h                       \
-    $(NSFX_PATH)/network/buffer/zc-buffer.h                          \
-    $(NSFX_PATH)/network/buffer/const-zc-buffer.h                    \
-    $(NSFX_PATH)/network/buffer/fixed-buffer.h                       \
-    $(NSFX_PATH)/network/buffer/const-fixed-buffer.h                 \
-    $(NSFX_PATH)/network/packet.h                                    \
-    $(NSFX_PATH)/network/packet/exception.h                          \
-    $(NSFX_PATH)/network/packet/tag/basic-tag.h                      \
-    $(NSFX_PATH)/network/packet/tag/basic-tag-index.h                \
-    $(NSFX_PATH)/network/packet/tag/basic-tag-index-array.h          \
-    $(NSFX_PATH)/network/packet/tag/basic-tag-list.h                 \
-    $(NSFX_PATH)/network/packet/packet.h                             \
-
-HEADERS=                   \
-    $(NETWORK_HEADERS)     \
-    $(SIMULATION_HEADERS)  \
-    $(EVENT_HEADERS)       \
-    $(COMPONENT_HEADERS)   \
-    $(CHRONO_HEADERS)      \
-    $(TEST_HEADERS)        \
-
-########################################
-test-buffer : test-buffer.exe
-
-SRC=network/buffer/test-buffer.cpp
-
-test-buffer.exe : $(HEADERS) $(SRC)
-    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
-
-########################################
-test-const-buffer : test-const-buffer.exe
-
-SRC=network/buffer/test-const-buffer.cpp
-
-test-const-buffer.exe : $(HEADERS) $(SRC)
-    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
-
-########################################
-test-zc-buffer : test-zc-buffer.exe
-
-SRC=network/buffer/test-zc-buffer.cpp
-
-test-zc-buffer.exe : $(HEADERS) $(SRC)
-    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
-
-########################################
-test-const-zc-buffer : test-const-zc-buffer.exe
-
-SRC=network/buffer/test-const-zc-buffer.cpp
-
-test-const-zc-buffer.exe : $(HEADERS) $(SRC)
-    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
-
-########################################
-test-fixed-buffer : test-fixed-buffer.exe
-
-SRC=network/buffer/test-fixed-buffer.cpp
-
-test-fixed-buffer.exe : $(HEADERS) $(SRC)
-    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
-
-########################################
-test-const-fixed-buffer : test-const-fixed-buffer.exe
-
-SRC=network/buffer/test-const-fixed-buffer.cpp
-
-test-const-fixed-buffer.exe : $(HEADERS) $(SRC)
-    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
-
-########################################
-test-buffer-iterator : test-buffer-iterator.exe
-
-SRC=network/buffer/test-buffer-iterator.cpp
-
-test-buffer-iterator.exe : $(HEADERS) $(SRC)
-    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
-
-########################################
-test-zc-buffer-iterator : test-zc-buffer-iterator.exe
-
-SRC=network/buffer/test-zc-buffer-iterator.cpp
-
-test-zc-buffer-iterator.exe : $(HEADERS) $(SRC)
-    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
-
-########################################
-test-tag : test-tag.exe
-
-SRC=network/packet/test-tag.cpp
-
-test-tag.exe : $(HEADERS) $(SRC)
-    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
-
-########################################
-test-tag-index : test-tag-index.exe
-
-SRC=network/packet/test-tag-index.cpp
-
-test-tag-index.exe : $(HEADERS) $(SRC)
-    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
-
-########################################
-test-tag-index-array : test-tag-index-array.exe
-
-SRC=network/packet/test-tag-index-array.cpp
-
-test-tag-index-array.exe : $(HEADERS) $(SRC)
-    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
-
-########################################
-test-tag-list : test-tag-list.exe
-
-SRC=network/packet/test-tag-list.cpp
-
-test-tag-list.exe : $(HEADERS) $(SRC)
-    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
-
-########################################
-test-packet : test-packet.exe
-
-SRC=network/packet/test-packet.cpp
-
-test-packet.exe : $(HEADERS) $(SRC)
-    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
-
-################################################################################
 # random
 random :                          \
     test-rot                      \
@@ -781,5 +550,239 @@ test-summary : test-summary.exe
 SRC=statistics/test-summary.cpp
 
 test-summary.exe : $(HEADERS) $(SRC)
+    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+################################################################################
+# simulation
+simulation :                   \
+    test-event-handle          \
+    test-list-event-scheduler  \
+    test-set-event-scheduler   \
+    test-simulator             \
+
+SIMULATION_HEADERS=                                 \
+    $(NSFX_PATH)/simulation.h                       \
+    $(NSFX_PATH)/simulation/config.h                \
+    $(NSFX_PATH)/simulation/exception.h             \
+    $(NSFX_PATH)/simulation/i-clock.h               \
+    $(NSFX_PATH)/simulation/i-event-handle.h        \
+    $(NSFX_PATH)/simulation/event-handle.h          \
+    $(NSFX_PATH)/simulation/i-event-scheduler.h     \
+    $(NSFX_PATH)/simulation/list-event-scheduler.h  \
+    $(NSFX_PATH)/simulation/set-event-scheduler.h   \
+    $(NSFX_PATH)/simulation/i-simulator.h           \
+    $(NSFX_PATH)/simulation/simulator.h             \
+
+HEADERS=                   \
+    $(SIMULATION_HEADERS)  \
+    $(EVENT_HEADERS)       \
+    $(COMPONENT_HEADERS)   \
+    $(CHRONO_HEADERS)      \
+    $(TEST_HEADERS)        \
+
+########################################
+test-event-handle : test-event-handle.exe
+
+SRC=simulation/test-event-handle.cpp
+
+test-event-handle.exe : $(HEADERS) $(SRC)
+    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-list-event-scheduler : test-list-event-scheduler.exe
+
+SRC=simulation/test-list-event-scheduler.cpp
+
+test-list-event-scheduler.exe : $(HEADERS) $(SRC)
+    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-set-event-scheduler : test-set-event-scheduler.exe
+
+SRC=simulation/test-set-event-scheduler.cpp
+
+test-set-event-scheduler.exe : $(HEADERS) $(SRC)
+    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-simulator : test-simulator.exe
+
+SRC=simulation/test-simulator.cpp
+
+test-simulator.exe : $(HEADERS) $(SRC)
+    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+################################################################################
+# network
+network :   \
+    buffer  \
+    packet  \
+    address \
+
+buffer :                     \
+    test-buffer              \
+    test-const-buffer        \
+    test-zc-buffer           \
+    test-const-zc-buffer     \
+    test-fixed-buffer        \
+    test-const-fixed-buffer  \
+    test-buffer-iterator     \
+    test-zc-buffer-iterator  \
+
+packet:                   \
+    test-tag              \
+    test-tag-index        \
+    test-tag-index-array  \
+    test-tag-list         \
+    test-packet           \
+
+address:          \
+    test-address  \
+
+NETWORK_HEADERS=                                                     \
+    $(NSFX_PATH)/network.h                                           \
+    $(NSFX_PATH)/network/config.h                                    \
+    $(NSFX_PATH)/network/buffer.h                                    \
+    $(NSFX_PATH)/network/buffer/storage/basic-buffer-storage.h       \
+    $(NSFX_PATH)/network/buffer/iterator/basic-buffer-iterator.h     \
+    $(NSFX_PATH)/network/buffer/iterator/buffer-iterator.h           \
+    $(NSFX_PATH)/network/buffer/iterator/const-buffer-iterator.h     \
+    $(NSFX_PATH)/network/buffer/iterator/zc-buffer-iterator.h        \
+    $(NSFX_PATH)/network/buffer/iterator/const-zc-buffer-iterator.h  \
+    $(NSFX_PATH)/network/buffer/basic-buffer.h                       \
+    $(NSFX_PATH)/network/buffer/buffer.h                             \
+    $(NSFX_PATH)/network/buffer/const-buffer.h                       \
+    $(NSFX_PATH)/network/buffer/zc-buffer.h                          \
+    $(NSFX_PATH)/network/buffer/const-zc-buffer.h                    \
+    $(NSFX_PATH)/network/buffer/fixed-buffer.h                       \
+    $(NSFX_PATH)/network/buffer/const-fixed-buffer.h                 \
+    $(NSFX_PATH)/network/packet.h                                    \
+    $(NSFX_PATH)/network/packet/exception.h                          \
+    $(NSFX_PATH)/network/packet/tag/basic-tag.h                      \
+    $(NSFX_PATH)/network/packet/tag/basic-tag-index.h                \
+    $(NSFX_PATH)/network/packet/tag/basic-tag-index-array.h          \
+    $(NSFX_PATH)/network/packet/tag/basic-tag-list.h                 \
+    $(NSFX_PATH)/network/packet/packet.h                             \
+    $(NSFX_PATH)/network/address/address-little-endian.h             \
+    $(NSFX_PATH)/network/address.h                                   \
+
+HEADERS=                   \
+    $(NETWORK_HEADERS)     \
+    $(SIMULATION_HEADERS)  \
+    $(EVENT_HEADERS)       \
+    $(COMPONENT_HEADERS)   \
+    $(CHRONO_HEADERS)      \
+    $(TEST_HEADERS)        \
+
+########################################
+test-buffer : test-buffer.exe
+
+SRC=network/buffer/test-buffer.cpp
+
+test-buffer.exe : $(HEADERS) $(SRC)
+    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-const-buffer : test-const-buffer.exe
+
+SRC=network/buffer/test-const-buffer.cpp
+
+test-const-buffer.exe : $(HEADERS) $(SRC)
+    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-zc-buffer : test-zc-buffer.exe
+
+SRC=network/buffer/test-zc-buffer.cpp
+
+test-zc-buffer.exe : $(HEADERS) $(SRC)
+    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-const-zc-buffer : test-const-zc-buffer.exe
+
+SRC=network/buffer/test-const-zc-buffer.cpp
+
+test-const-zc-buffer.exe : $(HEADERS) $(SRC)
+    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-fixed-buffer : test-fixed-buffer.exe
+
+SRC=network/buffer/test-fixed-buffer.cpp
+
+test-fixed-buffer.exe : $(HEADERS) $(SRC)
+    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-const-fixed-buffer : test-const-fixed-buffer.exe
+
+SRC=network/buffer/test-const-fixed-buffer.cpp
+
+test-const-fixed-buffer.exe : $(HEADERS) $(SRC)
+    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-buffer-iterator : test-buffer-iterator.exe
+
+SRC=network/buffer/test-buffer-iterator.cpp
+
+test-buffer-iterator.exe : $(HEADERS) $(SRC)
+    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-zc-buffer-iterator : test-zc-buffer-iterator.exe
+
+SRC=network/buffer/test-zc-buffer-iterator.cpp
+
+test-zc-buffer-iterator.exe : $(HEADERS) $(SRC)
+    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-tag : test-tag.exe
+
+SRC=network/packet/test-tag.cpp
+
+test-tag.exe : $(HEADERS) $(SRC)
+    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-tag-index : test-tag-index.exe
+
+SRC=network/packet/test-tag-index.cpp
+
+test-tag-index.exe : $(HEADERS) $(SRC)
+    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-tag-index-array : test-tag-index-array.exe
+
+SRC=network/packet/test-tag-index-array.cpp
+
+test-tag-index-array.exe : $(HEADERS) $(SRC)
+    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-tag-list : test-tag-list.exe
+
+SRC=network/packet/test-tag-list.cpp
+
+test-tag-list.exe : $(HEADERS) $(SRC)
+    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-packet : test-packet.exe
+
+SRC=network/packet/test-packet.cpp
+
+test-packet.exe : $(HEADERS) $(SRC)
+    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-address : test-address.exe
+
+SRC=network/address/test-address.cpp
+
+test-address.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 

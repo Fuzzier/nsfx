@@ -22,7 +22,6 @@
 #include <nsfx/utility/endian.h>
 #include <nsfx/utility/least-int.h>
 #include <nsfx/utility/circular-sequence-number.h>
-#include <nsfx/utility/fixed-length-address.h>
 
 
 #endif // UTILITY_H__82D5AF77_EE92_4CD9_BCE1_43C2025E5981
