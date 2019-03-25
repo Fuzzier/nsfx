@@ -131,6 +131,11 @@ public:
 
     friend size_t hash_value(const TimePoint& t) BOOST_NOEXCEPT;
 
+    static BOOST_CONSTEXPR size_t GetSize(void) BOOST_NOEXCEPT
+    {
+        return Duration::GetSize();
+    }
+
     void swap(TimePoint& rhs) BOOST_NOEXCEPT
     {
         boost::swap(dt_, rhs.dt_);

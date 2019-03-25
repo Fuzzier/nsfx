@@ -95,6 +95,11 @@ private:
         Duration dt = t.GetDuration();
     }
 
+    void GetSize(void)
+    {
+        TimePoint::GetSize();
+    }
+
     void Hashable(void)
     {
         TimePoint t;

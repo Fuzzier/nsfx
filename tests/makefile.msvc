@@ -614,10 +614,11 @@ test-simulator.exe : $(HEADERS) $(SRC)
 
 ################################################################################
 # network
-network :   \
-    buffer  \
-    packet  \
-    address \
+network :      \
+    buffer     \
+    packet     \
+    address    \
+    buffer-io  \
 
 buffer :                     \
     test-buffer              \
@@ -638,6 +639,11 @@ packet:                   \
 
 address:          \
     test-address  \
+
+buffer-io :             \
+    test-duration-io    \
+    test-time-point-io  \
+    test-address-io     \
 
 NETWORK_HEADERS=                                                     \
     $(NSFX_PATH)/network.h                                           \
@@ -665,6 +671,9 @@ NETWORK_HEADERS=                                                     \
     $(NSFX_PATH)/network/packet/packet.h                             \
     $(NSFX_PATH)/network/address/address-little-endian.h             \
     $(NSFX_PATH)/network/address.h                                   \
+    $(NSFX_PATH)/network/buffer/io/duration-io.h                     \
+    $(NSFX_PATH)/network/buffer/io/time-point-io.h                   \
+    $(NSFX_PATH)/network/buffer/io/address-io.h                      \
 
 HEADERS=                   \
     $(NETWORK_HEADERS)     \
@@ -784,5 +793,29 @@ test-address : test-address.exe
 SRC=network/address/test-address.cpp
 
 test-address.exe : $(HEADERS) $(SRC)
+    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-duration-io : test-duration-io.exe
+
+SRC=network/io/test-duration-io.cpp
+
+test-duration-io.exe : $(HEADERS) $(SRC)
+    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-time-point-io : test-time-point-io.exe
+
+SRC=network/io/test-time-point-io.cpp
+
+test-time-point-io.exe : $(HEADERS) $(SRC)
+    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-address-io : test-address-io.exe
+
+SRC=network/io/test-address-io.cpp
+
+test-address-io.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 

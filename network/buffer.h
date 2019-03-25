@@ -43,6 +43,11 @@
 #include <nsfx/network/buffer/fixed-buffer.h>
 #include <nsfx/network/buffer/const-fixed-buffer.h>
 
+// IO.
+#include <nsfx/network/buffer/io/duration-io.h>
+#include <nsfx/network/buffer/io/time-point-io.h>
+#include <nsfx/network/buffer/io/address-io.h>
+
 
 #endif // BUFFER_H__50C89673_2F74_42D3_94EC_993B4FF4E2A8
 

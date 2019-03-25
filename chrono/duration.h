@@ -760,6 +760,14 @@ public:
         return freq;
     }
 
+    /**
+     * @brief Get the size of duration in bytes.
+     */
+    static BOOST_CONSTEXPR size_t GetSize(void) BOOST_NOEXCEPT
+    {
+        return sizeof (Rep);
+    }
+
     void swap(Duration& rhs) BOOST_NOEXCEPT
     {
         boost::swap(count_, rhs.count_);

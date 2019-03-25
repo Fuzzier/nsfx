@@ -24,6 +24,7 @@
 #include <boost/preprocessor/iterate.hpp>
 #include <type_traits> // conditional, is_integral, is_signed
 #include <sstream>
+#include <nsfx/network/buffer/iterator/basic-buffer-iterator.h>
 
 
 NSFX_OPEN_NAMESPACE
@@ -1525,6 +1526,47 @@ public:
                 << (int)(data_.b_[i]);
         }
         return oss.str();
+    }
+
+    ////////////////////////////////////////
+public:
+    template<bool zcAware>
+    void Write(BasicBufferIterator</*readOnly*/false, zcAware>& it) const
+    {
+        it.Write(data_.b_, NB);
+    }
+
+    template<bool zcAware>
+    void WriteL(BasicBufferIterator</*readOnly*/false, zcAware>& it) const
+    {
+        it.WriteL(data_.b_, NB);
+    }
+
+    template<bool zcAware>
+    void WriteB(BasicBufferIterator</*readOnly*/false, zcAware>& it) const
+    {
+        it.WriteB(data_.b_, NB);
+    }
+
+    template<bool readOnly, bool zcAware>
+    void Read(BasicBufferIterator<readOnly, zcAware>& it)
+    {
+        it.Read(data_.b_, NB);
+        data_.v_[NV-1] &= MSV_MASK;
+    }
+
+    template<bool readOnly, bool zcAware>
+    void ReadL(BasicBufferIterator<readOnly, zcAware>& it)
+    {
+        it.ReadL(data_.b_, NB);
+        data_.v_[NV-1] &= MSV_MASK;
+    }
+
+    template<bool readOnly, bool zcAware>
+    void ReadB(BasicBufferIterator<readOnly, zcAware>& it)
+    {
+        it.ReadB(data_.b_, NB);
+        data_.v_[NV-1] &= MSV_MASK;
     }
 
 private:
