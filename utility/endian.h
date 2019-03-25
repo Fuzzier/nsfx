@@ -55,6 +55,7 @@ struct endian_traits<big_endian_t>
 #endif // BOOST_ENDIAN_*_BYTE
     BOOST_STATIC_CONSTANT(bool, is_big_endian = true);
     BOOST_STATIC_CONSTANT(bool, is_little_endian = false);
+    typedef big_endian_t  endian_t;
 };
 
 template<>
@@ -67,6 +68,7 @@ struct endian_traits<little_endian_t>
 #endif // BOOST_ENDIAN_*_BYTE
     BOOST_STATIC_CONSTANT(bool, is_big_endian = false);
     BOOST_STATIC_CONSTANT(bool, is_little_endian = true);
+    typedef little_endian_t  endian_t;
 };
 
 template<>
@@ -76,9 +78,11 @@ struct endian_traits<native_endian_t>
 #if BOOST_ENDIAN_BIG_BYTE
     BOOST_STATIC_CONSTANT(bool, is_big_endian = true);
     BOOST_STATIC_CONSTANT(bool, is_little_endian = false);
+    typedef big_endian_t  endian_t;
 #elif BOOST_ENDIAN_LITTLE_BYTE
     BOOST_STATIC_CONSTANT(bool, is_big_endian = false);
     BOOST_STATIC_CONSTANT(bool, is_little_endian = true);
+    typedef little_endian_t  endian_t;
 #endif // BOOST_ENDIAN_*_BYTE
 };
 
