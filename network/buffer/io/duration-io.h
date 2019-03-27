@@ -31,21 +31,21 @@ template<bool zcAware, class Res>
 void Write(BasicBufferIterator</*readOnly*/false, zcAware>& it,
            const chrono::Duration<Res>& dt)
 {
-    it.Write<chrono::Duration<Res>::Rep>(dt.GetCount());
+    it.Write<chrono::count_t>(dt.GetCount());
 }
 
 template<bool zcAware, class Res>
 void WriteL(BasicBufferIterator</*readOnly*/false, zcAware>& it,
             const chrono::Duration<Res>& dt)
 {
-    it.WriteL<chrono::Duration<Res>::Rep>(dt.GetCount());
+    it.WriteL<chrono::count_t>(dt.GetCount());
 }
 
 template<bool zcAware, class Res>
 void WriteB(BasicBufferIterator</*readOnly*/false, zcAware>& it,
             const chrono::Duration<Res>& dt)
 {
-    it.WriteB<chrono::Duration<Res>::Rep>(dt.GetCount());
+    it.WriteB<chrono::count_t>(dt.GetCount());
 }
 
 ////////////////////////////////////////
@@ -54,7 +54,7 @@ void Read(BasicBufferIterator<readOnly, zcAware>& it,
           chrono::Duration<Res>* dt)
 {
     BOOST_ASSERT(dt);
-    chrono::Duration<Res>::Rep count = it.Read<chrono::Duration<Res>::Rep>();
+    chrono::count_t count = it.Read<chrono::count_t>();
     *dt = chrono::Duration<Res>(count);
 }
 
@@ -63,7 +63,7 @@ void ReadL(BasicBufferIterator<readOnly, zcAware>& it,
            chrono::Duration<Res>* dt)
 {
     BOOST_ASSERT(dt);
-    chrono::Duration<Res>::Rep count = it.ReadL<chrono::Duration<Res>::Rep>();
+    chrono::count_t count = it.ReadL<chrono::count_t>();
     *dt = chrono::Duration<Res>(count);
 }
 
@@ -72,7 +72,7 @@ void ReadB(BasicBufferIterator<readOnly, zcAware>& it,
            chrono::Duration<Res>* dt)
 {
     BOOST_ASSERT(dt);
-    chrono::Duration<Res>::Rep count = it.ReadB<chrono::Duration<Res>::Rep>();
+    chrono::count_t count = it.ReadB<chrono::count_t>();
     *dt = chrono::Duration<Res>(count);
 }
 

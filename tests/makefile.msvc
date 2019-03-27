@@ -798,7 +798,7 @@ test-address.exe : $(HEADERS) $(SRC)
 ########################################
 test-duration-io : test-duration-io.exe
 
-SRC=network/io/test-duration-io.cpp
+SRC=network/buffer/io/test-duration-io.cpp
 
 test-duration-io.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
@@ -806,7 +806,7 @@ test-duration-io.exe : $(HEADERS) $(SRC)
 ########################################
 test-time-point-io : test-time-point-io.exe
 
-SRC=network/io/test-time-point-io.cpp
+SRC=network/buffer/io/test-time-point-io.cpp
 
 test-time-point-io.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
@@ -814,7 +814,7 @@ test-time-point-io.exe : $(HEADERS) $(SRC)
 ########################################
 test-address-io : test-address-io.exe
 
-SRC=network/io/test-address-io.cpp
+SRC=network/buffer/io/test-address-io.cpp
 
 test-address-io.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
