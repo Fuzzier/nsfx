@@ -82,6 +82,11 @@ NSFX_TEST_SUITE(VirtualTimePoint)
         NSFX_TEST_EXPECT_EQ(t2, t1 + td);
     }
 
+    NSFX_TEST_CASE(Size)
+    {
+        NSFX_TEST_EXPECT_EQ(TimePoint::GetSize(), Duration::GetSize());
+    }
+
     NSFX_TEST_CASE(Hash)
     {
         TimePoint t(Duration(10));

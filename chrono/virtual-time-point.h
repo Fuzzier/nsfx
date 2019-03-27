@@ -129,8 +129,6 @@ public:
         return dt_;
     }
 
-    friend size_t hash_value(const TimePoint& t) BOOST_NOEXCEPT;
-
     static BOOST_CONSTEXPR size_t GetSize(void) BOOST_NOEXCEPT
     {
         return Duration::GetSize();
@@ -259,7 +257,7 @@ operator-(const VirtualTimePoint& lhs, const VirtualTimePoint& rhs) BOOST_NOEXCE
 inline size_t
 hash_value(const VirtualTimePoint& t) BOOST_NOEXCEPT
 {
-    return hash_value(t.dt_);
+    return boost::hash<VirtualTimePoint::Duration>()(t.GetDuration());
 }
 
 inline void

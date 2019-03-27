@@ -224,6 +224,11 @@ NSFX_TEST_SUITE(Duration)
         NSFX_TEST_EXPECT_EQ(dt5, nsfx::chrono::Duration<nsfx::nano>(2));
     }
 
+    NSFX_TEST_CASE(Size)
+    {
+        NSFX_TEST_EXPECT_EQ(Duration::GetSize(), sizeof (nsfx::chrono::count_t));
+    }
+
     NSFX_TEST_CASE(Hash)
     {
         Duration dt(1000);
@@ -248,11 +253,11 @@ NSFX_TEST_SUITE(Duration)
 
         Duration dmin = Duration::Min();
         NSFX_TEST_EXPECT_EQ(dmin.GetCount(),
-                            std::numeric_limits<Duration::Rep>::min());
+                            std::numeric_limits<nsfx::chrono::count_t>::min());
 
         Duration dmax = Duration::Max();
         NSFX_TEST_EXPECT_EQ(dmax.GetCount(),
-                            std::numeric_limits<Duration::Rep>::max());
+                            std::numeric_limits<nsfx::chrono::count_t>::max());
     }
 
     NSFX_TEST_CASE(Double)

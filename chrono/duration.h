@@ -168,9 +168,6 @@ struct MakeBiggerUnit<Unit, factor, false>
  * After being divided by U1, u/v < U1 <= 1000 / D0.
  * When u/v is divided by U0, it will not overflow.
  * @endcode
- *
- *
- * @internal
  */
 template<intmax_t N, intmax_t D>
 inline void RatioDivide(count_t& x, count_t& u, count_t& v, ratio<N, D>) BOOST_NOEXCEPT
@@ -433,8 +430,7 @@ private:
                   "The time resolution must be a non-positive power of 10.");
 
 public:
-    typedef Res      Resolution;
-    typedef count_t  Rep;
+    typedef Res  Resolution;
 
 private:
     template<class Res>
@@ -477,7 +473,7 @@ public:
      *
      * @param[in] n  The number of fundamental periods.
      */
-    explicit BOOST_CONSTEXPR Duration(const Rep& n) BOOST_NOEXCEPT :
+    explicit BOOST_CONSTEXPR Duration(count_t n) BOOST_NOEXCEPT :
         count_(n)
     {}
 
@@ -505,7 +501,7 @@ public:
      * @param[in] sec The time length in seconds.
      */
     BOOST_CONSTEXPR Duration(double sec, round_upward_t) BOOST_NOEXCEPT :
-        count_(static_cast<Rep>(std::ceil(sec * GetFrequency())))
+        count_(static_cast<count_t>(std::ceil(sec * GetFrequency())))
     {}
 
     /**
@@ -514,7 +510,7 @@ public:
      * @param[in] sec The time length in seconds.
      */
     BOOST_CONSTEXPR Duration(double sec, round_downward_t) BOOST_NOEXCEPT :
-        count_(static_cast<Rep>(std::floor(sec * GetFrequency())))
+        count_(static_cast<count_t>(std::floor(sec * GetFrequency())))
     {}
 
     /*}}}*/
@@ -608,19 +604,19 @@ public:
 
     template<class Res>
     friend BOOST_CONSTEXPR Duration<Res>
-    operator*(const Duration<Res>& lhs, const typename Duration<Res>::Rep& n) BOOST_NOEXCEPT;
+    operator*(const Duration<Res>& lhs, count_t n) BOOST_NOEXCEPT;
 
     template<class Res>
     friend BOOST_CONSTEXPR Duration<Res>
-    operator*(const typename Duration<Res>::Rep& n, const Duration<Res>& rhs) BOOST_NOEXCEPT;
+    operator*(count_t n, const Duration<Res>& rhs) BOOST_NOEXCEPT;
 
     template<class Res1, class Res2>
-    friend BOOST_CONSTEXPR typename Duration<typename aux::Common<Res1, Res2>::type>::Rep
+    friend BOOST_CONSTEXPR count_t
     operator/(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT;
 
     template<class Res>
     friend BOOST_CONSTEXPR Duration<Res>
-    operator/(const Duration<Res>& lhs, const typename Duration<Res>::Rep& n) BOOST_NOEXCEPT;
+    operator/(const Duration<Res>& lhs, count_t n) BOOST_NOEXCEPT;
 
     template<class Res1, class Res2>
     friend BOOST_CONSTEXPR Duration<typename aux::Common<Res1, Res2>::type>
@@ -674,13 +670,13 @@ public:
         return *this;
     }
 
-    BOOST_CONSTEXPR Duration& operator*=(const Rep& n) BOOST_NOEXCEPT
+    BOOST_CONSTEXPR Duration& operator*=(count_t n) BOOST_NOEXCEPT
     {
         count_ *= n;
         return *this;
     }
 
-    BOOST_CONSTEXPR Duration& operator/=(const Rep& n) BOOST_NOEXCEPT
+    BOOST_CONSTEXPR Duration& operator/=(count_t n) BOOST_NOEXCEPT
     {
         count_ /= n;
         return *this;
@@ -735,7 +731,7 @@ public:
     /**
      * @brief Get the number of fundamental periods.
      */
-    BOOST_CONSTEXPR Rep GetCount(void) const BOOST_NOEXCEPT
+    BOOST_CONSTEXPR count_t GetCount(void) const BOOST_NOEXCEPT
     {
         return count_;
     }
@@ -765,7 +761,7 @@ public:
      */
     static BOOST_CONSTEXPR size_t GetSize(void) BOOST_NOEXCEPT
     {
-        return sizeof (Rep);
+        return sizeof (count_t);
     }
 
     void swap(Duration& rhs) BOOST_NOEXCEPT
@@ -791,14 +787,14 @@ public:
      * @param[out] ys   YoctoSeconds.
      */
     void Split(bool& neg,
-               Rep& d,  Rep& h,  Rep& m,
-               Rep& s,  Rep& ms, Rep& us,
-               Rep& ns, Rep& ps, Rep& fs,
-               Rep& as, Rep& zs, Rep& ys) const BOOST_NOEXCEPT
+               count_t& d,  count_t& h,  count_t& m,
+               count_t& s,  count_t& ms, count_t& us,
+               count_t& ns, count_t& ps, count_t& fs,
+               count_t& as, count_t& zs, count_t& ys) const BOOST_NOEXCEPT
     {
         neg = (count_ < 0);
-        Rep u = neg ? -count_ : count_;
-        Rep v = 1;
+        count_t u = neg ? -count_ : count_;
+        count_t v = 1;
         aux::RatioDivide(d,  u, v, Day());
         aux::RatioDivide(h,  u, v, Hour());
         aux::RatioDivide(m,  u, v, Minute());
@@ -864,7 +860,7 @@ public:
     /*}}}*/
 
 private:
-    Rep count_;
+    count_t count_;
 };
 
 
@@ -943,20 +939,20 @@ operator-(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT
 
 template<class Res>
 inline BOOST_CONSTEXPR Duration<Res>
-operator*(const Duration<Res>& lhs, const typename Duration<Res>::Rep& n) BOOST_NOEXCEPT
+operator*(const Duration<Res>& lhs, count_t n) BOOST_NOEXCEPT
 {
     return Duration<Res>(lhs.count_ * n);
 }
 
 template<class Res>
 inline BOOST_CONSTEXPR Duration<Res>
-operator*(const typename Duration<Res>::Rep& n, const Duration<Res>& rhs) BOOST_NOEXCEPT
+operator*(count_t n, const Duration<Res>& rhs) BOOST_NOEXCEPT
 {
     return Duration<Res>(n * rhs.count_);
 }
 
 template<class Res1, class Res2>
-inline BOOST_CONSTEXPR typename Duration<typename aux::Common<Res1, Res2>::type>::Rep
+inline BOOST_CONSTEXPR count_t
 operator/(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT
 {
     typedef typename aux::Common<Res1, Res2>::type Res3;
@@ -966,7 +962,7 @@ operator/(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT
 
 template<class Res>
 inline BOOST_CONSTEXPR Duration<Res>
-operator/(const Duration<Res>& lhs, const typename Duration<Res>::Rep& n) BOOST_NOEXCEPT
+operator/(const Duration<Res>& lhs, count_t n) BOOST_NOEXCEPT
 {
     return Duration<Res>(lhs.count_ / n);
 }
@@ -989,18 +985,18 @@ inline std::string
 Duration<Res>::ToString(void) const
 {
     bool neg;
-    Rep  d;
-    Rep  h;
-    Rep  m;
-    Rep  s;
-    Rep  ms;
-    Rep  us;
-    Rep  ns;
-    Rep  ps;
-    Rep  fs;
-    Rep  as;
-    Rep  zs;
-    Rep  ys;
+    count_t d;
+    count_t h;
+    count_t m;
+    count_t s;
+    count_t ms;
+    count_t us;
+    count_t ns;
+    count_t ps;
+    count_t fs;
+    count_t as;
+    count_t zs;
+    count_t ys;
     Split(neg, d, h, m, s, ms, us, ns, ps, fs, as, zs, ys);
 
     std::stringstream oss;
@@ -1069,7 +1065,7 @@ template<class Res>
 inline size_t
 hash_value(const Duration<Res>& dt) BOOST_NOEXCEPT
 {
-    return boost::hash<typename Duration<Res>::Rep>()(dt.GetCount());
+    return boost::hash<count_t>()(dt.GetCount());
 }
 
 template<class Res>
@@ -1083,61 +1079,61 @@ swap(Duration<Res>& lhs, Duration<Res>& rhs) BOOST_NOEXCEPT
 ////////////////////////////////////////////////////////////////////////////////
 // Makers./*{{{*/
 inline BOOST_CONSTEXPR Duration<atto>
-AttoSeconds(Duration<atto>::Rep n) BOOST_NOEXCEPT
+AttoSeconds(count_t n) BOOST_NOEXCEPT
 {
     return Duration<atto>(n);
 }
 
 inline BOOST_CONSTEXPR Duration<femto>
-FemtoSeconds(Duration<femto>::Rep n) BOOST_NOEXCEPT
+FemtoSeconds(count_t n) BOOST_NOEXCEPT
 {
     return Duration<femto>(n);
 }
 
 inline BOOST_CONSTEXPR Duration<pico>
-PicoSeconds(Duration<pico>::Rep n) BOOST_NOEXCEPT
+PicoSeconds(count_t n) BOOST_NOEXCEPT
 {
     return Duration<pico>(n);
 }
 
 inline BOOST_CONSTEXPR Duration<nano>
-NanoSeconds(Duration<nano>::Rep n) BOOST_NOEXCEPT
+NanoSeconds(count_t n) BOOST_NOEXCEPT
 {
     return Duration<nano>(n);
 }
 
 inline BOOST_CONSTEXPR Duration<micro>
-MicroSeconds(Duration<micro>::Rep n) BOOST_NOEXCEPT
+MicroSeconds(count_t n) BOOST_NOEXCEPT
 {
     return Duration<micro>(n);
 }
 
 inline BOOST_CONSTEXPR Duration<milli>
-MilliSeconds(Duration<milli>::Rep n) BOOST_NOEXCEPT
+MilliSeconds(count_t n) BOOST_NOEXCEPT
 {
     return Duration<milli>(n);
 }
 
 inline BOOST_CONSTEXPR Duration<ratio<1>>
-Seconds(Duration<ratio<1>>::Rep n) BOOST_NOEXCEPT
+Seconds(count_t n) BOOST_NOEXCEPT
 {
     return Duration<ratio<1>>(n);
 }
 
 inline BOOST_CONSTEXPR Duration<ratio<1>>
-Minutes(Duration<ratio<1>>::Rep n) BOOST_NOEXCEPT
+Minutes(count_t n) BOOST_NOEXCEPT
 {
     return Duration<ratio<1>>(n * 60);
 }
 
 inline BOOST_CONSTEXPR Duration<ratio<1>>
-Hours(Duration<ratio<1>>::Rep n) BOOST_NOEXCEPT
+Hours(count_t n) BOOST_NOEXCEPT
 {
     return Duration<ratio<1>>(n * 3600);
 }
 
 inline BOOST_CONSTEXPR Duration<ratio<1>>
-Days(Duration<ratio<1>>::Rep n) BOOST_NOEXCEPT
+Days(count_t n) BOOST_NOEXCEPT
 {
     return Duration<ratio<1>>(n * 86400);
 }
