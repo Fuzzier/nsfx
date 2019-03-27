@@ -270,7 +270,7 @@ public:
      *               extended til the most significant bit.
      */
     template<class T>
-    BOOST_CONSTEXPR Address(const T& v) BOOST_NOEXCEPT
+    BOOST_CONSTEXPR Address(T v) BOOST_NOEXCEPT
     {
         static_assert(std::is_integral<T>::value,
                       "Invalid type T, which must be an integral type.");
@@ -731,10 +731,9 @@ public:
     ////////////////////////////////////////
 public:
     template<class T>
-    void AssignValue(const T& v) BOOST_NOEXCEPT
+    typename std::enable_if<std::is_integral<T>::value, void>::type
+    AssignValue(T v) BOOST_NOEXCEPT
     {
-        static_assert(std::is_integral<T>::value,
-                      "Invalid type T, which must be an integral type.");
         typedef typename std::conditional<std::is_signed<T>::value,
                          signed_t, unsigned_t>::type  sign_t;
         AssignValue(v, sign_t());
@@ -742,7 +741,7 @@ public:
 
 private:
     template<class T>
-    void AssignValue(const T& v, unsigned_t) BOOST_NOEXCEPT
+    void AssignValue(T v, unsigned_t) BOOST_NOEXCEPT
     {
         BOOST_STATIC_CONSTANT(size_t, M = sizeof (T));
         typedef const uint8_t (&ByteArrayType) [M];
@@ -750,7 +749,7 @@ private:
     }
 
     template<class T>
-    void AssignValue(const T& v, signed_t) BOOST_NOEXCEPT
+    void AssignValue(T v, signed_t) BOOST_NOEXCEPT
     {
         BOOST_STATIC_CONSTANT(size_t, M = sizeof (T));
         typedef const uint8_t (&ByteArrayType) [M];
@@ -770,20 +769,18 @@ private:
     ////////////////////////////////////////
 public:
     template<class T, size_t M>
-    void AssignValues(const T (&a)[M], little_endian_t) BOOST_NOEXCEPT
+    typename std::enable_if<std::is_integral<T>::value, void>::type
+    AssignValues(const T (&a)[M], little_endian_t) BOOST_NOEXCEPT
     {
-        static_assert(std::is_integral<T>::value,
-                      "Invalid type T, which must be an integral type.");
         BOOST_STATIC_CONSTANT(size_t, N = M * sizeof (T));
         typedef const uint8_t (&ByteArrayType) [N];
         AssignBytes((ByteArrayType)(a), little_endian_t());
     }
 
     template<class T, size_t M>
-    void AssignValues(const T (&a)[M], big_endian_t) BOOST_NOEXCEPT
+    typename std::enable_if<std::is_integral<T>::value, void>::type
+    AssignValues(const T (&a)[M], big_endian_t) BOOST_NOEXCEPT
     {
-        static_assert(std::is_integral<T>::value,
-                      "Invalid type T, which must be an integral type.");
         // The number of T's to hold the bits.
         BOOST_STATIC_CONSTANT(size_t, NT = (NUM_BITS + (8 * sizeof (T)) - 1)  \
                                          / (8 * sizeof (T)));
@@ -802,18 +799,16 @@ public:
     }
 
     template<class T>
-    void AssignValues(const T* values, size_t count, little_endian_t) BOOST_NOEXCEPT
+    typename std::enable_if<std::is_integral<T>::value, void>::type
+    AssignValues(const T* values, size_t count, little_endian_t) BOOST_NOEXCEPT
     {
-        static_assert(std::is_integral<T>::value,
-                      "Invalid type T, which must be an integral type.");
         AssignBytes((const uint8_t*)(values), count * sizeof (T), little_endian_t());
     }
 
     template<class T>
-    void AssignValues(const T* values, size_t count, big_endian_t) BOOST_NOEXCEPT
+    typename std::enable_if<std::is_integral<T>::value, void>::type
+    AssignValues(const T* values, size_t count, big_endian_t) BOOST_NOEXCEPT
     {
-        static_assert(std::is_integral<T>::value,
-                      "Invalid type T, which must be an integral type.");
         // The number of T's to hold the bits.
         BOOST_STATIC_CONSTANT(size_t, NT = (NUM_BITS + (8 * sizeof (T)) - 1)  \
                                          / (8 * sizeof (T)));
@@ -1596,16 +1591,16 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 template<size_t bits>
 inline BOOST_CONSTEXPR Address<bits>
-operator+(int64_t n, const Address<bits>& rhs) BOOST_NOEXCEPT
+operator+(int64_t n, const Address<bits>& addr) BOOST_NOEXCEPT
 {
-    return (rhs + n);
+    return (addr + n);
 }
 
 template<size_t bits>
 inline BOOST_CONSTEXPR Address<bits>
-operator*(int64_t n, const Address<bits>& rhs) BOOST_NOEXCEPT
+operator*(uint64_t n, const Address<bits>& addr) BOOST_NOEXCEPT
 {
-    return (rhs * n);
+    return (addr * n);
 }
 
 template<size_t bits>
