@@ -44,6 +44,7 @@
 #include <nsfx/network/buffer/const-fixed-buffer.h>
 
 // IO.
+#include <nsfx/network/buffer/io/arithmetic-io.h>
 #include <nsfx/network/buffer/io/duration-io.h>
 #include <nsfx/network/buffer/io/time-point-io.h>
 #include <nsfx/network/buffer/io/address-io.h>

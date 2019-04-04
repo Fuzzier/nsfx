@@ -641,6 +641,7 @@ address:          \
     test-address  \
 
 buffer-io :             \
+    test-arithmetic-io  \
     test-duration-io    \
     test-time-point-io  \
     test-address-io     \
@@ -671,6 +672,7 @@ NETWORK_HEADERS=                                                     \
     $(NSFX_PATH)/network/packet/packet.h                             \
     $(NSFX_PATH)/network/address/address-little-endian.h             \
     $(NSFX_PATH)/network/address.h                                   \
+    $(NSFX_PATH)/network/buffer/io/arithmetic-io.h                   \
     $(NSFX_PATH)/network/buffer/io/duration-io.h                     \
     $(NSFX_PATH)/network/buffer/io/time-point-io.h                   \
     $(NSFX_PATH)/network/buffer/io/address-io.h                      \
@@ -793,6 +795,14 @@ test-address : test-address.exe
 SRC=network/address/test-address.cpp
 
 test-address.exe : $(HEADERS) $(SRC)
+    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-arithmetic-io : test-arithmetic-io.exe
+
+SRC=network/buffer/io/test-arithmetic-io.cpp
+
+test-arithmetic-io.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
