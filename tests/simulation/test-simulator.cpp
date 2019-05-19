@@ -15,7 +15,7 @@
 
 #include <nsfx/test.h>
 #include <nsfx/simulation/simulator.h>
-#include <nsfx/simulation/set-event-scheduler.h>
+#include <nsfx/simulation/set-scheduler.h>
 #include <nsfx/event/event-sink.h>
 #include <iostream>
 
@@ -28,7 +28,7 @@ NSFX_TEST_SUITE(Simulator)
     struct Sink :/*{{{*/
         nsfx::IClockUser,
         nsfx::ISimulatorUser,
-        nsfx::IEventSchedulerUser,
+        nsfx::ISchedulerUser,
         nsfx::IEventSink<>
     {
         typedef Sink  ThisClass;
@@ -58,7 +58,7 @@ NSFX_TEST_SUITE(Simulator)
             endSinkCookie_   = nsfx::Ptr<nsfx::ISimulationEndEvent>(simulator_)->Connect(endSink_);
         }
 
-        virtual void Use(nsfx::Ptr<nsfx::IEventScheduler> scheduler) NSFX_OVERRIDE
+        virtual void Use(nsfx::Ptr<nsfx::IScheduler> scheduler) NSFX_OVERRIDE
         {
             scheduler_ = scheduler;
         }
@@ -107,14 +107,14 @@ NSFX_TEST_SUITE(Simulator)
         NSFX_INTERFACE_MAP_BEGIN(ThisClass)
             NSFX_INTERFACE_ENTRY(nsfx::IClockUser)
             NSFX_INTERFACE_ENTRY(nsfx::ISimulatorUser)
-            NSFX_INTERFACE_ENTRY(nsfx::IEventSchedulerUser)
+            NSFX_INTERFACE_ENTRY(nsfx::ISchedulerUser)
             NSFX_INTERFACE_ENTRY(nsfx::IEventSink<>)
         NSFX_INTERFACE_MAP_END()
 
     private:
         nsfx::Ptr<nsfx::ISimulator> simulator_;
         nsfx::Ptr<nsfx::IClock> clock_;
-        nsfx::Ptr<nsfx::IEventScheduler> scheduler_;
+        nsfx::Ptr<nsfx::IScheduler> scheduler_;
         nsfx::Ptr<nsfx::IObject>  beginSink_;
         nsfx::Ptr<nsfx::IObject>  runSink_;
         nsfx::Ptr<nsfx::IObject>  pauseSink_;
@@ -133,9 +133,9 @@ NSFX_TEST_SUITE(Simulator)
             counter = 0;
 
             // Create objects.
-            nsfx::Ptr<nsfx::IEventScheduler> scheduler =
-                nsfx::CreateObject<nsfx::IEventScheduler>(
-                    "edu.uestc.nsfx.SetEventScheduler");
+            nsfx::Ptr<nsfx::IScheduler> scheduler =
+                nsfx::CreateObject<nsfx::IScheduler>(
+                    "edu.uestc.nsfx.SetScheduler");
 
             nsfx::Ptr<nsfx::ISimulator>  simulator =
                 nsfx::CreateObject<nsfx::ISimulator>(
@@ -147,7 +147,7 @@ NSFX_TEST_SUITE(Simulator)
 
             // Wire simulator.
             {
-                nsfx::Ptr<nsfx::IEventSchedulerUser>(simulator)->Use(scheduler);
+                nsfx::Ptr<nsfx::ISchedulerUser>(simulator)->Use(scheduler);
             }
             // Wire scheduler.
             {

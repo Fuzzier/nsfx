@@ -5,22 +5,22 @@
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
- * @date    2018-01-20
+ * @date    2017-12-25
  *
- * @copyright Copyright (c) 2018.
+ * @copyright Copyright (c) 2017.
  *   National Key Laboratory of Science and Technology on Communications,
  *   University of Electronic Science and Technology of China.
  *   All rights reserved.
  */
 
-#ifndef SET_EVENT_SCHEDULER_H__93403085_3F17_4CF9_A51E_04EA65436B49
-#define SET_EVENT_SCHEDULER_H__93403085_3F17_4CF9_A51E_04EA65436B49
+#ifndef LIST_EVENT_SCHEDULER_H__38B15EBB_9CE4_4670_A446_55235A1EEF60
+#define LIST_EVENT_SCHEDULER_H__38B15EBB_9CE4_4670_A446_55235A1EEF60
 
 
 #include <nsfx/simulation/config.h>
-#include <nsfx/simulation/i-event-scheduler.h>
-#include <nsfx/simulation/event-handle.h>
+#include <nsfx/simulation/i-scheduler.h>
 #include <nsfx/simulation/i-clock.h>
+#include <nsfx/simulation/event-handle.h>
 #include <nsfx/component/class-registry.h>
 #include <functional>
 #include <memory>
@@ -30,36 +30,36 @@ NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// SetEventScheduler.
+// ListScheduler.
 /**
  * @ingroup Simulator
- * @brief An event scheduler based on set.
+ * @brief An event scheduler based on list.
  *
  * # Uid
  * @code
- * "edu.uestc.nsfx.SetEventScheduler"
+ * "edu.uestc.nsfx.ListScheduler"
  * @endcode
  *
  * # Interfaces
  * * Uses
  *   + \c IClock
  * * Provides
- *   + \c IEventScheduler
+ *   + \c IScheduler
  */
-class SetEventScheduler :
+class ListScheduler :
     public IClockUser,
-    public IEventScheduler
+    public IScheduler
 {
 private:
-    typedef SetEventScheduler   ThisClass;
+    typedef ListScheduler  ThisClass;
 
 public:
-    SetEventScheduler(void) BOOST_NOEXCEPT :
+    ListScheduler(void) BOOST_NOEXCEPT :
         initialized_(false),
         nextEventId_(0)
     {}
 
-    virtual ~SetEventScheduler(void) {}
+    virtual ~ListScheduler(void) {}
 
     // IClockUser /*{{{*/
 public:
@@ -81,7 +81,7 @@ public:
 
     /*}}}*/
 
-    // IEventScheduler /*{{{*/
+    // IScheduler /*{{{*/
 public:
     virtual Ptr<IEventHandle> ScheduleNow(Ptr<IEventSink<>> sink) NSFX_OVERRIDE
     {
@@ -116,14 +116,35 @@ public:
         }
         Ptr<EventHandle> handle(new Object<EventHandle>(
                                     nextEventId_++, t, std::move(sink)));
-        set_.insert(handle);
+        if (!list_.size())
+        {
+            list_.push_front(handle);
+        }
+        else // if (list_.size() > 0)
+        {
+            bool inserted = false;
+            for (auto it = list_.begin(); it != list_.end(); ++it)
+            {
+                Ptr<EventHandle>&  h = *it;
+                if (h->GetTimePoint() > t)
+                {
+                    list_.insert(it, handle);
+                    inserted = true;
+                    break;
+                }
+            }
+            if (!inserted)
+            {
+                list_.push_back(handle);
+            }
+        }
         // BOOST_ASSERT(IsOrdered());
         return Ptr<IEventHandle>(handle.Detach()->GetIntf(), false);
     }
 
     virtual size_t GetNumEvents(void) BOOST_NOEXCEPT NSFX_OVERRIDE
     {
-        return set_.size();
+        return list_.size();
     }
 
     virtual Ptr<IEventHandle> GetNextEvent(void) NSFX_OVERRIDE
@@ -132,7 +153,7 @@ public:
         return result->GetIntf();
     }
 
-    void FireAndRemoveNextEvent(void)
+    virtual void FireAndRemoveNextEvent(void) NSFX_OVERRIDE
     {
         EventHandle* result = InternalRemoveNextEvent();
         result->Fire();
@@ -142,9 +163,9 @@ private:
     EventHandle* InternalGetNextEvent(void) BOOST_NOEXCEPT
     {
         EventHandle* result = nullptr;
-        if (set_.size())
+        if (list_.size() > 0)
         {
-            result = set_.begin()->Get();
+            result = list_.front().Get();
         }
         return result;
     }
@@ -152,11 +173,10 @@ private:
     EventHandle* InternalRemoveNextEvent(void)
     {
         EventHandle* result = nullptr;
-        if (set_.size() > 0)
+        if (list_.size() > 0)
         {
-            auto it = set_.begin();
-            result = it->Get();
-            set_.erase(it);
+            result = list_.front().Get();
+            list_.pop_front();
         }
         return result;
     }
@@ -165,7 +185,7 @@ private:
     {
         bool ordered = true;
         TimePoint t0;
-        for (auto it = set_.cbegin(); it != set_.cend() && ordered; ++it)
+        for (auto it = list_.cbegin(); it != list_.cend() && ordered; ++it)
         {
             ordered = (t0 <= (*it)->GetTimePoint());
             t0 = (*it)->GetTimePoint();
@@ -178,23 +198,23 @@ private:
 private:
     NSFX_INTERFACE_MAP_BEGIN(ThisClass)
         NSFX_INTERFACE_ENTRY(IClockUser)
-        NSFX_INTERFACE_ENTRY(IEventScheduler)
+        NSFX_INTERFACE_ENTRY(IScheduler)
     NSFX_INTERFACE_MAP_END()
 
 private:
     bool  initialized_;
     Ptr<IClock>  clock_;
     event_id_t   nextEventId_;
-    set<Ptr<EventHandle>>  set_;
+    list<Ptr<EventHandle>>  list_;
 
-}; // class SetEventScheduler
+};
 
 
-NSFX_REGISTER_CLASS(SetEventScheduler, "edu.uestc.nsfx.SetEventScheduler");
+NSFX_REGISTER_CLASS(ListScheduler, "edu.uestc.nsfx.ListScheduler");
 
 
 NSFX_CLOSE_NAMESPACE
 
 
-#endif // SET_EVENT_SCHEDULER_H__93403085_3F17_4CF9_A51E_04EA65436B49
+#endif // LIST_EVENT_SCHEDULER_H__38B15EBB_9CE4_4670_A446_55235A1EEF60
 

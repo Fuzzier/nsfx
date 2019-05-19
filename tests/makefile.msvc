@@ -554,24 +554,24 @@ test-summary.exe : $(HEADERS) $(SRC)
 
 ################################################################################
 # simulation
-simulation :                   \
-    test-event-handle          \
-    test-list-event-scheduler  \
-    test-set-event-scheduler   \
-    test-simulator             \
+simulation :             \
+    test-event-handle    \
+    test-list-scheduler  \
+    test-set-scheduler   \
+    test-simulator       \
 
-SIMULATION_HEADERS=                                 \
-    $(NSFX_PATH)/simulation.h                       \
-    $(NSFX_PATH)/simulation/config.h                \
-    $(NSFX_PATH)/simulation/exception.h             \
-    $(NSFX_PATH)/simulation/i-clock.h               \
-    $(NSFX_PATH)/simulation/i-event-handle.h        \
-    $(NSFX_PATH)/simulation/event-handle.h          \
-    $(NSFX_PATH)/simulation/i-event-scheduler.h     \
-    $(NSFX_PATH)/simulation/list-event-scheduler.h  \
-    $(NSFX_PATH)/simulation/set-event-scheduler.h   \
-    $(NSFX_PATH)/simulation/i-simulator.h           \
-    $(NSFX_PATH)/simulation/simulator.h             \
+SIMULATION_HEADERS=                           \
+    $(NSFX_PATH)/simulation.h                 \
+    $(NSFX_PATH)/simulation/config.h          \
+    $(NSFX_PATH)/simulation/exception.h       \
+    $(NSFX_PATH)/simulation/i-clock.h         \
+    $(NSFX_PATH)/simulation/i-event-handle.h  \
+    $(NSFX_PATH)/simulation/event-handle.h    \
+    $(NSFX_PATH)/simulation/i-scheduler.h     \
+    $(NSFX_PATH)/simulation/list-scheduler.h  \
+    $(NSFX_PATH)/simulation/set-scheduler.h   \
+    $(NSFX_PATH)/simulation/i-simulator.h     \
+    $(NSFX_PATH)/simulation/simulator.h       \
 
 HEADERS=                   \
     $(SIMULATION_HEADERS)  \
@@ -589,19 +589,19 @@ test-event-handle.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
-test-list-event-scheduler : test-list-event-scheduler.exe
+test-list-scheduler : test-list-scheduler.exe
 
-SRC=simulation/test-list-event-scheduler.cpp
+SRC=simulation/test-list-scheduler.cpp
 
-test-list-event-scheduler.exe : $(HEADERS) $(SRC)
+test-list-scheduler.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
-test-set-event-scheduler : test-set-event-scheduler.exe
+test-set-scheduler : test-set-scheduler.exe
 
-SRC=simulation/test-set-event-scheduler.cpp
+SRC=simulation/test-set-scheduler.cpp
 
-test-set-event-scheduler.exe : $(HEADERS) $(SRC)
+test-set-scheduler.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################

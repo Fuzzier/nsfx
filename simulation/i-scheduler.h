@@ -37,16 +37,16 @@ typedef boost::error_info<struct tag_ScheduledTime, TimePoint>
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// IEventScheduler.
+// IScheduler.
 /**
  * @ingroup Simulator
  * @brief An event scheduler.
  */
-class IEventScheduler :
+class IScheduler :
     virtual public IObject
 {
 public:
-    virtual ~IEventScheduler(void) BOOST_NOEXCEPT {}
+    virtual ~IScheduler(void) BOOST_NOEXCEPT {}
 
     /**
      * @brief Schedule an event.
@@ -104,7 +104,7 @@ public:
      *
      * This function <b>cannot</b> return a free pointer to \c IEventHandle,
      * since the \c IEventHandle does not share the same lifetime as the
-     * \c IEventScheduler.
+     * \c IScheduler.
      */
     virtual Ptr<IEventHandle> GetNextEvent(void) = 0;
 
@@ -117,19 +117,19 @@ public:
 
 };
 
-NSFX_DEFINE_CLASS_UID(IEventScheduler, "edu.uestc.nsfx.IEventScheduler");
+NSFX_DEFINE_CLASS_UID(IScheduler, "edu.uestc.nsfx.IScheduler");
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// IEventSchedulerUser.
+// ISchedulerUser.
 NSFX_DEFINE_USER_INTERFACE(
-    IEventSchedulerUser, "edu.uestc.nsfx.IEventSchedulerUser",
-    IEventScheduler);
+    ISchedulerUser, "edu.uestc.nsfx.ISchedulerUser",
+    IScheduler);
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // Free functions.
-inline Ptr<IEventHandle> ScheduleNow(Ptr<IEventScheduler> scheduler,
+inline Ptr<IEventHandle> ScheduleNow(Ptr<IScheduler> scheduler,
                                      Ptr<IEventSink<>> sink)
 {
     if (!scheduler)
@@ -142,7 +142,7 @@ inline Ptr<IEventHandle> ScheduleNow(Ptr<IEventScheduler> scheduler,
 }
 
 template<class Functor>
-inline Ptr<IEventHandle> ScheduleNow(Ptr<IEventScheduler> scheduler,
+inline Ptr<IEventHandle> ScheduleNow(Ptr<IScheduler> scheduler,
                                      Functor&& f)
 {
     if (!scheduler)
@@ -158,7 +158,7 @@ inline Ptr<IEventHandle> ScheduleNow(Ptr<IEventScheduler> scheduler,
 }
 
 ////////////////////////////////////////
-inline Ptr<IEventHandle> ScheduleAt(Ptr<IEventScheduler> scheduler,
+inline Ptr<IEventHandle> ScheduleAt(Ptr<IScheduler> scheduler,
                                     const TimePoint& t0,
                                     Ptr<IEventSink<>> sink)
 {
@@ -172,7 +172,7 @@ inline Ptr<IEventHandle> ScheduleAt(Ptr<IEventScheduler> scheduler,
 }
 
 template<class Functor>
-inline Ptr<IEventHandle> ScheduleAt(Ptr<IEventScheduler> scheduler,
+inline Ptr<IEventHandle> ScheduleAt(Ptr<IScheduler> scheduler,
                                     const TimePoint& t0,
                                     Functor&& f)
 {
@@ -189,7 +189,7 @@ inline Ptr<IEventHandle> ScheduleAt(Ptr<IEventScheduler> scheduler,
 }
 
 ////////////////////////////////////////
-inline Ptr<IEventHandle> ScheduleIn(Ptr<IEventScheduler> scheduler,
+inline Ptr<IEventHandle> ScheduleIn(Ptr<IScheduler> scheduler,
                                     const Duration& dt,
                                     Ptr<IEventSink<>> sink)
 {
@@ -203,7 +203,7 @@ inline Ptr<IEventHandle> ScheduleIn(Ptr<IEventScheduler> scheduler,
 }
 
 template<class Functor>
-inline Ptr<IEventHandle> ScheduleIn(Ptr<IEventScheduler> scheduler,
+inline Ptr<IEventHandle> ScheduleIn(Ptr<IScheduler> scheduler,
                                     const Duration& dt,
                                     Functor&& f)
 {

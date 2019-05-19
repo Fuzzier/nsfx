@@ -1,11 +1,11 @@
 /**
  * @file
  *
- * @brief Test SetEventScheduler.
+ * @brief Test ListScheduler.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
- * @date    2018-01-20
+ * @date    2018-01-16
  *
  * @copyright Copyright (c) 2018.
  *   National Key Laboratory of Science and Technology on Communications,
@@ -14,11 +14,11 @@
  */
 
 #include <nsfx/test.h>
-#include <nsfx/simulation/set-event-scheduler.h>
+#include <nsfx/simulation/list-scheduler.h>
 #include <iostream>
 
 
-NSFX_TEST_SUITE(SetEventScheduler)
+NSFX_TEST_SUITE(ListScheduler)
 {
     using nsfx::Ptr;
 
@@ -59,16 +59,15 @@ NSFX_TEST_SUITE(SetEventScheduler)
         NSFX_INTERFACE_MAP_END()
 
     };/*}}}*/
-    typedef nsfx::Object<Clock>  ClockClass;
     NSFX_REGISTER_CLASS(Clock, "edu.uestc.nsfx.test.Clock");
 
     NSFX_TEST_CASE(ExternalDriven)/*{{{*/
     {
         try
         {
-            Ptr<nsfx::IEventScheduler> sch =
-                nsfx::CreateObject<nsfx::IEventScheduler>(
-                    "edu.uestc.nsfx.SetEventScheduler");
+            Ptr<nsfx::IScheduler> sch =
+                nsfx::CreateObject<nsfx::IScheduler>(
+                    "edu.uestc.nsfx.ListScheduler");
             {
                 Ptr<nsfx::IClock> clock =
                     nsfx::CreateObject<nsfx::IClock>(
@@ -95,26 +94,27 @@ NSFX_TEST_SUITE(SetEventScheduler)
             clk = t1;
             sch->FireAndRemoveNextEvent();
             NSFX_TEST_ASSERT_EQ(sch->GetNumEvents(), 2);
-            NSFX_TEST_EXPECT_EQ(clk, tp);
+            NSFX_TEST_EXPECT_EQ(clk, t1);
 
             NSFX_TEST_EXPECT_EQ(sch->GetNextEvent()->GetTimePoint(), t2);
             clk = t2;
             sch->FireAndRemoveNextEvent();
             NSFX_TEST_ASSERT_EQ(sch->GetNumEvents(), 1);
-            NSFX_TEST_EXPECT_EQ(clk, tp);
+            NSFX_TEST_EXPECT_EQ(clk, t2);
 
             NSFX_TEST_EXPECT_EQ(sch->GetNextEvent()->GetTimePoint(), t3);
             clk = t3;
             sch->FireAndRemoveNextEvent();
             Ptr<nsfx::IEventHandle> h3_1 = sch->ScheduleNow(s3_1);
             NSFX_TEST_ASSERT_EQ(sch->GetNumEvents(), 1);
-            NSFX_TEST_EXPECT_EQ(clk, tp);
+            NSFX_TEST_EXPECT_EQ(clk, t3);
 
             NSFX_TEST_EXPECT_EQ(sch->GetNextEvent()->GetTimePoint(), t3);
             clk = t3;
             sch->FireAndRemoveNextEvent();
             NSFX_TEST_ASSERT_EQ(sch->GetNumEvents(), 0);
-            NSFX_TEST_EXPECT_EQ(clk, tp);
+            NSFX_TEST_EXPECT_EQ(clk, t3);
+
         }
         catch (boost::exception& e)
         {

@@ -20,7 +20,7 @@
 #include <nsfx/simulation/config.h>
 #include <nsfx/simulation/i-simulator.h>
 #include <nsfx/simulation/i-clock.h>
-#include <nsfx/simulation/i-event-scheduler.h>
+#include <nsfx/simulation/i-scheduler.h>
 #include <nsfx/simulation/exception.h>
 #include <nsfx/event/event.h>
 #include <nsfx/component/class-registry.h>
@@ -40,16 +40,16 @@ class Simulator;
  * @ingroup Simulator
  * @brief A simulator.
  *
- * This simulator provides a clock, and executes events in the scheduler.
+ * This simulator provides a clock, and fires events in a scheduler.
  *
  * # Uid
  * @code
- * "edu.uestc.nsfx.SetEventScheduler"
+ * "edu.uestc.nsfx.Simulator"
  * @endcode
  *
  * # Interfaces
  * * Uses
- *   + \c IEventScheduler
+ *   + \c IScheduler
  * * Provides
  *   + \c IClock
  *   + \c ISimulator
@@ -60,7 +60,7 @@ class Simulator;
  *   + \c ISimulationEndEvent
  */
 class Simulator :
-    public IEventSchedulerUser,
+    public ISchedulerUser,
     public IClock,
     public ISimulator
 {
@@ -78,9 +78,9 @@ public:
 
     virtual ~Simulator(void) {}
 
-    // IEventSchedulerUser /*{{{*/
+    // ISchedulerUser /*{{{*/
 public:
-    virtual void Use(Ptr<IEventScheduler> scheduler) NSFX_OVERRIDE
+    virtual void Use(Ptr<IScheduler> scheduler) NSFX_OVERRIDE
     {
         if (initialized_)
         {
@@ -207,7 +207,7 @@ private:
 
 private:
     NSFX_INTERFACE_MAP_BEGIN(Simulator)
-        NSFX_INTERFACE_ENTRY(IEventSchedulerUser)
+        NSFX_INTERFACE_ENTRY(ISchedulerUser)
         NSFX_INTERFACE_ENTRY(IClock)
         NSFX_INTERFACE_ENTRY(ISimulator)
         NSFX_INTERFACE_AGGREGATED_ENTRY(ISimulationBeginEvent, &beginEvent_)
@@ -218,7 +218,7 @@ private:
 
 private:
     TimePoint  now_;
-    Ptr<IEventScheduler>  scheduler_;
+    Ptr<IScheduler>  scheduler_;
     bool  initialized_;
     bool  started_;
     bool  paused_;
