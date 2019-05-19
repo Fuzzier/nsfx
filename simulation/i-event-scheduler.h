@@ -117,7 +117,6 @@ public:
 
 };
 
-
 NSFX_DEFINE_CLASS_UID(IEventScheduler, "edu.uestc.nsfx.IEventScheduler");
 
 
@@ -126,6 +125,99 @@ NSFX_DEFINE_CLASS_UID(IEventScheduler, "edu.uestc.nsfx.IEventScheduler");
 NSFX_DEFINE_USER_INTERFACE(
     IEventSchedulerUser, "edu.uestc.nsfx.IEventSchedulerUser",
     IEventScheduler);
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Free functions.
+inline Ptr<IEventHandle> ScheduleNow(Ptr<IEventScheduler> scheduler,
+                                     Ptr<IEventSink<>> sink)
+{
+    if (!scheduler)
+    {
+        BOOST_THROW_EXCEPTION(
+            InvalidPointer() <<
+            ErrorMessage("The scheduler is nullptr."));
+    }
+    return scheduler->ScheduleNow(sink);
+}
+
+template<class Functor>
+inline Ptr<IEventHandle> ScheduleNow(Ptr<IEventScheduler> scheduler,
+                                     Functor&& f)
+{
+    if (!scheduler)
+    {
+        BOOST_THROW_EXCEPTION(
+            InvalidPointer() <<
+            ErrorMessage("The scheduler is nullptr."));
+    }
+    return scheduler->ScheduleNow(
+                CreateEventSink<IEventSink<>>(nullptr, [&f] {
+                    f();
+                }));
+}
+
+////////////////////////////////////////
+inline Ptr<IEventHandle> ScheduleAt(Ptr<IEventScheduler> scheduler,
+                                    const TimePoint& t0,
+                                    Ptr<IEventSink<>> sink)
+{
+    if (!scheduler)
+    {
+        BOOST_THROW_EXCEPTION(
+            InvalidPointer() <<
+            ErrorMessage("The scheduler is nullptr."));
+    }
+    return scheduler->ScheduleAt(t0, sink);
+}
+
+template<class Functor>
+inline Ptr<IEventHandle> ScheduleAt(Ptr<IEventScheduler> scheduler,
+                                    const TimePoint& t0,
+                                    Functor&& f)
+{
+    if (!scheduler)
+    {
+        BOOST_THROW_EXCEPTION(
+            InvalidPointer() <<
+            ErrorMessage("The scheduler is nullptr."));
+    }
+    return scheduler->ScheduleAt(t0,
+                CreateEventSink<IEventSink<>>(nullptr, [&f] {
+                    f();
+                }));
+}
+
+////////////////////////////////////////
+inline Ptr<IEventHandle> ScheduleIn(Ptr<IEventScheduler> scheduler,
+                                    const Duration& dt,
+                                    Ptr<IEventSink<>> sink)
+{
+    if (!scheduler)
+    {
+        BOOST_THROW_EXCEPTION(
+            InvalidPointer() <<
+            ErrorMessage("The scheduler is nullptr."));
+    }
+    return scheduler->ScheduleIn(dt, sink);
+}
+
+template<class Functor>
+inline Ptr<IEventHandle> ScheduleIn(Ptr<IEventScheduler> scheduler,
+                                    const Duration& dt,
+                                    Functor&& f)
+{
+    if (!scheduler)
+    {
+        BOOST_THROW_EXCEPTION(
+            InvalidPointer() <<
+            ErrorMessage("The scheduler is nullptr."));
+    }
+    return scheduler->ScheduleIn(dt,
+                CreateEventSink<IEventSink<>>(nullptr, [&f] {
+                    f();
+                }));
+}
 
 
 NSFX_CLOSE_NAMESPACE
