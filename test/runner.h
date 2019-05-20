@@ -354,32 +354,32 @@ namespace runner
 {
 
 
-Logger* GetLogger(void)
+inline Logger* GetLogger(void)
 {
     return Runner::GetInstance()->GetLogger();
 }
 
-Suite* GetMasterSuite(void)
+inline Suite* GetMasterSuite(void)
 {
     return Runner::GetInstance()->GetMasterSuite();
 }
 
-bool GetStopFlag(void)
+inline bool GetStopFlag(void)
 {
     return Runner::GetInstance()->GetStopFlag();
 }
 
-void CommitResult(Result&& result)
+inline void CommitResult(Result&& result)
 {
     Runner::GetInstance()->CommitResult(std::move(result));
 }
 
-void ShowMessage(const std::string& message)
+inline void ShowMessage(const std::string& message)
 {
     Runner::GetInstance()->ShowMessage(message);
 }
 
-void Run(void)
+inline void Run(void)
 {
     Runner::GetInstance()->Run();
 }
