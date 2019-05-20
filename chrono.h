@@ -13,8 +13,6 @@
  *   All rights reserved.
  */
 
-
-
 #ifndef CHRONO_H__6C1D0D2F_9CA5_4BEB_A1EC_9C01534A3569
 #define CHRONO_H__6C1D0D2F_9CA5_4BEB_A1EC_9C01534A3569
 
