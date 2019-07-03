@@ -13,8 +13,8 @@
  *   All rights reserved.
  */
 
-#ifndef I_RANDOM_DISTRIBUTION_GENERATOR_H__9C3F214F_B1A5_4877_865D_105326654B5B
-#define I_RANDOM_DISTRIBUTION_GENERATOR_H__9C3F214F_B1A5_4877_865D_105326654B5B
+#ifndef I_RANDOM_H__9373C92B_7102_42B6_871A_7B6675C33E2C
+#define I_RANDOM_H__9373C92B_7102_42B6_871A_7B6675C33E2C
 
 
 #include <nsfx/random/config.h>
@@ -99,11 +99,11 @@ NSFX_OPEN_NAMESPACE
  * ## Miscellaneous Distributions
  * * \c ITriangleDistribution
  */
-class IRandomDistributionGenerator :
+class IRandom :
     virtual public IObject
 {
 public:
-    virtual ~IRandomDistributionGenerator(void) BOOST_NOEXCEPT {}
+    virtual ~IRandom(void) BOOST_NOEXCEPT {}
 
     /**
      * @brief Create a discrete uniform distribution.
@@ -391,18 +391,17 @@ public:
 
 };
 
-NSFX_DEFINE_CLASS_UID(IRandomDistributionGenerator,
-                      "edu.uestc.nsfx.IRandomDistributionGenerator");
+NSFX_DEFINE_CLASS_UID(IRandom, "edu.uestc.nsfx.IRandom");
 
 
 ////////////////////////////////////////
 NSFX_DEFINE_USER_INTERFACE(
-    IRandomDistributionGeneratorUser, "edu.uestc.nsfx.IRandomDistributionGeneratorUser",
-    IRandomDistributionGenerator);
+    IRandomUser, "edu.uestc.nsfx.IRandomUser",
+    IRandom);
 
 
 NSFX_CLOSE_NAMESPACE
 
 
-#endif // I_RANDOM_DISTRIBUTION_GENERATOR_H__9C3F214F_B1A5_4877_865D_105326654B5B
+#endif // I_RANDOM_H__9373C92B_7102_42B6_871A_7B6675C33E2C
 

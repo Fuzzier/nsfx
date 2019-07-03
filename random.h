@@ -59,7 +59,7 @@
 #include <nsfx/random/engine/xoshiro-engine.h>
 
 // Random number generators.
-#include <nsfx/random/i-random-distribution-generator.h>
+#include <nsfx/random/i-random.h>
 
 #include <nsfx/random/i-random-uint32-generator.h>
 #include <nsfx/random/i-random-uint64-generator.h>

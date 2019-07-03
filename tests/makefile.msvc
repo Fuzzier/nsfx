@@ -458,7 +458,7 @@ RANDOM_HEADERS=                                                             \
     $(NSFX_PATH)/random/engine/splitmix-engine.h                            \
     $(NSFX_PATH)/random/engine/xoroshiro-engine.h                           \
     $(NSFX_PATH)/random/engine/xoshiro-engine.h                             \
-    $(NSFX_PATH)/random/i-random-distribution-generator.h                   \
+    $(NSFX_PATH)/random/i-random.h                                          \
     $(NSFX_PATH)/random/i-random-uint32-generator.h                         \
     $(NSFX_PATH)/random/i-random-uint64-generator.h                         \
     $(NSFX_PATH)/random/i-random-double-generator.h                         \

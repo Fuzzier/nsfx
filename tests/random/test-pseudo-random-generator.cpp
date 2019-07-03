@@ -41,7 +41,7 @@ struct TestDistributions
 {
     static const size_t N = 100000;
 
-    TestDistributions(nsfx::Ptr<nsfx::IRandomDistributionGenerator> dg) : dg_(dg) {}
+    TestDistributions(nsfx::Ptr<nsfx::IRandom> r) : dg_(r) {}
 
     void Test(void)
     {
@@ -655,7 +655,7 @@ struct TestDistributions
         d->Reset();
     }
 
-    nsfx::Ptr<nsfx::IRandomDistributionGenerator> dg_;
+    nsfx::Ptr<nsfx::IRandom> dg_;
 };
 
 
@@ -666,19 +666,19 @@ NSFX_TEST_SUITE(PRNG)
         try
         {
             typedef nsfx::Xoshiro256StarstarEngine Rng;
-            nsfx::Ptr<nsfx::IRandomUInt64Generator> r(new nsfx::Object<Rng>());
-            NSFX_TEST_EXPECT_EQ(r->GetMinValue(), 0);
-            NSFX_TEST_EXPECT_EQ(r->GetMaxValue(),
+            nsfx::Ptr<nsfx::IRandomUInt64Generator> rg(new nsfx::Object<Rng>());
+            NSFX_TEST_EXPECT_EQ(rg->GetMinValue(), 0);
+            NSFX_TEST_EXPECT_EQ(rg->GetMaxValue(),
                                 (std::numeric_limits<uint64_t>::max)());
-            nsfx::Ptr<nsfx::IPseudoRandomEngine> pr(r);
+            nsfx::Ptr<nsfx::IPseudoRandomEngine> pr(rg);
             pr->Discard(1000000);
             pr->Seed(2);
             for (size_t i = 0; i < 1000000; ++i)
             {
-                r->Generate();
+                rg->Generate();
             }
-            nsfx::Ptr<nsfx::IRandomDistributionGenerator> dg(pr);
-            TestDistributions td(dg);
+            nsfx::Ptr<nsfx::IRandom> r(pr);
+            TestDistributions td(r);
             td.Test();
         }
         catch (boost::exception& e)
@@ -696,20 +696,20 @@ NSFX_TEST_SUITE(PRNG)
         try
         {
             typedef nsfx::Xoshiro256Plus01Engine Rng;
-            nsfx::Ptr<nsfx::IRandomDoubleGenerator> r(new nsfx::Object<Rng>());
-            NSFX_TEST_EXPECT_EQ(r->GetMinValue(), 0);
-            NSFX_TEST_EXPECT_EQ(r->GetMaxValue(), 1);
-            nsfx::Ptr<nsfx::IPseudoRandomEngine> pr(r);
+            nsfx::Ptr<nsfx::IRandomDoubleGenerator> rg(new nsfx::Object<Rng>());
+            NSFX_TEST_EXPECT_EQ(rg->GetMinValue(), 0);
+            NSFX_TEST_EXPECT_EQ(rg->GetMaxValue(), 1);
+            nsfx::Ptr<nsfx::IPseudoRandomEngine> pr(rg);
             pr->Discard(1000000);
             pr->Seed(2);
             for (size_t i = 0; i < 1000000; ++i)
             {
-                double d = r->Generate();
+                double d = rg->Generate();
                 NSFX_TEST_EXPECT_GE(d, 0);
                 NSFX_TEST_EXPECT_LT(d, 1);
             }
-            nsfx::Ptr<nsfx::IRandomDistributionGenerator> dg(pr);
-            TestDistributions td(dg);
+            nsfx::Ptr<nsfx::IRandom> r(pr);
+            TestDistributions td(r);
             td.Test();
         }
         catch (boost::exception& e)
@@ -727,19 +727,19 @@ NSFX_TEST_SUITE(PRNG)
         try
         {
             typedef nsfx::Mt19937Engine Rng;
-            nsfx::Ptr<nsfx::IRandomUInt32Generator> r(new nsfx::Object<Rng>());
-            NSFX_TEST_EXPECT_EQ(r->GetMinValue(), 0);
-            NSFX_TEST_EXPECT_EQ(r->GetMaxValue(),
+            nsfx::Ptr<nsfx::IRandomUInt32Generator> rg(new nsfx::Object<Rng>());
+            NSFX_TEST_EXPECT_EQ(rg->GetMinValue(), 0);
+            NSFX_TEST_EXPECT_EQ(rg->GetMaxValue(),
                                 (std::numeric_limits<uint32_t>::max)());
-            nsfx::Ptr<nsfx::IPseudoRandomEngine> pr(r);
+            nsfx::Ptr<nsfx::IPseudoRandomEngine> pr(rg);
             pr->Discard(1000000);
             pr->Seed(2);
             for (size_t i = 0; i < 1000000; ++i)
             {
-                r->Generate();
+                rg->Generate();
             }
-            nsfx::Ptr<nsfx::IRandomDistributionGenerator> dg(pr);
-            TestDistributions td(dg);
+            nsfx::Ptr<nsfx::IRandom> r(pr);
+            TestDistributions td(r);
             td.Test();
         }
         catch (boost::exception& e)

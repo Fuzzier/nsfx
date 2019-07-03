@@ -25,7 +25,7 @@
 
 #include <nsfx/random/i-pseudo-random-engine.h>
 
-#include <nsfx/random/i-random-distribution-generator.h>
+#include <nsfx/random/i-random.h>
 
 #include <nsfx/random/distribution/std-uniform-uint32-distribution.h>
 #include <nsfx/random/distribution/std-uniform-int32-distribution.h>
@@ -135,13 +135,13 @@ struct RandomNumberGeneratorTraits
  * * \c IRandomUInt32Generator (if \c StdRng::result_type is 32-bit unsigned integer)
  * * \c IRandomUInt64Generator (if \c StdRng::result_type is 64-bit unsigned integer)
  * * \c IRandomDoubleGenerator (if \c StdRng::result_type is float or double)
- * * \c IRandomDistributionGenerator
+ * * \c IRandom
  */
 template<class StdRng>
 class PseudoRandomEngine :
     public IPseudoRandomEngine,
     public random::aux::RandomNumberGeneratorTraits<StdRng>::InterfaceType,
-    public IRandomDistributionGenerator
+    public IRandom
 {
     typedef PseudoRandomEngine ThisClass;
 
@@ -198,7 +198,7 @@ public:
         rng_.discard(z);
     }
 
-    // IRandomDistributionGenerator
+    // IRandom
 public:
     /**
      * @brief Expose the internal random number generator.
@@ -464,7 +464,7 @@ private:
     NSFX_INTERFACE_MAP_BEGIN(ThisClass)
         NSFX_INTERFACE_ENTRY(IPseudoRandomEngine)
         NSFX_INTERFACE_ENTRY(InterfaceType)
-        NSFX_INTERFACE_ENTRY(IRandomDistributionGenerator)
+        NSFX_INTERFACE_ENTRY(IRandom)
     NSFX_INTERFACE_MAP_END()
 
 private:
@@ -491,7 +491,7 @@ private:
  * Provided interfaces:
  * * \c IPseudoRandomEngine
  * * \c IRandomDoubleGenerator
- * * \c IRandomDistributionGenerator
+ * * \c IRandom
  */
 typedef PseudoRandomEngine<nsfx::xoshiro256plus_01>  Xoshiro256Plus01Engine;
 
@@ -516,7 +516,7 @@ NSFX_REGISTER_CLASS(Xoshiro256Plus01Engine, "edu.uestc.nsfx.Xoshiro256Plus01Engi
  * Provided interfaces:
  * * \c IPseudoRandomEngine
  * * \c IRandomUInt64Generator
- * * \c IRandomDistributionGenerator
+ * * \c IRandom
  */
 typedef PseudoRandomEngine<nsfx::xoshiro256starstar>  Xoshiro256StarstarEngine;
 
@@ -542,7 +542,7 @@ NSFX_REGISTER_CLASS(Xoshiro256StarstarEngine, "edu.uestc.nsfx.Xoshiro256Starstar
  * Provided interfaces:
  * * \c IPseudoRandomEngine
  * * \c IRandomFloatGenerator
- * * \c IRandomDistributionGenerator
+ * * \c IRandom
  */
 typedef PseudoRandomEngine<nsfx::xoshiro128plus_01>  Xoshiro128Plus01Engine;
 
@@ -568,7 +568,7 @@ NSFX_REGISTER_CLASS(Xoshiro128Plus01Engine,
  * Provided interfaces:
  * * \c IPseudoRandomEngine
  * * \c IRandomUInt32Generator
- * * \c IRandomDistributionGenerator
+ * * \c IRandom
  */
 typedef PseudoRandomEngine<nsfx::xoshiro128starstar>  Xoshiro128StarstarEngine;
 
@@ -594,7 +594,7 @@ NSFX_REGISTER_CLASS(Xoshiro128StarstarEngine,
  * Provided interfaces:
  * * \c IPseudoRandomEngine
  * * \c IRandomUInt32Generator
- * * \c IRandomDistributionGenerator
+ * * \c IRandom
  */
 typedef PseudoRandomEngine<boost::random::mt19937>  Mt19937Engine;
 
