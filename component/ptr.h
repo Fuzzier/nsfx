@@ -551,6 +551,36 @@ public:
         return *this;
     }
 
+    Ptr& operator=(Object<T>* rhs)
+    {
+        BaseType::Reset(rhs, true);
+        return *this;
+    }
+
+    Ptr& operator=(StaticObject<T>* rhs)
+    {
+        BaseType::Reset(rhs, true);
+        return *this;
+    }
+
+    Ptr& operator=(AggObject<T>* rhs)
+    {
+        BaseType::Reset(rhs, true);
+        return *this;
+    }
+
+    Ptr& operator=(MemberAggObject<T>* rhs)
+    {
+        BaseType::Reset(rhs, true);
+        return *this;
+    }
+
+    Ptr& operator=(MutualObject<T>* rhs)
+    {
+        BaseType::Reset(rhs, true);
+        return *this;
+    }
+
     T& operator*() const BOOST_NOEXCEPT
     {
         BOOST_ASSERT_MSG(p_, "Cannot dereference a Ptr<> that is nullptr.");
