@@ -39,6 +39,7 @@
  * <b>Time Interval</b>: </br>
  *    A length of time between two time points.
  *    e.g., from 2013-03-14 10:33:29 to 2013-04-28 09:00:00.
+ *    Also known as a Time Span.
  *
  * <b>Time Resolution</b>: </br>
  *    The smallest representable time duration.

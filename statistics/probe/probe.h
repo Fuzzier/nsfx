@@ -60,9 +60,9 @@ public:
     /**
      * @brief Report a sample point.
      *
-     * @param[in] data The sample point.
+     * @param[in] value The sample point.
      */
-    void Fire(double data);
+    void Fire(double value);
 
 private:
     NSFX_INTERFACE_MAP_BEGIN(ThisClass)

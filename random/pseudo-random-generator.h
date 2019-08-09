@@ -481,7 +481,7 @@ private:
  * Sebastiano Vigna in 2018.
  *
  * It generates double precision floating-point numbers in the range of
- * <i>[0, 1)</i> .
+ * <i>[0, 1)</i>.
  *
  * It has a state size of \c 256 bits, and a period of <code>2^256 - 1</code>.
  *
