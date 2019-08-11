@@ -21,7 +21,6 @@
 #include <nsfx/statistics/exception.h>
 
 // Probe.
-#include <nsfx/statistics/probe/i-probe.h>
 #include <nsfx/statistics/probe/i-probe-event.h>
 #include <nsfx/statistics/probe/i-probe-container.h>
 #include <nsfx/statistics/probe/i-probe-enumerator.h>

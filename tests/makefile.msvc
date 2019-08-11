@@ -520,7 +520,6 @@ STATISTICS_HEADERS=                                     \
     $(NSFX_PATH)/statistics.h                           \
     $(NSFX_PATH)/statistics/config.h                    \
     $(NSFX_PATH)/statistics/exception.h                 \
-    $(NSFX_PATH)/statistics/probe/i-probe.h             \
     $(NSFX_PATH)/statistics/probe/i-probe-event.h       \
     $(NSFX_PATH)/statistics/probe/i-probe-container.h   \
     $(NSFX_PATH)/statistics/probe/i-probe-enumerator.h  \

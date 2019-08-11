@@ -18,7 +18,7 @@
 
 
 #include <nsfx/statistics/config.h>
-#include <nsfx/statistics/probe/i-probe.h>
+#include <nsfx/statistics/probe/i-probe-event.h>
 #include <nsfx/component/i-object.h>
 
 

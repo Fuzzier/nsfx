@@ -16,7 +16,6 @@
 #include <nsfx/test.h>
 #include <nsfx/statistics/probe/probe.h>
 #include <nsfx/statistics/probe/probe-container.h>
-#include <nsfx/statistics/probe/probe-enumerator.h>
 #include <nsfx/statistics/summary/summary.h>
 #include <boost\math\special_functions\fpclassify.hpp>
 #include <iostream>
@@ -26,7 +25,7 @@ NSFX_TEST_SUITE(Probe)
 {
     using nsfx::Ptr;
     using nsfx::Object;
-    using nsfx::statistics::IProbe;
+    using nsfx::statistics::IProbeEvent;
     using nsfx::statistics::Probe;
     using nsfx::statistics::ProbeContainer;
     using nsfx::statistics::ISummary;
@@ -44,8 +43,8 @@ NSFX_TEST_SUITE(Probe)
 
             Ptr<ISummary> s = nsfx::CreateObject<ISummary>(
                                 "edu.uestc.nsfx.statistics.Summary");
-            p1->Connect(s);
-            p2->Connect(s);
+            Ptr<IProbeEvent>(p1)->Connect(s);
+            Ptr<IProbeEvent>(p2)->Connect(s);
 
             NSFX_TEST_EXPECT((boost::math::isnan)(s->Min()));
             NSFX_TEST_EXPECT((boost::math::isnan)(s->Max()));

@@ -50,13 +50,25 @@ public:
 
     // IProbeContainer
     virtual Ptr<IProbeEnumerator> GetEnumerator(void) NSFX_OVERRIDE;
-    virtual Ptr<IProbe> GetProbe(const std::string& name) NSFX_OVERRIDE;
+    virtual Ptr<IProbeEvent> GetProbe(const std::string& name) NSFX_OVERRIDE;
 
 public:
-    bool Has(const std::string& name) const;
-    Ptr<Probe> Get(const std::string& name) const;
     Ptr<Probe> Add(const std::string& name);
-    void Remove(const std::string& name);
+    bool Has(const std::string& name) const;
+
+    /**
+     * @brief Merge probes from a probe enumerator.
+     *
+     * @param[in] prefix The prefix to the names of the merged probes.
+     * @param[in] merged The probe container to be merged.
+     *
+     * The current set of probes in the \c merged is merged.
+     * If the \c merged is changed, there is no guarantee that the this
+     * container would change accordingly.
+     *
+     * If the name already exists, the existing probe is <b>not</b> replaced.
+     */
+    void MergeFrom(const std::string& prefix, Ptr<IProbeContainer> merged);
 
 private:
     NSFX_INTERFACE_MAP_BEGIN(ThisClass)
@@ -64,7 +76,85 @@ private:
     NSFX_INTERFACE_MAP_END()
 
 private:
-    unordered_map<std::string, Ptr<Probe>>  items_;
+    typedef unordered_map<std::string, Ptr<IProbeEvent>>  ContainerType;
+    ContainerType  items_;
+
+private:
+    // KeyIterator./*{{{*/
+public:
+    class KeyIterator
+    {
+        friend class ProbeContainer;
+
+    public:
+        typedef ProbeContainer::ContainerType             ContainerType;
+        typedef ContainerType::const_iterator             BaseIteratorType;
+        typedef BaseIteratorType::difference_type         difference_type;
+        typedef BaseIteratorType::value_type::first_type  value_type;
+        typedef BaseIteratorType::value_type::first_type* pointer;
+        typedef BaseIteratorType::value_type::first_type& reference;
+        typedef BaseIteratorType::iterator_category       iterator_category;
+
+    private:
+        explicit KeyIterator(BaseIteratorType it) :
+            it_(it)
+        {
+        }
+
+    public:
+        KeyIterator& operator++(void)
+        {
+            ++it_;
+            return *this;
+        }
+
+        KeyIterator operator++(int)
+        {
+            return KeyIterator(it_++);
+        }
+
+        reference operator*(void) const
+        {
+            return it_->first;
+        }
+
+        pointer operator->(void) const
+        {
+            return &(it_->first);
+        }
+
+        bool operator==(const KeyIterator& rhs) const
+        {
+            return it_ == rhs.it_;
+        }
+
+        bool operator!=(const KeyIterator& rhs) const
+        {
+            return it_ != rhs.it_;
+        }
+
+    private:
+        BaseIteratorType it_;
+
+    }; // class KeyIterator
+
+public:
+    KeyIterator kbegin(void) const
+    {
+        return KeyIterator(items_.cbegin());
+    }
+
+    KeyIterator kend(void) const
+    {
+        return KeyIterator(items_.cend());
+    }
+
+    KeyIterator erase(KeyIterator it)
+    {
+        return KeyIterator(items_.erase(it.it_));
+    }
+
+    /*}}}*/
 
 };
 
@@ -80,32 +170,11 @@ inline ProbeContainer::~ProbeContainer(void)
 
 inline Ptr<IProbeEnumerator> ProbeContainer::GetEnumerator(void)
 {
-    vector<std::string> names;
-    for (auto it = items_.cbegin(); it != items_.cend(); ++it)
-    {
-        names.push_back(it->first);
-    }
-    return Ptr<IProbeEnumerator>(new Object<ProbeEnumerator>(std::move(names)));
+    return Ptr<IProbeEnumerator>(
+        new Object<ProbeEnumerator>(kbegin(), kend()));
 }
 
-inline Ptr<IProbe> ProbeContainer::GetProbe(const std::string& name)
-{
-    auto it = items_.find(name);
-    if (it == items_.cend())
-    {
-        BOOST_THROW_EXCEPTION(
-            ProbeNotRegistered() <<
-            ProbeNameErrorInfo(name));
-    }
-    return it->second;
-}
-
-inline bool ProbeContainer::Has(const std::string& name) const
-{
-    return !!items_.count(name);
-}
-
-inline Ptr<Probe> ProbeContainer::Get(const std::string& name) const
+inline Ptr<IProbeEvent> ProbeContainer::GetProbe(const std::string& name)
 {
     auto it = items_.find(name);
     if (it == items_.cend())
@@ -127,13 +196,32 @@ inline Ptr<Probe> ProbeContainer::Add(const std::string& name)
             ProbeNameErrorInfo(name));
     }
     auto it = result.first;
-    it->second.Reset(new Object<Probe>(name));
-    return it->second;
+    Ptr<Probe> probe(new Object<Probe>);
+    it->second = probe;
+    return std::move(probe);
 }
 
-inline void ProbeContainer::Remove(const std::string& name)
+bool ProbeContainer::Has(const std::string& name) const
 {
-    items_.erase(name);
+    return !!items_.count(name);
+}
+
+void ProbeContainer::MergeFrom(const std::string& prefix, Ptr<IProbeContainer> merged)
+{
+    Ptr<IProbeEnumerator> e = merged->GetEnumerator();
+    while (e->HasNext())
+    {
+        std::string name  = e->Next();
+        Ptr<IProbeEvent> probe = merged->GetProbe(name);
+
+        std::string pname = prefix + name;
+        auto result = items_.emplace(pname, nullptr);
+        if (result.second)
+        {
+            auto it = result.first;
+            it->second = std::move(probe);
+        }
+    }
 }
 
 

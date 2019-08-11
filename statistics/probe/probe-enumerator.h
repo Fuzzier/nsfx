@@ -43,7 +43,14 @@ class ProbeEnumerator :
     typedef ProbeEnumerator ThisClass;
 
 public:
-    explicit ProbeEnumerator(vector<std::string>&& items);
+    /**
+     * @brief Construct a probe enumerator.
+     *
+     * @tparam InputIterator An input iterator whose value type is string.
+     */
+    template<class InputIterator>
+    ProbeEnumerator(InputIterator first, InputIterator last);
+
     virtual ~ProbeEnumerator(void);
 
     // IProbeEnumerator
@@ -63,8 +70,10 @@ private:
 
 
 ////////////////////////////////////////////////////////////////////////////////
-inline ProbeEnumerator::ProbeEnumerator(vector<std::string>&& items) :
-    items_(std::move(items)),
+template<class InputIterator>
+inline ProbeEnumerator::ProbeEnumerator(InputIterator first,
+                                        InputIterator last) :
+    items_(first, last),
     index_(0)
 {
 }

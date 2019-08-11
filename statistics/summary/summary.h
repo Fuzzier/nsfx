@@ -19,7 +19,7 @@
 
 #include <nsfx/statistics/config.h>
 #include <nsfx/statistics/summary/i-summary.h>
-#include <nsfx/statistics/probe/i-probe.h>
+#include <nsfx/statistics/probe/i-probe-event.h>
 #include <nsfx/event/event-sink.h>
 #include <nsfx/component/ptr.h>
 #include <nsfx/component/object.h>

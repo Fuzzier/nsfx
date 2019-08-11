@@ -18,7 +18,7 @@
 
 
 #include <nsfx/statistics/config.h>
-#include <nsfx/statistics/probe/i-probe.h>
+#include <nsfx/statistics/probe/i-probe-event.h>
 #include <nsfx/statistics/probe/i-probe-enumerator.h>
 #include <string>
 
@@ -49,7 +49,7 @@ public:
      *
      * @throw ProbeNotRegistered
      */
-    virtual Ptr<IProbe> GetProbe(const std::string& name) = 0;
+    virtual Ptr<IProbeEvent> GetProbe(const std::string& name) = 0;
 
 };
 

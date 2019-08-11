@@ -19,11 +19,10 @@
 
 #include <nsfx/statistics/config.h>
 #include <nsfx/statistics/exception.h>
-#include <nsfx/statistics/probe/i-probe.h>
+#include <nsfx/statistics/probe/i-probe-event.h>
 #include <nsfx/event/event.h>
 #include <nsfx/component/ptr.h>
 #include <nsfx/component/object.h>
-#include <string>
 
 
 NSFX_STATISTICS_OPEN_NAMESPACE
@@ -38,23 +37,17 @@ NSFX_STATISTICS_OPEN_NAMESPACE
  *
  * # Interfaces
  * * Provides
- *   + \c IProbeContainer
  * * Events
  *   + \c IProbeEvent
  */
 class Probe :
-    public IProbe
+    virtual public IObject
 {
     typedef Probe ThisClass;
 
 public:
-    explicit Probe(const std::string& name);
+    Probe(void);
     virtual ~Probe(void);
-
-    // IProbe
-    virtual cookie_t Connect(Ptr<IProbeEventSink> sink) NSFX_OVERRIDE;
-    virtual void Disconnect(cookie_t cookie) NSFX_OVERRIDE;
-    virtual std::string GetName(void) NSFX_OVERRIDE;
 
 public:
     /**
@@ -66,40 +59,22 @@ public:
 
 private:
     NSFX_INTERFACE_MAP_BEGIN(ThisClass)
-        NSFX_INTERFACE_ENTRY(IProbe)
-        NSFX_INTERFACE_ENTRY(IProbeEvent)
+        NSFX_INTERFACE_AGGREGATED_ENTRY(IProbeEvent, &probeEvent_)
     NSFX_INTERFACE_MAP_END()
 
 private:
-    std::string name_;
-    MutualObject<Event<IProbeEvent>>  probeEvent_;
+    MemberAggObject<Event<IProbeEvent>>  probeEvent_;
 };
 
 
 ////////////////////////////////////////////////////////////////////////////////
-inline Probe::Probe(const std::string& name) :
-    name_(name),
+inline Probe::Probe(void) :
     probeEvent_(/* controller = */this)
 {
 }
 
 inline Probe::~Probe(void)
 {
-}
-
-inline cookie_t Probe::Connect(Ptr<IProbeEventSink> sink)
-{
-    return probeEvent_.GetImpl()->Connect(sink);
-}
-
-inline void Probe::Disconnect(cookie_t cookie)
-{
-    probeEvent_.GetImpl()->Disconnect(cookie);
-}
-
-inline std::string Probe::GetName(void)
-{
-    return name_;
 }
 
 inline void Probe::Fire(double data)
