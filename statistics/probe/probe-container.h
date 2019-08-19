@@ -201,12 +201,12 @@ inline Ptr<Probe> ProbeContainer::Add(const std::string& name)
     return std::move(probe);
 }
 
-bool ProbeContainer::Has(const std::string& name) const
+inline bool ProbeContainer::Has(const std::string& name) const
 {
     return !!items_.count(name);
 }
 
-void ProbeContainer::MergeFrom(const std::string& prefix, Ptr<IProbeContainer> merged)
+inline void ProbeContainer::MergeFrom(const std::string& prefix, Ptr<IProbeContainer> merged)
 {
     Ptr<IProbeEnumerator> e = merged->GetEnumerator();
     while (e->HasNext())
