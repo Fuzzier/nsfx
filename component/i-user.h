@@ -35,12 +35,12 @@ NSFX_OPEN_NAMESPACE
  *
  * A <i>'User'</i> interface has a single method \c Use(Ptr<IXxx>).
  *
- * @example For example
- *    @code
- *    NSFX_DEFINE_USER_INTERFACE(
- *        IMyInterfaceUser, "edu.uestc.nsfx.IMyInterfaceUser"
- *        IMyInterface);
- *    @endcode
+ * For example,
+ *
+ *     NSFX_DEFINE_USER_INTERFACE(
+ *         IMyInterfaceUser, "edu.uestc.nsfx.IMyInterfaceUser"
+ *         IMyInterface);
+ *
  */
 #define NSFX_DEFINE_USER_INTERFACE(IXxxUser, iid, IXxx)  \
     NSFX_DEFINE_CLASS_UID(class IXxxUser, iid);          \

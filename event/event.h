@@ -69,7 +69,7 @@ public:
  *                    conforms to \c IEventSinkConcept.
  * @tparam capacity The maximum number of connections.
  *
- * An event class implements <code>IEvent<></code> interface.
+ * An event class implements \c IEvent interface.
  * It implements the method \c Connect().
  * It also provides several non-virtual member functions that allow an event
  * source to access the event sinks.
@@ -77,7 +77,7 @@ public:
  * Event classes conform to \c ObjectImplConcept, thus they can be used with
  * \c Object and \c AggObject.
  *
- * @code
+ * @verbatim
  * Proto ---> IEventSink<> ---> user-defined event sink interface
  *                                |
  *                                V
@@ -85,7 +85,7 @@ public:
  *                                              |
  *                                              V
  *                                            Event<> (a concrete class)
- * @endcode
+ * @endverbatim
  *
  * The class provides a \c Visit() function template to visit the event sinks.
  * Users can use this function template to fire the event.

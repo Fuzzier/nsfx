@@ -26,32 +26,39 @@
  * @defgroup Chrono
  * @brief Support for time point and duration.
  *
- * Basic concepts:
- * <b>Time Point</b>: </br>
+ * # Basic concepts
+ *
+ * ## Time Point
+ *
  *    A location in time. e.g., 2013-03-14 10:33:29.
  *    Also known as a Time Instant.
  *
- * <b>Time Duration</b>: </br>
+ * ## Time Duration
+ *
  *    A free length of time which is not associated with a time point.
  *    e.g., 3 seconds.
  *    Also known as a Time Period.
  *
- * <b>Time Interval</b>: </br>
+ * ## Time Interval
+ *
  *    A length of time between two time points.
  *    e.g., from 2013-03-14 10:33:29 to 2013-04-28 09:00:00.
  *    Also known as a Time Span.
  *
- * <b>Time Resolution</b>: </br>
+ * ## Time Resolution
+ *
  *    The smallest representable time duration.
  *    It is also called the fundamental time period.
  *
- * <b>Time Epoch</b>: </br>
+ * ## Time Epoch
+ *
  *    The referred starting time point.
  *    A time point is represented by the duration from the epoch.
  *    e.g. suppose the epoch is 1970-01-01 00:00:00 GMT, then the time point at
  *    1970-01-01 00:00:01 GMT can be represented by a duration of 1 second.
  *
- * <b>Time System</b>: </br>
+ * ## Time System
+ *
  *    Provides all of the above time types, and rules and calculations between
  *    them.
  *    e.g., different time systems provide different time resolutions,
@@ -66,9 +73,11 @@
  *          resolution of 100 nanoseconds, and the earliest time point
  *          it can represent is 1601-01-01 00:00:00 UTC.
  *
- * <b>Clock Device</b>: </br>
+ * ## Clock Device
+ *
  *    A software component that provides the current date or time with respect
  *    to a time system.
+ *
  */
 
 
@@ -86,6 +95,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 NSFX_CHRONO_OPEN_NAMESPACE
 
+/**
+ * @ingroup Chrono
+ * @brief The underlying data type of a duration.
+ */
 typedef int64_t  count_t;
 
 NSFX_CHRONO_CLOSE_NAMESPACE

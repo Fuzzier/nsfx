@@ -406,7 +406,7 @@ struct Common
  * @brief Time duration.
  *
  * @tparam Res  The time resolution in seconds.
- *              * It must be a <code>ratio<></code> type.
+ *              * It must be a \c ratio template.
  *              * It must be a non-positive power of \c 10.
  *
  * A time duration is represented by the number of fundamental periods.

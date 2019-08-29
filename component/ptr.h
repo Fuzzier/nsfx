@@ -320,51 +320,51 @@ protected:
  *
  * @tparam T A type that conforms to \c IObjectConcept.
  *
- * @remarks If the smart pointer is constructed from or assigned to a pointer of
- *          a different type, then the template parameter \c T must also conform
- *          to \c HasUidConcept.
- *          Thus, the smart pointer is able to query an interface of type \c T
- *          from the source pointer.
+ * <h1>Strong exception safety</h1>
  *
- * # Strong exception safety.
- *  If the smart point fails to query the interface, \c NoInterface is thrown.
- *  The smart pointer is put into an empty state.
- *  However, the source pointer is intact.
- *  Especially, the reference count of the source pointer is intact.
- *  Thus, users are still <b>responsible to free the source pointer</b> to
- *  prevent memory leak, if the source pointer is not a smart pointer.
- *  <p>
- *  Caution must be taken when writing such code:
- *  @code
- *  Ptr<I>  p(new C);
- *  @endcode
- *  <p>
- *  If \c C is different than \c I, then the smart pointer \c p will query
- *  an interface of type \c I from the newly allocated instance of type \c C.
- *  However, if the query fails, there is a <i>memory leak</i> that the
- *  instance of \c C is not deallocated.
- *  <p>
- *  The above code is safe only if the user can make sure that \c C supplies
- *  an interface of \c I.
- *  Otherwise, the following more secure code shall be used:
- *  @code
- *  C* c = new C;
- *  try
- *  {
- *      Ptr<I>  p(c);
- *  }
- *  catch (NoInterface& )
- *  {
- *      delete c;
- *      throw;
- *  }
- *  @endcode
- *  <p>
- *  Generally, it is safe to write:
- *  @code
- *  Ptr<C>        c(new C);
- *  Ptr<IObject>  o(new C);
- *  @endcode
+ * If the smart pointer is constructed from or assigned to a pointer of
+ * a different type, then the template parameter \c T must also conform
+ * to \c HasUidConcept.
+ * Thus, the smart pointer is able to query an interface of type \c T
+ * from the source pointer.
+ *
+ * \c Ptr provides <b>strong exception safty</b>.
+ * If the smart point fails to query the interface, \c NoInterface is thrown.
+ * The smart pointer is put into an empty state.
+ * However, the source pointer is intact.
+ * Especially, the reference count of the source pointer is intact.
+ * Thus, users are still <b>responsible to free the source pointer</b> to
+ * prevent memory leak, if the source pointer is not a smart pointer.
+ *
+ * Caution must be taken when writing such code:
+ *
+ *     Ptr<I>  p(new C);
+ *
+ * If type \c C is different than type \c I, then the smart pointer \c p will
+ * query an interface of type \c I from the newly allocated instance of
+ * type \c C.  However, if the query fails, there is a <i>memory leak</i> that
+ * the instance of \c C is not deallocated.
+ *
+ * The above code is safe only if the user can make sure that \c C supplies
+ * an interface of \c I.
+ * Otherwise, the following more secure code shall be used:
+ *
+ *     C* c = new C;
+ *     try
+ *     {
+ *         Ptr<I>  p(c);
+ *     }
+ *     catch (NoInterface& )
+ *     {
+ *         delete c;
+ *         throw;
+ *     }
+ *
+ * Generally, it is safe to write:
+ *
+ *     Ptr<C>        c(new C);
+ *     Ptr<IObject>  o(new C);
+ *
  */
 template<class T = IObject>
 class Ptr : private PtrBase<T>/*{{{*/
@@ -583,13 +583,13 @@ public:
 
     T& operator*() const BOOST_NOEXCEPT
     {
-        BOOST_ASSERT_MSG(p_, "Cannot dereference a Ptr<> that is nullptr.");
+        BOOST_ASSERT_MSG(p_, "Cannot dereference a Ptr that is nullptr.");
         return *p_;
     }
 
     T* operator->() const BOOST_NOEXCEPT
     {
-        BOOST_ASSERT_MSG(p_, "Cannot dereference a Ptr<> that is nullptr.");
+        BOOST_ASSERT_MSG(p_, "Cannot dereference a Ptr that is nullptr.");
         return p_;
     }
 

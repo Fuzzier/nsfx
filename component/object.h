@@ -192,7 +192,7 @@ NSFX_OPEN_NAMESPACE
  *
  *    User-defined classes can focus upon implementing dictated interfaces, and
  *    do not implement \c IObject themselves (remain abstract).
- *    The library provides <code>Object<></code> and <code>AggObject<></code>
+ *    The library provides \c Object and \c AggObject
  *    class templates that argument the user-defined classes with a reference
  *    count or a controller pointer, and implement \c IObject as appropriate.
  *    \c ObjectBase is intended to be used by the class templates.
@@ -260,7 +260,7 @@ NSFX_OPEN_NAMESPACE
  *
  *     For example, when a component wants to schedule multiple event sinks
  *     via an event scheduler, it faces a problem that these event sinks share
- *     the same interface (<code>IEventSink<></code>) but have different
+ *     the same interface (\c IEventSink) but have different
  *     implementations.
  *
  *     The first problem is that a component cannot expose an event sink
@@ -274,7 +274,7 @@ NSFX_OPEN_NAMESPACE
  *     i.e., as long as an event source holds an event sink, the component must
  *     not be deallocated.
  *     The key is to let each event sink hold a reference count of the component.
- *     i.e., let each event sink hold a <code>Ptr<></code> that points to the
+ *     i.e., let each event sink hold a \c Ptr that points to the
  *     component.
  *     However, this is not efficient.
  *
@@ -432,7 +432,7 @@ struct ObjectImplConcept/*{{{*/
  *     \c Object can be used everywhere.
  * ### How to use?
  *     An \c Object must be allocated on heap.
- *     i.e., <code>Ptr<></code> shall be used to hold an \c Object.
+ *     i.e., \c Ptr shall be used to hold an \c Object.
  */
 template<class ObjectImpl>
 class Object NSFX_FINAL :/*{{{*/
@@ -505,7 +505,7 @@ public:
  * @tparam ObjectImpl A class that conforms to \c ObjectImplConcept.
  *
  * A \c StaticObject does not have a reference count.
- * Thus, do not allocate a \c StaticObject on heap, since <code>Ptr<></code>
+ * Thus, do not allocate a \c StaticObject on heap, since \c Ptr
  * cannot deallocate it automatically.
  * It must be defined as a static variable to prevent memory leak.
  * e.g. a singleton can be defined as a static \c StaticObject, and there is
@@ -519,7 +519,7 @@ public:
  * ### How to use?
  *     A \c StaticObject must be defined as a \c static variable.
  * ### Benefits.
- *     It saves a <code>Ptr<></code> to manage lifetime.
+ *     It saves a \c Ptr to manage lifetime.
  *     There is no need to allocate on heap.
  */
 template<class ObjectImpl>
@@ -867,7 +867,7 @@ private:
  * @tparam ObjectImpl A class that conforms to \c ObjectImplConcept.
  *
  * A member aggregable object does not have a reference count.
- * Thus, do not allocate a \c MemberAggObject on heap, since <code>Ptr<></code>
+ * Thus, do not allocate a \c MemberAggObject on heap, since \c Ptr
  * cannot deallocate it automatically.
  * It must be defined as a member variable of the controller to prevent memory
  * leak.
@@ -887,7 +887,7 @@ private:
  *     controller.
  *     A \c MemberAggObject naturally has the same lifetime as the controller,
  *     which is similar to an \c AggObject.
- *     It saves a <code>Ptr<></code> to manage lifetime.
+ *     It saves a \c Ptr to manage lifetime.
  *     There is no need to allocate on heap.
  */
 template<class ObjectImpl>
@@ -989,7 +989,7 @@ private:
  * ### Benefits.
  *     The controller lives as long as other objects hold smart pointers to
  *     the \c MutualObject.
- *     It saves a <code>Ptr<></code> to manage lifetime, if the \c MutualObject
+ *     It saves a \c Ptr to manage lifetime, if the \c MutualObject
  *     is defined as a member variable.
  *     There is no need to allocate on heap.
  */

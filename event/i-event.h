@@ -37,12 +37,11 @@ NSFX_OPEN_NAMESPACE
  * @param ISink      The type of a user-defined event sink interface that
  *                   conforms to \c IEventSinkConcept.
  *
- * @example For example
- *    @code
+ * For example,
+ *
  *     NSFX_DEFINE_EVENT_INTERFACE(
  *         IMyEvent, "edu.uestc.nsfx.example.IMyEvent",
  *         IMyEventSink);
- *    @endcode
  */
 #define NSFX_DEFINE_EVENT_INTERFACE(IEventName, iid, ISink)  \
     NSFX_DEFINE_CLASS_UID(class IEventName, iid);            \
@@ -81,12 +80,12 @@ NSFX_OPEN_NAMESPACE
  * their UIDs.
  * Users shall not use multiple inheritance to derive their own event interfaces.
  *
- * @code
+ * @verbatim
  * Proto ---> IEventSink<> ---> user-defined event sink interface
  *                                |
  *                                V
  *                              IEvent<> ---> user-defined event interface
- * @endcode
+ * @endverbatim
  *
  * ## Event interface definition and implementation.
  *    The library provides several tools for event interface definition and
@@ -98,7 +97,7 @@ NSFX_OPEN_NAMESPACE
  * ### 2. Implement an event interface.
  *     The library provides <code>Event<></code> class template.
  *
- *     For example
+ *     For example,
  *     @code
  *     #include <nsfx/event/event.h>
  *

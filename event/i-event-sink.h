@@ -45,14 +45,14 @@ NSFX_OPEN_NAMESPACE
  *
  * The event sink interface conforms to \c IEventSinkConcept.
  *
- * @remarks \c Proto must be placed <b>within parenthesis</b>, so commas can be
- *          used in the \c Proto.
- *          For example
- *          @code
- *          NSFX_DEFINE_EVENT_SINK_INTERFACE(
- *              IMyEventSink, "edu.uestc.nsfx.example.IMyEventSink",
- *              ( char(short, int) ));
- *          @endcode
+ * \c Proto must be placed <b>within parenthesis</b>, so commas can be used in
+ * the \c Proto.
+ *
+ * For example,
+ *
+ *     NSFX_DEFINE_EVENT_SINK_INTERFACE(
+ *         IMyEventSink, "edu.uestc.nsfx.example.IMyEventSink",
+ *         ( char(short, int) ));
  */
 #define NSFX_DEFINE_EVENT_SINK_INTERFACE(ISink, iid, Proto)    \
     NSFX_DEFINE_CLASS_UID(class ISink, iid);                   \
@@ -84,17 +84,17 @@ NSFX_OPEN_NAMESPACE
  * <code>IEventSink<void(void)></code> is the <b>only</b> event sink interface
  * that has an associated UID defined by the library.
  * Users shall <b>derive</b> their own event sink interfaces from this class
- * template, and associate the interfaces with UIDs to enable <code>Ptr<></code>
- * to manage their pointers.
+ * template, and associate the interfaces with UIDs to enable <code>Ptr</code>
+ * class template to manage their pointers.
  * Users shall not use multiple inheritance to derive their own event sink
  * interfaces.
  *
- * @code
+ * @verbatim
  * Proto IEventSink<> ---> user-defined event sink interface
  *                           |
  *                           V
  *                         EventSinkCreator<>, CreateEventSink<>()
- * @endcode
+ * @endverbatim
  *
  * # Event sink interface definition and implementation.
  *    The library provides several tools for event sink interface definition
@@ -116,7 +116,7 @@ NSFX_OPEN_NAMESPACE
  *     The specialized templates conform to \c ObjectImplConcept, thus they
  *     can be used with \c Object and \c AggObject.
  *
- *     For example
+ *     For example,
  *     @code
  *     #include <nsfx/event/event-sink.h>
  *
@@ -166,7 +166,7 @@ NSFX_OPEN_NAMESPACE
  *     The class template supplies three overloaded function call operators
  *     that create event sink objects.
  *
- *     For example
+ *     For example,
  *     @code
  *     // Functor based event sink.
  *     Ptr<IMyEventSink> s4 =
@@ -197,7 +197,7 @@ NSFX_OPEN_NAMESPACE
  *     The function template supplies three overloaded functions that create
  *     event sink objects.
  *
- *     For example
+ *     For example,
  *     @code
  *     // Functor based event sink.
  *     Ptr<IMyEventSink> s7 =
@@ -347,10 +347,9 @@ NSFX_OPEN_NAMESPACE
  *        The cookie value shall be managed by the object that holds the event
  *        sink and performs the connection.
  *
- *     <p>
  *     In OMNET++, the keys are managed by gates, internally.
  *     Users focus upon the implementation of \c handleMessage(), which is
- *     a central point of message processing, and a shame that lots of \c if
+ *     a central point of message processing, and a pity that lots of \c if
  *     and \c switch have to be used there.
  *
  *     In OMNET++, when one gate is connected to another gate, both gates have
@@ -394,7 +393,7 @@ NSFX_DEFINE_CLASS_UID(IEventSink<>, "edu.uestc.nsfx.IEventSink");
  * This class template provides template argument deduction the primary class
  * template <code>IEventSink<></code>.
  *
- * @see <code>IEventSink<></code> (the primary class template)
+ * @see \c IEventSink (the primary class template)
  */
 template<class Ret, class... Args>
 class IEventSink<Ret(Args...)> :
@@ -429,13 +428,13 @@ public:
  * @brief The event sink interface concept.
  *
  * A class is an event sink if it satisfies the following conditions.
- * 1. It is <code>IEventSink<void(void)></code> or it is derived from
- *    <code>IEventSink<></code> class template.
+ * 1. It is the <code>IEventSink<void(void)></code> interface or it is derived
+ *    from the \c IEventSink class template.
  * 2. It is has nested type \c Prototype that is a function type.
  * 3. It conforms to \c HasUidConcept.
  *
- * Since <code>IEventSink<></code> class template is derived from \c IObject,
- * the class also conforms to \c IObjectConcept.
+ * Since <code>IEventSink</code><code><></code> class template is derived from
+ * \c IObject, the class also conforms to \c IObjectConcept.
  */
 template<class ISink>
 struct IEventSinkConcept

@@ -46,7 +46,7 @@
  *   `has-a' means the component aggregates an object that implements the
  *   interface.
  *
- *   @code
+ *   @verbatim
  *   interface
  *      | implemented by
  *      V
@@ -57,7 +57,7 @@
  *            | provides/uses
  *            V
  *            interface
- *   @endcode
+ *   @endverbatim
  *
  *   For convenience, a user can <b>always</b> assume that a component
  *   `is' an \c IObject, and `has' other interfaces.
@@ -188,7 +188,7 @@
  *
  *     \c IObject::AddRef() and \c IObject::Release() are defined for this
  *     purpose.
- *     And class template <code>Ptr<></code> is provided as smart pointers to
+ *     And class template \c Ptr is provided as smart pointers to
  *     manage the reference count of a component.
  *
  *     Reference counting has a problem of cyclic reference counting, since
@@ -269,7 +269,7 @@
  *
  * ## Define an interface identifier
  *    The library provides several tools to associate an interface with a UID.
- *    In general, the class template <code>NsfxClassTraits<></code> is
+ *    In general, the class template \c NsfxClassTraits is
  *    specialized for an interface, which provides a static member function
  *    that returns the IID of the interface.
  *
@@ -411,7 +411,7 @@
  *    A component is viewed as a chip (integrated circuit) with many pins (legs).
  *    A wire is a metal line that connects the pins of chips.
  *
- *    @code
+ *    @verbatim
  *     --------   wire   --------
  *    |        |--------|        |
  *    | chip 1 |        | chip 2 |
@@ -423,7 +423,7 @@
  *            | chip 3 |
  *            |        |
  *             --------
- *    @endcode
+ *    @endverbatim
  *
  *    Although it does not fully reflect the component programming paradigm in
  *    C++, it provides a good direction.
@@ -486,7 +486,7 @@
  *    The composer is responsible to query the interfaces that are used by
  *    the components being wired.
  *
- *    @code
+ *    @verbatim
  *    provider component        user component
  *       | exposes                 | exposes
  *       V                         V
@@ -494,7 +494,7 @@
  *                     A
  *                     |
  *             composer component
- *    @endcode
+ *    @endverbatim
  *
  * =====
  * Event
@@ -506,7 +506,7 @@
  *    The practice of providing an all-in-one event sink interface can be quite
  *    frustrating.
  *
- *    @code
+ *    @verbatim
  *    IXxxAllInOneEventSink
  *       | defines
  *       V
@@ -515,6 +515,7 @@
  *          V
  *          event sink component
  *    @endcode
+ *    @endverbatim
  *
  *    In that way, an event sinks are expected to implement all callback methods
  *    of the event.
@@ -525,7 +526,7 @@
  *    A workaround is to define an event sink interface with a single callback
  *    method, along with a set of data that specify the properties of the event.
  *
- *    @code
+ *    @verbatim
  *    IXxxManyToOneEventSink
  *       | defines
  *       V
@@ -533,7 +534,7 @@
  *          | implemented by
  *          V
  *          event sink component
- *    @endcode
+ *    @endverbatim
  *
  *    This approach is not elegant, since users have to use 'if-else' or
  *    'switch-case' to filter and catch the events.
@@ -549,7 +550,7 @@
  *    i.e., each event sink interface exposes only one event, and contains only
  *    one callback method.
  *
- *    @code
+ *    @verbatim
  *    IXxxEventSink
  *       | defines
  *       V
@@ -557,7 +558,7 @@
  *          | implemented by
  *          V
  *          event sink component
- *    @endcode
+ *    @endverbatim
  *
  *    This way, users can connect to any combination of events as they want.
  *    It consumes more memory, but provides a cleaner way to connect to and
@@ -579,7 +580,7 @@
  *     The connection between an event source and an event sink is performed by
  *     a composer component.
  *
- *     @code
+ *     @verbatim
  *     IXxxEventSink                IXxxEvent
  *        | defines                    | defines
  *        V                            V
@@ -593,7 +594,7 @@
  *                            A
  *                            |
  *                    composer component
- *     @endcode
+ *     @endverbatim
  *
  * ==========
  * Connection
@@ -624,7 +625,7 @@
  * provided as a bundle that represent a single node.
  *
  * Thus, the channel can provide a connection interface like this:
- * @code
+ * @verbatim
  * class IChannelConnection : virtual public IObject
  * {
  *     virtual ~IChannelConnection(void) {}
@@ -633,7 +634,7 @@
  *                      Ptr<ISignalRxEventSink>) = 0;
  *     void Disconnect(cookie_t cookie) = 0;
  * };
- * @endcode
+ * @endverbatim
  *
  * The nodes and channel are loosely coupled, as a node can operate without
  * connecting to a channel, and a channel can operate with no nodes connecting
@@ -642,7 +643,7 @@
  * Connection is a more general kind of loosely coupled relationship among
  * components, compared to the event model.
  * Unlike the event model, there is no <i>Sink</i> interface for a connection.
- * @code
+ * @verbatim
  * interfaces                   IXxxConnection
  *       | implemented by       | defines
  *       |                      V
@@ -656,7 +657,7 @@
  *                        A
  *                        |
  *                composer component
- * @endcode
+ * @endverbatim
  *
  * A composer is not only responsible for initializing components (including
  * wiring), but also connecting components together.
