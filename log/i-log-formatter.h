@@ -18,47 +18,55 @@
 
 
 #include <nsfx/log/config.h>
-#include <nsfx/log/core/record/record.h>
+#include <nsfx/log/log-record.h>
 #include <nsfx/component/uid.h>
 #include <nsfx/component/i-object.h>
 #include <nsfx/component/ptr.h>
 #include <nsfx/component/i-user.h>
 #include <ostream>
-#include <memory> // shared_ptr
 
 
-NSFX_LOG_OPEN_NAMESPACE
+NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Log
- * @brief The stream formatter interface.
+ * @brief The log formatter interface.
  */
-class IStreamFormatter :
+class ILogFormatter :
     virtual public IObject
 {
 public:
-    virtual ~IStreamFormatter(void) BOOST_NOEXCEPT {}
+    virtual ~ILogFormatter(void) BOOST_NOEXCEPT {}
 
     /**
-     * @brief Format a log record.
+     * @brief Format and output a log record to an output stream.
      */
-    virtual void Format(std::ostream& os,
-                        const std::shared_ptr<Record>& record) = 0;
+    virtual void Format(std::ostream& os, const LogRecord& record) = 0;
 };
 
+NSFX_DEFINE_CLASS_UID(ILogFormatter, "edu.uestc.nsfx.ILogFormatter");
 
-NSFX_DEFINE_CLASS_UID(IStreamFormatter, "edu.uestc.nsfx.log.IStreamFormatter");
 
-
-////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////
+/**
+ * @ingroup Log
+ * @brief User of log formatter.
+ * @class ILogFormatter
+ *
+ * Prototype:
+ *
+ *     void Use(Ptr<ILogFormatter> formatter);
+ *
+ * @see \c ILogFormatter
+ */
 NSFX_DEFINE_USER_INTERFACE(
-    IStreamFormatterUser, "edu.uestc.nsfx.log.IStreamFormatterUser",
-    IStreamFormatter);
+    ILogFormatterUser, "edu.uestc.nsfx.ILogFormatterUser",
+    ILogFormatter);
 
 
-NSFX_LOG_CLOSE_NAMESPACE
+NSFX_CLOSE_NAMESPACE
 
 
 #endif // I_STREAM_FORMATTER_H__8A28811F_C7A9_4360_8B10_BA64463D39B8

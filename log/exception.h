@@ -21,29 +21,29 @@
 #include <nsfx/component/exception.h>
 
 
-NSFX_LOG_OPEN_NAMESPACE
+NSFX_OPEN_NAMESPACE
 
 
 /**
  * @ingroup Exception
- * @brief Access an attribute value with a wroing value type.
+ * @brief Access an log value with a wroing value type.
  */
-struct AttributeValueTypeMismatch : Exception {};
+struct LogValueTypeMismatch : Exception {};
 
 /**
  * @ingroup Exception
- * @brief The attribute value cannot be found.
+ * @brief The named log value cannot be found.
  */
-struct AttributeValueNotFound : Exception {};
+struct LogValueNotFound : Exception {};
 
 /**
  * @ingroup Exception
- * @brief The attribute cannot be found.
+ * @brief The named log value already exists.
  */
-struct AttributeNotFound : Exception {};
+struct LogValueAlreadyExists : Exception {};
 
 
-NSFX_LOG_CLOSE_NAMESPACE
+NSFX_CLOSE_NAMESPACE
 
 
 #endif // EXCEPTION_H__DD13BC34_4C11_44BB_A7AF_200B9E081B6C

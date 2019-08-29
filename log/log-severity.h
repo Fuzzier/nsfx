@@ -18,11 +18,10 @@
 
 
 #include <nsfx/log/config.h>
-#include <nsfx/log/core/record/attribute-value-info.h>
 #include <iostream>
 
 
-NSFX_LOG_OPEN_NAMESPACE
+NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -31,7 +30,7 @@ NSFX_LOG_OPEN_NAMESPACE
  *
  * @brief Log severity level.
  */
-enum SeverityLevel
+enum LogSeverity
 {
     /**
      * @brief Any error that forces the program to shutdown to prevent from corruption.
@@ -43,7 +42,7 @@ enum SeverityLevel
      * * Try to access an array out of bound.
      * * Try to use an invalid pointer.
      */
-    LOG_FATAL    = 0x00000001,
+    LOG_FATAL = 0x00000001,
 
     /**
      * @brief Any error that cause an operation to fail.
@@ -57,7 +56,7 @@ enum SeverityLevel
      *   - Failed to open a file.
      * * Provide invalid data.
      */
-    LOG_ERROR    = 0x00000002,
+    LOG_ERROR = 0x00000002,
 
     /**
      * @brief Any condition that can potentially cause oddities.
@@ -67,36 +66,33 @@ enum SeverityLevel
      *
      * For example.
      */
-    LOG_WARNING  = 0x00000004,
+    LOG_WARN  = 0x00000004,
 
     /**
      * @brief General information about the state of the program.
      *
      */
-    LOG_INFO     = 0x00000008,
+    LOG_INFO  = 0x00000008,
 
     /**
      * @brief Information that diagnostically helpful.
      */
-    LOG_DEBUG    = 0x00000010,
-
-    /**
-     * @brief Detailed information about the invoked function.
-     */
-    LOG_FUNCTION = 0x00000020,
+    LOG_DEBUG = 0x00000010,
 
     /**
      * @brief Detailed information about the performed operations.
      */
-    LOG_TRACE    = 0x00000040,
+    LOG_TRACE = 0x00000020,
 
-    LOG_NONE     = 0x00000000,
-    LOG_ALL      = 0xFFFFFFFF,
+    LOG_NONE  = 0x00000000,
+    LOG_ALL   = 0xFFFFFFFF,
 };
 
 
 ////////////////////////////////////////////////////////////////////////////////
-inline std::ostream& operator<<(std::ostream& os, SeverityLevel level)
+template<class CharT, class TraitsT>
+inline std::basic_ostream<CharT, TraitsT>&
+operator<<(std::basic_ostream<CharT, TraitsT>& os, LogSeverity level)
 {
     const char* label;
     switch (level)
@@ -109,8 +105,8 @@ inline std::ostream& operator<<(std::ostream& os, SeverityLevel level)
         label = "ERROR";
         break;
 
-    case LOG_WARNING:
-        label = "WARNING";
+    case LOG_WARN:
+        label = "WARN";
         break;
 
     case LOG_DEBUG:
@@ -119,10 +115,6 @@ inline std::ostream& operator<<(std::ostream& os, SeverityLevel level)
 
     case LOG_INFO:
         label = "INFO";
-        break;
-
-    case LOG_FUNCTION:
-        label = "FUNCTION";
         break;
 
     case LOG_TRACE:
@@ -139,15 +131,7 @@ inline std::ostream& operator<<(std::ostream& os, SeverityLevel level)
 }
 
 
-////////////////////////////////////////////////////////////////////////////////
-/**
- * @ingroup Log
- * @brief The severity level information class.
- */
-NSFX_DEFINE_ATTRIBUTE_VALUE_INFO(SeverityLevelInfo, "SeverityLevel", SeverityLevel);
-
-
-NSFX_LOG_CLOSE_NAMESPACE
+NSFX_CLOSE_NAMESPACE
 
 
 #endif // SEVERITY_LEVEL_H__DCFE699B_E7C7_4B4B_8D5D_0345944D2ED1

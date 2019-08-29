@@ -294,81 +294,63 @@ test-portainer.exe : $(HEADERS) $(SRC)
 
 ################################################################################
 # log
-log :                           \
-    test-const-attribute-value  \
-    test-const-attribute        \
-    test-record                 \
-    test-filter                 \
-    test-logger                 \
-    test-timestamp-attribute    \
+log :                     \
+	test-log-value        \
+	test-log-record       \
+    test-log-filter       \
+    test-logger           \
+    test-log-formatter    \
+    test-log-stream-sink  \
 
-LOG_HEADERS=                                                       \
-    $(NSFX_PATH)/log.h                                             \
-    $(NSFX_PATH)/log/config.h                                      \
-    $(NSFX_PATH)/log/core/exception.h                              \
-    $(NSFX_PATH)/log/core/attribute-value/attribute-value.h        \
-    $(NSFX_PATH)/log/core/attribute-value/const-attribute-value.h  \
-    $(NSFX_PATH)/log/core/attribute/attribute.h                    \
-    $(NSFX_PATH)/log/core/attribute/const-attribute.h              \
-    $(NSFX_PATH)/log/core/attribute/i-attribute-set.h              \
-    $(NSFX_PATH)/log/core/attribute/attribute-set.h                \
-    $(NSFX_PATH)/log/core/record/record.h                          \
-    $(NSFX_PATH)/log/core/record/attribute-value-info.h            \
-    $(NSFX_PATH)/log/core/logger/i-logger.h                        \
-    $(NSFX_PATH)/log/core/logger/logger.h                          \
-    $(NSFX_PATH)/log/core/filter/i-filter.h                        \
-    $(NSFX_PATH)/log/core/filter/filter.h                          \
-    $(NSFX_PATH)/log/core/filter/i-filter-chain.h                  \
-    $(NSFX_PATH)/log/core/filter/filter-chain.h                    \
-    $(NSFX_PATH)/log/core/formatter/i-stream-formatter.h           \
-    $(NSFX_PATH)/log/core/formatter/stream-formatter.h             \
-    $(NSFX_PATH)/log/core/sink/i-stream-sink.h                     \
-    $(NSFX_PATH)/log/core/sink/stream-sink.h                       \
-    $(NSFX_PATH)/log/core/sink/i-file-sink.h                       \
-    $(NSFX_PATH)/log/core/sink/file-sink.h                         \
-    $(NSFX_PATH)/log/default/common-attribute-value-info.h         \
-    $(NSFX_PATH)/log/default/severity-level.h                      \
-    $(NSFX_PATH)/log/default/i-severity-level-filter.h             \
-    $(NSFX_PATH)/log/default/severity-level-filter.h               \
-    $(NSFX_PATH)/log/default/timestamp-attribute.h                 \
-    $(NSFX_PATH)/log/default/tool.h                                \
+LOG_HEADERS=                                 \
+    $(NSFX_PATH)/log.h                       \
+    $(NSFX_PATH)/log/config.h                \
+    $(NSFX_PATH)/log/exception.h             \
+    $(NSFX_PATH)/log/log-value.h             \
+    $(NSFX_PATH)/log/make-log-value.h        \
+    $(NSFX_PATH)/log/log-value-traits.h      \
+    $(NSFX_PATH)/log/std-log-value-traits.h  \
+    $(NSFX_PATH)/log/log-record.h            \
+    $(NSFX_PATH)/log/i-log.h                 \
+    $(NSFX_PATH)/log/log-severity.h          \
+    $(NSFX_PATH)/log/log-tool.h              \
+    $(NSFX_PATH)/log/i-log-filter.h          \
+    $(NSFX_PATH)/log/create-log-filter.h     \
+    $(NSFX_PATH)/log/logger.h                \
+    $(NSFX_PATH)/log/i-log-formatter.h       \
+    $(NSFX_PATH)/log/create-log-formatter.h  \
+    $(NSFX_PATH)/log/i-log-stream-sink.h     \
+    $(NSFX_PATH)/log/log-stream-sink.h       \
 
 HEADERS=                  \
+    $(LOG_HEADERS)        \
     $(EVENT_HEADERS)      \
     $(COMPONENT_HEADERS)  \
     $(CHRONO_HEADERS)     \
     $(TEST_HEADERS)       \
 
 ########################################
-test-const-attribute-value : test-const-attribute-value.exe
+test-log-value : test-log-value.exe
 
-SRC=log/test-const-attribute-value.cpp
+SRC=log/test-log-value.cpp
 
-test-const-attribute-value.exe : $(HEADERS) $(SRC)
+test-log-value.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
-test-const-attribute : test-const-attribute.exe
+test-log-record : test-log-record.exe
 
-SRC=log/test-const-attribute.cpp
+SRC=log/test-log-record.cpp
 
-test-const-attribute.exe : $(HEADERS) $(SRC)
+test-log-record.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
-test-record : test-record.exe
+test-log-filter : test-log-filter.exe
 
-SRC=log/test-record.cpp
+SRC=log/test-log-filter.cpp
 
-test-record.exe : $(HEADERS) $(SRC)
-    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
-
-########################################
-test-filter : test-filter.exe
-
-SRC=log/test-filter.cpp
-
-test-filter.exe : $(HEADERS) $(SRC)
+test-log-filter.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
@@ -380,11 +362,19 @@ test-logger.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
-test-timestamp-attribute : test-timestamp-attribute.exe
+test-log-formatter : test-log-formatter.exe
 
-SRC=log/test-timestamp-attribute.cpp
+SRC=log/test-log-formatter.cpp
 
-test-timestamp-attribute.exe : $(HEADERS) $(SRC)
+test-log-formatter.exe : $(HEADERS) $(SRC)
+    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-log-stream-sink : test-log-stream-sink.exe
+
+SRC=log/test-log-stream-sink.cpp
+
+test-log-stream-sink.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ################################################################################

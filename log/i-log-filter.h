@@ -13,37 +13,35 @@
  *            All rights reserved.
  */
 
-#ifndef I_FILTER_H__B74A4CA2_2091_481B_88E9_0A88CF85805F
-#define I_FILTER_H__B74A4CA2_2091_481B_88E9_0A88CF85805F
+#ifndef I_LOG_FILTER_H__D9ED2E1F_9E78_4704_B7A2_3969296F919E
+#define I_LOG_FILTER_H__D9ED2E1F_9E78_4704_B7A2_3969296F919E
 
 
 #include <nsfx/log/config.h>
-#include <nsfx/log/core/record/record.h>
+#include <nsfx/log/log-record.h>
 #include <nsfx/component/uid.h>
 #include <nsfx/component/i-object.h>
-#include <nsfx/component/ptr.h>
-#include <memory> // shared_ptr
 
 
-NSFX_LOG_OPEN_NAMESPACE
+NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Log
- * @brief The filter decision.
+ * @brief The decision of a log filter.
  */
-enum FilterDecision
+enum LogFilterDecision
 {
     /**
      * @brief Discard the log record.
      */
-    DECLINE = 0x00000000,
+    LOG_DECLINE = 0x00000000,
 
     /**
      * @brief Keep processing the log record.
      */
-    ACCEPT = 0x00000001
+    LOG_ACCEPT  = 0x00000001
 };
 
 
@@ -52,26 +50,24 @@ enum FilterDecision
  * @ingroup Log
  * @brief The log filter interface.
  */
-class IFilter :
+class ILogFilter :
     virtual public IObject
 {
 public:
-    virtual ~IFilter(void) BOOST_NOEXCEPT {}
+    virtual ~ILogFilter(void) BOOST_NOEXCEPT {}
 
     /**
      * @brief Filter a log record.
-     *
-     * @return \c FilterDecision.
      */
-    virtual FilterDecision Decide(const std::shared_ptr<Record>& record) = 0;
+    virtual LogFilterDecision Decide(const LogRecord& record) = 0;
 };
 
 
-NSFX_DEFINE_CLASS_UID(IFilter, "edu.uestc.nsfx.log.IFilter");
+NSFX_DEFINE_CLASS_UID(ILogFilter, "edu.uestc.nsfx.ILogFilter");
 
 
-NSFX_LOG_CLOSE_NAMESPACE
+NSFX_CLOSE_NAMESPACE
 
 
-#endif // I_FILTER_H__B74A4CA2_2091_481B_88E9_0A88CF85805F
+#endif // I_LOG_FILTER_H__D9ED2E1F_9E78_4704_B7A2_3969296F919E
 
