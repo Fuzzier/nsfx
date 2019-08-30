@@ -54,9 +54,19 @@ NSFX_TEST_SUITE(Logger)
                 nsfx::CreateObject<nsfx::ILogEventSinkEx>(
                     "edu.uestc.nsfx.Logger");
 
-            middle->RegisterSource(source);
+            nsfx::cookie_t c1 = middle->RegisterSource(source);
+            nsfx::cookie_t c2 = middle->RegisterSource(source);
+            nsfx::cookie_t c3 = middle->RegisterSource(source);
+            NSFX_TEST_ASSERT_NE(c1, c2);
+            NSFX_TEST_ASSERT_NE(c1, c3);
+            NSFX_TEST_ASSERT_NE(c2, c3);
+            middle->UnregisterSource(c2);
+            middle->UnregisterSource(c3);
+            c2 = middle->RegisterSource(source);
+            c3 = middle->RegisterSource(source);
 
             std::string output;
+            size_t count = 0;
             nsfx::Ptr<nsfx::ILogEventSink> sink =
                 nsfx::CreateEventSink<nsfx::ILogEventSink>(
                         nullptr, [&] (nsfx::LogRecord r) {
@@ -67,6 +77,7 @@ NSFX_TEST_SUITE(Logger)
                 }
                 oss << r.Get<nsfx::LogMessageTraits>() << std::endl;
                 output = oss.str();
+                ++count;
             });
 
             // Log (without terminal sink)
@@ -77,6 +88,7 @@ NSFX_TEST_SUITE(Logger)
             NSFX_LOG_INFO(source)  << "info";
             NSFX_LOG_DEBUG(source) << "debug";
             NSFX_LOG_TRACE(source) << "trace";
+            NSFX_TEST_EXPECT_EQ(count, 0);
             NSFX_TEST_EXPECT(output.empty());
 
             // Log (with terminal sink)
@@ -88,14 +100,18 @@ NSFX_TEST_SUITE(Logger)
             NSFX_LOG_INFO(source)  << "info";
             NSFX_LOG_DEBUG(source) << "debug";
             NSFX_LOG_TRACE(source) << "trace";
+            NSFX_TEST_EXPECT_EQ(count, 21);
             NSFX_TEST_EXPECT(!output.empty());
             output.clear();
 
             // Log (to terminal sink)
             NSFX_LOG(sink) << "plain";
+            NSFX_TEST_EXPECT_EQ(count, 22);
             NSFX_TEST_EXPECT(!output.empty());
             output.clear();
 
+            middle->UnregisterSource(c2);
+            middle->UnregisterSource(c3);
             middle->UnregisterAllSources();
 
         }

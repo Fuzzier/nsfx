@@ -21,7 +21,7 @@
 #include <nsfx/log/i-log.h>
 #include <nsfx/log/i-log-stream-sink.h>
 #include <nsfx/log/i-log-formatter.h>
-#include <nsfx/log/make-log-value.h>
+#include <nsfx/log/detail/log-pending-value-pool.h>
 #include <nsfx/component/class-registry.h>
 #include <fstream>
 
@@ -90,7 +90,7 @@ private:
     Ptr<ILogFormatter>  formatter_;
 
     // The pending log values.
-    unordered_map<std::string, LogValue>  values_;
+    LogPendingValuePool  pendingValuePool_;
 
     // The log filter.
     Ptr<ILogFilter> filter_;
@@ -125,10 +125,7 @@ inline void LogStreamSink::Fire(LogRecord record)
     }
     do
     {
-        for (auto it = values_.cbegin(); it != values_.cend(); ++it)
-        {
-            record.Add(it->first, it->second.Get<LogValue>());
-        }
+        pendingValuePool_.Apply(record);
         if (!!filter_)
         {
             if (filter_->Decide(record) != LOG_ACCEPT)
@@ -147,25 +144,17 @@ inline void LogStreamSink::Fire(LogRecord record)
 
 inline bool LogStreamSink::AddValue(const std::string& name, LogValue value)
 {
-    value = NormalizeLogValue(value);
-    auto result = values_.emplace(name, std::move(value));
-    return result.second;
+    return pendingValuePool_.Add(name, value);
 }
 
 inline void LogStreamSink::UpdateValue(const std::string& name, LogValue value)
 {
-    value = NormalizeLogValue(value);
-    auto result = values_.emplace(name, value);
-    if (!result.second)
-    {
-        auto& it = result.first;
-        it->second = std::move(value);
-    }
+    pendingValuePool_.Update(name, value);
 }
 
 inline void LogStreamSink::RemoveValue(const std::string& name)
 {
-    values_.erase(name);
+    pendingValuePool_.Remove(name);
 }
 
 inline void LogStreamSink::SetFilter(Ptr<ILogFilter> filter)
@@ -196,15 +185,6 @@ inline void LogStreamSink::AddFile(const std::string& filename,
     }
     files_.push_back(std::move(ofs));
     ostreams_.push_back(&files_.back());
-}
-
-inline LogValue LogStreamSink::NormalizeLogValue(LogValue value)
-{
-    if (value.GetTypeId() != boost::typeindex::type_id<LogValue>())
-    {
-        value = MakeConstantLogValue<LogValue>(value);
-    }
-    return value;
 }
 
 

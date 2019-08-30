@@ -91,11 +91,21 @@ public:
 
     // Passive connection.
     /**
-     * @brief Register a upstream log source.
+     * @brief Register an upstream log source.
      *
      * @param[in] source The log source.
+     *
+     * @return A cookie value that can be used to unregister the log source.
      */
-    virtual void RegisterSource(Ptr<ILogEvent> source) = 0;
+    virtual cookie_t RegisterSource(Ptr<ILogEvent> source) = 0;
+
+    /**
+     * @brief Unregister an upstream log source.
+     *
+     * @param[in] source The cookie value obtained when the log source is
+     *                   registered.
+     */
+    virtual void UnregisterSource(cookie_t cookie) = 0;
 
     /**
      * @brief Unregister all upstream log sources.

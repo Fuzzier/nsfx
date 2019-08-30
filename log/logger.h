@@ -19,7 +19,8 @@
 
 #include <nsfx/log/config.h>
 #include <nsfx/log/i-log.h>
-#include <nsfx/log/make-log-value.h>
+#include <nsfx/log/detail/log-source-pool.h>
+#include <nsfx/log/detail/log-pending-value-pool.h>
 #include <nsfx/event/event.h>
 #include <nsfx/component/class-registry.h>
 #include <utility> // pair, make_pair
@@ -63,8 +64,10 @@ public:
     // ILogEventSinkEx
     virtual void Fire(LogRecord record) NSFX_OVERRIDE;
 
-    virtual void RegisterSource(Ptr<ILogEvent> source) NSFX_OVERRIDE;
+    virtual cookie_t RegisterSource(Ptr<ILogEvent> source) NSFX_OVERRIDE;
+    virtual void UnregisterSource(cookie_t cookie) NSFX_OVERRIDE;
     virtual void UnregisterAllSources(void) NSFX_OVERRIDE;
+
     virtual bool IsEnabled(void) NSFX_OVERRIDE;
 
     virtual bool AddValue(const std::string& name, LogValue value) NSFX_OVERRIDE;
@@ -72,25 +75,6 @@ public:
     virtual void RemoveValue(const std::string& name) NSFX_OVERRIDE;
 
     virtual void SetFilter(Ptr<ILogFilter> filter) NSFX_OVERRIDE;
-
-private:
-    /**
-     * @brief Connect this logger to all registered log sources.
-     */
-    void ConnectToAllSources(void);
-
-    /**
-     * @brief Disconnect this logger from all registered log sources.
-     */
-    void DisconnectFromAllSources(void);
-
-    /**
-     * @brief Normalize a log value.
-     *
-     * A first-order log value will be made a second-order log value.
-     * A second-order or higher-order log value is unchanged.
-     */
-    LogValue NormalizeLogValue(LogValue value);
 
 private:
     NSFX_INTERFACE_MAP_BEGIN(ThisClass)
@@ -101,14 +85,13 @@ private:
 
 private:
     // The registered log sources.
-    typedef std::pair<Ptr<ILogEvent>, cookie_t>  ElemType;
-    vector<ElemType>  sources_;
+    LogSourcePool  sourcePool_;
 
     // The pending log values.
-    unordered_map<std::string, LogValue>  values_;
+    LogPendingValuePool  pendingValuePool_;
 
     // The log filter.
-    Ptr<ILogFilter> filter_;
+    Ptr<ILogFilter>  filter_;
 
     // ILogEvent.
     typedef Event<ILogEvent>   EventType;
@@ -128,7 +111,7 @@ inline cookie_t Logger::Connect(Ptr<ILogEventSink> sink)
 {
     if (!logEvent_.GetImpl()->EventType::GetNumSinks())
     {
-        ConnectToAllSources();
+        sourcePool_.Connect(static_cast<ILogEventSink*>(this));
     }
     return logEvent_.GetImpl()->EventType::Connect(std::move(sink));
 }
@@ -138,7 +121,7 @@ inline void Logger::Disconnect(cookie_t cookie)
     logEvent_.GetImpl()->EventType::Disconnect(cookie);
     if (!logEvent_.GetImpl()->EventType::GetNumSinks())
     {
-        DisconnectFromAllSources();
+        sourcePool_.Disconnect();
     }
 }
 
@@ -146,10 +129,7 @@ inline void Logger::Fire(LogRecord record)
 {
     do
     {
-        for (auto it = values_.cbegin(); it != values_.cend(); ++it)
-        {
-            record.Add(it->first, it->second.Get<LogValue>());
-        }
+        pendingValuePool_.Apply(record);
         if (!!filter_)
         {
             if (filter_->Decide(record) != LOG_ACCEPT)
@@ -162,18 +142,19 @@ inline void Logger::Fire(LogRecord record)
     while (false);
 }
 
-inline void Logger::RegisterSource(Ptr<ILogEvent> source)
+inline cookie_t Logger::RegisterSource(Ptr<ILogEvent> source)
 {
-    if (!!source)
-    {
-        sources_.push_back(std::make_pair(std::move(source), 0));
-    }
+    return sourcePool_.Register(std::move(source));
+}
+
+inline void Logger::UnregisterSource(cookie_t cookie)
+{
+    sourcePool_.Unregister(cookie);
 }
 
 inline void Logger::UnregisterAllSources(void)
 {
-    DisconnectFromAllSources();
-    sources_.clear();
+    sourcePool_.UnregisterAll();
 }
 
 inline bool Logger::IsEnabled(void)
@@ -183,59 +164,22 @@ inline bool Logger::IsEnabled(void)
 
 inline bool Logger::AddValue(const std::string& name, LogValue value)
 {
-    value = NormalizeLogValue(value);
-    auto result = values_.emplace(name, value);
-    return result.second;
+    return pendingValuePool_.Add(name, value);
 }
 
 inline void Logger::UpdateValue(const std::string& name, LogValue value)
 {
-    value = NormalizeLogValue(value);
-    auto result = values_.emplace(name, value);
-    if (!result.second)
-    {
-        auto& it = result.first;
-        it->second = value;
-    }
+    pendingValuePool_.Update(name, value);
 }
 
 inline void Logger::RemoveValue(const std::string& name)
 {
-    values_.erase(name);
+    pendingValuePool_.Remove(name);
 }
 
 inline void Logger::SetFilter(Ptr<ILogFilter> filter)
 {
     filter_ = std::move(filter);
-}
-
-inline void Logger::ConnectToAllSources(void)
-{
-    for (auto it = sources_.begin(); it != sources_.end(); ++it)
-    {
-        it->second = it->first->Connect(static_cast<ILogEventSink*>(this));
-    }
-}
-
-inline void Logger::DisconnectFromAllSources(void)
-{
-    for (auto it = sources_.begin(); it != sources_.end(); ++it)
-    {
-        if (it->second)
-        {
-            it->first->Disconnect(it->second);
-            it->second = 0;
-        }
-    }
-}
-
-inline LogValue Logger::NormalizeLogValue(LogValue value)
-{
-    if (value.GetTypeId() != boost::typeindex::type_id<LogValue>())
-    {
-        value = MakeConstantLogValue<LogValue>(value);
-    }
-    return value;
 }
 
 
