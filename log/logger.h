@@ -46,6 +46,9 @@ NSFX_OPEN_NAMESPACE
  *   + \c ILoggerEvent
  *   + \c ILoggerEventSink
  *   + \c ILoggerEventSinkEx
+ *
+ * @remarks At most <b>one</b> log sink can be connected to this logger.
+ *
  */
 class Logger :
     public ILogEvent,
@@ -66,7 +69,6 @@ public:
 
     virtual cookie_t RegisterSource(Ptr<ILogEvent> source) NSFX_OVERRIDE;
     virtual void UnregisterSource(cookie_t cookie) NSFX_OVERRIDE;
-    virtual void UnregisterAllSources(void) NSFX_OVERRIDE;
 
     virtual bool IsEnabled(void) NSFX_OVERRIDE;
 
@@ -150,11 +152,6 @@ inline cookie_t Logger::RegisterSource(Ptr<ILogEvent> source)
 inline void Logger::UnregisterSource(cookie_t cookie)
 {
     sourcePool_.Unregister(cookie);
-}
-
-inline void Logger::UnregisterAllSources(void)
-{
-    sourcePool_.UnregisterAll();
 }
 
 inline bool Logger::IsEnabled(void)

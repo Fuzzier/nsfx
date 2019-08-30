@@ -60,10 +60,6 @@ NSFX_TEST_SUITE(Logger)
             NSFX_TEST_ASSERT_NE(c1, c2);
             NSFX_TEST_ASSERT_NE(c1, c3);
             NSFX_TEST_ASSERT_NE(c2, c3);
-            middle->UnregisterSource(c2);
-            middle->UnregisterSource(c3);
-            c2 = middle->RegisterSource(source);
-            c3 = middle->RegisterSource(source);
 
             std::string output;
             size_t count = 0;
@@ -91,8 +87,15 @@ NSFX_TEST_SUITE(Logger)
             NSFX_TEST_EXPECT_EQ(count, 0);
             NSFX_TEST_EXPECT(output.empty());
 
-            // Log (with terminal sink)
+            // Connect to a terminal sink
             nsfx::Ptr<nsfx::ILogEvent>(middle)->Connect(sink);
+            middle->UnregisterSource(c2);
+            middle->UnregisterSource(c3);
+            // Register sources, the sources will be connected to the sink.
+            c2 = middle->RegisterSource(source);
+            c3 = middle->RegisterSource(source);
+
+            // Log (with terminal sink)
             NSFX_LOG(source)       << "plain";
             NSFX_LOG_FATAL(source) << "fatal";
             NSFX_LOG_ERROR(source) << "error";
@@ -112,7 +115,6 @@ NSFX_TEST_SUITE(Logger)
 
             middle->UnregisterSource(c2);
             middle->UnregisterSource(c3);
-            middle->UnregisterAllSources();
 
         }
         catch (boost::exception& e)

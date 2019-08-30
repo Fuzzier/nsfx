@@ -108,11 +108,6 @@ public:
     virtual void UnregisterSource(cookie_t cookie) = 0;
 
     /**
-     * @brief Unregister all upstream log sources.
-     */
-    virtual void UnregisterAllSources(void) = 0;
-
-    /**
      * @brief Get the state of the log sink.
      *
      * It shall be determined by the number of downstream log sinks.

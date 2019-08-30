@@ -42,7 +42,6 @@ class LogSourcePool
 public:
     cookie_t Register(Ptr<ILogEvent> source);
     void Unregister(cookie_t cookie);
-    void UnregisterAll(void);
 
     /**
      * @brief Connect a log sink to all registered log sources.
@@ -58,6 +57,8 @@ private:
     // The registered log sources.
     ContainerType  items_;
 
+    // Kept the log sink for the late-registered log sources.
+    Ptr<ILogEventSink>  sink_;
 };
 
 
@@ -84,10 +85,16 @@ inline cookie_t LogSourcePool::Register(Ptr<ILogEvent> source)
         if (it == items_.end())
         {
             items_.emplace_back(std::move(source), 0);
+            it = items_.end();
         }
         else
         {
             it->first = std::move(source);
+        }
+        if (sink_)
+        {
+            // Connect the sink.
+            it->second = it->first->Connect(sink_);
         }
     }
     return cookie;
@@ -111,21 +118,23 @@ inline void LogSourcePool::Unregister(cookie_t cookie)
     }
 }
 
-inline void LogSourcePool::UnregisterAll(void)
-{
-    Disconnect();
-    items_.clear();
-}
-
 inline void LogSourcePool::Connect(Ptr<ILogEventSink> sink)
 {
+    if (!!sink_)
+    {
+        BOOST_THROW_EXCEPTION(
+            IllegalMethodCall() <<
+            ErrorMessage("Cannot connect to a log sink, "
+                         "since a log sink has already been connected."));
+    }
+    sink_ = std::move(sink);
     for (auto it = items_.begin(); it != items_.end(); ++it)
     {
         // If the source is not nullptr.
         if (!!it->first)
         {
             // Connect the sink.
-            it->second = it->first->Connect(sink);
+            it->second = it->first->Connect(sink_);
         }
     }
 }
@@ -143,6 +152,7 @@ inline void LogSourcePool::Disconnect(void)
             it->second = 0;
         }
     }
+    sink_ = nullptr;
 }
 
 
