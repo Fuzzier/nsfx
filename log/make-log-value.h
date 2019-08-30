@@ -72,6 +72,37 @@ private:
 ////////////////////////////////////////
 /**
  * @ingroup Log
+ * @brief A string-based log value.
+ *
+ * This log value offers C string (<code>const char*</code>).
+ * Internally, it stores a C++ string (\c std::string).
+ */
+class CstrLogValue :
+    public ITypedLogValue<const char*>
+{
+public:
+    CstrLogValue(const char* str) :
+        str_(str)
+    {}
+
+    CstrLogValue(std::string&& str) :
+        str_(std::move(str))
+    {}
+
+    virtual ~CstrLogValue(void) {}
+
+    virtual const char* Get(void) NSFX_OVERRIDE
+    {
+        return str_.c_str();
+    }
+
+private:
+    std::string  str_;
+};
+
+////////////////////////////////////////
+/**
+ * @ingroup Log
  * @brief A functor-based log value.
  *
  * @tparam T       The type of stored value.
@@ -117,6 +148,25 @@ inline LogValue MakeLogValue(Functor&& functor)
     return LogValue(new Impl(std::forward<Functor>(functor)));
 }
 
+
+////////////////////////////////////////
+/**
+ * @ingroup Log
+ * @brief Make a string-based log value.
+ */
+inline LogValue MakeCstrLogValue(const char* str)
+{
+    return LogValue(new CstrLogValue(str));
+}
+
+/**
+ * @ingroup Log
+ * @brief Make a string-based log value.
+ */
+inline LogValue MakeCstrLogValue(std::string&& str)
+{
+    return LogValue(new CstrLogValue(std::move(str)));
+}
 
 ////////////////////////////////////////
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)

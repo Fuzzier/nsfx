@@ -1,7 +1,7 @@
 ﻿/**
  * @file
  *
- * @brief Testing support for network simulation Frameworks.
+ * @brief Logging support for network simulation Frameworks.
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
@@ -19,46 +19,30 @@
 
 #include <nsfx/log/config.h>
 
-// Core
-#include <nsfx/log/core/exception.h>
+#include <nsfx/log/exception.h>
 
-#include <nsfx/log/core/attribute-value/attribute-value.h>
-#include <nsfx/log/core/attribute-value/const-attribute-value.h>
+#include <nsfx/log/log-value.h>
+#include <nsfx/log/make-log-value.h>
+#include <nsfx/log/log-value-traits.h>
 
-#include <nsfx/log/core/attribute/attribute.h>
-#include <nsfx/log/core/attribute/const-attribute.h>
-#include <nsfx/log/core/attribute/i-attribute-set.h>
-#include <nsfx/log/core/attribute/attribute-set.h>
+#include <nsfx/log/log-record.h>
 
-#include <nsfx/log/core/record/record.h>
-#include <nsfx/log/core/record/attribute-value-info.h>
+#include <nsfx/log/i-log-filter.h>
+#include <nsfx/log/create-log-filter.h>
 
-#include <nsfx/log/core/logger/i-logger.h>
-#include <nsfx/log/core/logger/logger.h>
+#include <nsfx/log/i-log.h>
+#include <nsfx/log/logger.h>
 
-#include <nsfx/log/core/filter/i-filter.h>
-#include <nsfx/log/core/filter/filter.h>
-#include <nsfx/log/core/filter/i-filter-chain.h>
-#include <nsfx/log/core/filter/filter-chain.h>
+#include <nsfx/log/i-log-formatter.h>
+#include <nsfx/log/create-log-formatter.h>
 
-#include <nsfx/log/core/formatter/i-stream-formatter.h>
-#include <nsfx/log/core/formatter/stream-formatter.h>
+#include <nsfx/log/i-log-stream-sink.h>
+#include <nsfx/log/log-stream-sink.h>
 
-#include <nsfx/log/core/sink/i-stream-sink.h>
-#include <nsfx/log/core/sink/stream-sink.h>
-#include <nsfx/log/core/sink/i-file-sink.h>
-#include <nsfx/log/core/sink/file-sink.h>
+#include <nsfx/log/log-severity.h>
+#include <nsfx/log/std-log-value-traits.h>
 
-// Default
-#include <nsfx/log/default/common-attribute-value-info.h>
-
-#include <nsfx/log/default/severity-level.h>
-#include <nsfx/log/default/i-severity-level-filter.h>
-#include <nsfx/log/default/severity-level-filter.h>
-
-#include <nsfx/log/default/timestamp-attribute.h>
-
-#include <nsfx/log/default/tool.h>
+#include <nsfx/log/log-tool.h>
 
 
 #endif // LOG_H__6E655F82_08BD_4CD4_A3CA_BB109465DFA4

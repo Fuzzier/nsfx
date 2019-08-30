@@ -19,6 +19,7 @@
 
 #include <nsfx/log/config.h>
 #include <nsfx/log/i-log.h>
+#include <nsfx/log/make-log-value.h>
 #include <nsfx/event/event.h>
 #include <nsfx/component/class-registry.h>
 #include <utility> // pair, make_pair
@@ -83,6 +84,14 @@ private:
      */
     void DisconnectFromAllSources(void);
 
+    /**
+     * @brief Normalize a log value.
+     *
+     * A first-order log value will be made a second-order log value.
+     * A second-order or higher-order log value is unchanged.
+     */
+    LogValue NormalizeLogValue(LogValue value);
+
 private:
     NSFX_INTERFACE_MAP_BEGIN(ThisClass)
         NSFX_INTERFACE_ENTRY(ILogEvent)
@@ -139,7 +148,7 @@ inline void Logger::Fire(LogRecord record)
     {
         for (auto it = values_.cbegin(); it != values_.cend(); ++it)
         {
-            record.Add(it->first, it->second);
+            record.Add(it->first, it->second.Get<LogValue>());
         }
         if (!!filter_)
         {
@@ -174,17 +183,19 @@ inline bool Logger::IsEnabled(void)
 
 inline bool Logger::AddValue(const std::string& name, LogValue value)
 {
-    auto result = values_.emplace(name, std::move(value));
+    value = NormalizeLogValue(value);
+    auto result = values_.emplace(name, value);
     return result.second;
 }
 
 inline void Logger::UpdateValue(const std::string& name, LogValue value)
 {
+    value = NormalizeLogValue(value);
     auto result = values_.emplace(name, value);
     if (!result.second)
     {
         auto& it = result.first;
-        it->second = std::move(value);
+        it->second = value;
     }
 }
 
@@ -216,6 +227,15 @@ inline void Logger::DisconnectFromAllSources(void)
             it->second = 0;
         }
     }
+}
+
+inline LogValue Logger::NormalizeLogValue(LogValue value)
+{
+    if (value.GetTypeId() != boost::typeindex::type_id<LogValue>())
+    {
+        value = MakeConstantLogValue<LogValue>(value);
+    }
+    return value;
 }
 
 

@@ -89,16 +89,6 @@ public:
     template<class T>
     explicit LogValue(ITypedLogValue<T>* p);
 
-    // Copyable.
-public:
-    LogValue(const LogValue& rhs);
-    LogValue& operator=(const LogValue& rhs);
-
-    // Movable.
-public:
-    LogValue(LogValue&& rhs);
-    LogValue& operator=(LogValue&& rhs);
-
     // Methods.
 public:
     const boost::typeindex::type_info& GetTypeId(void) const;
@@ -122,34 +112,6 @@ inline LogValue::LogValue(ITypedLogValue<T>* p) :
     {
         BOOST_THROW_EXCEPTION(InvalidPointer());
     }
-}
-
-inline LogValue::LogValue(const LogValue& rhs) :
-    p_(rhs.p_)
-{
-}
-
-inline LogValue& LogValue::operator=(const LogValue& rhs)
-{
-    if (this != &rhs)
-    {
-        p_ = rhs.p_;
-    }
-    return *this;
-}
-
-inline LogValue::LogValue(LogValue&& rhs) :
-    p_(std::move(rhs.p_))
-{
-}
-
-inline LogValue& LogValue::operator=(LogValue&& rhs)
-{
-    if (this != &rhs)
-    {
-        p_ = std::move(rhs.p_);
-    }
-    return *this;
 }
 
 inline const boost::typeindex::type_info&

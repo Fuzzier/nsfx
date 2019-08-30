@@ -28,13 +28,13 @@ NSFX_TEST_SUITE(LogFilter)
             nsfx::Ptr<nsfx::ILogFilter> filter = nsfx::CreateLogFilter(
                     [] (const nsfx::LogRecord& r) {
                 return (r.Exists("Level") && r.Get<int>("Level") > 0) ?
-                       nsfx::LOG_ACCEPT : nsfx::LOG_DECLINE;
+                       nsfx::LOG_ACCEPT : nsfx::LOG_DISCARD;
             });
 
             nsfx::LogRecord record;
             record.Add("Name", nsfx::MakeConstantLogValue<std::string>("Test"));
             record.Add("Level", nsfx::MakeConstantLogValue<int>(0));
-            NSFX_TEST_EXPECT_EQ(filter->Decide(record), nsfx::LOG_DECLINE);
+            NSFX_TEST_EXPECT_EQ(filter->Decide(record), nsfx::LOG_DISCARD);
 
             record.Update("Level", nsfx::MakeConstantLogValue<int>(1));
             NSFX_TEST_EXPECT_EQ(filter->Decide(record), nsfx::LOG_ACCEPT);

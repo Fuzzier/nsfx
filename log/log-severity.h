@@ -38,7 +38,7 @@ enum LogSeverity
      * The program is unusable or malfunctioning, and have to be terminated
      * in order to prevent (further) data loss or logic corruption.
      *
-     * For example.
+     * For example,
      * * Try to access an array out of bound.
      * * Try to use an invalid pointer.
      */
@@ -50,10 +50,10 @@ enum LogSeverity
      * There is no data loss or logic corruption yet, but the program cannot
      * resolve the error without user intervention.
      *
-     * For example.
+     * For example,
      * * Failed to retrieve the required data.
-     *   - Failed to connect to a database.
-     *   - Failed to open a file.
+     *   + Failed to connect to a database.
+     *   + Failed to open a file.
      * * Provide invalid data.
      */
     LOG_ERROR = 0x00000002,
@@ -63,8 +63,6 @@ enum LogSeverity
      *
      * The program is able to recover from the condition, but the operation is
      * not guaranteed to be performed as expected.
-     *
-     * For example.
      */
     LOG_WARN  = 0x00000004,
 

@@ -29,37 +29,6 @@ NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
-namespace aux {
-
-class CstrLogValue :
-    public ITypedLogValue<const char*>
-{
-public:
-    CstrLogValue(const char* str) :
-        str_(str)
-    {}
-
-    virtual ~CstrLogValue(void) {}
-
-    virtual const char* Get(void) NSFX_OVERRIDE
-    {
-        return str_.c_str();
-    }
-
-private:
-    std::string  str_;
-};
-
-inline LogValue MakeLogValueC(const char* str)
-{
-    return LogValue(new CstrLogValue(str));
-}
-
-
-} // namespace aux
-
-
-////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Log
  * @brief Make a log record.
@@ -74,7 +43,7 @@ inline LogRecord MakeLogRecord(
     LogRecord record;
 
     record.Add(LogMessageTraits::GetName(),
-           MakeConstantLogValue<LogMessageTraits::Type>(std::move(message)));
+           MakeCstrLogValue(std::move(message)));
 
 #if NSFX_LOG_ENABLE_FUNCTION_NAME
     record.Add(LogFunctionTraits::GetName(),

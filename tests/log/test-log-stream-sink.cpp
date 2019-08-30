@@ -43,7 +43,7 @@ NSFX_TEST_SUITE(LogStreamSink)
 
     nsfx::Ptr<nsfx::IClock> clock(new nsfx::Object<Clock>());
 
-    NSFX_TEST_CASE(Test)
+    NSFX_TEST_CASE(Output)
     {
         try
         {
@@ -70,7 +70,7 @@ NSFX_TEST_SUITE(LogStreamSink)
                 {
                     os << r.Get<int>("Value") << ", ";
                 }
-                os << r.Get<std::string>("LogMessage");
+                os << r.Get<const char*>("LogMessage");
             });
             nsfx::Ptr<nsfx::ILogFormatterUser>(sink)->Use(fmtr);
 
@@ -94,7 +94,7 @@ NSFX_TEST_SUITE(LogStreamSink)
             nsfx::Ptr<nsfx::ILogFilter> filter =
                     nsfx::CreateLogFilter([] (const nsfx::LogRecord& r) {
                 return (r.Exists("Value") && r.Get<int>("Value") > 0) ?
-                       nsfx::LOG_DECLINE : nsfx::LOG_ACCEPT;
+                       nsfx::LOG_DISCARD : nsfx::LOG_ACCEPT;
             });
             sink->SetFilter(filter);
 
@@ -126,6 +126,77 @@ NSFX_TEST_SUITE(LogStreamSink)
             NSFX_LOG(logger) << "plain";
             NSFX_TEST_EXPECT(output);
             NSFX_TEST_EXPECT_EQ(oss.str(), "plain");
+
+        }
+        catch (boost::exception& e)
+        {
+            NSFX_TEST_EXPECT(false);
+            std::cerr << diagnostic_information(e) << std::endl;
+        }
+        catch (std::exception& e)
+        {
+            NSFX_TEST_EXPECT(false);
+            std::cerr << e.what() << std::endl;
+        }
+    }
+
+    NSFX_TEST_CASE(HighOrderValue)
+    {
+        try
+        {
+            nsfx::Ptr<nsfx::ILogEventSinkEx> logger =
+                nsfx::CreateObject<nsfx::ILogEventSinkEx>(
+                    "edu.uestc.nsfx.Logger");
+
+            // Create a terminal log sink.
+            nsfx::Ptr<nsfx::ILogStreamSink> sink =
+                nsfx::CreateObject<nsfx::ILogStreamSink>(
+                    "edu.uestc.nsfx.LogStreamSink");
+
+            nsfx::Ptr<nsfx::ILogEvent>(logger)->Connect(sink);
+
+            // Add a second-order pending value.
+            nsfx::LogValue ts = nsfx::MakeLogValue<nsfx::LogValue>(
+            [&] { return nsfx::MakeConstantLogValue<nsfx::TimePoint>(
+                             clock->Now());
+            });
+
+            logger->AddValue("Timestamp", ts);
+
+            // Set a formatter.
+            bool output = false;
+            nsfx::Ptr<nsfx::ILogFormatter> fmtr = nsfx::CreateLogFormatter(
+                    [&] (std::ostream& os, const nsfx::LogRecord& r) {
+                output = true;
+                if (r.Exists("Timestamp"))
+                {
+                    os << r.Get<nsfx::TimePoint>("Timestamp");
+                }
+            });
+            nsfx::Ptr<nsfx::ILogFormatterUser>(sink)->Use(fmtr);
+
+            // Add an output stream.
+            std::ostringstream oss;
+            sink->AddStream(oss);
+
+            ////////////////////
+            nsfx::TimePoint t0(nsfx::Seconds(1));
+            nsfx::TimePoint t1(nsfx::Seconds(2));
+
+            ////////////////////
+            // Log at t0.
+            t = t0;
+            NSFX_TEST_EXPECT_EQ(clock->Now(), t0);
+            NSFX_LOG(logger);
+
+            // Examine the output at t1.
+            t = t1;
+            NSFX_TEST_EXPECT_EQ(clock->Now(), t1);
+
+            NSFX_TEST_EXPECT(output);
+            NSFX_TEST_EXPECT_EQ(oss.str(), t0.ToString());
+            output = false;
+            oss.str("");
 
         }
         catch (boost::exception& e)

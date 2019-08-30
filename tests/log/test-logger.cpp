@@ -46,6 +46,7 @@ NSFX_TEST_SUITE(Logger)
     {
         try
         {
+
             nsfx::Ptr<nsfx::ILogEventSinkEx> source =
                 nsfx::CreateObject<nsfx::ILogEventSinkEx>(
                     "edu.uestc.nsfx.Logger");
@@ -149,7 +150,7 @@ NSFX_TEST_SUITE(Logger)
             nsfx::Ptr<nsfx::ILogFilter> filter =
                     nsfx::CreateLogFilter([] (const nsfx::LogRecord& r) {
                 return (r.Exists("Value") && r.Get<int>("Value") > 0) ?
-                       nsfx::LOG_DECLINE : nsfx::LOG_ACCEPT;
+                       nsfx::LOG_DISCARD : nsfx::LOG_ACCEPT;
             });
             logger->SetFilter(filter);
 
@@ -182,6 +183,68 @@ NSFX_TEST_SUITE(Logger)
             NSFX_LOG(logger) << "plain";
             NSFX_TEST_EXPECT(output);
             NSFX_TEST_EXPECT(!record.Exists("Value"));
+
+        }
+        catch (boost::exception& e)
+        {
+            NSFX_TEST_EXPECT(false);
+            std::cerr << diagnostic_information(e) << std::endl;
+        }
+        catch (std::exception& e)
+        {
+            NSFX_TEST_EXPECT(false);
+            std::cerr << e.what() << std::endl;
+        }
+    }
+
+    NSFX_TEST_CASE(HighOrderValue)
+    {
+        try
+        {
+            // A second-order log value.
+            nsfx::LogValue ts = nsfx::MakeLogValue<nsfx::LogValue>(
+            [&] { return nsfx::MakeConstantLogValue<nsfx::TimePoint>(
+                             clock->Now());
+            });
+
+            nsfx::Ptr<nsfx::ILogEventSinkEx> logger =
+                nsfx::CreateObject<nsfx::ILogEventSinkEx>(
+                    "edu.uestc.nsfx.Logger");
+
+            // Add a pending value.
+            logger->AddValue("Timestamp", ts);
+
+            // Create a terminal log sink.
+            bool output = false;
+            nsfx::LogRecord record;
+            nsfx::Ptr<nsfx::ILogEventSink> sink =
+                nsfx::CreateEventSink<nsfx::ILogEventSink>(
+                        nullptr, [&] (nsfx::LogRecord r) {
+                output = true;
+                record = r;
+            });
+
+            nsfx::Ptr<nsfx::ILogEvent>(logger)->Connect(sink);
+
+            ////////////////////
+            nsfx::TimePoint t0(nsfx::Seconds(1));
+            nsfx::TimePoint t1(nsfx::Seconds(2));
+
+            ////////////////////
+            // Log at t0.
+            t = t0;
+            NSFX_TEST_EXPECT_EQ(clock->Now(), t0);
+            NSFX_LOG(logger) << "plain";
+
+            // Examine the record at t1.
+            t = t1;
+            NSFX_TEST_EXPECT_EQ(clock->Now(), t1);
+
+            NSFX_TEST_EXPECT(output);
+            NSFX_TEST_ASSERT(record.Exists("Timestamp"));
+            NSFX_TEST_EXPECT_EQ(record.Get<nsfx::TimePoint>("Timestamp"), t0);
+            output = false;
+            record = nsfx::LogRecord();
 
         }
         catch (boost::exception& e)

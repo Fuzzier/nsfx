@@ -21,7 +21,9 @@
 #include <nsfx/log/i-log.h>
 #include <nsfx/log/i-log-stream-sink.h>
 #include <nsfx/log/i-log-formatter.h>
+#include <nsfx/log/make-log-value.h>
 #include <nsfx/component/class-registry.h>
+#include <fstream>
 
 
 NSFX_OPEN_NAMESPACE
@@ -66,6 +68,15 @@ public:
     virtual void AddStream(std::ostream& os) NSFX_OVERRIDE;
     virtual void AddFile(const std::string& filename,
                          std::ios_base::openmode mode) NSFX_OVERRIDE;
+
+private:
+    /**
+     * @brief Normalize a log value.
+     *
+     * A first-order log value will be made a second-order log value.
+     * A second-order or higher-order log value is unchanged.
+     */
+    LogValue NormalizeLogValue(LogValue value);
 
 private:
     NSFX_INTERFACE_MAP_BEGIN(ThisClass)
@@ -116,7 +127,7 @@ inline void LogStreamSink::Fire(LogRecord record)
     {
         for (auto it = values_.cbegin(); it != values_.cend(); ++it)
         {
-            record.Add(it->first, it->second);
+            record.Add(it->first, it->second.Get<LogValue>());
         }
         if (!!filter_)
         {
@@ -136,12 +147,14 @@ inline void LogStreamSink::Fire(LogRecord record)
 
 inline bool LogStreamSink::AddValue(const std::string& name, LogValue value)
 {
+    value = NormalizeLogValue(value);
     auto result = values_.emplace(name, std::move(value));
     return result.second;
 }
 
 inline void LogStreamSink::UpdateValue(const std::string& name, LogValue value)
 {
+    value = NormalizeLogValue(value);
     auto result = values_.emplace(name, value);
     if (!result.second)
     {
@@ -183,6 +196,15 @@ inline void LogStreamSink::AddFile(const std::string& filename,
     }
     files_.push_back(std::move(ofs));
     ostreams_.push_back(&files_.back());
+}
+
+inline LogValue LogStreamSink::NormalizeLogValue(LogValue value)
+{
+    if (value.GetTypeId() != boost::typeindex::type_id<LogValue>())
+    {
+        value = MakeConstantLogValue<LogValue>(value);
+    }
+    return value;
 }
 
 

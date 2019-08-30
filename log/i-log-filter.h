@@ -36,7 +36,7 @@ enum LogFilterDecision
     /**
      * @brief Discard the log record.
      */
-    LOG_DECLINE = 0x00000000,
+    LOG_DISCARD = 0x00000000,
 
     /**
      * @brief Keep processing the log record.

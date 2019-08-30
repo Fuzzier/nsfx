@@ -200,7 +200,7 @@
  *    The log macros are acting as log sources, and the places where the macros
  *    are used are log sites.
  *
- *    For flexibility, the log macros are open for user-defined loggers.
+ *    The log macros are open for user-defined log sinks.
  *
  *    Certain information must be provided at the log site.
  *    e.g., message, severity level, function name, file name and line number.
@@ -208,10 +208,18 @@
  *    Other information can be argumented by the logger.
  *    e.g., timestamp and scope.
  *
- *    The file name and line number are not enabled by default.
- *    Users have to define \c NSFX_LOG_ENABLE_FILE_NAME macro to enable the
- *    recording of file name, and \c NSFX_LOG_ENABLE_LINE_NUMBER macro to
- *    enable line number.
+ *    By default, the log macros provide the following named values:
+ *
+ *    * `"LogMessage"`  : `const char*`
+ *    * `"LogSeverity"` : `LogSeverity`
+ *    * `"LogFunction"` : `const char*`
+ *    * `"LogFile"`     : `const char*`
+ *    * `"LogLine"`     : `uint32_t`
+ *
+ *    The function name, file name and line number are not enabled by default.
+ *    Users have to define \c NSFX_LOG_ENABLE_FUNCTION_NAME macro to enable the
+ *    recording of function name, \c NSFX_LOG_ENABLE_FILE_NAME macro to enable
+ *    file name, and \c NSFX_LOG_ENABLE_LINE_NUMBER macro to enable line number.
  *
  * ## Log on-demand
  *
@@ -352,6 +360,11 @@
  *    The \c ILogEventSinkEx provides the \c AddValue() method to add pending
  *    log values.
  *    The pending log values can be removed via \c RemoveValue().
+ *
+ *    Pending log values can be <b>high-order</b> log values.
+ *    A high-order log value is a log value that generates a log value.
+ *    If a pending log value is high-order, the logger will add the generated
+ *    log value to the log records.
  *
  * ## Log filter
  *

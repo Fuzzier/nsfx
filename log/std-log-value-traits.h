@@ -31,7 +31,7 @@ NSFX_OPEN_NAMESPACE
  * @ingroup Log
  * @brief The traits class for log message.
  */
-NSFX_DEFINE_LOG_VALUE_TRAITS(LogMessageTraits, "LogMessage", std::string);
+NSFX_DEFINE_LOG_VALUE_TRAITS(LogMessageTraits, "LogMessage", const char*);
 
 
 ////////////////////////////////////////
@@ -64,14 +64,6 @@ NSFX_DEFINE_LOG_VALUE_TRAITS(LogFileNameTraits, "LogFile", const char*);
  * @brief The traits class for log line number.
  */
 NSFX_DEFINE_LOG_VALUE_TRAITS(LogLineNumberTraits, "LogLine", uint32_t);
-
-
-////////////////////////////////////////
-/**
- * @ingroup Log
- * @brief The traits class for log scope name.
- */
-NSFX_DEFINE_LOG_VALUE_TRAITS(LogScopeTraits, "LogScope", const char*);
 
 
 NSFX_CLOSE_NAMESPACE
