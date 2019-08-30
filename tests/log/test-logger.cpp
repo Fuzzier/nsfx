@@ -94,6 +94,8 @@ NSFX_TEST_SUITE(Logger)
             // Register sources, the sources will be connected to the sink.
             c2 = middle->RegisterSource(source);
             c3 = middle->RegisterSource(source);
+            // Register even more log sources.
+            nsfx::cookie_t c4 = middle->RegisterSource(source);
 
             // Log (with terminal sink)
             NSFX_LOG(source)       << "plain";
@@ -103,13 +105,13 @@ NSFX_TEST_SUITE(Logger)
             NSFX_LOG_INFO(source)  << "info";
             NSFX_LOG_DEBUG(source) << "debug";
             NSFX_LOG_TRACE(source) << "trace";
-            NSFX_TEST_EXPECT_EQ(count, 21);
+            NSFX_TEST_EXPECT_EQ(count, 28);
             NSFX_TEST_EXPECT(!output.empty());
             output.clear();
 
             // Log (to terminal sink)
             NSFX_LOG(sink) << "plain";
-            NSFX_TEST_EXPECT_EQ(count, 22);
+            NSFX_TEST_EXPECT_EQ(count, 29);
             NSFX_TEST_EXPECT(!output.empty());
             output.clear();
 

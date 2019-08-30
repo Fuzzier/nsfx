@@ -85,7 +85,7 @@ inline cookie_t LogSourcePool::Register(Ptr<ILogEvent> source)
         if (it == items_.end())
         {
             items_.emplace_back(std::move(source), 0);
-            it = items_.end();
+            it = items_.end() - 1;
         }
         else
         {
