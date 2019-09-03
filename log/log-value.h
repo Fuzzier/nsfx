@@ -127,6 +127,8 @@ inline T LogValue::Get(void) const
     {
         BOOST_THROW_EXCEPTION(
             LogValueTypeMismatch() <<
+            LogValueTypeErrorInfo(p_->GetTypeId()) <<
+            QueriedLogValueTypeErrorInfo(boost::typeindex::type_id<T>()) <<
             ErrorMessage("Cannot access the log value, since "
                          "the requested type mismatches the value type."));
     }

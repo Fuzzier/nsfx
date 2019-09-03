@@ -24,6 +24,7 @@
 NSFX_OPEN_NAMESPACE
 
 
+////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Exception
  * @brief Access an log value with a wroing value type.
@@ -41,6 +42,13 @@ struct LogValueNotFound : Exception {};
  * @brief The named log value already exists.
  */
 struct LogValueAlreadyExists : Exception {};
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Error info.
+typedef boost::error_info<struct tag_QueriedLogValueName, std::string>                   QueriedLogValueNameErrorInfo;
+typedef boost::error_info<struct tag_QueriedLogValueType, boost::typeindex::type_index>  QueriedLogValueTypeErrorInfo;
+typedef boost::error_info<struct tag_LogValueType,        boost::typeindex::type_index>  LogValueTypeErrorInfo;
 
 
 NSFX_CLOSE_NAMESPACE

@@ -118,6 +118,7 @@ inline const LogValue& LogRecordImpl::Get(const std::string& name) const
     {
         BOOST_THROW_EXCEPTION(
             LogValueNotFound() <<
+            QueriedLogValueNameErrorInfo(name) <<
             ErrorMessage("Cannot find the log value."));
     }
 }
