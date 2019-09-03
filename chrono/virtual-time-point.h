@@ -129,6 +129,11 @@ public:
         return dt_;
     }
 
+    double ToDouble(void) const BOOST_NOEXCEPT
+    {
+        return dt_.ToDouble();
+    }
+
     static BOOST_CONSTEXPR size_t GetSize(void) BOOST_NOEXCEPT
     {
         return Duration::GetSize();

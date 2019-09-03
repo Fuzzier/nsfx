@@ -64,6 +64,7 @@ public:
         FromDuration();
         Arithmetics();
         GetDuration();
+        ToDouble();
         Hashable();
         Swappable();
         IO();
@@ -95,6 +96,12 @@ private:
         Duration dt = t.GetDuration();
     }
 
+    void ToDouble(void)
+    {
+        TimePoint t;
+        double d = t.ToDouble();
+    }
+
     void GetSize(void)
     {
         TimePoint::GetSize();
@@ -123,8 +130,9 @@ private:
 
     void Limits(void)
     {
-        TimePoint tmin = TimePoint::Min();
-        TimePoint tmax = TimePoint::Max();
+        TimePoint epoch = TimePoint::Epoch();
+        TimePoint tmin  = TimePoint::Min();
+        TimePoint tmax  = TimePoint::Max();
     }
 
 };
