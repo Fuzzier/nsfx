@@ -20,6 +20,7 @@
 #include <nsfx/simulation/config.h>
 #include <nsfx/simulation/i-event-handle.h>
 #include <nsfx/event/i-event-sink.h>
+#include <nsfx/event/event-sink.h>
 #include <nsfx/component/i-user.h>
 #include <nsfx/component/ptr.h>
 
@@ -93,7 +94,7 @@ public:
      * The events may be pending or cancelled.
      * The currently running event is not counted.
      */
-    virtual size_t GetNumEvents(void) = 0;
+    virtual uint64_t GetNumEvents(void) = 0;
 
     /**
      * @brief Get the next event in the scheduler.
@@ -151,10 +152,8 @@ inline Ptr<IEventHandle> ScheduleNow(Ptr<IScheduler> scheduler,
             InvalidPointer() <<
             ErrorMessage("The scheduler is nullptr."));
     }
-    return scheduler->ScheduleNow(
-                CreateEventSink<IEventSink<>>(nullptr, [&f] {
-                    f();
-                }));
+    return scheduler->ScheduleNow(CreateEventSink<IEventSink<>>(
+                                  nullptr, std::forward<Functor>(f)));
 }
 
 ////////////////////////////////////////
@@ -182,10 +181,8 @@ inline Ptr<IEventHandle> ScheduleAt(Ptr<IScheduler> scheduler,
             InvalidPointer() <<
             ErrorMessage("The scheduler is nullptr."));
     }
-    return scheduler->ScheduleAt(t0,
-                CreateEventSink<IEventSink<>>(nullptr, [&f] {
-                    f();
-                }));
+    return scheduler->ScheduleAt(t0, CreateEventSink<IEventSink<>>(
+                                     nullptr, std::forward<Functor>(f)));
 }
 
 ////////////////////////////////////////
@@ -213,10 +210,8 @@ inline Ptr<IEventHandle> ScheduleIn(Ptr<IScheduler> scheduler,
             InvalidPointer() <<
             ErrorMessage("The scheduler is nullptr."));
     }
-    return scheduler->ScheduleIn(dt,
-                CreateEventSink<IEventSink<>>(nullptr, [&f] {
-                    f();
-                }));
+    return scheduler->ScheduleIn(dt, CreateEventSink<IEventSink<>>(
+                                     nullptr, std::forward<Functor>(f)));
 }
 
 

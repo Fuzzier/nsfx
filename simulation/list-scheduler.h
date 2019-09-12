@@ -126,7 +126,7 @@ public:
             for (auto it = list_.begin(); it != list_.end(); ++it)
             {
                 Ptr<EventHandle>&  h = *it;
-                if (h->GetTimePoint() > t)
+                if (h->EventHandle::GetTimePoint() > t)
                 {
                     list_.insert(it, handle);
                     inserted = true;
@@ -142,45 +142,32 @@ public:
         return Ptr<IEventHandle>(handle.Detach()->GetIntf(), false);
     }
 
-    virtual size_t GetNumEvents(void) BOOST_NOEXCEPT NSFX_OVERRIDE
+    virtual uint64_t GetNumEvents(void) BOOST_NOEXCEPT NSFX_OVERRIDE
     {
         return list_.size();
     }
 
     virtual Ptr<IEventHandle> GetNextEvent(void) NSFX_OVERRIDE
     {
-        EventHandle* result = InternalGetNextEvent();
-        return result->GetIntf();
+        IEventHandle* result = nullptr;
+        if (list_.size() > 0)
+        {
+            result = list_.front().Get()->GetIntf();
+        }
+        return result;
     }
 
     virtual void FireAndRemoveNextEvent(void) NSFX_OVERRIDE
     {
-        EventHandle* result = InternalRemoveNextEvent();
-        result->Fire();
+        if (list_.size() > 0)
+        {
+            list_.front()->Fire();
+            list_.pop_front();
+            // BOOST_ASSERT(IsOrdered());
+        }
     }
 
 private:
-    EventHandle* InternalGetNextEvent(void) BOOST_NOEXCEPT
-    {
-        EventHandle* result = nullptr;
-        if (list_.size() > 0)
-        {
-            result = list_.front().Get();
-        }
-        return result;
-    }
-
-    EventHandle* InternalRemoveNextEvent(void)
-    {
-        EventHandle* result = nullptr;
-        if (list_.size() > 0)
-        {
-            result = list_.front().Get();
-            list_.pop_front();
-        }
-        return result;
-    }
-
     bool IsOrdered(void) const BOOST_NOEXCEPT
     {
         bool ordered = true;

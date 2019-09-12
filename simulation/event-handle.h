@@ -111,6 +111,50 @@ public:
         }
     }
 
+    // Comparisons./*{{{*/
+public:
+    bool operator==(const EventHandle& rhs) const BOOST_NOEXCEPT
+    {
+        return id_ == rhs.id_;
+    }
+
+    bool operator!=(const EventHandle& rhs) const BOOST_NOEXCEPT
+    {
+        return id_ != rhs.id_;
+    }
+
+    bool operator<(const EventHandle& rhs) const BOOST_NOEXCEPT
+    {
+        bool result = t_ < rhs.t_;
+        if (!result && t_ == rhs.t_)
+        {
+            result = id_ < rhs.id_;
+        }
+        return result;
+    }
+
+    bool operator<=(const EventHandle& rhs) const BOOST_NOEXCEPT
+    {
+        return !operator>(rhs);
+    }
+
+    bool operator>(const EventHandle& rhs) const BOOST_NOEXCEPT
+    {
+        bool result = t_ > rhs.t_;
+        if (!result && t_ == rhs.t_)
+        {
+            result = id_ > rhs.id_;
+        }
+        return result;
+    }
+
+    bool operator>=(const EventHandle& rhs) const BOOST_NOEXCEPT
+    {
+        return !operator<(rhs);
+    }
+
+    /*}}}*/
+
 private:
     NSFX_INTERFACE_MAP_BEGIN(EventHandle)
         NSFX_INTERFACE_ENTRY(IEventHandle)
@@ -129,47 +173,37 @@ private:
 inline bool operator==(const Ptr<EventHandle>& lhs,
                        const Ptr<EventHandle>& rhs) BOOST_NOEXCEPT
 {
-    BOOST_ASSERT(lhs && rhs);
-    return lhs->GetId() == rhs->GetId();
+    return *lhs == *rhs;
 }
 
 inline bool operator!=(const Ptr<EventHandle>& lhs,
                        const Ptr<EventHandle>& rhs) BOOST_NOEXCEPT
 {
-    return !(lhs == rhs);
+    return *lhs != *rhs;
 }
 
 inline bool operator<(const Ptr<EventHandle>& lhs,
                       const Ptr<EventHandle>& rhs) BOOST_NOEXCEPT
 {
-    BOOST_ASSERT(lhs && rhs);
-    TimePoint t0 = lhs->GetTimePoint();
-    TimePoint t1 = rhs->GetTimePoint();
-    bool result = (t0 < t1);
-    if (t0 == t1)
-    {
-        result = (lhs->GetId() < rhs->GetId());
-    }
-    return result;
+    return *lhs < *rhs;
 }
 
 inline bool operator<=(const Ptr<EventHandle>& lhs,
                        const Ptr<EventHandle>& rhs) BOOST_NOEXCEPT
 {
-    return (lhs == rhs) || (lhs < rhs);
-}
-
-inline bool operator>=(const Ptr<EventHandle>& lhs,
-                       const Ptr<EventHandle>& rhs) BOOST_NOEXCEPT
-{
-    BOOST_ASSERT(lhs && rhs);
-    return !(lhs < rhs);
+    return *lhs <= *rhs;
 }
 
 inline bool operator>(const Ptr<EventHandle>& lhs,
                       const Ptr<EventHandle>& rhs) BOOST_NOEXCEPT
 {
-    return !(lhs <= rhs);
+    return *lhs > *rhs;
+}
+
+inline bool operator>=(const Ptr<EventHandle>& lhs,
+                       const Ptr<EventHandle>& rhs) BOOST_NOEXCEPT
+{
+    return *lhs >= *rhs;
 }
 
 

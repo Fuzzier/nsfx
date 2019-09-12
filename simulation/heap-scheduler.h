@@ -5,16 +5,16 @@
  *
  * @version 1.0
  * @author  Wei Tang <gauchyler@uestc.edu.cn>
- * @date    2018-01-20
+ * @date    2019-09-12
  *
- * @copyright Copyright (c) 2018.
+ * @copyright Copyright (c) 2019.
  *   National Key Laboratory of Science and Technology on Communications,
  *   University of Electronic Science and Technology of China.
  *   All rights reserved.
  */
 
-#ifndef SET_EVENT_SCHEDULER_H__93403085_3F17_4CF9_A51E_04EA65436B49
-#define SET_EVENT_SCHEDULER_H__93403085_3F17_4CF9_A51E_04EA65436B49
+#ifndef HEAP_SCHEDULER_H__F5882B9F_C227_4B26_B5C4_22D0CC9286F3
+#define HEAP_SCHEDULER_H__F5882B9F_C227_4B26_B5C4_22D0CC9286F3
 
 
 #include <nsfx/simulation/config.h>
@@ -24,20 +24,21 @@
 #include <nsfx/component/class-registry.h>
 #include <functional>
 #include <memory>
+#include <algorithm>
 
 
 NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// SetScheduler.
+// HeapScheduler.
 /**
  * @ingroup Simulator
- * @brief An event scheduler based on set.
+ * @brief An event scheduler based on heap.
  *
  * # Uid
  * @code
- * "edu.uestc.nsfx.SetScheduler"
+ * "edu.uestc.nsfx.HeapScheduler"
  * @endcode
  *
  * # Interfaces
@@ -46,20 +47,38 @@ NSFX_OPEN_NAMESPACE
  * * Provides
  *   + \c IScheduler
  */
-class SetScheduler :
+class HeapScheduler :
     public IClockUser,
     public IScheduler
 {
 private:
-    typedef SetScheduler   ThisClass;
+    typedef HeapScheduler   ThisClass;
+
+private:
+    struct HeapLessThan
+    {
+        bool operator()(const EventHandle* lhs, const EventHandle* rhs) const BOOST_NOEXCEPT
+        {
+            // For a max-heap, put the event that happens earliest at the head.
+            // If `rhs` is to be fired earlier than `lhs`, then `rhs` shall be
+            // placed ahead of `lhs`.
+            return *rhs < *lhs;
+        }
+    };
 
 public:
-    SetScheduler(void) BOOST_NOEXCEPT :
+    HeapScheduler(void) BOOST_NOEXCEPT :
         initialized_(false),
         nextEventId_(0)
     {}
 
-    virtual ~SetScheduler(void) {}
+    virtual ~HeapScheduler(void)
+    {
+        for (auto it = events_.begin(); it != events_.end(); ++it)
+        {
+            (*it)->Release();
+        }
+    }
 
     // IClockUser /*{{{*/
 public:
@@ -114,36 +133,39 @@ public:
                 CurrentTimeErrorInfo(clock_->Now()) <<
                 ScheduledTimeErrorInfo(t));
         }
-        Ptr<EventHandle> handle(new Object<EventHandle>(
-                                    nextEventId_++, t, std::move(sink)));
-        set_.insert(handle);
+        EventHandle* handle = new Object<EventHandle>(
+                                  nextEventId_++, t, std::move(sink));
+        handle->AddRef();
+        events_.push_back(handle);
+        std::push_heap(events_.begin(), events_.end(), HeapLessThan());
         // BOOST_ASSERT(IsOrdered());
-        return Ptr<IEventHandle>(handle.Detach()->GetIntf(), false);
+        return handle->GetIntf();
     }
 
     virtual uint64_t GetNumEvents(void) BOOST_NOEXCEPT NSFX_OVERRIDE
     {
-        return set_.size();
+        return events_.size();
     }
 
     virtual Ptr<IEventHandle> GetNextEvent(void) NSFX_OVERRIDE
     {
         IEventHandle* result = nullptr;
-        if (set_.size())
+        if (events_.size())
         {
-            auto it = set_.begin();
-            result = (*it)->GetIntf();
+            result = events_.front()->GetIntf();
         }
         return result;
     }
 
     virtual void FireAndRemoveNextEvent(void) NSFX_OVERRIDE
     {
-        if (set_.size())
+        IEventHandle* result = nullptr;
+        if (events_.size())
         {
-            auto it = set_.begin();
-            (*it)->Fire();
-            set_.erase(it);
+            std::pop_heap(events_.begin(), events_.end(), HeapLessThan());
+            events_.back()->Fire();
+            events_.back()->Release();
+            events_.pop_back();
             // BOOST_ASSERT(IsOrdered());
         }
     }
@@ -153,10 +175,14 @@ private:
     {
         bool ordered = true;
         TimePoint t0;
-        for (auto it = set_.cbegin(); it != set_.cend() && ordered; ++it)
+        auto it = events_.begin();
+        if (it != events_.end())
         {
-            ordered = (t0 <= (*it)->GetTimePoint());
             t0 = (*it)->GetTimePoint();
+            for (++it; it != events_.end() && ordered; ++it)
+            {
+                ordered = (t0 <= (*it)->GetTimePoint());
+            }
         }
         return ordered;
     }
@@ -173,16 +199,16 @@ private:
     bool  initialized_;
     Ptr<IClock>  clock_;
     event_id_t   nextEventId_;
-    set<Ptr<EventHandle>>  set_;
+    vector<EventHandle*>  events_;
 
-}; // class SetScheduler
+}; // class HeapScheduler
 
 
-NSFX_REGISTER_CLASS(SetScheduler, "edu.uestc.nsfx.SetScheduler");
+NSFX_REGISTER_CLASS(HeapScheduler, "edu.uestc.nsfx.HeapScheduler");
 
 
 NSFX_CLOSE_NAMESPACE
 
 
-#endif // SET_EVENT_SCHEDULER_H__93403085_3F17_4CF9_A51E_04EA65436B49
+#endif // HEAP_SCHEDULER_H__F5882B9F_C227_4B26_B5C4_22D0CC9286F3
 

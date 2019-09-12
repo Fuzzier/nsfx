@@ -547,6 +547,7 @@ simulation :             \
     test-event-handle    \
     test-list-scheduler  \
     test-set-scheduler   \
+    test-heap-scheduler  \
     test-simulator       \
 
 SIMULATION_HEADERS=                           \
@@ -559,6 +560,7 @@ SIMULATION_HEADERS=                           \
     $(NSFX_PATH)/simulation/i-scheduler.h     \
     $(NSFX_PATH)/simulation/list-scheduler.h  \
     $(NSFX_PATH)/simulation/set-scheduler.h   \
+    $(NSFX_PATH)/simulation/heap-scheduler.h  \
     $(NSFX_PATH)/simulation/i-simulator.h     \
     $(NSFX_PATH)/simulation/simulator.h       \
 
@@ -591,6 +593,14 @@ test-set-scheduler : test-set-scheduler.exe
 SRC=simulation/test-set-scheduler.cpp
 
 test-set-scheduler.exe : $(HEADERS) $(SRC)
+    $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-heap-scheduler : test-heap-scheduler.exe
+
+SRC=simulation/test-heap-scheduler.cpp
+
+test-heap-scheduler.exe : $(HEADERS) $(SRC)
     $(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
