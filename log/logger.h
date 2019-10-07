@@ -41,13 +41,13 @@ NSFX_OPEN_NAMESPACE
  * # Interfaces
  * * Uses
  * * Provides
- *   + \c ILogPassiveConnection
+ *   + `ILogPassiveConnection`
  * * Events
- *   + \c ILoggerEvent
- *   + \c ILoggerEventSink
- *   + \c ILoggerEventSinkEx
+ *   + `ILoggerEvent`
+ *   + `ILoggerEventSink`
+ *   + `ILoggerEventSinkEx`
  *
- * @remarks At most <b>one</b> log sink can be connected to this logger.
+ * @remarks At most **one** log sink can be connected to this logger.
  *
  */
 class Logger :

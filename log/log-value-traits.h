@@ -18,34 +18,31 @@
 
 
 #include <nsfx/log/config.h>
-#include <type_traits> // true_type, false_type
 
 
-template<class T>
-class NsfxIsLogValueTraits : public ::std::false_type {};
-
-
+////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Log
- * @brief Defines a class that provides information about an attribute value.
+ * @brief Defines a class that provides information about a log value.
  *
- * The \c Class provides a static member function \c GetName() to obtain the
- * name of the attribute value.
- * It also provides a nested \c Type that is the type of the underlying value.
+ * @param Class The traits class.
+ * @param name  The name of the log value.
+ * @param type  The type of the log value.
+ *
+ * The traits class `Class` provides a static member function `GetName()` to obtain
+ * the name of the attribute value.
+ * It also provides a nested `Type` that is the type of the underlying value.
  */
-#define NSFX_DEFINE_LOG_VALUE_TRAITS(Class, name, type)   \
-    class Class                                           \
-    {                                                     \
-    public:                                               \
-        static BOOST_CONSTEXPR const char* GetName(void)  \
-        {                                                 \
-            return name;                                  \
-        }                                                 \
-        typedef type Type;                                \
-    };                                                    \
-    template<>                                            \
-    class ::NsfxIsLogValueTraits<Class> :                 \
-        public ::std::true_type {}
+#define NSFX_DEFINE_LOG_VALUE_TRAITS(Class, name, type)  \
+    class Class                                          \
+    {                                                    \
+    public:                                              \
+        static const char* GetName(void) BOOST_NOEXCEPT  \
+        {                                                \
+            return name;                                 \
+        }                                                \
+        typedef type Type;                               \
+    };                                                   \
 
 
 #endif // LOG_VALUE_TRAITS_H__2998CA64_47C5_43C8_920E_663857F623D1

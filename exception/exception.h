@@ -66,7 +66,7 @@ struct InvalidArgument : Exception {};
 
 /**
  * @ingroup Exception
- * @brief An argument (a pointer) is \c nullptr.
+ * @brief An argument (a pointer) is `nullptr`.
  */
 struct InvalidPointer : Exception {};
 

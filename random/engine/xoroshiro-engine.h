@@ -170,27 +170,28 @@ public:
                   "Incompatible scrambler type.");
 
 private:
-    template<size_t n>
+    template<size_t n_>
     struct state_size_tag {};
 
     // For n > 2.
-    template<size_t n>
-    void seed(result_type value, state_size_tag<n>)
+    template<size_t n_>
+    void seed(result_type value, state_size_tag<n_>)
     {
         seed(value, state_size_tag<2>());
-        p_ = n - 1;
+        this->p_ = n_ - 1;
     }
 
-    template<size_t n>
-    void transform(state_size_tag<n>)
+    template<size_t n_>
+    void transform(state_size_tag<n_>)
     {
-        size_t q = p_;
-        p_ = (p_ + 1) & (n - 1); // n must be 2^k, where k >= 1.
-        const UIntType s0 = s_[p_];
-              UIntType s1 = s_[q];
+        size_t p = this->p_;
+        size_t q = p;
+        p = (p + 1) & (n_ - 1); // n_ must be 2^k, where k >= 1.
+        const UIntType s0 = this->s_[p];
+              UIntType s1 = this->s_[q];
         s1 ^= s0;
-        s_[q]  = random::aux::rotl(s0, a) ^ s1 ^ (s1 << b);
-        s_[p_] = random::aux::rotl(s1, c);
+        this->s_[q] = random::aux::rotl(s0, a) ^ s1 ^ (s1 << b);
+        this->s_[p] = random::aux::rotl(s1, c);
     }
 
     // For n == 2.
@@ -199,17 +200,17 @@ private:
         splitmix64 gen(value);
         for (size_t i = 0; i < n; ++i)
         {
-            s_[i] = static_cast<UIntType>(gen());
+            this->s_[i] = static_cast<UIntType>(gen());
         }
     }
 
     void transform(state_size_tag<2>)
     {
-        const UIntType s0 = s_[0];
-              UIntType s1 = s_[1];
+        const UIntType s0 = this->s_[0];
+              UIntType s1 = this->s_[1];
         s1 ^= s0;
-        s_[0] = random::aux::rotl(s0, a) ^ s1 ^ (s1 << b);
-        s_[1] = random::aux::rotl(s1, c);
+        this->s_[0] = random::aux::rotl(s0, a) ^ s1 ^ (s1 << b);
+        this->s_[1] = random::aux::rotl(s1, c);
     }
 
 public:
@@ -266,11 +267,11 @@ public:
  * Ported from the code written by David Blackman and Sebastiano Vigna in 2016.
  * See http://xoshiro.di.unimi.it/xoroshiro64star.c
  *
- * This is \c xoroshiro64* 1.0, the authors' best and fastest 32-bit
+ * This is `xoroshiro64*` 1.0, the authors' best and fastest 32-bit
  * small-state generator for 32-bit floating-point numbers.
  *
  * The authors suggest to use its upper bits for floating-point generation,
- * as it is slightly faster than \c xoroshiro64**.
+ * as it is slightly faster than `xoroshiro64**`.
  * It passes all tests the authors are aware of except for linearity tests,
  * as the lowest six bits have low linear complexity, so if low linear
  * complexity is not considered an issue (as it is usually the case), it can
@@ -279,7 +280,7 @@ public:
  * The authors suggest to use a sign test to extract a random Boolean value,
  * and right shifts to extract subsets of bits.
  *
- * A \c splitmix64 generator is seeded, and its output is used to fill the state.
+ * A `splitmix64` generator is seeded, and its output is used to fill the state.
  */
 typedef xoroshiro_engine<uint32_t, 2, 26, 9, 13,
         random::aux::xoroshiro_star_scrambler<uint32_t, 2, 0, 0x9e3779bb>>
@@ -295,15 +296,15 @@ typedef xoroshiro_engine<uint32_t, 2, 26, 9, 13,
  * Ported from the code written by David Blackman and Sebastiano Vigna in 2018.
  * See http://xoshiro.di.unimi.it/xoroshiro64starstar.c
  *
- * This is \c xoroshiro64** 1.0, the authors' 32-bit all-purpose, rock-solid,
+ * This is `xoroshiro64**` 1.0, the authors' 32-bit all-purpose, rock-solid,
  * small-state generator.
  * It is extremely fast and it passes all tests the authors are aware of, but
  * its state space is not large enough for any parallel application.
  *
  * For generating just single-precision (i.e., 32-bit) floating-point
- * numbers, \c xoroshiro64* is even faster.
+ * numbers, `xoroshiro64*` is even faster.
  *
- * A \c splitmix64 generator is seeded, and its output is used to fill the state.
+ * A `splitmix64` generator is seeded, and its output is used to fill the state.
  */
 typedef xoroshiro_engine<uint32_t, 2, 26, 9, 13,
         random::aux::xoroshiro_starstar_scrambler<uint32_t, 2, 0, 0x9e3779bb, 5, 5>>
@@ -319,10 +320,10 @@ typedef xoroshiro_engine<uint32_t, 2, 26, 9, 13,
  * Ported from the code written by David Blackman and Sebastiano Vigna in 2018.
  * See http://xoshiro.di.unimi.it/xoroshiro128plus.c
  *
- * This is \c xoroshiro128+ 1.0, the authors' best and fastest small-state
+ * This is `xoroshiro128+` 1.0, the authors' best and fastest small-state
  * generator for floating-point numbers.
  * The authors suggest to use its upper bits for floating-point generation,
- * as it is slightly faster than \c xoroshiro128**.
+ * as it is slightly faster than `xoroshiro128**`.
  * It passes all tests the authors are aware of except for the four lower bits,
  * which might fail linearity tests (and just those), so if low linear
  * complexity is not considered an issue (as it is usually the case), it can
@@ -330,12 +331,12 @@ typedef xoroshiro_engine<uint32_t, 2, 26, 9, 13,
  * very mild Hamming-weight dependency making our test
  * (http://prng.di.unimi.it/hwd.php) fail after 8 TB of output; the authors
  * believe this slight bias cannot affect any application.
- * If the users are concerned, use \c xoroshiro128** or \c xoshiro256+.
+ * If the users are concerned, use `xoroshiro128**` or `xoshiro256+`.
  *
  * The authors suggest to use a sign test to extract a random Boolean value,
  * and right shifts to extract subsets of bits.
  *
- * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * The authors suggest to seed a `splitmix64` generator and use its output to
  * fill the state.
  */
 typedef xoroshiro_engine<uint64_t, 2, 24, 16, 37,
@@ -352,15 +353,15 @@ typedef xoroshiro_engine<uint64_t, 2, 24, 16, 37,
  * Ported from the code written by David Blackman and Sebastiano Vigna in 2018.
  * See http://xoshiro.di.unimi.it/xoroshiro128starstar.c
  *
- * This is \c xoroshiro128** 1.0, the authors' all-purpose, rock-solid,
+ * This is `xoroshiro128**` 1.0, the authors' all-purpose, rock-solid,
  * small-state generator.
  * It is extremely (sub-ns) fast and it passes all tests the authors are
  * aware of, but its state space is large enough only for mild parallelism.
  *
- * For generating just floating-point numbers, \c xoroshiro128+ is even
+ * For generating just floating-point numbers, `xoroshiro128+` is even
  * faster (but it has a very mild bias, see the comments).
  *
- * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * The authors suggest to seed a `splitmix64` generator and use its output to
  * fill the state.
  */
 typedef xoroshiro_engine<uint64_t, 2, 24, 16, 37,
@@ -374,7 +375,7 @@ typedef xoroshiro_engine<uint64_t, 2, 24, 16, 37,
  * It is discovered by David Blackman and Sebastiano Vigna in 2018.
  * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
  *
- * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * The authors suggest to seed a `splitmix64` generator and use its output to
  * fill the state.
  */
 typedef xoroshiro_engine<uint64_t, 16, 25, 27, 36,
@@ -388,7 +389,7 @@ typedef xoroshiro_engine<uint64_t, 16, 25, 27, 36,
  * It is discovered by David Blackman and Sebastiano Vigna in 2018.
  * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
  *
- * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * The authors suggest to seed a `splitmix64` generator and use its output to
  * fill the state.
  */
 typedef xoroshiro_engine<uint64_t, 16, 25, 27, 36,
@@ -402,7 +403,7 @@ typedef xoroshiro_engine<uint64_t, 16, 25, 27, 36,
  * It is discovered by David Blackman and Sebastiano Vigna in 2018.
  * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
  *
- * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * The authors suggest to seed a `splitmix64` generator and use its output to
  * fill the state.
  */
 typedef xoroshiro_engine<uint64_t, 16, 25, 27, 36,
@@ -453,21 +454,21 @@ public:
     }
 
 private:
-    template<class RealType, class UIntType>
+    template<class RealType1, class UIntType1>
     struct uint_to_real
     {
-        static RealType convert(uint32_t n)
+        static RealType1 convert(uint32_t m)
         {
-            return (n >> 8) * (1.0f / 16777216.0f); // 2^-24
+            return (m >> 8) * (1.0f / 16777216.0f); // 2^-24
         }
     };
 
-    template<class RealType>
-    struct uint_to_real<RealType, uint64_t>
+    template<class RealType1>
+    struct uint_to_real<RealType1, uint64_t>
     {
-        static RealType convert(uint64_t n)
+        static RealType1 convert(uint64_t m)
         {
-            return (n >> 11) * (1.0 / 9007199254740992.0); // 2^-53
+            return (m >> 11) * (1.0 / 9007199254740992.0); // 2^-53
         }
     };
 
@@ -505,11 +506,11 @@ private:
  * It is discovered by David Blackman and Sebastiano Vigna in 2018.
  * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
  *
- * This is \c xoroshiro64* 1.0, the authors' best and fastest 32-bit
+ * This is `xoroshiro64*` 1.0, the authors' best and fastest 32-bit
  * small-state generator for 32-bit floating-point numbers.
  *
  * The authors suggest to use its upper bits for floating-point generation,
- * as it is slightly faster than \c xoroshiro64**.
+ * as it is slightly faster than `xoroshiro64**`.
  * It passes all tests the authors are aware of except for linearity tests,
  * as the lowest six bits have low linear complexity, so if low linear
  * complexity is not considered an issue (as it is usually the case), it can
@@ -518,7 +519,7 @@ private:
  * The authors suggest to use a sign test to extract a random Boolean value,
  * and right shifts to extract subsets of bits.
  *
- * A \c splitmix64 generator is seeded, and its output is used to fill the state.
+ * A `splitmix64` generator is seeded, and its output is used to fill the state.
  */
 typedef xoroshiro_01_engine<float, uint32_t, 2, 26, 9, 13,
         random::aux::xoroshiro_star_scrambler<uint32_t, 2, 0, 0x9e3779bb>>
@@ -531,15 +532,15 @@ typedef xoroshiro_01_engine<float, uint32_t, 2, 26, 9, 13,
  * It is discovered by David Blackman and Sebastiano Vigna in 2018.
  * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
  *
- * This is \c xoroshiro64** 1.0, the authors' 32-bit all-purpose, rock-solid,
+ * This is `xoroshiro64**` 1.0, the authors' 32-bit all-purpose, rock-solid,
  * small-state generator.
  * It is extremely fast and it passes all tests the authors are aware of, but
  * its state space is not large enough for any parallel application.
  *
  * For generating just single-precision (i.e., 32-bit) floating-point
- * numbers, \c xoroshiro64* is even faster.
+ * numbers, `xoroshiro64*` is even faster.
  *
- * A \c splitmix64 generator is seeded, and its output is used to fill the state.
+ * A `splitmix64` generator is seeded, and its output is used to fill the state.
  */
 typedef xoroshiro_01_engine<float, uint32_t, 2, 26, 9, 13,
         random::aux::xoroshiro_starstar_scrambler<uint32_t, 2, 0, 0x9e3779bb, 5, 5>>
@@ -552,10 +553,10 @@ typedef xoroshiro_01_engine<float, uint32_t, 2, 26, 9, 13,
  * It is discovered by David Blackman and Sebastiano Vigna in 2018.
  * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
  *
- * This is \c xoroshiro128+ 1.0, the authors' best and fastest small-state
+ * This is `xoroshiro128+` 1.0, the authors' best and fastest small-state
  * generator for floating-point numbers.
  * The authors suggest to use its upper bits for floating-point generation,
- * as it is slightly faster than \c xoroshiro128**.
+ * as it is slightly faster than `xoroshiro128**`.
  * It passes all tests the authors are aware of except for the four lower bits,
  * which might fail linearity tests (and just those), so if low linear
  * complexity is not considered an issue (as it is usually the case), it can
@@ -563,12 +564,12 @@ typedef xoroshiro_01_engine<float, uint32_t, 2, 26, 9, 13,
  * very mild Hamming-weight dependency making our test
  * (http://prng.di.unimi.it/hwd.php) fail after 8 TB of output; the authors
  * believe this slight bias cannot affect any application.
- * If the users are concerned, use \c xoroshiro128** or \c xoshiro256+.
+ * If the users are concerned, use `xoroshiro128**` or `xoshiro256+`.
  *
  * The authors suggest to use a sign test to extract a random Boolean value,
  * and right shifts to extract subsets of bits.
  *
- * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * The authors suggest to seed a `splitmix64` generator and use its output to
  * fill the state.
  */
 typedef xoroshiro_01_engine<double, uint64_t, 2, 24, 16, 37,
@@ -582,15 +583,15 @@ typedef xoroshiro_01_engine<double, uint64_t, 2, 24, 16, 37,
  * It is discovered by David Blackman and Sebastiano Vigna in 2018.
  * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
  *
- * This is \c xoroshiro128** 1.0, the authors' all-purpose, rock-solid,
+ * This is `xoroshiro128**` 1.0, the authors' all-purpose, rock-solid,
  * small-state generator.
  * It is extremely (sub-ns) fast and it passes all tests the authors are
  * aware of, but its state space is large enough only for mild parallelism.
  *
- * For generating just floating-point numbers, \c xoroshiro128+ is even
+ * For generating just floating-point numbers, `xoroshiro128+` is even
  * faster (but it has a very mild bias, see the comments).
  *
- * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * The authors suggest to seed a `splitmix64` generator and use its output to
  * fill the state.
  */
 typedef xoroshiro_01_engine<double, uint64_t, 2, 24, 16, 37,
@@ -604,7 +605,7 @@ typedef xoroshiro_01_engine<double, uint64_t, 2, 24, 16, 37,
  * It is discovered by David Blackman and Sebastiano Vigna in 2018.
  * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
  *
- * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * The authors suggest to seed a `splitmix64` generator and use its output to
  * fill the state.
  */
 typedef xoroshiro_01_engine<double, uint64_t, 16, 25, 27, 36,
@@ -618,7 +619,7 @@ typedef xoroshiro_01_engine<double, uint64_t, 16, 25, 27, 36,
  * It is discovered by David Blackman and Sebastiano Vigna in 2018.
  * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
  *
- * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * The authors suggest to seed a `splitmix64` generator and use its output to
  * fill the state.
  */
 typedef xoroshiro_01_engine<double, uint64_t, 16, 25, 27, 36,
@@ -632,7 +633,7 @@ typedef xoroshiro_01_engine<double, uint64_t, 16, 25, 27, 36,
  * It is discovered by David Blackman and Sebastiano Vigna in 2018.
  * See http://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf
  *
- * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * The authors suggest to seed a `splitmix64` generator and use its output to
  * fill the state.
  */
 typedef xoroshiro_01_engine<double, uint64_t, 16, 25, 27, 36,

@@ -33,7 +33,7 @@ NSFX_OPEN_NAMESPACE
  * @param IXxxUser The name of the user interface.
  * @param IXxx     The name of the used interface.
  *
- * A <i>'User'</i> interface has a single method \c Use(Ptr<IXxx>).
+ * A *User* interface has a single method `Use(Ptr<IXxx>)`.
  *
  * For example,
  *
@@ -43,14 +43,14 @@ NSFX_OPEN_NAMESPACE
  *
  */
 #define NSFX_DEFINE_USER_INTERFACE(IXxxUser, iid, IXxx)  \
-    NSFX_DEFINE_CLASS_UID(class IXxxUser, iid);          \
     class IXxxUser :                                     \
         virtual public ::nsfx::IObject                   \
     {                                                    \
     public:                                              \
         virtual ~IXxxUser(void) BOOST_NOEXCEPT {}        \
         virtual void Use(Ptr<IXxx> x) = 0;               \
-    }
+    };                                                   \
+    NSFX_DEFINE_CLASS_UID(IXxxUser, iid)
 
 
 NSFX_CLOSE_NAMESPACE

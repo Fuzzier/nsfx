@@ -70,8 +70,8 @@ public:
  * @brief Portainer item visitor concept.
  *
  * @tparam Visitor The type of a callable object.
- *                 The prototype is <code>void(const T&)</code>.
- * @tparam T       The type of items stored in the \c Portainer.
+ *                 The prototype is `void(const T&)`.
+ * @tparam T       The type of items stored in the `Portainer`.
  */
 template<class Visitor, class T>
 class PortainableItemVisitorConcept
@@ -111,9 +111,9 @@ public:
  * the cookie value.
  *
  * @tparam T        The type of stored items.
- *                  It <b>must</b> satisfy \c PortainableItemConcept.
- *                  The default value of \c T <b>must</b> be \c false, and
- *                  <b>must</b> hold no resources.
+ *                  It **must** satisfy `PortainableItemConcept`.
+ *                  The default value of `T` **must** be `false`, and **must** hold
+ *                  no resources.
  *                  e.g., a smart pointer.
  * @tparam capacity The capacity of the container.
  */
@@ -240,7 +240,7 @@ public:
      * @brief Visit the connections in an arbitrary order.
      *
      * @tparam Visitor A callable object that has a prototype of
-     *                 <code>void Visitor(const T&)</code>.
+     *                 `void Visitor(const T&)`.
      */
     template<class Visitor>
     void Visit(Visitor&& visitor) const
@@ -331,7 +331,7 @@ public:
      * @brief Visit the connections in an arbitrary order.
      *
      * @tparam Visitor A callable object that has a prototype of
-     *                 <code>void Visitor(const T&)</code>.
+     *                 `void Visitor(const T&)`.
      */
     template<class Visitor>
     void Visit(Visitor&& visitor) const

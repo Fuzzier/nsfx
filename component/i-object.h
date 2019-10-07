@@ -46,7 +46,7 @@ typedef boost::error_info<struct tag_InterfaceUid,         Uid>          Interfa
  * @ingroup Component
  * @brief The base interface of all components.
  *
- * @remarks Every interface should <b>virtual</b> inherit from it.
+ * @remarks Every interface **shall** *virtual* inherit from it.
  */
 class IObject /*{{{*/
 {
@@ -64,11 +64,11 @@ public:
      *
      * @return A pointer to the interface that holds one reference count.
      *         Users is responsible to release the reference count.
-     *         Users must use \c static_cast to convert it to a pointer of the
+     *         Users must use `static_cast` to convert it to a pointer of the
      *         actual interface type.
      *         Users must make sure the interface type is correct.
-     *         As a design pattern, the \c iid of an interface \c IXxx is
-     *         equal to the return value of <code>uid_of<IXxx>()</code>.
+     *         As a design pattern, the `iid` of an interface `IXxx` is
+     *         equal to the return value of `uid_of<IXxx>()`.
      *
      * @throw NoInterface The queried interface is not supported.
      */
@@ -86,7 +86,7 @@ NSFX_DEFINE_CLASS_UID(IObject, "edu.uestc.nsfx.IObject");
  * @ingroup Component
  * @brief IObject concept.
  *
- * @tparam T A type that is, extends or implements \c IObject.
+ * @tparam T A type that is, extends or implements `IObject`.
  */
 template<class T>
 class IObjectConcept/*{{{*/
@@ -121,7 +121,7 @@ public:
  *
  * @tparam T A class that is associated with a UID.
  *
- * @see \c NSFX_DEFINE_CLASS_UID.
+ * @see `NSFX_DEFINE_CLASS_UID`.
  */
 template<class T>
 class HasUidConcept/*{{{*/

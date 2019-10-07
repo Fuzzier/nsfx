@@ -21,6 +21,7 @@
 #include <nsfx/log/log-value.h>
 #include <nsfx/log/log-value-traits.h>
 #include <nsfx/log/exception.h>
+#include <boost/concept_check.hpp>
 #include <boost/type_index.hpp>
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
@@ -50,13 +51,20 @@ private:
 private:
     /**
      * @brief Add a named value.
+     *
+     * @param[in] name  The name of the value.
+     * @param[in] value The log value.
+     *
      * @return If there's already a value with the same name,
-     *         this function returns \c false.
+     *         this function returns `false`.
      */
     bool Add(const std::string& name, LogValue value);
 
     /**
      * @brief Add or replace a named value.
+     *
+     * @param[in] name  The name of the value.
+     * @param[in] value The log value.
      *
      * If named value exists, the value is replaced.
      */
@@ -155,7 +163,7 @@ public:
     /**
      * @brief Add a named value.
      * @return If there's already a value with the same name,
-     *         this function returns \c false.
+     *         this function returns `false`.
      */
     bool Add(const std::string& name, LogValue value);
 
@@ -201,7 +209,7 @@ public:
      * @brief Get the named value via an info class.
      *
      * @tparam LogValueTraits A traits class that is defined by
-     *                        \c NSFX_DEFINE_LOG_VALUE_TRAITS().
+     *                        `NSFX_DEFINE_LOG_VALUE_TRAITS()`.
      */
     template<class LogValueTraits>
     bool Exists(void) const;
@@ -210,7 +218,7 @@ public:
      * @brief Get the named value via an info class.
      *
      * @tparam LogValueTraits A traits class that is defined by
-     *                        \c NSFX_DEFINE_LOG_VALUE_TRAITS().
+     *                        `NSFX_DEFINE_LOG_VALUE_TRAITS()`.
      */
     template<class LogValueTraits>
     typename LogValueTraits::Type Get(void) const;
@@ -238,9 +246,9 @@ public:
     /**
      * @brief Visit a log value.
      *
-     * @tparam Visitor It must conforms to \c LogValueVisitorConcept.
+     * @tparam Visitor It must conforms to `LogValueVisitorConcept`.
      *                 i.e., it is a functor class that has the prototype of
-     *                 <code>void(const LogValue& value)</code>.
+     *                 `void(const LogValue& value)`.
      */
     template<class Visitor>
     void VisitIfExists(const std::string& name, Visitor&& visitor) const;
@@ -323,17 +331,17 @@ LogRecord::GetTypeId(const std::string& name) const
 template<class LogValueTraits>
 inline bool LogRecord::Exists(void) const
 {
-    static_assert(NsfxIsLogValueTraits<LogValueTraits>::value,
-                  "Invalid LogValueTraits class.");
+    // static_assert(NsfxIsLogValueTraits<LogValueTraits>::value,
+    //               "Invalid LogValueTraits class.");
     return impl_->Exists(LogValueTraits::GetName());
 }
 
 template<class LogValueTraits>
 inline typename LogValueTraits::Type LogRecord::Get(void) const
 {
-    static_assert(NsfxIsLogValueTraits<LogValueTraits>::value,
-                  "Invalid LogValueTraits class.");
-    return Get<LogValueTraits::Type>(LogValueTraits::GetName());
+    // static_assert(NsfxIsLogValueTraits<LogValueTraits>::value,
+    //               "Invalid LogValueTraits class.");
+    return Get<typename LogValueTraits::Type>(LogValueTraits::GetName());
 }
 
 template<class Visitor>

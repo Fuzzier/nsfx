@@ -31,21 +31,21 @@ template<class T, bool zcAware>
 typename std::enable_if<std::is_arithmetic<T>::value, void>::type
 Write(BasicBufferIterator</*readOnly*/false, zcAware>& it, T v)
 {
-    it.Write<T>(v);
+    it.template Write<T>(v);
 }
 
 template<class T, bool zcAware>
 typename std::enable_if<std::is_arithmetic<T>::value, void>::type
 WriteL(BasicBufferIterator</*readOnly*/false, zcAware>& it, T v)
 {
-    it.WriteL<T>(v);
+    it.template WriteL<T>(v);
 }
 
 template<class T, bool zcAware>
 typename std::enable_if<std::is_arithmetic<T>::value, void>::type
 WriteB(BasicBufferIterator</*readOnly*/false, zcAware>& it, T v)
 {
-    it.WriteB<T>(v);
+    it.template WriteB<T>(v);
 }
 
 ////////////////////////////////////////
@@ -54,7 +54,7 @@ typename std::enable_if<std::is_arithmetic<T>::value, void>::type
 Read(BasicBufferIterator<readOnly, zcAware>& it, T* v)
 {
     BOOST_ASSERT(v);
-    *v = it.Read<T>();
+    *v = it.template Read<T>();
 }
 
 template<class T, bool readOnly, bool zcAware>
@@ -62,7 +62,7 @@ typename std::enable_if<std::is_arithmetic<T>::value, void>::type
 ReadL(BasicBufferIterator<readOnly, zcAware>& it, T* v)
 {
     BOOST_ASSERT(v);
-    *v = it.ReadL<T>();
+    *v = it.template ReadL<T>();
 }
 
 template<class T, bool readOnly, bool zcAware>
@@ -70,7 +70,7 @@ typename std::enable_if<std::is_arithmetic<T>::value, void>::type
 ReadB(BasicBufferIterator<readOnly, zcAware>& it, T* v)
 {
     BOOST_ASSERT(v);
-    *v = it.ReadB<T>();
+    *v = it.template ReadB<T>();
 }
 
 

@@ -237,21 +237,21 @@ NSFX_CLOSE_NAMESPACE
 /**
  * @brief The assert statement.
  *
- * ## About \c assert().
- * ### Goodness.
- *     \c assert() costs nothing in a release code that defines \c NDEBUG macro.
+ * # About `assert()`.
+ * ## Goodness.
+ *     `assert()` costs nothing in a release code that defines `NDEBUG` macro.
  *
- * ### Badness.
- *     \c assert() terminates the program with little information.
+ * ## Badness.
+ *     `assert()` terminates the program with little information.
  *
- * ## When to use \c assert()?
- * ### 1. Functions with \c noexcept.
- *     If a function is specified as \c noexcept, then use \c assert() as the
+ * # When to use `assert()`?
+ * ## 1. Functions with `noexcept`.
+ *     If a function is specified as `noexcept`, then use `assert()` as the
  *     last resort.
  *
- * ### 2. Singleton failure.
- *     If a user retrieves a pointer to a singleton, use \c assert() to check
- *     the returned pointer is not \c nullptr.
+ * ## 2. Singleton failure.
+ *     If a user retrieves a pointer to a singleton, use `assert()` to check
+ *     the returned pointer is not `nullptr`.
  *     Usually, the program is beyond redemption in such condition.
  *
  */

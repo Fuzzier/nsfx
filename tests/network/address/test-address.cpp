@@ -28,10 +28,10 @@ NSFX_TEST_SUITE(Address)
         {
             NSFX_TEST_CASE(0)
             {
-                NSFX_TEST_EXPECT_EQ(Address::NUM_BITS,  28);
+                NSFX_TEST_EXPECT_EQ((size_t)(Address::NUM_BITS),  28);
                 NSFX_TEST_EXPECT_EQ(Address::GetBitSize(), 28);
 
-                NSFX_TEST_EXPECT_EQ(Address::NUM_BYTES, 4);
+                NSFX_TEST_EXPECT_EQ((size_t)(Address::NUM_BYTES), 4);
                 NSFX_TEST_EXPECT_EQ(Address::GetSize(), 4);
 
                 NSFX_TEST_EXPECT_EQ(Address::Zero(), Address());
@@ -264,12 +264,12 @@ NSFX_TEST_SUITE(Address)
 
                 // uint32_t pack, longer than addr
                 {
-                    Address a(0x12345678UL, 0x9abcdef1UL, nsfx::big_endian);
+                    Address a(0x12345678, 0x9abcdef1, nsfx::big_endian);
                     NSFX_TEST_EXPECT_EQ(a.ToString(), "0abcdef1");
                 }
 
                 {
-                    Address a(0x12345678UL, 0x9abcdef1UL, nsfx::little_endian);
+                    Address a(0x12345678, 0x9abcdef1, nsfx::little_endian);
                     NSFX_TEST_EXPECT_EQ(a.ToString(), "02345678");
                 }
 
@@ -347,8 +347,8 @@ NSFX_TEST_SUITE(Address)
 
         NSFX_TEST_CASE(Comparison)
         {
-            Address a(0x02345678UL);
-            Address b(0x09abcdefUL);
+            Address a(0x02345678);
+            Address b(0x09abcdef);
 
             NSFX_TEST_EXPECT(a == a);
             NSFX_TEST_EXPECT(!(a != a));
@@ -370,9 +370,9 @@ NSFX_TEST_SUITE(Address)
             // ++
             NSFX_TEST_CASE(Increment)
             {
-                Address a(0x0ffffffeUL);
-                Address b(0x0fffffffUL);
-                Address c(0x00000000UL);
+                Address a(0x0ffffffe);
+                Address b(0x0fffffff);
+                Address c(0x00000000);
                 NSFX_TEST_EXPECT_EQ(++a, b);
                 NSFX_TEST_EXPECT_EQ(a++, b);
                 NSFX_TEST_EXPECT_EQ(a, c);
@@ -381,9 +381,9 @@ NSFX_TEST_SUITE(Address)
             // --
             NSFX_TEST_CASE(Decrement)
             {
-                Address a(0x00000000UL);
-                Address b(0x0fffffffUL);
-                Address c(0x0ffffffeUL);
+                Address a(0x00000000);
+                Address b(0x0fffffff);
+                Address c(0x0ffffffe);
                 NSFX_TEST_EXPECT_EQ(--a, b);
                 NSFX_TEST_EXPECT_EQ(a--, b);
                 NSFX_TEST_EXPECT_EQ(a, c);
@@ -392,45 +392,45 @@ NSFX_TEST_SUITE(Address)
             // +
             NSFX_TEST_CASE(Mirror)
             {
-                Address a(0x0ffffff0UL);
+                Address a(0x0ffffff0);
                 NSFX_TEST_EXPECT_EQ(+a, a);
             }
 
             // -
             NSFX_TEST_CASE(Negate)
             {
-                Address a(0x0ffffff0UL);
-                NSFX_TEST_EXPECT_EQ(-a, Address(0x00000010UL));
+                Address a(0x0ffffff0);
+                NSFX_TEST_EXPECT_EQ(-a, Address(0x00000010));
             }
 
             // +
             NSFX_TEST_CASE(Plus)
             {
-                Address a              (0x0ffffff0UL);
-                NSFX_TEST_EXPECT_EQ(a + 0x1000000f, Address(0x0fffffffUL));
-                NSFX_TEST_EXPECT_EQ(a + 0x100000ff, Address(0x000000efUL));
-                NSFX_TEST_EXPECT_EQ(0x100000ff + a, Address(0x000000efUL));
-                NSFX_TEST_EXPECT_EQ(a +=0x100000ff, Address(0x000000efUL));
+                Address a              (0x0ffffff0);
+                NSFX_TEST_EXPECT_EQ(a + 0x1000000f, Address(0x0fffffff));
+                NSFX_TEST_EXPECT_EQ(a + 0x100000ff, Address(0x000000ef));
+                NSFX_TEST_EXPECT_EQ(0x100000ff + a, Address(0x000000ef));
+                NSFX_TEST_EXPECT_EQ(a +=0x100000ff, Address(0x000000ef));
             }
 
             // -
             NSFX_TEST_CASE(Minus)
             {
-                Address a              (0x000000ffUL);
-                NSFX_TEST_EXPECT_EQ(a - 0x1000000f, Address(0x000000f0UL));
-                NSFX_TEST_EXPECT_EQ(a - 0x10000ff0, Address(0x0ffff10fUL));
-                NSFX_TEST_EXPECT_EQ(a -=0x10000ff0, Address(0x0ffff10fUL));
+                Address a              (0x000000ff);
+                NSFX_TEST_EXPECT_EQ(a - 0x1000000f, Address(0x000000f0));
+                NSFX_TEST_EXPECT_EQ(a - 0x10000ff0, Address(0x0ffff10f));
+                NSFX_TEST_EXPECT_EQ(a -=0x10000ff0, Address(0x0ffff10f));
             }
 
             // -
             NSFX_TEST_CASE(Difference)
             {
                 // 0
-                Address a(0x08ffffffUL);
+                Address a(0x08ffffff);
                 NSFX_TEST_EXPECT_EQ(a - a, 0);
 
                 // +
-                Address b(0x0000000fUL);
+                Address b(0x0000000f);
                 NSFX_TEST_EXPECT_EQ(a - b, 0x0000000008fffff0LL);
 
                 // -
@@ -440,78 +440,78 @@ NSFX_TEST_SUITE(Address)
             // *
             NSFX_TEST_CASE(Multiply)
             {
-                Address a(0x00ffffffUL);
+                Address a(0x00ffffff);
                 NSFX_TEST_EXPECT_EQ(a * 0, Address(0));
-                NSFX_TEST_EXPECT_EQ(a * 1, Address(0x00ffffffUL));
-                NSFX_TEST_EXPECT_EQ(a * 2, Address(0x01fffffeUL));
-                NSFX_TEST_EXPECT_EQ(a * 0xff, Address(0x0effff01UL));
-                NSFX_TEST_EXPECT_EQ(0xff * a, Address(0x0effff01UL));
-                NSFX_TEST_EXPECT_EQ(a *=0xff, Address(0x0effff01UL));
+                NSFX_TEST_EXPECT_EQ(a * 1, Address(0x00ffffff));
+                NSFX_TEST_EXPECT_EQ(a * 2, Address(0x01fffffe));
+                NSFX_TEST_EXPECT_EQ(a * 0xff, Address(0x0effff01));
+                NSFX_TEST_EXPECT_EQ(0xff * a, Address(0x0effff01));
+                NSFX_TEST_EXPECT_EQ(a *=0xff, Address(0x0effff01));
             }
 
             // ~
             NSFX_TEST_CASE(Not)
             {
-                Address a(0x00ffffffUL);
-                NSFX_TEST_EXPECT_EQ(~a, Address(0x0f000000UL));
+                Address a(0x00ffffff);
+                NSFX_TEST_EXPECT_EQ(~a, Address(0x0f000000));
             }
 
             // &
             NSFX_TEST_CASE(And)
             {
-                Address a(0x01234567UL);
-                Address b(0x0000ffffUL);
-                NSFX_TEST_EXPECT_EQ(a & b, Address(0x00004567UL));
-                NSFX_TEST_EXPECT_EQ(a &=b, Address(0x00004567UL));
+                Address a(0x01234567);
+                Address b(0x0000ffff);
+                NSFX_TEST_EXPECT_EQ(a & b, Address(0x00004567));
+                NSFX_TEST_EXPECT_EQ(a &=b, Address(0x00004567));
             }
 
             // |
             NSFX_TEST_CASE(Or)
             {
-                Address a(0x01230000UL);
-                Address b(0x00004567UL);
-                NSFX_TEST_EXPECT_EQ(a | b, Address(0x01234567UL));
-                NSFX_TEST_EXPECT_EQ(a |=b, Address(0x01234567UL));
+                Address a(0x01230000);
+                Address b(0x00004567);
+                NSFX_TEST_EXPECT_EQ(a | b, Address(0x01234567));
+                NSFX_TEST_EXPECT_EQ(a |=b, Address(0x01234567));
             }
 
             // ^
             NSFX_TEST_CASE(Xor)
             {
-                Address a(0x01234567UL);
-                Address b(0x0000ffffUL);
-                NSFX_TEST_EXPECT_EQ(a ^ b, Address(0x0123ba98UL));
-                NSFX_TEST_EXPECT_EQ(a ^=b, Address(0x0123ba98UL));
+                Address a(0x01234567);
+                Address b(0x0000ffff);
+                NSFX_TEST_EXPECT_EQ(a ^ b, Address(0x0123ba98));
+                NSFX_TEST_EXPECT_EQ(a ^=b, Address(0x0123ba98));
             }
 
             // <<
             NSFX_TEST_CASE(LeftShift)
             {
-                Address a(0x00ffffffUL);
+                Address a(0x00ffffff);
                 NSFX_TEST_EXPECT_EQ(a << 0, a);
                 NSFX_TEST_EXPECT_EQ(a << 28,  Address(0));
                 NSFX_TEST_EXPECT_EQ(a << 900, Address(0));
-                NSFX_TEST_EXPECT_EQ(a << 1,   Address(0x01fffffeUL));
-                NSFX_TEST_EXPECT_EQ(a << 15,  Address(0x0fff8000UL));
-                NSFX_TEST_EXPECT_EQ(a <<=15,  Address(0x0fff8000UL));
+                NSFX_TEST_EXPECT_EQ(a << 1,   Address(0x01fffffe));
+                NSFX_TEST_EXPECT_EQ(a << 15,  Address(0x0fff8000));
+                NSFX_TEST_EXPECT_EQ(a <<=15,  Address(0x0fff8000));
             }
 
             // >>
             NSFX_TEST_CASE(RightShift)
             {
-                Address a(0x0ffffff0UL);
+                Address a(0x0ffffff0);
                 NSFX_TEST_EXPECT_EQ(a >> 0, a);
                 NSFX_TEST_EXPECT_EQ(a >> 28,  Address(0));
                 NSFX_TEST_EXPECT_EQ(a >> 900, Address(0));
-                NSFX_TEST_EXPECT_EQ(a >> 1,   Address(0x07fffff8UL));
-                NSFX_TEST_EXPECT_EQ(a >> 15,  Address(0x00001fffUL));
-                NSFX_TEST_EXPECT_EQ(a >>=15,  Address(0x00001fffUL));
+                NSFX_TEST_EXPECT_EQ(a >> 1,   Address(0x07fffff8));
+                NSFX_TEST_EXPECT_EQ(a >> 15,  Address(0x00001fff));
+                NSFX_TEST_EXPECT_EQ(a >>=15,  Address(0x00001fff));
             }
 
             // bool
             NSFX_TEST_CASE(Bool)
             {
                 Address a;
-                Address b(0x0000ffffUL);
+                Address b(0x0000ffff);
                 NSFX_TEST_EXPECT(!a);
                 NSFX_TEST_EXPECT(b);
                 NSFX_TEST_EXPECT(!!b);
@@ -521,7 +521,7 @@ NSFX_TEST_SUITE(Address)
             NSFX_TEST_CASE(Hash)
             {
                 Address a;
-                Address b(0x0000ffffUL);
+                Address b(0x0000ffff);
                 NSFX_TEST_EXPECT_NE(boost::hash<Address>()(a),
                                     boost::hash<Address>()(b));
             }
@@ -530,9 +530,9 @@ NSFX_TEST_SUITE(Address)
             NSFX_TEST_CASE(Swap)
             {
                 Address a;
-                Address b(0x0000ffffUL);
+                Address b(0x0000ffff);
                 boost::swap(a, b);
-                NSFX_TEST_EXPECT_EQ(a, Address(0x0000ffffUL));
+                NSFX_TEST_EXPECT_EQ(a, Address(0x0000ffff));
                 NSFX_TEST_EXPECT_EQ(b, Address());
             }
         }
@@ -547,10 +547,10 @@ NSFX_TEST_SUITE(Address)
         {
             NSFX_TEST_CASE(0)
             {
-                NSFX_TEST_EXPECT_EQ(Address::NUM_BITS,  52);
+                NSFX_TEST_EXPECT_EQ((size_t)(Address::NUM_BITS),  52);
                 NSFX_TEST_EXPECT_EQ(Address::GetBitSize(), 52);
 
-                NSFX_TEST_EXPECT_EQ(Address::NUM_BYTES, 7);
+                NSFX_TEST_EXPECT_EQ((size_t)(Address::NUM_BYTES), 7);
                 NSFX_TEST_EXPECT_EQ(Address::GetSize(), 7);
 
                 NSFX_TEST_EXPECT_EQ(Address::Zero(), Address());
@@ -803,23 +803,23 @@ NSFX_TEST_SUITE(Address)
 
                 // uint32_t pack, short than addr
                 {
-                    Address a(0x12345678UL, nsfx::big_endian);
+                    Address a(0x12345678, nsfx::big_endian);
                     NSFX_TEST_EXPECT_EQ(a.ToString(), "00000012345678");
                 }
 
                 {
-                    Address a(0x12345678UL, nsfx::little_endian);
+                    Address a(0x12345678, nsfx::little_endian);
                     NSFX_TEST_EXPECT_EQ(a.ToString(), "00000012345678");
                 }
 
                 // uint32_t pack, longer than addr
                 {
-                    Address a(0x12345678UL, 0x9abcdef1UL, nsfx::big_endian);
+                    Address a(0x12345678, 0x9abcdef1, nsfx::big_endian);
                     NSFX_TEST_EXPECT_EQ(a.ToString(), "0456789abcdef1");
                 }
 
                 {
-                    Address a(0x12345678UL, 0x9abcdef1UL, nsfx::little_endian);
+                    Address a(0x12345678, 0x9abcdef1, nsfx::little_endian);
                     NSFX_TEST_EXPECT_EQ(a.ToString(), "0cdef112345678");
                 }
 
@@ -1097,10 +1097,10 @@ NSFX_TEST_SUITE(Address)
         {
             NSFX_TEST_CASE(0)
             {
-                NSFX_TEST_EXPECT_EQ(Address::NUM_BITS,  124);
+                NSFX_TEST_EXPECT_EQ((size_t)(Address::NUM_BITS),  124);
                 NSFX_TEST_EXPECT_EQ(Address::GetBitSize(), 124);
 
-                NSFX_TEST_EXPECT_EQ(Address::NUM_BYTES, 16);
+                NSFX_TEST_EXPECT_EQ((size_t)(Address::NUM_BYTES), 16);
                 NSFX_TEST_EXPECT_EQ(Address::GetSize(), 16);
 
                 NSFX_TEST_EXPECT_EQ(Address::Zero(), Address());
@@ -1398,30 +1398,30 @@ NSFX_TEST_SUITE(Address)
 
                 // uint32_t pack, short than addr
                 {
-                    Address a(0x12345678UL, nsfx::big_endian);
+                    Address a(0x12345678, nsfx::big_endian);
                     NSFX_TEST_EXPECT_EQ(a.ToString(), "00000000000000000000000012345678");
                                                     // 0       8       0       8
                 }
 
                 {
-                    Address a(0x12345678UL, nsfx::little_endian);
+                    Address a(0x12345678, nsfx::little_endian);
                     NSFX_TEST_EXPECT_EQ(a.ToString(), "00000000000000000000000012345678");
                                                     // 0       8       0       8
                 }
 
                 // uint32_t pack, longer than addr
                 {
-                    Address a(0x12345678UL, 0x9abcdef1UL,
-                              0x9abcdef1UL, 0x12345678UL,
-                              0x12345678UL, nsfx::big_endian);
+                    Address a(0x12345678, 0x9abcdef1,
+                              0x9abcdef1, 0x12345678,
+                              0x12345678, nsfx::big_endian);
                     NSFX_TEST_EXPECT_EQ(a.ToString(), "0abcdef19abcdef11234567812345678");
                                                     // 0       8       0       8
                 }
 
                 {
-                    Address a(0x12345678UL, 0x9abcdef1UL,
-                              0x9abcdef1UL, 0x12345678UL,
-                              0x12345678UL, nsfx::little_endian);
+                    Address a(0x12345678, 0x9abcdef1,
+                              0x9abcdef1, 0x12345678,
+                              0x12345678, nsfx::little_endian);
                     NSFX_TEST_EXPECT_EQ(a.ToString(), "023456789abcdef19abcdef112345678");
                                                     // 0       8       0       8
                 }

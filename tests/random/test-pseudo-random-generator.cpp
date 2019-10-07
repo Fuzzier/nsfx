@@ -18,23 +18,26 @@
 #include <iostream>
 
 
-static double log_gamma(double z)
+namespace aux
 {
-    double z2 = z * z;
-    double z3 = z2 * z;
-    double z5 = z2 * z3;
-    return z * std::log(z)
-             - z
-             - 0.5 * std::log(z)
-             + 0.91893853320467274178032973640562 // ln(2 * M_PI) / 2
-             + 1.0 / 12.0 / z
-             - 1.0 / 360.0 / z3
-             + 1.0 / 1260.0 / z5;
-}
+    static double log_gamma(double z)
+    {
+        double z2 = z * z;
+        double z3 = z2 * z;
+        double z5 = z2 * z3;
+        return z * std::log(z)
+            - z
+            - 0.5 * std::log(z)
+            + 0.91893853320467274178032973640562 // ln(2 * M_PI) / 2
+            + 1.0 / 12.0 / z
+            - 1.0 / 360.0 / z3
+            + 1.0 / 1260.0 / z5;
+    }
 
-static double gamma(double z)
-{
-    return exp(log_gamma(z));
+    static double tgamma(double z)
+    {
+        return exp(log_gamma(z));
+    }
 }
 
 struct TestDistributions
@@ -352,7 +355,7 @@ struct TestDistributions
             double x = d->Generate();
             count += x;
         }
-        double expected = 3.0 * gamma(1 + 1 / 2.0);
+        double expected = 3.0 * aux::tgamma(1 + 1 / 2.0);
         NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "Weibull";
         d->Reset();
     }

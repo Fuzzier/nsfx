@@ -19,6 +19,7 @@
 
 #include <nsfx/log/config.h>
 #include <nsfx/component/exception.h>
+#include <boost/type_index.hpp>
 
 
 NSFX_OPEN_NAMESPACE

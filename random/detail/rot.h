@@ -27,13 +27,13 @@ namespace random {
 namespace aux {
 
 template<class UIntType>
-inline UIntType rotl(const UIntType n, size_t k)
+inline BOOST_CONSTEXPR UIntType rotl(const UIntType n, size_t k)
 {
     return (n << k) | (n >> (sizeof (UIntType) * 8 - k));
 }
 
 template<class UIntType>
-inline UIntType rotr(const UIntType n, size_t k)
+inline BOOST_CONSTEXPR UIntType rotr(const UIntType n, size_t k)
 {
     return (n >> k) | (n << (sizeof (UIntType) * 8 - k));
 }

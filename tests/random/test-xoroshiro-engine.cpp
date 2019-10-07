@@ -27,7 +27,7 @@ NSFX_TEST_SUITE(xoroshiro)
         NSFX_TEST_EXPECT_EQ((rng::min)(), 0);
         NSFX_TEST_EXPECT_EQ((rng::max)(),
                             (std::numeric_limits<uint32_t>::max)());
-        NSFX_TEST_EXPECT_EQ(rng::default_seed, 1);
+        NSFX_TEST_EXPECT_EQ((rng::result_type)(rng::default_seed), 1);
         rng r;
         rng::result_type x = r();
         r.discard(1000000);
@@ -47,7 +47,7 @@ NSFX_TEST_SUITE(xoroshiro)
         NSFX_TEST_EXPECT_EQ((rng::min)(), 0);
         NSFX_TEST_EXPECT_EQ((rng::max)(),
                             (std::numeric_limits<uint32_t>::max)());
-        NSFX_TEST_EXPECT_EQ(rng::default_seed, 1);
+        NSFX_TEST_EXPECT_EQ((rng::result_type)(rng::default_seed), 1);
         rng r;
         rng::result_type x = r();
         r.discard(1000000);
@@ -67,7 +67,7 @@ NSFX_TEST_SUITE(xoroshiro)
         NSFX_TEST_EXPECT_EQ((rng::min)(), 0);
         NSFX_TEST_EXPECT_EQ((rng::max)(),
                             (std::numeric_limits<uint64_t>::max)());
-        NSFX_TEST_EXPECT_EQ(rng::default_seed, 1);
+        NSFX_TEST_EXPECT_EQ((rng::result_type)(rng::default_seed), 1);
         rng r;
         rng::result_type x = r();
         r.discard(1000000);
@@ -87,7 +87,7 @@ NSFX_TEST_SUITE(xoroshiro)
         NSFX_TEST_EXPECT_EQ((rng::min)(), 0);
         NSFX_TEST_EXPECT_EQ((rng::max)(),
                             (std::numeric_limits<uint64_t>::max)());
-        NSFX_TEST_EXPECT_EQ(rng::default_seed, 1);
+        NSFX_TEST_EXPECT_EQ((rng::result_type)(rng::default_seed), 1);
         rng r;
         rng::result_type x = r();
         r.discard(1000000);
@@ -107,7 +107,7 @@ NSFX_TEST_SUITE(xoroshiro)
         NSFX_TEST_EXPECT_EQ((rng::min)(), 0);
         NSFX_TEST_EXPECT_EQ((rng::max)(),
                             (std::numeric_limits<uint64_t>::max)());
-        NSFX_TEST_EXPECT_EQ(rng::default_seed, 1);
+        NSFX_TEST_EXPECT_EQ((rng::result_type)(rng::default_seed), 1);
         rng r;
         rng::result_type x = r();
         r.discard(1000000);
@@ -127,7 +127,7 @@ NSFX_TEST_SUITE(xoroshiro)
         NSFX_TEST_EXPECT_EQ((rng::min)(), 0);
         NSFX_TEST_EXPECT_EQ((rng::max)(),
                             (std::numeric_limits<uint64_t>::max)());
-        NSFX_TEST_EXPECT_EQ(rng::default_seed, 1);
+        NSFX_TEST_EXPECT_EQ((rng::result_type)(rng::default_seed), 1);
         rng r;
         rng::result_type x = r();
         r.discard(1000000);
@@ -147,7 +147,7 @@ NSFX_TEST_SUITE(xoroshiro)
         NSFX_TEST_EXPECT_EQ((rng::min)(), 0);
         NSFX_TEST_EXPECT_EQ((rng::max)(),
                             (std::numeric_limits<uint64_t>::max)());
-        NSFX_TEST_EXPECT_EQ(rng::default_seed, 1);
+        NSFX_TEST_EXPECT_EQ((rng::result_type)(rng::default_seed), 1);
         rng r;
         rng::result_type x = r();
         r.discard(1000000);
@@ -171,7 +171,7 @@ NSFX_TEST_SUITE(xoroshiro_01)
 
         NSFX_TEST_EXPECT_EQ((rng::min)(), 0);
         NSFX_TEST_EXPECT_EQ((rng::max)(), 1);
-        NSFX_TEST_EXPECT_EQ(rng::default_seed, 1);
+        NSFX_TEST_EXPECT_EQ((rng::result_type)(rng::default_seed), 1);
         rng r;
         rng::result_type x = r();
         r.discard(1000000);
@@ -190,7 +190,7 @@ NSFX_TEST_SUITE(xoroshiro_01)
 
         NSFX_TEST_EXPECT_EQ((rng::min)(), 0);
         NSFX_TEST_EXPECT_EQ((rng::max)(), 1);
-        NSFX_TEST_EXPECT_EQ(rng::default_seed, 1);
+        NSFX_TEST_EXPECT_EQ((rng::result_type)(rng::default_seed), 1);
         rng r;
         rng::result_type x = r();
         r.discard(1000000);
@@ -209,7 +209,7 @@ NSFX_TEST_SUITE(xoroshiro_01)
 
         NSFX_TEST_EXPECT_EQ((rng::min)(), 0);
         NSFX_TEST_EXPECT_EQ((rng::max)(), 1);
-        NSFX_TEST_EXPECT_EQ(rng::default_seed, 1);
+        NSFX_TEST_EXPECT_EQ((rng::result_type)(rng::default_seed), 1);
         rng r;
         rng::result_type x = r();
         r.discard(1000000);
@@ -228,7 +228,7 @@ NSFX_TEST_SUITE(xoroshiro_01)
 
         NSFX_TEST_EXPECT_EQ((rng::min)(), 0);
         NSFX_TEST_EXPECT_EQ((rng::max)(), 1);
-        NSFX_TEST_EXPECT_EQ(rng::default_seed, 1);
+        NSFX_TEST_EXPECT_EQ((rng::result_type)(rng::default_seed), 1);
         rng r;
         rng::result_type x = r();
         r.discard(1000000);
@@ -247,7 +247,7 @@ NSFX_TEST_SUITE(xoroshiro_01)
 
         NSFX_TEST_EXPECT_EQ((rng::min)(), 0);
         NSFX_TEST_EXPECT_EQ((rng::max)(), 1);
-        NSFX_TEST_EXPECT_EQ(rng::default_seed, 1);
+        NSFX_TEST_EXPECT_EQ((rng::result_type)(rng::default_seed), 1);
         rng r;
         rng::result_type x = r();
         r.discard(1000000);
@@ -266,7 +266,7 @@ NSFX_TEST_SUITE(xoroshiro_01)
 
         NSFX_TEST_EXPECT_EQ((rng::min)(), 0);
         NSFX_TEST_EXPECT_EQ((rng::max)(), 1);
-        NSFX_TEST_EXPECT_EQ(rng::default_seed, 1);
+        NSFX_TEST_EXPECT_EQ((rng::result_type)(rng::default_seed), 1);
         rng r;
         rng::result_type x = r();
         r.discard(1000000);
@@ -285,7 +285,7 @@ NSFX_TEST_SUITE(xoroshiro_01)
 
         NSFX_TEST_EXPECT_EQ((rng::min)(), 0);
         NSFX_TEST_EXPECT_EQ((rng::max)(), 1);
-        NSFX_TEST_EXPECT_EQ(rng::default_seed, 1);
+        NSFX_TEST_EXPECT_EQ((rng::result_type)(rng::default_seed), 1);
         rng r;
         rng::result_type x = r();
         r.discard(1000000);

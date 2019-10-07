@@ -32,7 +32,6 @@ NSFX_OPEN_NAMESPACE
 /**
  * @ingroup Log
  * @brief Make a log record.
- * @internal
  */
 inline LogRecord MakeLogRecord(
     std::string&&  message,
@@ -68,7 +67,6 @@ inline LogRecord MakeLogRecord(
 /**
  * @ingroup Log
  * @brief Make a log record with a severity level.
- * @internal
  */
 inline LogRecord MakeLogRecordWithSeverity(
     LogSeverity    severity,
@@ -91,7 +89,6 @@ inline LogRecord MakeLogRecordWithSeverity(
 /**
  * @ingroup Log
  * @brief Make and commit a log record.
- * @internal
  */
 template<class Sink>
 inline void CommitLogRecord(Sink& sink, LogRecord&& record)

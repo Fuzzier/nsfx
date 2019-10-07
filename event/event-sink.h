@@ -38,7 +38,7 @@ NSFX_OPEN_NAMESPACE
  * @brief Implement event sink interface by a functor.
  *
  * @tparam ISink The type of an event sink interface that conforms to
- *               \c IEventSinkConcept.
+ *               `IEventSinkConcept`.
  * @tparam F     The type of a functor.
  */
 template<class ISink, class F, class Proto = typename ISink::Prototype>
@@ -49,7 +49,7 @@ class FunctorBasedEventSink;
  * @brief Implement event sink interface by a function pointer.
  *
  * @tparam ISink The type of an event sink interface that conforms to
- *               \c IEventSinkConcept.
+ *               `IEventSinkConcept`.
  */
 template<class ISink, class Proto = typename ISink::Prototype>
 class FunctionPointerBasedEventSink;
@@ -59,7 +59,7 @@ class FunctionPointerBasedEventSink;
  * @brief Implement event sink interface by an object's member function.
  *
  * @tparam ISink The type of an event sink interface that conforms to
- *               \c IEventSinkConcept.
+ *               `IEventSinkConcept`.
  * @tparam O     The type of an object that provides a member function that
  *               implements the event sink.
  */
@@ -75,12 +75,12 @@ class MemberFunctionBasedEventSink;
  * This is a helper class that is not a component.
  *
  * @tparam ISink A user-defined event sink interface that conforms to
- *               \c IEventSinkConcept.
+ *               `IEventSinkConcept`.
  * @tparam Proto The prototype of the event callback method that looks like
- *               <code>Ret(A0, A1, ...)</code>.
+ *               `Ret(A0, A1, ...)`.
  *
- * @see \c IEventSink,
- *      \c NSFX_DEFINE_EVENT_SINK_INTERFACE().
+ * @see `IEventSink`,
+ *      `NSFX_DEFINE_EVENT_SINK_INTERFACE()`.
  */
 template<class ISink, class Proto = typename ISink::Prototype>
 class EventSinkCreator;
@@ -208,7 +208,7 @@ private:
  * @brief A helper class that creates event sinks.
  *
  * @tparam ISink A user-defined event sink interface that conforms to
- *               \c IEventSinkConcept.
+ *               `IEventSinkConcept`.
  * @tparam Ret  The return type of the callback method of the event sink.
  * @tparam Args The type of arguments of the callback method of the event sink.
  */
@@ -239,8 +239,8 @@ public:
      *
      * @param[in] fn A function pointer.
      */
-    template<class Ret, class... Args>
-    Ptr<ISink> operator()(IObject* controller, Ret(* fn)(Args...)) const
+    template<class Ret_, class... Args_>
+    Ptr<ISink> operator()(IObject* controller, Ret_(* fn)(Args_...)) const
     {
         typedef FunctionPointerBasedEventSink<ISink>  EventSink;
         typedef Object<EventSink>     EventSinkClass;
@@ -256,8 +256,8 @@ public:
      * @param[in] o    An object.
      * @param[in] ptmf A pointer to a member function of the object.
      */
-    template<class O, class Ret, class... Args>
-    Ptr<ISink> operator()(IObject* controller, O* o, Ret(O::* ptmf)(Args...)) const
+    template<class O, class Ret_, class... Args_>
+    Ptr<ISink> operator()(IObject* controller, O* o, Ret_(O::* ptmf)(Args_...)) const
     {
         typedef MemberFunctionBasedEventSink<ISink, O>  EventSink;
         typedef Object<EventSink>     EventSinkClass;
@@ -279,7 +279,7 @@ public:
  * @brief Create a functor based event sink.
  *
  * @tparam ISink A user-defined event sink interface that conforms to
- *               \c IEventSinkConcept.
+ *               `IEventSinkConcept`.
  * @tparam F     The type of the functor.
  *
  * @param[in] f  A functor.
@@ -298,7 +298,7 @@ inline Ptr<ISink> CreateEventSink(IObject* controller, F&& f)
  * @brief Create a function pointer based event sink.
  *
  * @tparam ISink A user-defined event sink interface that conforms to
- *               \c IEventSinkConcept.
+ *               `IEventSinkConcept`.
  *
  * @param[in] fn A function pointer.
  */
@@ -313,7 +313,7 @@ inline Ptr<ISink> CreateEventSink(IObject* controller, Ret(* fn)(Args...))
  * @brief Create a member function based event sink.
  *
  * @tparam ISink A user-defined event sink interface that conforms to
- *               \c IEventSinkConcept.
+ *               `IEventSinkConcept`.
  *
  * @param[in] o    An object.
  * @param[in] ptmf A pointer to a member function of the object.

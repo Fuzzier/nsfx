@@ -131,16 +131,16 @@ struct LengthTraits<bits, /* N32 = */2>
  *
  * @tparam bits  The number of bits.
  *
- * A network address is usually no larger than \c 128 bits.
+ * A network address is usually no larger than `128` bits.
  *
- * For efficiency, when the address is no larger than \c 32 bits,
- * a single \c uint32_t is used to implement an address.
+ * For efficiency, when the address is no larger than `32` bits,
+ * a single `uint32_t` is used to implement an address.
  *
- * When the address is no larger than \c 64 bits,
- * a single \c uint64_t is used to implement an address.
+ * When the address is no larger than `64` bits,
+ * a single `uint64_t` is used to implement an address.
  *
- * When the address is larger than \c 64 bits,
- * an array of \c uint32_t is used to implement an address.
+ * When the address is larger than `64` bits,
+ * an array of `uint32_t` is used to implement an address.
  */
 template<size_t bits>
 class Address
@@ -204,7 +204,7 @@ public:
     BOOST_STATIC_CONSTANT(size_t, NUM_BYTES = NB);
 
 public:
-    BOOST_CONSTEXPR Address(void) BOOST_NOEXCEPT
+    Address(void) BOOST_NOEXCEPT
     {
         Assign0();
     }
@@ -216,7 +216,7 @@ public:
      * @param[in] a  An array of bytes.
      */
     template<size_t M>
-    BOOST_CONSTEXPR Address(const uint8_t (&a)[M], little_endian_t) BOOST_NOEXCEPT
+    Address(const uint8_t (&a)[M], little_endian_t) BOOST_NOEXCEPT
     {
         AssignBytes(a, little_endian_t());
     }
@@ -227,7 +227,7 @@ public:
      * @param[in] a  An array of bytes.
      */
     template<size_t M>
-    BOOST_CONSTEXPR Address(const uint8_t (&a)[M], big_endian_t) BOOST_NOEXCEPT
+    Address(const uint8_t (&a)[M], big_endian_t) BOOST_NOEXCEPT
     {
         AssignBytes(a, big_endian_t());
     }
@@ -264,13 +264,13 @@ public:
      * @brief Construct an address via a value.
      *
      * @tparam T  The type of value.
-     *            It <b>must</b> be an integral type.
+     *            It **must** be an integral type.
      * @param[in] v  An integral value.
-     *               For a \c signed \c negative value, the sign bit is
+     *               For a *signed negative* value, the sign bit is
      *               extended til the most significant bit.
      */
     template<class T>
-    BOOST_CONSTEXPR Address(T v) BOOST_NOEXCEPT
+    explicit Address(T v) BOOST_NOEXCEPT
     {
         static_assert(std::is_integral<T>::value,
                       "Invalid type T, which must be an integral type.");
@@ -282,14 +282,14 @@ public:
      * @brief Construct an address via a sequence of values in little-endian.
      *
      * @tparam T  The type of values.
-     *            It <b>must</b> be an integral type.
+     *            It **must** be an integral type.
      *
      * @param[in] a  An array of values.
-     *               All elements are treated as \c unsigned values.
+     *               All elements are treated as *unsigned* values.
      * @param[in] little_endian
      */
     template<class T, size_t M>
-    BOOST_CONSTEXPR Address(const T (&a)[M], typename
+    Address(const T (&a)[M], typename
         std::enable_if<std::is_integral<T>::value, little_endian_t>::type) BOOST_NOEXCEPT
     {
         AssignValues(a, little_endian_t());
@@ -299,14 +299,14 @@ public:
      * @brief Construct an address via a sequence of values in big-endian.
      *
      * @tparam T  The type of values.
-     *            It <b>must</b> be an integral type.
+     *            It **must** be an integral type.
      *
      * @param[in] a  An array of values.
-     *               All elements are treated as \c unsigned values.
+     *               All elements are treated as *unsigned* values.
      * @param[in] big_endian
      */
     template<class T, size_t M>
-    BOOST_CONSTEXPR Address(const T (&a)[M], typename
+    Address(const T (&a)[M], typename
         std::enable_if<std::is_integral<T>::value, big_endian_t>::type) BOOST_NOEXCEPT
     {
         static_assert(std::is_integral<T>::value,
@@ -318,16 +318,16 @@ public:
      * @brief Construct an address via a sequence of values in little-endian.
      *
      * @tparam T  The type of values.
-     *            It <b>must</b> be an integral type.
+     *            It **must** be an integral type.
      *
      * @param[in] values  An array of values.
-     *                    All elements are treated as \c unsigned values.
-     *                    It <b>must not</b> be \c nullptr.
+     *                    All elements are treated as *unsigned* values.
+     *                    It **must not** be `nullptr`.
      * @param[in] count   The number of values in the sequence.
      * @param[in] little_endian
      */
     template<class T>
-    BOOST_CONSTEXPR Address(const T* values, size_t count, typename
+    Address(const T* values, size_t count, typename
        std::enable_if<std::is_integral<T>::value, little_endian_t>::type) BOOST_NOEXCEPT
     {
         static_assert(std::is_integral<T>::value,
@@ -340,16 +340,16 @@ public:
      * @brief Construct an address via a sequence of values in big-endian.
      *
      * @tparam T  The type of values.
-     *            It <b>must</b> be an integral type.
+     *            It **must** be an integral type.
      *
      * @param[in] values  An array of values.
-     *                    All elements are treated as \c unsigned values.
-     *                    It <b>must not</b> be \c nullptr.
+     *                    All elements are treated as `unsigned` values.
+     *                    It **must not** be `nullptr`.
      * @param[in] count   The number of values in the sequence.
      * @param[in] big_endian
      */
     template<class T>
-    BOOST_CONSTEXPR Address(const T* values, size_t count, typename
+    Address(const T* values, size_t count, typename
        std::enable_if<std::is_integral<T>::value, big_endian_t>::type) BOOST_NOEXCEPT
     {
         static_assert(std::is_integral<T>::value,
@@ -375,7 +375,7 @@ public:
      * @param[in] little_endian
      */
     template<class T, class... U>
-    BOOST_CONSTEXPR Address(T v0, U... v1, typename
+    Address(T v0, U... v1, typename
        std::enable_if<std::is_integral<T>::value, little_endian_t>::type) BOOST_NOEXCEPT
     {
         static_assert((std::is_integral<U>::value && ...),
@@ -400,7 +400,7 @@ public:
      * @param[in] big_endian
      */
     template<class T, class... U>
-    BOOST_CONSTEXPR Address(T v0, U... v1, typename
+    Address(T v0, U... v1, typename
        std::enable_if<std::is_integral<T>::value, big_endian_t>::type) BOOST_NOEXCEPT
     {
         static_assert((std::is_integral<U>::value && ...),
@@ -418,12 +418,12 @@ public:
     ////////////////////////////////////////
     // Copyable.
 public:
-    BOOST_CONSTEXPR Address(const Address& rhs) BOOST_NOEXCEPT
+    Address(const Address& rhs) BOOST_NOEXCEPT
     {
         CopyAssign(rhs);
     }
 
-    BOOST_CONSTEXPR Address& operator=(const Address& rhs) BOOST_NOEXCEPT
+    Address& operator=(const Address& rhs) BOOST_NOEXCEPT
     {
         if (this != &rhs)
         {
@@ -435,32 +435,32 @@ public:
     ////////////////////////////////////////
     // Comparison.
 public:
-    BOOST_CONSTEXPR bool operator==(const Address& rhs) const BOOST_NOEXCEPT
+    bool operator==(const Address& rhs) const BOOST_NOEXCEPT
     {
         return Equal(rhs, value_multiplicity_t());
     }
 
-    BOOST_CONSTEXPR bool operator!=(const Address& rhs) const BOOST_NOEXCEPT
+    bool operator!=(const Address& rhs) const BOOST_NOEXCEPT
     {
         return !Equal(rhs, value_multiplicity_t());
     }
 
-    BOOST_CONSTEXPR bool operator<(const Address& rhs) const BOOST_NOEXCEPT
+    bool operator<(const Address& rhs) const BOOST_NOEXCEPT
     {
         return LessThan(rhs, value_multiplicity_t());
     }
 
-    BOOST_CONSTEXPR bool operator<=(const Address& rhs) const BOOST_NOEXCEPT
+    bool operator<=(const Address& rhs) const BOOST_NOEXCEPT
     {
         return LessEqual(rhs, value_multiplicity_t());
     }
 
-    BOOST_CONSTEXPR bool operator>(const Address& rhs) const BOOST_NOEXCEPT
+    bool operator>(const Address& rhs) const BOOST_NOEXCEPT
     {
         return !LessEqual(rhs, value_multiplicity_t());
     }
 
-    BOOST_CONSTEXPR bool operator>=(const Address& rhs) const BOOST_NOEXCEPT
+    bool operator>=(const Address& rhs) const BOOST_NOEXCEPT
     {
         return !LessThan(rhs, value_multiplicity_t());
     }
@@ -468,63 +468,63 @@ public:
     ////////////////////////////////////////
     // Arithmetics.
 public:
-    BOOST_CONSTEXPR Address& operator++(void) BOOST_NOEXCEPT
+    Address& operator++(void) BOOST_NOEXCEPT
     {
         Increment(value_multiplicity_t());
         return *this;
     }
 
-    BOOST_CONSTEXPR Address operator++(int) BOOST_NOEXCEPT
+    Address operator++(int) BOOST_NOEXCEPT
     {
         Address result(*this);
         Increment(value_multiplicity_t());
         return result;
     }
 
-    BOOST_CONSTEXPR Address& operator--(void) BOOST_NOEXCEPT
+    Address& operator--(void) BOOST_NOEXCEPT
     {
         Decrement(value_multiplicity_t());
         return *this;
     }
 
-    BOOST_CONSTEXPR Address operator--(int) BOOST_NOEXCEPT
+    Address operator--(int) BOOST_NOEXCEPT
     {
         Address result(*this);
         Decrement(value_multiplicity_t());
         return result;
     }
 
-    BOOST_CONSTEXPR Address& operator+(void) BOOST_NOEXCEPT
+    Address& operator+(void) BOOST_NOEXCEPT
     {
         return *this;
     }
 
-    BOOST_CONSTEXPR Address& operator-(void) BOOST_NOEXCEPT
+    Address& operator-(void) BOOST_NOEXCEPT
     {
         Negate();
         return *this;
     }
 
-    BOOST_CONSTEXPR Address& operator+=(int64_t n) BOOST_NOEXCEPT
+    Address& operator+=(int64_t n) BOOST_NOEXCEPT
     {
         Plus(n, value_multiplicity_t());
         return *this;
     }
 
-    BOOST_CONSTEXPR Address operator+(int64_t n) const BOOST_NOEXCEPT
+    Address operator+(int64_t n) const BOOST_NOEXCEPT
     {
         Address result(*this);
         result.Plus(n, value_multiplicity_t());
         return result;
     }
 
-    BOOST_CONSTEXPR Address& operator-=(int64_t n) BOOST_NOEXCEPT
+    Address& operator-=(int64_t n) BOOST_NOEXCEPT
     {
         Minus(n, value_multiplicity_t());
         return *this;
     }
 
-    BOOST_CONSTEXPR Address operator-(int64_t n) const BOOST_NOEXCEPT
+    Address operator-(int64_t n) const BOOST_NOEXCEPT
     {
         Address result(*this);
         result.Minus(n, value_multiplicity_t());
@@ -535,105 +535,105 @@ public:
      * @brief The difference from another address.
      *
      * @remarks The range of the difference is limitted within
-     *          <code>[INT64_MIN, INT64_MAX]</code>.
-     *          Thus, if the return value is \c INT64_MIN, the actual
-     *          difference <b>may</b> be more negative than \c INT64_MIN.
-     *          If the return value is \c INT64_MAX, the actual difference
-     *          <b>may</b> be greater than \c INT64_MAX.
+     *          `[INT64_MIN, INT64_MAX]`.
+     *          Thus, if the return value is `INT64_MIN`, the actual
+     *          difference **may** be more negative than `INT64_MIN`.
+     *          If the return value is `INT64_MAX`, the actual difference
+     *          **may** be greater than `INT64_MAX`.
      */
     int64_t operator-(const Address& rhs) const BOOST_NOEXCEPT
     {
         return Difference(rhs, value_multiplicity_t());
     }
 
-    BOOST_CONSTEXPR Address& operator*=(uint64_t n) BOOST_NOEXCEPT
+    Address& operator*=(uint64_t n) BOOST_NOEXCEPT
     {
         MultiplyAssign(n, value_multiplicity_t());
         return *this;
     }
 
-    BOOST_CONSTEXPR Address operator*(uint64_t n) const BOOST_NOEXCEPT
+    Address operator*(uint64_t n) const BOOST_NOEXCEPT
     {
         return Multiply(n, value_multiplicity_t());
     }
 
-    // BOOST_CONSTEXPR Address& operator/=(uint64_t n) BOOST_NOEXCEPT
+    // Address& operator/=(uint64_t n) BOOST_NOEXCEPT
     // {
     // }
     //
-    // BOOST_CONSTEXPR Address operator/(uint64_t n) const BOOST_NOEXCEPT
+    // Address operator/(uint64_t n) const BOOST_NOEXCEPT
     // {
     // }
     //
-    // BOOST_CONSTEXPR uint64_t operator/(const Address& rhs) const BOOST_NOEXCEPT
+    // uint64_t operator/(const Address& rhs) const BOOST_NOEXCEPT
     // {
     // }
 
-    BOOST_CONSTEXPR Address& operator~(void) BOOST_NOEXCEPT
+    Address& operator~(void) BOOST_NOEXCEPT
     {
         BitwiseNot();
         return *this;
     }
 
-    BOOST_CONSTEXPR Address& operator&=(const Address& rhs) BOOST_NOEXCEPT
+    Address& operator&=(const Address& rhs) BOOST_NOEXCEPT
     {
         BitwiseAnd(rhs);
         return *this;
     }
 
-    BOOST_CONSTEXPR Address operator&(const Address& rhs) const BOOST_NOEXCEPT
+    Address operator&(const Address& rhs) const BOOST_NOEXCEPT
     {
         Address result(*this);
         result.BitwiseAnd(rhs);
         return result;
     }
 
-    BOOST_CONSTEXPR Address& operator|=(const Address& rhs) BOOST_NOEXCEPT
+    Address& operator|=(const Address& rhs) BOOST_NOEXCEPT
     {
         BitwiseOr(rhs);
         return *this;
     }
 
-    BOOST_CONSTEXPR Address operator|(const Address& rhs) const BOOST_NOEXCEPT
+    Address operator|(const Address& rhs) const BOOST_NOEXCEPT
     {
         Address result(*this);
         result.BitwiseOr(rhs);
         return result;
     }
 
-    BOOST_CONSTEXPR Address& operator^=(const Address& rhs) BOOST_NOEXCEPT
+    Address& operator^=(const Address& rhs) BOOST_NOEXCEPT
     {
         BitwiseXor(rhs);
         return *this;
     }
 
-    BOOST_CONSTEXPR Address operator^(const Address& rhs) const BOOST_NOEXCEPT
+    Address operator^(const Address& rhs) const BOOST_NOEXCEPT
     {
         Address result(*this);
         result.BitwiseXor(rhs);
         return result;
     }
 
-    BOOST_CONSTEXPR Address& operator<<=(size_t n) BOOST_NOEXCEPT
+    Address& operator<<=(size_t n) BOOST_NOEXCEPT
     {
         LeftShift(n, value_multiplicity_t());
         return *this;
     }
 
-    BOOST_CONSTEXPR Address operator<<(size_t n) const BOOST_NOEXCEPT
+    Address operator<<(size_t n) const BOOST_NOEXCEPT
     {
         Address result(*this);
         result.LeftShift(n, value_multiplicity_t());
         return result;
     }
 
-    BOOST_CONSTEXPR Address& operator>>=(size_t n) BOOST_NOEXCEPT
+    Address& operator>>=(size_t n) BOOST_NOEXCEPT
     {
         RightShift(n, value_multiplicity_t());
         return *this;
     }
 
-    BOOST_CONSTEXPR Address operator>>(size_t n) const BOOST_NOEXCEPT
+    Address operator>>(size_t n) const BOOST_NOEXCEPT
     {
         Address result(*this);
         result.RightShift(n, value_multiplicity_t());
@@ -1163,7 +1163,7 @@ private:
         }
     }
 
-    BOOST_CONSTEXPR Address Multiply(uint64_t n, single_value_t) const BOOST_NOEXCEPT
+    Address Multiply(uint64_t n, single_value_t) const BOOST_NOEXCEPT
     {
         Address result;
         result.data_.v_[0] = (Value)(data_.v_[0] * n);
@@ -1171,7 +1171,7 @@ private:
         return result;
     }
 
-    BOOST_CONSTEXPR Address Multiply(uint64_t n, multiple_values_t) const BOOST_NOEXCEPT
+    Address Multiply(uint64_t n, multiple_values_t) const BOOST_NOEXCEPT
     {
         Address result;
         result.MultiplyPlus(*this, n, multiple_values_t());
@@ -1479,30 +1479,30 @@ public:
 
     ////////////////////////////////////////
 public:
-    static BOOST_CONSTEXPR size_t GetBitSize(void) BOOST_NOEXCEPT
+    static size_t GetBitSize(void) BOOST_NOEXCEPT
     {
         return NUM_BITS;
     }
 
-    static BOOST_CONSTEXPR size_t GetSize(void) BOOST_NOEXCEPT
+    static size_t GetSize(void) BOOST_NOEXCEPT
     {
         return NB;
     }
 
-    BOOST_CONSTEXPR const uint8_t* GetData(void) const BOOST_NOEXCEPT
+    const uint8_t* GetData(void) const BOOST_NOEXCEPT
     {
         return data_.b_;
     }
 
     ////////////////////////////////////////
 public:
-    static BOOST_CONSTEXPR const Address& Zero(void) BOOST_NOEXCEPT
+    static const Address& Zero(void) BOOST_NOEXCEPT
     {
         static Address zero;
         return zero;
     }
 
-    static BOOST_CONSTEXPR const Address& Mask(void) BOOST_NOEXCEPT
+    static const Address& Mask(void) BOOST_NOEXCEPT
     {
         static Address mask(-1L);
         return mask;
@@ -1590,14 +1590,14 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 template<size_t bits>
-inline BOOST_CONSTEXPR Address<bits>
+inline Address<bits>
 operator+(int64_t n, const Address<bits>& addr) BOOST_NOEXCEPT
 {
     return (addr + n);
 }
 
 template<size_t bits>
-inline BOOST_CONSTEXPR Address<bits>
+inline Address<bits>
 operator*(uint64_t n, const Address<bits>& addr) BOOST_NOEXCEPT
 {
     return (addr * n);
@@ -1617,9 +1617,9 @@ inline void swap(Address<bits>& lhs, Address<bits>& rhs) BOOST_NOEXCEPT
 
 
 ////////////////////////////////////////////////////////////////////////////////
-template<size_t bits, class Char, class Traits>
-inline std::basic_ostream<Char, Traits>&
-operator<<(std::basic_ostream<Char, Traits>& os, const Address<bits>& addr)
+template<size_t bits, class CharT, class TraitsT>
+inline std::basic_ostream<CharT, TraitsT>&
+operator<<(std::basic_ostream<CharT, TraitsT>& os, const Address<bits>& addr)
 {
     return os << addr.ToString();
 }
@@ -1654,7 +1654,6 @@ NSFX_CLOSE_NAMESPACE
 //         typename std::enable_if<std::is_integral<T0>::value,
 //         little_endian_t>::type)
 template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class T)>
-BOOST_CONSTEXPR
 Address(BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), T, v),
         typename std::enable_if<std::is_integral<T0>::value,
         little_endian_t>::type) BOOST_NOEXCEPT
@@ -1675,7 +1674,6 @@ Address(BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), T, v),
 //         typename std::enable_if<std::is_integral<T0>::value,
 //         big_endian_t>::type)
 template<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class T)>
-BOOST_CONSTEXPR
 Address(BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_ITERATION(), T, v),
         typename std::enable_if<std::is_integral<T0>::value,
         big_endian_t>::type) BOOST_NOEXCEPT

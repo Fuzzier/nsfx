@@ -40,14 +40,13 @@ public:
     /**
      * @brief Create an uninitialized object.
      *
-     * Users pass a valid \c controller to create an aggregable object.
-     * In such condition, the \c iid must be the UID of \c IObject to obtain
+     * Users pass a valid `controller` to create an aggregable object.
+     * In such condition, the `iid` must be the UID of `IObject` to obtain
      * the the navigator of the aggregated object.
-     * Otherwise, the function throws \c BadAggregation.
+     * Otherwise, the function throws `BadAggregation`.
      *
-     * @throw BadAggregation The exception is thrown if \c controller is not
-     *                       \c nullptr, and \c iid is not the UID of
-     *                       \c IObject.
+     * @throw BadAggregation The exception is thrown if `controller` is not
+     *                       `nullptr`, and `iid` is not the UID of `IObject`.
      * @throw OutOfMemory
      * @throw NoInterface
      */

@@ -30,13 +30,11 @@
 /**
  * @brief A macro that registers a class with a default factory.
  *
- * @param T   It <b>must</b> conform to \c ObjectImplConcept.
- *            It <b>must not</b> be a qualified name.
+ * @param T   It **must** conform to `ObjectImplConcept`.
+ *            It **must not** be a qualified name.
  * @param CID The UID of the class.
  *
- * ============
- * Requirements
- * ============
+ * # Requirements
  *
  * The process is that:
  * 1. Component writers associate a CID with a class.
@@ -47,131 +45,125 @@
  * The library provides an inline, self-driven and non-intrusive way for class
  * registration and instance creation.
  *
- * * Inline
+ * ## Inline
  *
- *   Component writers use a macro to associate a CID with a class.
- *   Usually, the macro is written along with the class in the same source
- *   file.
- *   They do not write the information in a separate location, such as
- *   Windows Registry or configuration files.
+ * Component writers use a macro to associate a CID with a class.
+ * Usually, the macro is written along with the class in the same source
+ * file.
+ * They do not write the information in a separate location, such as
+ * Windows Registry or configuration files.
  *
- * * Self-driven
+ * ## Self-driven
  *
- *   The class registration is performed during program startup, since the
- *   information is coded in the program itself.
- *   Component users do not need to use loader programs to register the
- *   clases, or create instances.
- *   This is specially helpful in an environment that forbids the usage of
- *   Windows Registry or loader programs.
+ * The class registration is performed during program startup, since the
+ * information is coded in the program itself.
+ * Component users do not need to use loader programs to register the
+ * clases, or create instances.
+ * This is specially helpful in an environment that forbids the usage of
+ * Windows Registry or loader programs.
  *
- * * Non-intrusive
+ * ## Non-intrusive
  *
- *   Similar to IID, the macro to associate a CID with a class is placed
- *   outside of the class definition.
+ * Similar to IID, the macro to associate a CID with a class is placed
+ * outside of the class definition.
  *
- *   The difference is that, an IID is bound to the type of an interface.
- *   That is, an interface can have one and only one IID.
- *   However, a CID is associated loosely with a class.
- *   That is, a class may have multiple CIDs.
+ * The difference is that, an IID is bound to the type of an interface.
+ * That is, an interface can have one and only one IID.
+ * However, a CID is associated loosely with a class.
+ * That is, a class may have multiple CIDs.
  *
- *  * Header friendly
+ * ## Header friendly
  *
- *    The macro must be able to be placed in header files, so the library
- *    remains header-only.
+ * The macro must be able to be placed in header files, so the library
+ * remains header-only.
  *
- * ========
- * Key idea
- * ========
+ * # Key idea
  *
  * 1. Define a helper class whose constructor performs the registration.
  * 2. Define a static instance of the helper class, so the constructor is
  *    called during program startup.
  *
- * =======
- * Methods
- * =======
+ * # Methods
  *
  * ## Global static variable
  *
- *    A common method is to defined a static instance of the class directly.
- *    @code
- *    static struct MyClassRegister
- *    {
- *        MyClassRegister(void)
- *        {
- *            ::nsfx::RegisterClassFactory<MyClass>(myCid);
- *        }
- *    } s_MyClassRegister;
- *    @endcode
+ * A common method is to defined a static instance of the class directly.
+ * @code{.cpp}
+ * static struct MyClassRegister
+ * {
+ *     MyClassRegister(void)
+ *     {
+ *         ::nsfx::RegisterClassFactory<MyClass>(myCid);
+ *     }
+ * } s_MyClassRegister;
+ * @endcode
  *
- *    If the code is placed in a header file, each compilation unit that
- *    includes the header file would have a separate instance of the variable.
- *    Thus, the constructor must use a static flag to prevent multiple
- *    registration.
- *    @code
- *    static struct MyClassRegister
- *    {
- *        MyClassRegister(void)
- *        {
- *            static bool registered = false;
- *            if (!registered)
- *            {
- *                ::nsfx::RegisterClassFactory<MyClass>(myCid);
- *                registered = true;
- *            }
- *        }
- *    } s_MyClassRegister;
- *    @endcode
+ * If the code is placed in a header file, each compilation unit that
+ * includes the header file would have a separate instance of the variable.
+ * Thus, the constructor must use a static flag to prevent multiple
+ * registration.
+ * @code{.cpp}
+ * static struct MyClassRegister
+ * {
+ *     MyClassRegister(void)
+ *     {
+ *         static bool registered = false;
+ *         if (!registered)
+ *         {
+ *             ::nsfx::RegisterClassFactory<MyClass>(myCid);
+ *             registered = true;
+ *         }
+ *     }
+ * } s_MyClassRegister;
+ * @endcode
  *
  * ## Class member static instance.
  *
- *    To prevent the use of an additional static flag, the static instance can
- *    be defined as a class member.
- *    @code
- *    class MyClassRegister
- *    {
- *        static struct Helper
- *        {
- *            Helper(void)
- *            {
- *                ::nsfx::RegisterClassFactory<MyClass>(myCid);
- *            }
- *        } helper_;
- *    };
- *    MyClassRegister::Worker  MyClassRegister::helper_;
- *    @endcode
+ * To prevent the use of an additional static flag, the static instance can
+ * be defined as a class member.
+ * @code{.cpp}
+ * class MyClassRegister
+ * {
+ *     static struct Helper
+ *     {
+ *         Helper(void)
+ *         {
+ *             ::nsfx::RegisterClassFactory<MyClass>(myCid);
+ *         }
+ *     } helper_;
+ * };
+ * MyClassRegister::Worker  MyClassRegister::helper_;
+ * @endcode
  *
- *    If the code is placed in a header file, the instance would be defined in
- *    each compilation unit that includes the header file.
- *    This results in multiple definition of the instance.
- *    The work around, a class template can be used in place of the class.
- *    An explicit instantiation of the class template is also defined.
- *    @code
- *    template<class T>
- *    class MyClassRegister
- *    {
- *        static struct Helper
- *        {
- *            Helper(void)
- *            {
- *                ::nsfx::RegisterClassFactory<MyClass>(myCid);
- *            }
- *        } helper_;
- *    };
- *    // Declare the static member variable.
- *    template<classs T> typename MyClassRegister<T>::Helper
- *                                MyClassRegister<T>::helper_;
- *    // Define an explicit instantiation of the class template.
- *    template class MyClassRegister<MyClass>;
- *    @endcode
+ * If the code is placed in a header file, the instance would be defined in
+ * each compilation unit that includes the header file.
+ * This results in multiple definition of the instance.
+ * The work around, a class template can be used in place of the class.
+ * An explicit instantiation of the class template is also defined.
+ * @code{.cpp}
+ * template<class T>
+ * class MyClassRegister
+ * {
+ *     static struct Helper
+ *     {
+ *         Helper(void)
+ *         {
+ *             ::nsfx::RegisterClassFactory<MyClass>(myCid);
+ *         }
+ *     } helper_;
+ * };
+ * // Declare the static member variable.
+ * template<classs T> typename MyClassRegister<T>::Helper
+ *                             MyClassRegister<T>::helper_;
+ * // Define an explicit instantiation of the class template.
+ * template class MyClassRegister<MyClass>;
+ * @endcode
  *
- * =======
- * Remarks
- * =======
+ * # Remarks
  *
- * If a name is local to a compilation unit, it will be stored in a <i>static
- * library</i>.
- * However, the local names will be <b>removed</b> during linking, since they
+ * If a name is local to a compilation unit, it will be stored in a *static
+ * library*.
+ * However, the local names will be *removed* during linking, since they
  * are neither exported, nor refered by other code.
  *
  * To prevent the removal, the local names must be exported with external
@@ -182,7 +174,7 @@
  * to archive the code into a static library.
  * Instead, dynamic link library, shared library or executable are perfered.
  *
- * @see \c RegisterClass().
+ * @see `RegisterClass()`.
  */
 #define NSFX_REGISTER_CLASS(T, CID)                                       \
     template<class T>                                                     \
@@ -220,31 +212,30 @@ NSFX_OPEN_NAMESPACE
  *
  * It is a singleton.
  *
- * ## 1. Register a class.
- *    The library provides two tiers of tools for class registration.
+ * # 1. Register a class.
+ * The library provides two tiers of tools for class registration.
  *
- * ### 1.1 Free functions.
- *     \c RegisterClassFactory().
+ * ## 1.1 Free functions.
+ * `RegisterClassFactory()`.
  *
- * ### 1.2 Macro.
- *     \c NSFX_REGISTER_CLASS().
+ * ## 1.2 Macro.
+ * `NSFX_REGISTER_CLASS()`.
  *
- * ## 2. Create an object.
- *    The library provides two tiers of tools for object creation.
+ * # 2. Create an object.
+ * The library provides two tiers of tools for object creation.
  *
- * ### 2.1 Make concrete classes.
- *     If the type of the implementation class is known, users can use
- *     \c Object or \c AggObject to make it concrete, and use \c new to
- *     create an object.
+ * ## 2.1 Make concrete classes.
+ * If the type of the implementation class is known, users can use `Object`
+ * or `AggObject` to make it concrete, and use `new` to create an object.
  *
- * ### 2.2 Free functions.
- *     If the class has been registered, users can use \c CreateObject()
- *     function template to create an object.
- *     Users just need to know UID of the implementation class, and do not have
- *     to know its type.
+ * ## 2.2 Free functions.
+ * If the class has been registered, users can use `CreateObject()`
+ * function template to create an object.
+ * Users just need to know UID of the implementation class, and do not have
+ * to know its type.
  *
- *     Instead of \c CreateObject(), there are other free functions that create
- *     objects, such as \c CreateEventSink().
+ * Instead of `CreateObject()`, there are other free functions that create
+ * objects, such as `CreateEventSink()`.
  */
 class ClassRegistry :
     public IClassRegistry
@@ -252,7 +243,7 @@ class ClassRegistry :
     // Static methods.
 public:
     /**
-     * @brief Get the \c IClassRegistry interface.
+     * @brief Get the `IClassRegistry` interface.
      */
     static IClassRegistry* GetIClassRegistry(void)
     {
@@ -325,10 +316,10 @@ NSFX_DEFINE_CLASS_UID(ClassRegistry, "edu.uestc.nsfx.ClassRegistry");
  * @ingroup Component
  * @brief Register a class with the default class factory.
  *
- * @param C The class to register.
- *          It must conform to \c HasUidConcept and \c ObjectImplConcept.
+ * @param[in] C The class to register.
+ *              It must conform to `HasUidConcept` and `ObjectImplConcept`.
  *
- * @see \c IClassRegistry::Register().
+ * @see `IClassRegistry::Register()`.
  */
 template<class C>
 inline void RegisterClassFactory(const Uid& cid)
@@ -344,7 +335,7 @@ inline void RegisterClassFactory(const Uid& cid)
  * @ingroup Component
  * @brief Register a class.
  *
- * @see \c IClassRegistry::Register().
+ * @see `IClassRegistry::Register()`.
  */
 inline void RegisterClassFactory(const Uid& cid, Ptr<IClassFactory> factory)
 {
@@ -356,7 +347,7 @@ inline void RegisterClassFactory(const Uid& cid, Ptr<IClassFactory> factory)
  * @ingroup Component
  * @brief Register a class.
  *
- * @see \c IClassRegistry::Register().
+ * @see `IClassRegistry::Register()`.
  */
 inline void UnregisterClassFactory(const Uid& cid)
 {
@@ -369,7 +360,7 @@ inline void UnregisterClassFactory(const Uid& cid)
  * @brief Create an uninitialized object.
  *
  * @tparam I  The type of interface to query.
- *            It must conform to \c IObjectConcept and \c HasUidConcept.
+ *            It must conform to `IObjectConcept` and `HasUidConcept`.
  *
  * @param[in] cid        The UID of the class.
  * @param[in] controller The controller.
@@ -378,7 +369,7 @@ inline void UnregisterClassFactory(const Uid& cid)
  * @throw BadAggregation
  * @throw NoInterface
  *
- * @see \c IClassFactory::CreateObject().
+ * @see `IClassFactory::CreateObject()`.
  */
 template<class I>
 inline Ptr<I> CreateObject(const Uid& cid, IObject* controller = nullptr)

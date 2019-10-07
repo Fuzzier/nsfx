@@ -31,21 +31,21 @@ template<bool zcAware, class Clock, class Duration>
 void Write(BasicBufferIterator</*readOnly*/false, zcAware>& it,
            const chrono::TimePoint<Clock, Duration>& t0)
 {
-    it.Write<chrono::count_t>(t0.GetDuration().GetCount());
+    it.template Write<chrono::count_t>(t0.GetDuration().GetCount());
 }
 
 template<bool zcAware, class Clock, class Duration>
 void WriteL(BasicBufferIterator</*readOnly*/false, zcAware>& it,
             const chrono::TimePoint<Clock, Duration>& t0)
 {
-    it.WriteL<chrono::count_t>(t0.GetDuration().GetCount());
+    it.template WriteL<chrono::count_t>(t0.GetDuration().GetCount());
 }
 
 template<bool zcAware, class Clock, class Duration>
 void WriteB(BasicBufferIterator</*readOnly*/false, zcAware>& it,
             const chrono::TimePoint<Clock, Duration>& t0)
 {
-    it.WriteB<chrono::count_t>(t0.GetDuration().GetCount());
+    it.template WriteB<chrono::count_t>(t0.GetDuration().GetCount());
 }
 
 ////////////////////////////////////////
@@ -54,7 +54,7 @@ void Read(BasicBufferIterator<readOnly, zcAware>& it,
           chrono::TimePoint<Clock, Duration>* t0)
 {
     BOOST_ASSERT(t0);
-    chrono::count_t count = it.Read<chrono::count_t>();
+    chrono::count_t count = it.template Read<chrono::count_t>();
     *t0 = chrono::TimePoint<Clock, Duration>(Duration(count));
 }
 
@@ -63,7 +63,7 @@ void ReadL(BasicBufferIterator<readOnly, zcAware>& it,
            chrono::TimePoint<Clock, Duration>* t0)
 {
     BOOST_ASSERT(t0);
-    chrono::count_t count = it.ReadL<chrono::count_t>();
+    chrono::count_t count = it.template ReadL<chrono::count_t>();
     *t0 = chrono::TimePoint<Clock, Duration>(Duration(count));
 }
 
@@ -72,7 +72,7 @@ void ReadB(BasicBufferIterator<readOnly, zcAware>& it,
            chrono::TimePoint<Clock, Duration>* t0)
 {
     BOOST_ASSERT(t0);
-    chrono::count_t count = it.ReadB<chrono::count_t>();
+    chrono::count_t count = it.template ReadB<chrono::count_t>();
     *t0 = chrono::TimePoint<Clock, Duration>(Duration(count));
 }
 

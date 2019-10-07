@@ -49,7 +49,7 @@ public:
      * @param[in] value The log value.
      *
      * @return If there's already a value with the same name,
-     *         this function returns \c false.
+     *         this function returns `false`.
      */
     virtual bool AddValue(const std::string& name, LogValue value) = 0;
 
@@ -73,7 +73,7 @@ public:
      * @brief Set a log filter.
      *
      * @param[in] filter Set a log filter.
-     *                   If \c nullptr is specified, the filter is removed.
+     *                   If `nullptr` is specified, the filter is removed.
      */
     virtual void SetFilter(Ptr<ILogFilter> filter) = 0;
 

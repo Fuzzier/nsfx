@@ -32,8 +32,19 @@ NSFX_TEST_SUITE(uid)
 
     NSFX_TEST_CASE(DEFINE_TYPE_UID)
     {
-        NSFX_TEST_EXPECT(nsfx::uid_of<Object>() == "edu.uestc.nsfx.test.Object");
-        NSFX_TEST_EXPECT(nsfx::uid_of<Interface>() == "edu.uestc.nsfx.test.Interface");
+        try
+        {
+            NSFX_TEST_EXPECT(nsfx::uid_of<Object>() == "edu.uestc.nsfx.test.Object");
+            NSFX_TEST_EXPECT(nsfx::uid_of<Interface>() == "edu.uestc.nsfx.test.Interface");
+        }
+        catch (boost::exception& e)
+        {
+            std::cout << diagnostic_information(e) << std::endl;
+        }
+        catch (std::exception& e)
+        {
+            std::cout << e.what() << std::endl;
+        }
     }
 
 }

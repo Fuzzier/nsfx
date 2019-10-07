@@ -33,12 +33,12 @@ NSFX_CHRONO_OPEN_NAMESPACE
  * @brief A virtual clock.
  *
  * This clock can be used in discreet event simulations.
- * The time resolution is 1/10 nanoseconds.
+ * The time resolution is `1/10` nanoseconds.
  */
 struct VirtualClock
 {
     typedef ratio<nano::num, nano::den * 10>  tenth_nano;
-    typedef Duration<tenth_nano>  Duration;
+    typedef nsfx::chrono::Duration<tenth_nano>  Duration;
 };
 
 
@@ -48,11 +48,11 @@ struct VirtualClock
  * @brief A time point.
  *
  * @tparam Clock The clock that defines the epoch of the time system.
- *               It shall have a nested type \c Duration, which defines
+ *               It shall have a nested type `Duration`, which defines
  *               the time resolution of the time system.
  *
  * This class stores the time duration elapsed since the epoch.
- * The time resolution is 1/10 nanoseconds.
+ * The time resolution is `1/10` nanoseconds.
  */
 template<>
 class TimePoint<VirtualClock, VirtualClock::Duration>
@@ -68,51 +68,47 @@ public:
     /**
      * @brief Obtain a time point at the epoch.
      */
-    BOOST_CONSTEXPR TimePoint(void) BOOST_NOEXCEPT :
+    TimePoint(void) BOOST_NOEXCEPT :
         dt_(0) {}
 
-    explicit BOOST_CONSTEXPR TimePoint(const Duration& dt) BOOST_NOEXCEPT :
+    explicit TimePoint(const Duration& dt) BOOST_NOEXCEPT :
         dt_(dt) {}
 
     /*}}}*/
 
     // Comparison./*{{{*/
 public:
-    friend BOOST_CONSTEXPR bool operator< (const TimePoint& lhs, const TimePoint& rhs) BOOST_NOEXCEPT;
+    friend bool operator< (const TimePoint& lhs, const TimePoint& rhs) BOOST_NOEXCEPT;
 
-    friend BOOST_CONSTEXPR bool operator<=(const TimePoint& lhs, const TimePoint& rhs) BOOST_NOEXCEPT;
+    friend bool operator<=(const TimePoint& lhs, const TimePoint& rhs) BOOST_NOEXCEPT;
 
-    friend BOOST_CONSTEXPR bool operator==(const TimePoint& lhs, const TimePoint& rhs) BOOST_NOEXCEPT;
+    friend bool operator==(const TimePoint& lhs, const TimePoint& rhs) BOOST_NOEXCEPT;
 
-    friend BOOST_CONSTEXPR bool operator!=(const TimePoint& lhs, const TimePoint& rhs) BOOST_NOEXCEPT;
+    friend bool operator!=(const TimePoint& lhs, const TimePoint& rhs) BOOST_NOEXCEPT;
 
-    friend BOOST_CONSTEXPR bool operator> (const TimePoint& lhs, const TimePoint& rhs) BOOST_NOEXCEPT;
+    friend bool operator> (const TimePoint& lhs, const TimePoint& rhs) BOOST_NOEXCEPT;
 
-    friend BOOST_CONSTEXPR bool operator>=(const TimePoint& lhs, const TimePoint& rhs) BOOST_NOEXCEPT;
+    friend bool operator>=(const TimePoint& lhs, const TimePoint& rhs) BOOST_NOEXCEPT;
 
     /*}}}*/
 
     // Arithmetic./*{{{*/
 public:
-    friend BOOST_CONSTEXPR
-    TimePoint operator+(const TimePoint& lhs, const Duration& rhs) BOOST_NOEXCEPT;
+    friend TimePoint operator+(const TimePoint& lhs, const Duration& rhs) BOOST_NOEXCEPT;
 
-    friend BOOST_CONSTEXPR
-    TimePoint operator+(const Duration& lhs, const TimePoint& rhs) BOOST_NOEXCEPT;
+    friend TimePoint operator+(const Duration& lhs, const TimePoint& rhs) BOOST_NOEXCEPT;
 
-    friend BOOST_CONSTEXPR
-    TimePoint operator-(const TimePoint& lhs, const Duration& rhs) BOOST_NOEXCEPT;
+    friend TimePoint operator-(const TimePoint& lhs, const Duration& rhs) BOOST_NOEXCEPT;
 
-    friend BOOST_CONSTEXPR
-    Duration operator-(const TimePoint& lhs, const TimePoint& rhs) BOOST_NOEXCEPT;
+    friend Duration operator-(const TimePoint& lhs, const TimePoint& rhs) BOOST_NOEXCEPT;
 
-    BOOST_CONSTEXPR TimePoint& operator+=(const Duration& rhs) BOOST_NOEXCEPT
+    TimePoint& operator+=(const Duration& rhs) BOOST_NOEXCEPT
     {
         dt_ += rhs;
         return *this;
     }
 
-    BOOST_CONSTEXPR TimePoint& operator-=(const Duration& rhs) BOOST_NOEXCEPT
+    TimePoint& operator-=(const Duration& rhs) BOOST_NOEXCEPT
     {
         dt_ -= rhs;
         return *this;
@@ -124,7 +120,7 @@ public:
     /**
      * @brief Get the duration relative to the epoch.
      */
-    BOOST_CONSTEXPR Duration GetDuration(void) const BOOST_NOEXCEPT
+    Duration GetDuration(void) const BOOST_NOEXCEPT
     {
         return dt_;
     }
@@ -134,7 +130,7 @@ public:
         return dt_.ToDouble();
     }
 
-    static BOOST_CONSTEXPR size_t GetSize(void) BOOST_NOEXCEPT
+    static size_t GetSize(void) BOOST_NOEXCEPT
     {
         return Duration::GetSize();
     }
@@ -188,37 +184,37 @@ typedef TimePoint<VirtualClock>  VirtualTimePoint;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Comparison./*{{{*/
-inline BOOST_CONSTEXPR bool
+inline bool
 operator< (const VirtualTimePoint& lhs, const VirtualTimePoint& rhs) BOOST_NOEXCEPT
 {
     return lhs.dt_ < rhs.dt_;
 }
 
-inline BOOST_CONSTEXPR bool
+inline bool
 operator<=(const VirtualTimePoint& lhs, const VirtualTimePoint& rhs) BOOST_NOEXCEPT
 {
     return lhs.dt_ <= rhs.dt_;
 }
 
-inline BOOST_CONSTEXPR bool
+inline bool
 operator==(const VirtualTimePoint& lhs, const VirtualTimePoint& rhs) BOOST_NOEXCEPT
 {
     return lhs.dt_ == rhs.dt_;
 }
 
-inline BOOST_CONSTEXPR bool
+inline bool
 operator!=(const VirtualTimePoint& lhs, const VirtualTimePoint& rhs) BOOST_NOEXCEPT
 {
     return lhs.dt_ != rhs.dt_;
 }
 
-inline BOOST_CONSTEXPR bool
+inline bool
 operator> (const VirtualTimePoint& lhs, const VirtualTimePoint& rhs) BOOST_NOEXCEPT
 {
     return lhs.dt_ > rhs.dt_;
 }
 
-inline BOOST_CONSTEXPR bool
+inline bool
 operator>=(const VirtualTimePoint& lhs, const VirtualTimePoint& rhs) BOOST_NOEXCEPT
 {
     return lhs.dt_ >= rhs.dt_;
@@ -228,25 +224,25 @@ operator>=(const VirtualTimePoint& lhs, const VirtualTimePoint& rhs) BOOST_NOEXC
 
 ////////////////////////////////////////////////////////////////////////////////
 // Arithmetic./*{{{*/
-inline BOOST_CONSTEXPR VirtualTimePoint
+inline VirtualTimePoint
 operator+(const VirtualTimePoint& lhs, const VirtualTimePoint::Duration& rhs) BOOST_NOEXCEPT
 {
     return VirtualTimePoint(lhs.dt_ + rhs);
 }
 
-inline BOOST_CONSTEXPR VirtualTimePoint
+inline VirtualTimePoint
 operator+(const VirtualTimePoint::Duration& lhs, const VirtualTimePoint& rhs) BOOST_NOEXCEPT
 {
     return VirtualTimePoint(lhs + rhs.dt_);
 }
 
-inline BOOST_CONSTEXPR VirtualTimePoint
+inline VirtualTimePoint
 operator-(const VirtualTimePoint& lhs, const VirtualTimePoint::Duration& rhs) BOOST_NOEXCEPT
 {
     return VirtualTimePoint(lhs.dt_ - rhs);
 }
 
-inline BOOST_CONSTEXPR VirtualTimePoint::Duration
+inline VirtualTimePoint::Duration
 operator-(const VirtualTimePoint& lhs, const VirtualTimePoint& rhs) BOOST_NOEXCEPT
 {
     return VirtualTimePoint::Duration(lhs.dt_ - rhs.dt_);
@@ -257,7 +253,7 @@ operator-(const VirtualTimePoint& lhs, const VirtualTimePoint& rhs) BOOST_NOEXCE
 ////////////////////////////////////////////////////////////////////////////////
 // Methods./*{{{*/
 /**
- * @brief Supports <code>boost::hash<VirtualTimePoint></code>.
+ * @brief Supports `boost::hash<VirtualTimePoint>`.
  */
 inline size_t
 hash_value(const VirtualTimePoint& t) BOOST_NOEXCEPT

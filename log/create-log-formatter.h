@@ -52,8 +52,8 @@ public:
  * @ingroup Log
  * @brief The functor-based stream formatter.
  *
- * @tparam Functor Must conform to \c LogFormatterFunctorConcept. i.e.,
- *                 \c void(std::ostream& os, const Record& record).
+ * @tparam Functor Must conform to `LogFormatterFunctorConcept`. i.e.,
+ *                 `void(std::ostream& os, const Record& record)`.
  */
 template<class Functor>
 class FunctorBasedLogFormatter :
@@ -97,8 +97,8 @@ private:
  * @ingroup Log
  * @brief Create a functor-based log formatter.
  *
- * @tparam Functor Must conform to \c LogFormatterFunctorConcept. i.e.,
- *                 \c void(std::ostream& os, const Record& record).
+ * @tparam Functor Must conform to `LogFormatterFunctorConcept`. i.e.,
+ *                 `void(std::ostream& os, const Record& record)`.
  */
 template<class Functor>
 inline Ptr<ILogFormatter> CreateLogFormatter(Functor&& functor)

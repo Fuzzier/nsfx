@@ -35,7 +35,7 @@ NSFX_OPEN_NAMESPACE
  * @ingroup Utility
  * @brief A cyclic sequence number.
  *
- * @tparam bits The number of bits. Must be within <code>[2, 64]</code>.
+ * @tparam bits The number of bits. Must be within `[2, 64]`.
  */
 template<size_t bits>
 class CircularSequenceNumberTraits/*{{{*/
@@ -70,12 +70,12 @@ public:
     typedef typename TraitsType::ValueType      ValueType;
 
 public:
-    BOOST_CONSTEXPR CircularSequenceNumber(void) BOOST_NOEXCEPT :
+    CircularSequenceNumber(void) BOOST_NOEXCEPT :
         value_(0)
     {
     }
 
-    explicit BOOST_CONSTEXPR CircularSequenceNumber(ValueType value) :
+    explicit CircularSequenceNumber(ValueType value) :
         value_(value)
     {
         if (value > TraitsType::MAX_VALUE)
@@ -84,43 +84,43 @@ public:
         }
     }
 
-    BOOST_CONSTEXPR ValueType GetValue(void) const BOOST_NOEXCEPT
+    ValueType GetValue(void) const BOOST_NOEXCEPT
     {
         return value_;
     }
 
-    static BOOST_CONSTEXPR size_t GetBitSize(void) BOOST_NOEXCEPT
+    static size_t GetBitSize(void) BOOST_NOEXCEPT
     {
         return bits;
     }
 
-    static BOOST_CONSTEXPR size_t GetSize(void) BOOST_NOEXCEPT
+    static size_t GetSize(void) BOOST_NOEXCEPT
     {
         return (bits + 7) >> 3;
     }
 
     // Operators.
 public:
-    BOOST_CONSTEXPR ThisType& operator++(void) BOOST_NOEXCEPT
+    ThisType& operator++(void) BOOST_NOEXCEPT
     {
         InternalIncrement();
         return *this;
     }
 
-    BOOST_CONSTEXPR ThisType operator++(int) BOOST_NOEXCEPT
+    ThisType operator++(int) BOOST_NOEXCEPT
     {
         ValueType old = value_;
         InternalIncrement();
         return ThisType(old);
     }
 
-    BOOST_CONSTEXPR ThisType& operator--(void) BOOST_NOEXCEPT
+    ThisType& operator--(void) BOOST_NOEXCEPT
     {
         InternalDecrement();
         return *this;
     }
 
-    BOOST_CONSTEXPR ThisType operator--(int) BOOST_NOEXCEPT
+    ThisType operator--(int) BOOST_NOEXCEPT
     {
         ValueType old = value_;
         InternalDecrement();
@@ -128,7 +128,7 @@ public:
     }
 
 private:
-    BOOST_CONSTEXPR void InternalIncrement(void) BOOST_NOEXCEPT
+    void InternalIncrement(void) BOOST_NOEXCEPT
     {
         ++value_;
         if (value_ > TraitsType::MAX_VALUE)
@@ -137,7 +137,7 @@ private:
         }
     }
 
-    BOOST_CONSTEXPR void InternalDecrement(void) BOOST_NOEXCEPT
+    void InternalDecrement(void) BOOST_NOEXCEPT
     {
         if (value_ == 0)
         {

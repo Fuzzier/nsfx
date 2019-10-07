@@ -42,11 +42,9 @@ class ILogEventSink;
  * @brief The log event sink.
  * @class ILogEventSink
  *
- * Prototype:
+ * Prototype: `void Fire(LogRecord record)`.
  *
- *     void Fire(LogRecord record);
- *
- * @see ILogEvent
+ * @see `ILogEvent`.
  */
 NSFX_DEFINE_EVENT_SINK_INTERFACE(
     ILogEventSink, "edu.uestc.nsfx.ILogEventSink",
@@ -59,11 +57,9 @@ NSFX_DEFINE_EVENT_SINK_INTERFACE(
  * @brief The log event.
  * @class ILogEvent
  *
- * Prototype:
+ * Prototype: `void Fire(LogRecord record)`.
  *
- *     void Fire(LogRecord record);
- *
- * @see ILogEventSink
+ * @see `ILogEventSink`
  */
 NSFX_DEFINE_EVENT_INTERFACE(
     ILogEvent, "edu.uestc.nsfx.ILogEvent",
@@ -75,10 +71,10 @@ NSFX_DEFINE_EVENT_INTERFACE(
  * @ingroup Log
  * @brief The extented log event sink.
  *
- * It extends \c ILogEventSink, and provides an extra method \c IsEnabled().
+ * It extends `ILogEventSink`, and provides an extra method `IsEnabled()`.
  * The log macros use this interface, so they can work more efficiently.
  *
- * @see \c ILogEventSink
+ * @see `ILogEventSink`.
  */
 class ILogEventSinkEx :
     public ILogEventSink
@@ -125,7 +121,7 @@ public:
      * @param[in] value The log value.
      *
      * @return If there's already a value with the same name,
-     *         this function returns \c false.
+     *         this function returns `false`.
      */
     virtual bool AddValue(const std::string& name, LogValue value) = 0;
 
@@ -149,7 +145,7 @@ public:
      * @brief Set a log filter.
      *
      * @param[in] filter Set a log filter.
-     *                   If \c nullptr is specified, the filter is removed.
+     *                   If `nullptr` is specified, the filter is removed.
      */
     virtual void SetFilter(Ptr<ILogFilter> filter) = 0;
 
@@ -206,7 +202,7 @@ inline bool IsLogSinkEnabled(Sink& sink, LogSinkExTag)
 template<class Sink>
 inline bool IsLogSinkEnabled(Sink& sink)
 {
-    typedef aux::MakeLogSinkTag<Sink>::type  Tag;
+    typedef typename aux::MakeLogSinkTag<Sink>::type  Tag;
     return aux::IsLogSinkEnabled(sink, Tag());
 }
 

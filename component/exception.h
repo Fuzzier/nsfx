@@ -37,6 +37,12 @@ struct ComponentException : Exception {};
 // Object.
 /**
  * @ingroup Exception
+ * @brief The queried UID is not defined.
+ */
+struct NoUid : ComponentException {};
+
+/**
+ * @ingroup Exception
  * @brief The queried interface is not supported.
  */
 struct NoInterface : ComponentException {};

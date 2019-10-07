@@ -39,8 +39,8 @@ NSFX_OPEN_NAMESPACE
  * A cookie is returned by an event source when an event sink is connected.
  * It can be used to disconnect the event sink from the event source.
  *
- * A cookie value of \c 0 represents no connection.
- * A cookie <b>shall</b> be initialized to \c 0.
+ * A cookie value of `0` represents no connection.
+ * A cookie **shall** be initialized to `0`.
  */
 typedef uint32_t cookie_t;
 

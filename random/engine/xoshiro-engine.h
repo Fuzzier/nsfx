@@ -70,7 +70,8 @@ template<class UIntType, size_t a, size_t b>
 struct xoshiro_n4_transformer :
     xoshiro_transformer_traits<UIntType, 4, a, b>
 {
-    static void transform(UIntType (&s)[state_size])
+    typedef xoshiro_transformer_traits<UIntType, 4, a, b>  TraitsType;
+    static void transform(UIntType (&s)[TraitsType::state_size])
     {
         const UIntType t = s[1] << a;
         s[2] ^= s[0];
@@ -96,7 +97,7 @@ template<class UIntType, size_t a, size_t b>
 struct xoshiro_n8_transformer :
     xoshiro_transformer_traits<UIntType, 8, a, b>
 {
-    typedef uint64_t UIntType;
+    static_assert(sizeof (UIntType) == 8, "Invalid type");
     typedef UIntType result_type;
     BOOST_STATIC_CONSTANT(size_t, state_size = 8);
     static void transform(UIntType (&s)[state_size])
@@ -125,9 +126,9 @@ struct xoshiro_plus_scrambler
     BOOST_STATIC_CONSTANT(size_t, state_size = n);
     static_assert(i < n, "Invalid parameter.");
     static_assert(j < n, "Invalid parameter.");
-    static result_type scramble(UIntType (&s)[n])
+    static result_type scramble(UIntType (&x)[n])
     {
-        return s[i] + s[j];
+        return x[i] + x[j];
     }
 };
 
@@ -138,9 +139,9 @@ struct xoshiro_star_scrambler
     typedef UIntType result_type;
     BOOST_STATIC_CONSTANT(size_t, state_size = n);
     static_assert(i < n, "Invalid parameter.");
-    static result_type scramble(UIntType (&s)[n])
+    static result_type scramble(UIntType (&x)[n])
     {
-        return s[i] * s;
+        return x[i] * s;
     }
 };
 
@@ -199,7 +200,7 @@ public:
         seed(default_seed);
     }
 
-    explicit xoshiro_engine(result_type value) :
+    explicit xoshiro_engine(result_type value)
     {
         seed(value);
     }
@@ -254,10 +255,10 @@ private:
  * Ported from the code written by David Blackman and Sebastiano Vigna in 2018.
  * See http://xoshiro.di.unimi.it/xoshiro128plus.c
  *
- * This is \c xoshiro128+ 1.0, the authors' best and fastest 32-bit generator
+ * This is `xoshiro128+` 1.0, the authors' best and fastest 32-bit generator
  * for 32-bit floating-point numbers.
  * The authors suggest to use its upper bits for floating-point generation,
- * as it is slightly faster than \c xoshiro128**.
+ * as it is slightly faster than `xoshiro128**`.
  * It passes all tests the authors are aware of except for linearity tests,
  * as the lowest four bits have low linear complexity, so if low linear
  * complexity is not considered an issue (as it is usually the case), it can
@@ -266,7 +267,7 @@ private:
  * The authors suggest to use a sign test to extract a random Boolean value,
  * and right shifts to extract subsets of bits.
  *
- * A \c splitmix64 generator is seeded, and its output is used to fill the state.
+ * A `splitmix64` generator is seeded, and its output is used to fill the state.
  */
 typedef xoshiro_engine<uint32_t, 4,
         random::aux::xoshiro_n4_transformer<uint32_t, 9, 11>,
@@ -283,14 +284,14 @@ typedef xoshiro_engine<uint32_t, 4,
  * Ported from the code written by David Blackman and Sebastiano Vigna in 2018.
  * See http://xoshiro.di.unimi.it/xoshiro128starstar.c
  *
- * This is \c xoshiro128** 1.0, a 32-bit all-purpose, rock-solid generator.
+ * This is `xoshiro128**` 1.0, a 32-bit all-purpose, rock-solid generator.
  * It has excellent (sub-ns) speed, a state size (128 bits) that is large
  * enough for mild parallelism, and it passes all tests the authors are aware of.
  *
  * For generating just single-precision (i.e., 32-bit) floating-point numbers,
- * \c xoshiro128+ is even faster.
+ * `xoshiro128+` is even faster.
  *
- * A \c splitmix64 generator is seeded, and its output is used to fill the state.
+ * A `splitmix64` generator is seeded, and its output is used to fill the state.
  */
 typedef xoshiro_engine<uint32_t, 4,
         random::aux::xoshiro_n4_transformer<uint32_t, 9, 11>,
@@ -307,10 +308,10 @@ typedef xoshiro_engine<uint32_t, 4,
  * Ported from the code written by David Blackman and Sebastiano Vigna in 2018.
  * See http://xoshiro.di.unimi.it/xoshiro256plus.c
  *
- * This is xoshiro256+ 1.0, the authors' best and fastest generator for
+ * This is `xoshiro256+` 1.0, the authors' best and fastest generator for
  * floating-point numbers.
  * The authors suggest to use its upper bits for floating-point generation,
- * as it is slightly faster than \c xoshiro256**.
+ * as it is slightly faster than `xoshiro256**`.
  * It passes all tests the authors are aware of except for the lowest three
  * bits, which might fail linearity tests (and just those), so if low linear
  * complexity is not considered an issue (as it is usually the case), it can
@@ -319,7 +320,7 @@ typedef xoshiro_engine<uint32_t, 4,
  * The authors suggest to use a sign test to extract a random Boolean value, and
  * right shifts to extract subsets of bits.
  *
- * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * The authors suggest to seed a `splitmix64` generator and use its output to
  * fill the state.
  */
 typedef xoshiro_engine<uint64_t, 4,
@@ -337,13 +338,13 @@ typedef xoshiro_engine<uint64_t, 4,
  * Ported from the code written by David Blackman and Sebastiano Vigna in 2018.
  * See http://xoshiro.di.unimi.it/xoshiro256starstar.c
  *
- * This is xoshiro256** 1.0, the authors' all-purpose, rock-solid generator.
+ * This is `xoshiro256**` 1.0, the authors' all-purpose, rock-solid generator.
  * It has excellent (sub-ns) speed, a state (256 bits) that is large enough for
  * any parallel application, and it passes all tests the authors are aware of.
  *
- * For generating just floating-point numbers, \c xoshiro256+ is even faster.
+ * For generating just floating-point numbers, `xoshiro256+` is even faster.
  *
- * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * The authors suggest to seed a `splitmix64` generator and use its output to
  * fill the state.
  */
 typedef xoshiro_engine<uint64_t, 4,
@@ -361,10 +362,10 @@ typedef xoshiro_engine<uint64_t, 4,
  * Ported from the code written by David Blackman and Sebastiano Vigna in 2018.
  * See http://xoshiro.di.unimi.it/xoshiro512plus.c
  *
- * This is \c xoshiro512+ 1.0, the authers' generator for floating-point
+ * This is `xoshiro512+` 1.0, the authers' generator for floating-point
  * numbers with increased state size.
  * The authors suggest to use its upper bits for floating-point generation,
- * as it is slightly faster than \c xoshiro512**.
+ * as it is slightly faster than `xoshiro512**`.
  * It passes all tests the authors are aware of except for the lowest three
  * bits, which might fail linearity tests (and just those), so if low linear
  * complexity is not considered an issue (as it is usually the case), it can
@@ -373,7 +374,7 @@ typedef xoshiro_engine<uint64_t, 4,
  * The authors suggest to use a sign test to extract a random Boolean value,
  * and right shifts to extract subsets of bits.
  *
- * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * The authors suggest to seed a `splitmix64` generator and use its output to
  * fill the state.
  */
 typedef xoshiro_engine<uint64_t, 8,
@@ -391,14 +392,14 @@ typedef xoshiro_engine<uint64_t, 8,
  * Ported from the code written by David Blackman and Sebastiano Vigna in 2018.
  * See http://xoshiro.di.unimi.it/xoshiro512starstar.c
  *
- * This is \c xoshiro512** 1.0, an all-purpose, rock-solid generator.
+ * This is `xoshiro512**` 1.0, an all-purpose, rock-solid generator.
  * It has excellent (about 1ns) speed, an increased state (512 bits) that
  * is large enough for any parallel application, and it passes all tests
  * the authors are aware of.
  *
- * For generating just floating-point numbers, \c xoshiro512+ is even faster.
+ * For generating just floating-point numbers, `xoshiro512+` is even faster.
  *
- * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * The authors suggest to seed a `splitmix64` generator and use its output to
  * fill the state.
  */
 typedef xoshiro_engine<uint64_t, 8,
@@ -452,21 +453,21 @@ public:
     }
 
 private:
-    template<class RealType, class UIntType>
+    template<class RealType1, class UIntType1>
     struct uint_to_real
     {
-        static RealType convert(uint32_t n)
+        static RealType1 convert(uint32_t m)
         {
-            return (n >> 8) * (1.0f / 16777216.0f); // 2^-24
+            return (m >> 8) * (1.0f / 16777216.0f); // 2^-24
         }
     };
 
-    template<class RealType>
-    struct uint_to_real<RealType, uint64_t>
+    template<class RealType1>
+    struct uint_to_real<RealType1, uint64_t>
     {
-        static RealType convert(uint64_t n)
+        static RealType1 convert(uint64_t m)
         {
-            return (n >> 11) * (1.0 / 9007199254740992.0); // 2^-53
+            return (m >> 11) * (1.0 / 9007199254740992.0); // 2^-53
         }
     };
 
@@ -506,10 +507,10 @@ private:
  * Ported from the code written by David Blackman and Sebastiano Vigna in 2018.
  * See http://xoshiro.di.unimi.it/xoshiro128plus.c
  *
- * This is \c xoshiro128+ 1.0, the authors' best and fastest 32-bit generator
+ * This is `xoshiro128+` 1.0, the authors' best and fastest 32-bit generator
  * for 32-bit floating-point numbers.
  * The authors suggest to use its upper bits for floating-point generation,
- * as it is slightly faster than \c xoshiro128**.
+ * as it is slightly faster than `xoshiro128**`.
  * It passes all tests the authors are aware of except for linearity tests,
  * as the lowest four bits have low linear complexity, so if low linear
  * complexity is not considered an issue (as it is usually the case), it can
@@ -518,7 +519,7 @@ private:
  * The authors suggest to use a sign test to extract a random Boolean value,
  * and right shifts to extract subsets of bits.
  *
- * A \c splitmix64 generator is seeded, and its output is used to fill the state.
+ * A `splitmix64` generator is seeded, and its output is used to fill the state.
  */
 typedef xoshiro_01_engine<float, uint32_t, 4,
         random::aux::xoshiro_n4_transformer<uint32_t, 9, 11>,
@@ -535,14 +536,14 @@ typedef xoshiro_01_engine<float, uint32_t, 4,
  * Ported from the code written by David Blackman and Sebastiano Vigna in 2018.
  * See http://xoshiro.di.unimi.it/xoshiro128starstar.c
  *
- * This is \c xoshiro128** 1.0, a 32-bit all-purpose, rock-solid generator.
+ * This is `xoshiro128**` 1.0, a 32-bit all-purpose, rock-solid generator.
  * It has excellent (sub-ns) speed, a state size (128 bits) that is large
  * enough for mild parallelism, and it passes all tests the authors are aware of.
  *
  * For generating just single-precision (i.e., 32-bit) floating-point numbers,
- * \c xoshiro128+ is even faster.
+ * `xoshiro128+` is even faster.
  *
- * A \c splitmix64 generator is seeded, and its output is used to fill the state.
+ * A `splitmix64` generator is seeded, and its output is used to fill the state.
  */
 typedef xoshiro_01_engine<float, uint32_t, 4,
         random::aux::xoshiro_n4_transformer<uint32_t, 9, 11>,
@@ -559,10 +560,10 @@ typedef xoshiro_01_engine<float, uint32_t, 4,
  * Ported from the code written by David Blackman and Sebastiano Vigna in 2018.
  * See http://xoshiro.di.unimi.it/xoshiro256plus.c
  *
- * This is xoshiro256+ 1.0, the authors' best and fastest generator for
+ * This is `xoshiro256+` 1.0, the authors' best and fastest generator for
  * floating-point numbers.
  * The authors suggest to use its upper bits for floating-point generation,
- * as it is slightly faster than \c xoshiro256**.
+ * as it is slightly faster than `xoshiro256**`.
  * It passes all tests the authors are aware of except for the lowest three
  * bits, which might fail linearity tests (and just those), so if low linear
  * complexity is not considered an issue (as it is usually the case), it can
@@ -571,7 +572,7 @@ typedef xoshiro_01_engine<float, uint32_t, 4,
  * The authors suggest to use a sign test to extract a random Boolean value, and
  * right shifts to extract subsets of bits.
  *
- * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * The authors suggest to seed a `splitmix64` generator and use its output to
  * fill the state.
  */
 typedef xoshiro_01_engine<double, uint64_t, 4,
@@ -589,13 +590,13 @@ typedef xoshiro_01_engine<double, uint64_t, 4,
  * Ported from the code written by David Blackman and Sebastiano Vigna in 2018.
  * See http://xoshiro.di.unimi.it/xoshiro256starstar.c
  *
- * This is xoshiro256** 1.0, the authors' all-purpose, rock-solid generator.
+ * This is `xoshiro256**` 1.0, the authors' all-purpose, rock-solid generator.
  * It has excellent (sub-ns) speed, a state (256 bits) that is large enough for
  * any parallel application, and it passes all tests the authors are aware of.
  *
- * For generating just floating-point numbers, \c xoshiro256+ is even faster.
+ * For generating just floating-point numbers, `xoshiro256+` is even faster.
  *
- * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * The authors suggest to seed a `splitmix64` generator and use its output to
  * fill the state.
  */
 typedef xoshiro_01_engine<double, uint64_t, 4,
@@ -613,10 +614,10 @@ typedef xoshiro_01_engine<double, uint64_t, 4,
  * Ported from the code written by David Blackman and Sebastiano Vigna in 2018.
  * See http://xoshiro.di.unimi.it/xoshiro512plus.c
  *
- * This is \c xoshiro512+ 1.0, the authers' generator for floating-point
+ * This is `xoshiro512+` 1.0, the authers' generator for floating-point
  * numbers with increased state size.
  * The authors suggest to use its upper bits for floating-point generation,
- * as it is slightly faster than \c xoshiro512**.
+ * as it is slightly faster than `xoshiro512**`.
  * It passes all tests the authors are aware of except for the lowest three
  * bits, which might fail linearity tests (and just those), so if low linear
  * complexity is not considered an issue (as it is usually the case), it can
@@ -625,7 +626,7 @@ typedef xoshiro_01_engine<double, uint64_t, 4,
  * The authors suggest to use a sign test to extract a random Boolean value,
  * and right shifts to extract subsets of bits.
  *
- * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * The authors suggest to seed a `splitmix64` generator and use its output to
  * fill the state.
  */
 typedef xoshiro_01_engine<double, uint64_t, 8,
@@ -643,14 +644,14 @@ typedef xoshiro_01_engine<double, uint64_t, 8,
  * Ported from the code written by David Blackman and Sebastiano Vigna in 2018.
  * See http://xoshiro.di.unimi.it/xoshiro512starstar.c
  *
- * This is \c xoshiro512** 1.0, an all-purpose, rock-solid generator.
+ * This is `xoshiro512**` 1.0, an all-purpose, rock-solid generator.
  * It has excellent (about 1ns) speed, an increased state (512 bits) that
  * is large enough for any parallel application, and it passes all tests
  * the authors are aware of.
  *
- * For generating just floating-point numbers, \c xoshiro512+ is even faster.
+ * For generating just floating-point numbers, `xoshiro512+` is even faster.
  *
- * The authors suggest to seed a \c splitmix64 generator and use its output to
+ * The authors suggest to seed a `splitmix64` generator and use its output to
  * fill the state.
  */
 typedef xoshiro_01_engine<double, uint64_t, 8,

@@ -42,12 +42,12 @@ public:
      * @brief Register a class factory.
      *
      * @param[in] cid The UID of an object class.
-     *                The class must conform to \c EnvelopableConcept.
+     *                The class must conform to `EnvelopableConcept`.
      * @param[in] factory The class factory.
      *
      * @throw OutOfMemory
      * @throw ClassAlreadyRegistered The class is already registered.
-     * @throw InvalidPointer The factory is \c nullptr.
+     * @throw InvalidPointer The factory is `nullptr`.
      */
     virtual void Register(const Uid& cid, Ptr<IClassFactory> factory) = 0;
 
@@ -67,7 +67,7 @@ public:
      * @brief Get a class factory.
      *
      * @param[in] cid The UID of an object class.
-     *                The class must conform to \c ObjectImplConcept.
+     *                The class must conform to `ObjectImplConcept`.
      *
      * @throw ClassNotRegistered The class is not registered.
      */

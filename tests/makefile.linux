@@ -1,81 +1,54 @@
-###
- # @file
- #
- # @brief Makefile for tests.
- #
- # @version 1.0
- # @author  Wei Tang <gauchyler@uestc.edu.cn>
- # @date    2018-09-30
- #
- # @copyright Copyright (c) 2018.
- #   National Key Laboratory of Science and Technology on Communications,
- #   University of Electronic Science and Technology of China.
- #   All rights reserved.
- ##
+##
+# @file
+#
+# @brief Makefile for tests.
+#
+# @version 1.0
+# @author  Wei Tang <gauchyler@uestc.edu.cn>
+# @date    2018-09-30
+#
+# @copyright Copyright (c) 2018.
+#   National Key Laboratory of Science and Technology on Communications,
+#   University of Electronic Science and Technology of China.
+#   All rights reserved.
+#
 
+SHELL=/bin/sh
 NSFX_PATH=..
-CC=cl.exe
-LD=link.exe
-LIBS=ws2_32.lib iphlpapi.lib
-AR=lib.exe
+CC=g++
+LD=ld
+LIBS=
+AR=
 
-# disable warning C4355: 'this' pointer is used in constructor.
-# disable warning C4819: file contains non-ascii characters.
+CFLAGS=
+CPPFLAGS=-I$(NSFX_PATH)/.. -std=c++0x -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=false
+LDFLAGS=
+ARFLAGS=
 
-CFLAGS=/nologo
-CPPFLAGS=/EHsc /W3 /MD /Zi /wd4355 /wd4819 /I"$(NSFX_PATH)/.." \
-         /DBOOST_MATH_PROMOTE_DOUBLE_POLICY=false
-LDFLAGS=/NOLOGO /INCREMENTAL:NO
-ARFLAGS=/NOLOGO
-
-
-!IF     ([cl.exe 2>&1 | FINDSTR /R /C:"Version 19.2" >NUL] == 0) # VC2019
-ARCH=AVX2
-!ELSEIF ([cl.exe 2>&1 | FINDSTR /R /C:"Version 19.1" >NUL] == 0) # VC2017
-ARCH=AVX2
-!ELSEIF ([cl.exe 2>&1 | FINDSTR /R /C:"Version 19.0" >NUL] == 0) # VC2015
-ARCH=AVX2
-!ELSEIF ([cl.exe 2>&1 | FINDSTR /R /C:"Version 18.0" >NUL] == 0) # VC2013 (Suppose Update 2 is installed)
-ARCH=AVX2
-!ELSEIF ([cl.exe 2>&1 | FINDSTR /R /C:"Version 17.0" >NUL] == 0) # VC2012
-ARCH=AVX
-!ELSEIF ([cl.exe 2>&1 | FINDSTR /R /C:"Version 16.0" >NUL] == 0) # VC2010
-ARCH=AVX
-!ENDIF
-
-
-!IFDEF RELEASE
-CPPFLAGS=$(CPPFLAGS) /Ox /arch:$(ARCH) /DBOOST_DISABLE_ASSERTS
-!ELSE
-CPPFLAGS=$(CPPFLAGS) /Od
-!ENDIF
-
+ifndef RELEASE
+CPPFLAGS+=-g
+else
+CPPFLAGS+=-O3 -DBOOST_DISABLE_ASSERTS
+endif
 
 .PHONY: all clean run                                              \
         test utility chrono component event log random statistics  \
         simulation network                                         \
 
 clean :
-	del /s /q *.obj 1>nul 2>nul
-	del /s /q *.pdb 1>nul 2>nul
-	del /s /q *.ilk 1>nul 2>nul
-	del /s /q *.exp 1>nul 2>nul
-	del /s /q *.exe 1>nul 2>nul
-	del /s /q *.dll 1>nul 2>nul
-	del /s /q *.log 1>nul 2>nul
-	del /s /q *.txt 1>nul 2>nul
+	for f in $$(find . -type f ! -name "*.*"); do rm $$f; done
+	for f in $$(find . -type f -name "*.log"); do rm $$f; done
+	for f in $$(find . -type f -name "*.txt"); do rm $$f; done
 
 all : test utility chrono                    \
       component event log random statistics  \
       simulation network                     \
 
-# Ignore command errors (e.g., 'dir' found nothing) by adding switch "+I".
-!CMDSWITCHES +I
 run :
-	for /f "delims=" %d in ('dir /b *.exe 2^>nul') do @( \
-		echo ====== %~d ====== & \
-		"%~d" )
-!CMDSWITCHES -I
+	for f in $$(find . -type f ! -name "*.*"); do  \
+		echo "====== $${f##*/} ======";            \
+		$$f;                                       \
+	done
 
 ################################################################################
 EXCEPTION_HEADERS=                      \
@@ -108,20 +81,16 @@ HEADERS=                  \
     $(EXCEPTION_HEADERS)  \
 
 ########################################
-test-case : test-case.exe
-
 SRC=test/test-case.cpp
 
-test-case.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-case : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-suite : test-suite.exe
-
 SRC=test/test-suite.cpp
 
-test-suite.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-suite : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ################################################################################
 # utility
@@ -144,20 +113,16 @@ HEADERS=                  \
     $(EXCEPTION_HEADERS)  \
 
 ########################################
-test-least-int : test-least-int.exe
-
 SRC=utility/test-least-int.cpp
 
-test-least-int.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-least-int : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-circular-sequence-number : test-circular-sequence-number.exe
-
 SRC=utility/test-circular-sequence-number.cpp
 
-test-circular-sequence-number.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-circular-sequence-number : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ################################################################################
 # chrono
@@ -171,28 +136,23 @@ CHRONO_HEADERS=                               \
     $(NSFX_PATH)/chrono/duration.h            \
     $(NSFX_PATH)/chrono/time-point.h          \
     $(NSFX_PATH)/chrono/virtual-time-point.h  \
-    $(UTILITY_HEADERS)                        \
 
-HEADERS=                  \
-    $(CHRONO_HEADERS)     \
-    $(TEST_HEADERS)       \
-    $(EXCEPTION_HEADERS)  \
+HEADERS=                \
+    $(CHRONO_HEADERS)   \
+    $(TEST_HEADERS)     \
+    $(UTILITY_HEADERS)  \
 
 ########################################
-test-duration : test-duration.exe
-
 SRC=chrono/test-duration.cpp
 
-test-duration.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-duration : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-virtual-time-point : test-virtual-time-point.exe
-
 SRC=chrono/test-virtual-time-point.cpp
 
-test-virtual-time-point.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-virtual-time-point : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ################################################################################
 # component
@@ -221,47 +181,37 @@ HEADERS=                  \
     $(COMPONENT_HEADERS)  \
     $(CHRONO_HEADERS)     \
     $(TEST_HEADERS)       \
-    $(EXCEPTION_HEADERS)  \
+    $(UTILITY_HEADERS)    \
 
 ########################################
-test-uid : test-uid.exe
-
 SRC=component/test-uid.cpp
 
-test-uid.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-uid : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-ptr : test-ptr.exe
-
 SRC=component/test-ptr.cpp
 
-test-ptr.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-ptr : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-object : test-object.exe
-
 SRC=component/test-object.cpp
 
-test-object.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-object : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-class-factory : test-class-factory.exe
-
 SRC=component/test-class-factory.cpp
 
-test-class-factory.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-class-factory : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-class-registry : test-class-registry.exe
-
 SRC=component/test-class-registry.cpp
 
-test-class-registry.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-class-registry : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ################################################################################
 # event
@@ -288,28 +238,22 @@ HEADERS=                  \
     $(EXCEPTION_HEADERS)  \
 
 ########################################
-test-event : test-event.exe
-
 SRC=event/test-event.cpp
 
-test-event.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-event : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-event-sink : test-event-sink.exe
-
 SRC=event/test-event-sink.cpp
 
-test-event-sink.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-event-sink : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-portainer : test-portainer.exe
-
 SRC=event/test-portainer.cpp
 
-test-portainer.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-portainer : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ################################################################################
 # log
@@ -350,52 +294,40 @@ HEADERS=                  \
     $(EXCEPTION_HEADERS)  \
 
 ########################################
-test-log-value : test-log-value.exe
-
 SRC=log/test-log-value.cpp
 
-test-log-value.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-log-value : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-log-record : test-log-record.exe
-
 SRC=log/test-log-record.cpp
 
-test-log-record.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-log-record : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-log-filter : test-log-filter.exe
-
 SRC=log/test-log-filter.cpp
 
-test-log-filter.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-log-filter : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-logger : test-logger.exe
-
 SRC=log/test-logger.cpp
 
-test-logger.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-logger : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-log-formatter : test-log-formatter.exe
-
 SRC=log/test-log-formatter.cpp
 
-test-log-formatter.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-log-formatter : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-log-stream-sink : test-log-stream-sink.exe
-
 SRC=log/test-log-stream-sink.cpp
 
-test-log-stream-sink.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-log-stream-sink : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ################################################################################
 # random
@@ -479,47 +411,37 @@ HEADERS=                  \
     $(RANDOM_HEADERS)     \
     $(COMPONENT_HEADERS)  \
     $(TEST_HEADERS)       \
-    $(EXCEPTION_HEADERS)  \
+	$(EXCEPTION_HEADERS)  \
 
 ########################################
-test-rot : test-rot.exe
-
 SRC=random/test-rot.cpp
 
-test-rot.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-rot : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-splitmix-engine : test-splitmix-engine.exe
-
 SRC=random/test-splitmix-engine.cpp
 
-test-splitmix-engine.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-splitmix-engine : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-xoshiro-engine : test-xoshiro-engine.exe
-
 SRC=random/test-xoshiro-engine.cpp
 
-test-xoshiro-engine.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-xoshiro-engine : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-xoroshiro-engine : test-xoroshiro-engine.exe
-
 SRC=random/test-xoroshiro-engine.cpp
 
-test-xoroshiro-engine.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-xoroshiro-engine : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-pseudo-random-generator : test-pseudo-random-generator.exe
-
 SRC=random/test-pseudo-random-generator.cpp
 
-test-pseudo-random-generator.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-pseudo-random-generator : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ################################################################################
 # statistics
@@ -548,20 +470,16 @@ HEADERS=                   \
     $(EXCEPTION_HEADERS)   \
 
 ########################################
-test-probe : test-probe.exe
-
 SRC=statistics/test-probe.cpp
 
-test-probe.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-probe : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-summary : test-summary.exe
-
 SRC=statistics/test-summary.cpp
 
-test-summary.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-summary : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ################################################################################
 # simulation
@@ -595,44 +513,34 @@ HEADERS=                   \
     $(EXCEPTION_HEADERS)   \
 
 ########################################
-test-event-handle : test-event-handle.exe
-
 SRC=simulation/test-event-handle.cpp
 
-test-event-handle.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-event-handle : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-list-scheduler : test-list-scheduler.exe
-
 SRC=simulation/test-list-scheduler.cpp
 
-test-list-scheduler.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-list-scheduler : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-set-scheduler : test-set-scheduler.exe
-
 SRC=simulation/test-set-scheduler.cpp
 
-test-set-scheduler.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-set-scheduler : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-heap-scheduler : test-heap-scheduler.exe
-
 SRC=simulation/test-heap-scheduler.cpp
 
-test-heap-scheduler.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-heap-scheduler : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-simulator : test-simulator.exe
-
 SRC=simulation/test-simulator.cpp
 
-test-simulator.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-simulator : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ################################################################################
 # network
@@ -709,146 +617,110 @@ HEADERS=                   \
     $(EXCEPTION_HEADERS)   \
 
 ########################################
-test-buffer : test-buffer.exe
-
 SRC=network/buffer/test-buffer.cpp
 
-test-buffer.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-buffer : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-const-buffer : test-const-buffer.exe
-
 SRC=network/buffer/test-const-buffer.cpp
 
-test-const-buffer.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-const-buffer : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-zc-buffer : test-zc-buffer.exe
-
 SRC=network/buffer/test-zc-buffer.cpp
 
-test-zc-buffer.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-zc-buffer : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-const-zc-buffer : test-const-zc-buffer.exe
-
 SRC=network/buffer/test-const-zc-buffer.cpp
 
-test-const-zc-buffer.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-const-zc-buffer : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-fixed-buffer : test-fixed-buffer.exe
-
 SRC=network/buffer/test-fixed-buffer.cpp
 
-test-fixed-buffer.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-fixed-buffer : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-const-fixed-buffer : test-const-fixed-buffer.exe
-
 SRC=network/buffer/test-const-fixed-buffer.cpp
 
-test-const-fixed-buffer.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-const-fixed-buffer : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-buffer-iterator : test-buffer-iterator.exe
-
 SRC=network/buffer/test-buffer-iterator.cpp
 
-test-buffer-iterator.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-buffer-iterator : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-zc-buffer-iterator : test-zc-buffer-iterator.exe
-
 SRC=network/buffer/test-zc-buffer-iterator.cpp
 
-test-zc-buffer-iterator.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-zc-buffer-iterator : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-tag : test-tag.exe
-
 SRC=network/packet/test-tag.cpp
 
-test-tag.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-tag : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-tag-index : test-tag-index.exe
-
 SRC=network/packet/test-tag-index.cpp
 
-test-tag-index.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-tag-index : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-tag-index-array : test-tag-index-array.exe
-
 SRC=network/packet/test-tag-index-array.cpp
 
-test-tag-index-array.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-tag-index-array : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-tag-list : test-tag-list.exe
-
 SRC=network/packet/test-tag-list.cpp
 
-test-tag-list.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-tag-list : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-packet : test-packet.exe
-
 SRC=network/packet/test-packet.cpp
 
-test-packet.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-packet : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-address : test-address.exe
-
 SRC=network/address/test-address.cpp
 
-test-address.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-address : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-arithmetic-io : test-arithmetic-io.exe
-
 SRC=network/buffer/io/test-arithmetic-io.cpp
 
-test-arithmetic-io.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-arithmetic-io : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-duration-io : test-duration-io.exe
-
 SRC=network/buffer/io/test-duration-io.cpp
 
-test-duration-io.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-duration-io : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-time-point-io : test-time-point-io.exe
-
 SRC=network/buffer/io/test-time-point-io.cpp
 
-test-time-point-io.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-time-point-io : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################
-test-address-io : test-address-io.exe
-
 SRC=network/buffer/io/test-address-io.cpp
 
-test-address-io.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+test-address-io : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 

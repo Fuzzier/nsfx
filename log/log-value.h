@@ -51,7 +51,7 @@ public:
  * @ingroup Log
  * @brief The type-specific log value interfaces.
  *
- * Concrete log value classes <b>must</b> implement this interface.
+ * Concrete log value classes **must** implement this interface.
  */
 template<class T>
 class ITypedLogValue :
@@ -80,7 +80,7 @@ public:
  * @ingroup Log
  * @brief Log values are carried by log records.
  *
- * An \c LogValue stores concrete value.
+ * An `LogValue` stores concrete value.
  */
 class LogValue
 {

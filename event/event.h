@@ -36,7 +36,7 @@ NSFX_OPEN_NAMESPACE
  * @brief Event sink visitor concept.
  *
  * @tparam Visitor The type of a callable object.
- *                 The prototype is <code>void(ISink*)</code>.
+ *                 The prototype is `void(ISink*)`.
  * @tparam ISink   The type of an event sink.
  */
 template<class Visitor, class ISink>
@@ -66,16 +66,16 @@ public:
  * @brief The event class.
  *
  * @tparam IEventName The type of a user-defined event sink interface that
- *                    conforms to \c IEventSinkConcept.
- * @tparam capacity The maximum number of connections.
+ *                    conforms to `IEventSinkConcept`.
+ * @tparam capacity   The maximum number of connections.
  *
- * An event class implements \c IEvent interface.
- * It implements the method \c Connect().
+ * An event class implements `IEvent` interface.
+ * It implements the method `Connect()`.
  * It also provides several non-virtual member functions that allow an event
  * source to access the event sinks.
  *
- * Event classes conform to \c ObjectImplConcept, thus they can be used with
- * \c Object and \c AggObject.
+ * Event classes conform to `ObjectImplConcept`, thus they can be used with
+ * `Object` and `AggObject`.
  *
  * @verbatim
  * Proto ---> IEventSink<> ---> user-defined event sink interface
@@ -87,16 +87,16 @@ public:
  *                                            Event<> (a concrete class)
  * @endverbatim
  *
- * The class provides a \c Visit() function template to visit the event sinks.
+ * The class provides a `Visit()` function template to visit the event sinks.
  * Users can use this function template to fire the event.
  *
- * The class also provides a \c Fire() function template to fire the event more
+ * The class also provides a `Fire()` function template to fire the event more
  * directly.
- * However, the \c Fire() function template performs perfect forwarding if and
- * only if <b>capacity == 1</b>.
- * For <b>capacity > 1</b>, it passes the arguments as <i>l-values</i>.
- * Therefore, the parameters of the event sink <b>must</b> be <i>l-values</i>,
- * in order to use \c Fire() for <code>capacity > 1</code>.
+ * However, the `Fire()` function template performs perfect forwarding if and
+ * only if `capacity == 1`.
+ * For `capacity > 1`, it passes the arguments as *l-values*.
+ * Therefore, the parameters of the event sink **must** be *l-values*,
+ * in order to use `Fire()` for `capacity > 1`.
  */
 template<class IEventName, uint32_t capacity = UINT32_MAX>
 class Event :/*{{{*/
@@ -229,7 +229,7 @@ public:
      * @brief Visit the sinks in an arbitrary order.
      *
      * @tparam Visitor A callable object that has a prototype of
-     *                 <code>void Visitor(IEventSinkType*)</code>.
+     *                 `void Visitor(IEventSinkType*)`.
      */
     template<class Visitor>
     void Visit(Visitor&& visitor) const
@@ -267,7 +267,7 @@ public:
      *
      * @param[in] args Must be copyable.
      *
-     * @remarks The arguments are perfectly forwarded for the <b>last</b> sink.
+     * @remarks The arguments are perfectly forwarded for the **last** sink.
      *          For other sinks, the arguments are copied.
      */
     template<class... Args>

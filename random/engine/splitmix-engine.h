@@ -62,15 +62,15 @@ public:
 
     result_type operator()(void)
     {
-        UIntType z = (s_ += x);
-        z = (z ^ (z >> a)) * y;
-        z = (z ^ (z >> b)) * z;
-        return z ^ (z >> c);
+        UIntType t = (s_ += x);
+        t = (t ^ (t >> a)) * y;
+        t = (t ^ (t >> b)) * z;
+        return t ^ (t >> c);
     }
 
-    void discard(uintmax_t z)
+    void discard(uintmax_t n)
     {
-        for (uintmax_t i = 0; i < z; ++i)
+        for (uintmax_t i = 0; i < n; ++i)
         {
             (*this)();
         }
@@ -105,11 +105,11 @@ private:
  *
  * It is a very fast generator passing BigCrush, and it can be useful if
  * for some reason you absolutely want 64 bits of state; otherwise, the
- * author suggests to use a \c xoroshiro128+ (for moderately parallel
- * computations) or a \c xorshift1024* (for massively parallel computations)
+ * author suggests to use a `xoroshiro128+` (for moderately parallel
+ * computations) or a `xorshift1024*` (for massively parallel computations)
  * generator.
  *
- * This is used to seed \c xoshiro_engine and \c xoroshiro_engine.
+ * This is used to seed `xoshiro_engine` and `xoroshiro_engine`.
  */
 typedef splitmix_engine<uint64_t,
             30, 27, 31,

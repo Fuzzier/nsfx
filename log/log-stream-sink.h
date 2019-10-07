@@ -36,11 +36,11 @@ NSFX_OPEN_NAMESPACE
  *
  * # Interfaces
  * * Uses
- *   + \c ILogFormatter
+ *   + `ILogFormatter`
  * * Provides
- *   + \c ILogStreamSink
+ *   + `ILogStreamSink`
  * * Events
- *   + \c ILogEventSink
+ *   + `ILogEventSink`
  */
 class LogStreamSink :
     public ILogFormatterUser,

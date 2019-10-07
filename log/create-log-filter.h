@@ -84,9 +84,9 @@ private:
  * @ingroup Log
  * @brief Create a funtor based log filter.
  *
- * @tparam Functor Must conform to \c LogFilterFunctorConcept.
+ * @tparam Functor Must conform to `LogFilterFunctorConcept`.
  *                 i.e., the prototype must be
- *                 \c FilterDecision(const Record& record).
+ *                 `FilterDecision(const Record& record)`.
  */
 template<class Functor>
 inline Ptr<ILogFilter> CreateLogFilter(Functor&& functor)

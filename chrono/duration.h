@@ -196,7 +196,7 @@ struct PrecisionUpTag   {};
 struct PrecisionDownTag {};
 
 template<class Rs, class Rd>
-inline BOOST_CONSTEXPR count_t
+inline count_t
 ConvertCount(const count_t& count, PrecisionUpTag) BOOST_NOEXCEPT
 {
     // Source resolution is wider.
@@ -209,7 +209,7 @@ ConvertCount(const count_t& count, PrecisionUpTag) BOOST_NOEXCEPT
 }
 
 template<class Rs, class Rd>
-inline BOOST_CONSTEXPR count_t
+inline count_t
 ConvertCount(const count_t& count, PrecisionDownTag) BOOST_NOEXCEPT
 {
     // Destination resolution is wider.
@@ -219,7 +219,7 @@ ConvertCount(const count_t& count, PrecisionDownTag) BOOST_NOEXCEPT
 }
 
 template<class Rs, class Rd>
-inline BOOST_CONSTEXPR count_t
+inline count_t
 ConvertCount(const count_t& count) BOOST_NOEXCEPT
 {
     typedef typename std::conditional<
@@ -249,55 +249,46 @@ struct WhichIsFiner
 
 
 template<class Res1, class Res2>
-BOOST_CONSTEXPR bool
-Equal(const count_t& lhs, const count_t& rhs, EquallyFineTag) BOOST_NOEXCEPT;
+bool Equal(const count_t& lhs, const count_t& rhs, EquallyFineTag) BOOST_NOEXCEPT;
 
 template<class Res1, class Res2>
-BOOST_CONSTEXPR bool
-Equal(const count_t& lhs, const count_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT;
+bool Equal(const count_t& lhs, const count_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT;
 
 template<class Res1, class Res2>
-BOOST_CONSTEXPR bool
-Equal(const count_t& lhs, const count_t& rhs, RightIsFinerTag) BOOST_NOEXCEPT;
+bool Equal(const count_t& lhs, const count_t& rhs, RightIsFinerTag) BOOST_NOEXCEPT;
 
 template<class Res1, class Res2>
-BOOST_CONSTEXPR bool
-Less(const count_t& lhs, const count_t& rhs, EquallyFineTag) BOOST_NOEXCEPT;
+bool Less(const count_t& lhs, const count_t& rhs, EquallyFineTag) BOOST_NOEXCEPT;
 
 template<class Res1, class Res2>
-BOOST_CONSTEXPR bool
-Less(const count_t& lhs, const count_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT;
+bool Less(const count_t& lhs, const count_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT;
 
 template<class Res1, class Res2>
-BOOST_CONSTEXPR bool
-Less(const count_t& lhs, const count_t& rhs, RightIsFinerTag) BOOST_NOEXCEPT;
+bool Less(const count_t& lhs, const count_t& rhs, RightIsFinerTag) BOOST_NOEXCEPT;
 
 template<class Res1, class Res2>
-BOOST_CONSTEXPR bool
-LessEqual(const count_t& lhs, const count_t& rhs, EquallyFineTag) BOOST_NOEXCEPT;
+bool LessEqual(const count_t& lhs, const count_t& rhs, EquallyFineTag) BOOST_NOEXCEPT;
 
 template<class Res1, class Res2>
-BOOST_CONSTEXPR bool
-LessEqual(const count_t& lhs, const count_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT;
+bool LessEqual(const count_t& lhs, const count_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT;
 
 template<class Res1, class Res2>
-BOOST_CONSTEXPR bool
-LessEqual(const count_t& lhs, const count_t& rhs, RightIsFinerTag) BOOST_NOEXCEPT;
+bool LessEqual(const count_t& lhs, const count_t& rhs, RightIsFinerTag) BOOST_NOEXCEPT;
 
 
 ////////////////////////////////////////
 template<class Res1, class Res2>
-inline BOOST_CONSTEXPR bool
+inline bool
 Equal(const count_t& lhs, const count_t& rhs, EquallyFineTag) BOOST_NOEXCEPT
 {
     return lhs == rhs;
 }
 
 template<class Res1, class Res2>
-inline BOOST_CONSTEXPR bool
+inline bool
 Equal(const count_t& lhs, const count_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT
 {
-    typedef ratio_divide<Res2, Res1>::type  Rx;
+    typedef typename ratio_divide<Res2, Res1>::type  Rx;
     if (rhs > INT64_MAX / Rx::num)
     {
         return false;
@@ -313,24 +304,24 @@ Equal(const count_t& lhs, const count_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT
 }
 
 template<class Res1, class Res2>
-inline BOOST_CONSTEXPR bool
+inline bool
 Equal(const count_t& lhs, const count_t& rhs, RightIsFinerTag) BOOST_NOEXCEPT
 {
     return Equal<Res2, Res1>(rhs, lhs, LeftIsFinerTag());
 }
 
 template<class Res1, class Res2>
-inline BOOST_CONSTEXPR bool
+inline bool
 Less(const count_t& lhs, const count_t& rhs, EquallyFineTag) BOOST_NOEXCEPT
 {
     return lhs < rhs;
 }
 
 template<class Res1, class Res2>
-inline BOOST_CONSTEXPR bool
+inline bool
 Less(const count_t& lhs, const count_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT
 {
-    typedef ratio_divide<Res2, Res1>::type  Rx;
+    typedef typename ratio_divide<Res2, Res1>::type  Rx;
     if (rhs > INT64_MAX / Rx::num)
     {
         return false;
@@ -346,24 +337,24 @@ Less(const count_t& lhs, const count_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT
 }
 
 template<class Res1, class Res2>
-inline BOOST_CONSTEXPR bool
+inline bool
 Less(const count_t& lhs, const count_t& rhs, RightIsFinerTag) BOOST_NOEXCEPT
 {
     return !LessEqual<Res2, Res1>(rhs, lhs, LeftIsFinerTag());
 }
 
 template<class Res1, class Res2>
-inline BOOST_CONSTEXPR bool
+inline bool
 LessEqual(const count_t& lhs, const count_t& rhs, EquallyFineTag) BOOST_NOEXCEPT
 {
     return lhs <= rhs;
 }
 
 template<class Res1, class Res2>
-inline BOOST_CONSTEXPR bool
+inline bool
 LessEqual(const count_t& lhs, const count_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT
 {
-    typedef ratio_divide<Res2, Res1>::type  Rx;
+    typedef typename ratio_divide<Res2, Res1>::type  Rx;
     if (rhs > INT64_MAX / Rx::num)
     {
         return false;
@@ -379,7 +370,7 @@ LessEqual(const count_t& lhs, const count_t& rhs, LeftIsFinerTag) BOOST_NOEXCEPT
 }
 
 template<class Res1, class Res2>
-inline BOOST_CONSTEXPR bool
+inline bool
 LessEqual(const count_t& lhs, const count_t& rhs, RightIsFinerTag) BOOST_NOEXCEPT
 {
     return !Less<Res2, Res1>(rhs, lhs, LeftIsFinerTag());
@@ -406,18 +397,18 @@ struct Common
  * @brief Time duration.
  *
  * @tparam Res  The time resolution in seconds.
- *              * It must be a \c ratio template.
- *              * It must be a non-positive power of \c 10.
+ *              * It must be a `ratio` template.
+ *              * It must be a non-positive power of `10`.
  *
  * A time duration is represented by the number of fundamental periods.
- * The number is a signed integer value of type \c count_t, which is an alias
- * for \c int64_t.
- * \c Res can be as small as \c atto.
+ * The number is a signed integer value of type `count_t`, which is an alias
+ * for `int64_t`.
+ * `Res` can be as small as `atto`.
  *
- * e.g., if \c Res is \c nano, the time resolution is \c 1 nanosecond, the
+ * e.g., if `Res` is `nano`, the time resolution is `1` nanosecond, the
  * Duration can represent about -106,751 to +106,751 days, or -292 to 292 years.
  *
- * e.g., if \c Res is \c atto, the time resolution is \c 1 attosecond, the
+ * e.g., if `Res` is `atto`, the time resolution is `1` attosecond, the
  * Duration can represent about -9.223 to +9.223 seconds.
  */
 template<class Res>
@@ -433,7 +424,7 @@ public:
     typedef Res  Resolution;
 
 private:
-    template<class Res>
+    template<class Res2>
     friend class Duration;
 
 private:
@@ -462,9 +453,9 @@ private:
     // Constructors./*{{{*/
 public:
     /**
-     * @brief Construct a default duration that has \c 0 seconds.
+     * @brief Construct a default duration that has `0` seconds.
      */
-    BOOST_CONSTEXPR Duration(void) BOOST_NOEXCEPT :
+    Duration(void) BOOST_NOEXCEPT :
         count_(0)
     {}
 
@@ -473,7 +464,7 @@ public:
      *
      * @param[in] n  The number of fundamental periods.
      */
-    explicit BOOST_CONSTEXPR Duration(count_t n) BOOST_NOEXCEPT :
+    explicit Duration(count_t n) BOOST_NOEXCEPT :
         count_(n)
     {}
 
@@ -482,7 +473,7 @@ public:
      *
      * @param[in] sec The time length in seconds.
      */
-    BOOST_CONSTEXPR Duration(double sec, round_to_zero_t) BOOST_NOEXCEPT :
+    Duration(double sec, round_to_zero_t) BOOST_NOEXCEPT :
         count_(boost::math::lltrunc(sec * GetFrequency()))
     {}
 
@@ -491,7 +482,7 @@ public:
      *
      * @param[in] sec The time length in seconds.
      */
-    BOOST_CONSTEXPR Duration(double sec, round_to_nearest_t) BOOST_NOEXCEPT :
+    Duration(double sec, round_to_nearest_t) BOOST_NOEXCEPT :
         count_(boost::math::llround(sec * GetFrequency()))
     {}
 
@@ -500,7 +491,7 @@ public:
      *
      * @param[in] sec The time length in seconds.
      */
-    BOOST_CONSTEXPR Duration(double sec, round_upward_t) BOOST_NOEXCEPT :
+    Duration(double sec, round_upward_t) BOOST_NOEXCEPT :
         count_(static_cast<count_t>(std::ceil(sec * GetFrequency())))
     {}
 
@@ -509,7 +500,7 @@ public:
      *
      * @param[in] sec The time length in seconds.
      */
-    BOOST_CONSTEXPR Duration(double sec, round_downward_t) BOOST_NOEXCEPT :
+    Duration(double sec, round_downward_t) BOOST_NOEXCEPT :
         count_(static_cast<count_t>(std::floor(sec * GetFrequency())))
     {}
 
@@ -517,11 +508,11 @@ public:
 
     // Copyable./*{{{*/
 public:
-    BOOST_CONSTEXPR Duration(const Duration& rhs) BOOST_NOEXCEPT :
+    Duration(const Duration& rhs) BOOST_NOEXCEPT :
         count_(rhs.count_)
     {}
 
-    BOOST_CONSTEXPR Duration& operator=(const Duration& rhs) BOOST_NOEXCEPT
+    Duration& operator=(const Duration& rhs) BOOST_NOEXCEPT
     {
         if (this != &rhs)
         {
@@ -539,11 +530,11 @@ public:
      *
      * If the source resolution is coarser, then the conversion is precise.
      *
-     * If the source resolution is finer, then the conversion <b>truncates</b>
+     * If the source resolution is finer, then the conversion **truncates**
      * the count toward zero, i.e., discards the fractional part of the count.
      */
     template<class Res2>
-    BOOST_CONSTEXPR Duration(const Duration<Res2>& rhs) BOOST_NOEXCEPT :
+    Duration(const Duration<Res2>& rhs) BOOST_NOEXCEPT :
         count_(aux::ConvertCount<Res2, Res>(rhs.count_))
     {}
 
@@ -552,11 +543,11 @@ public:
      *
      * If the source resolution is coarser, then the conversion is precise.
      *
-     * If the source resolution is finer, then the conversion <b>truncates</b>
+     * If the source resolution is finer, then the conversion **truncates**
      * the count toward zero, i.e., discards the fractional part of the count.
      */
     template<class Res2>
-    BOOST_CONSTEXPR Duration& operator=(const Duration<Res2>& rhs) BOOST_NOEXCEPT
+    Duration& operator=(const Duration<Res2>& rhs) BOOST_NOEXCEPT
     {
         count_ = aux::ConvertCount<Res2, Res>(rhs.count_);
         return *this;
@@ -567,27 +558,27 @@ public:
     // Comparison./*{{{*/
 public:
     template<class Res1, class Res2>
-    friend BOOST_CONSTEXPR bool
+    friend bool
     operator< (const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT;
 
     template<class Res1, class Res2>
-    friend BOOST_CONSTEXPR bool
+    friend bool
     operator<=(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT;
 
     template<class Res1, class Res2>
-    friend BOOST_CONSTEXPR bool
+    friend bool
     operator==(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT;
 
     template<class Res1, class Res2>
-    friend BOOST_CONSTEXPR bool
+    friend bool
     operator!=(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT;
 
     template<class Res1, class Res2>
-    friend BOOST_CONSTEXPR bool
+    friend bool
     operator> (const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT;
 
     template<class Res1, class Res2>
-    friend BOOST_CONSTEXPR bool
+    friend bool
     operator>=(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT;
 
     /*}}}*/
@@ -595,118 +586,118 @@ public:
     // Arithmetic./*{{{*/
 public:
     template<class Res1, class Res2>
-    friend BOOST_CONSTEXPR Duration<typename aux::Common<Res1, Res2>::type>
+    friend Duration<typename aux::Common<Res1, Res2>::type>
     operator+(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT;
 
     template<class Res1, class Res2>
-    friend BOOST_CONSTEXPR Duration<typename aux::Common<Res1, Res2>::type>
+    friend Duration<typename aux::Common<Res1, Res2>::type>
     operator-(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT;
 
-    template<class Res>
-    friend BOOST_CONSTEXPR Duration<Res>
-    operator*(const Duration<Res>& lhs, count_t n) BOOST_NOEXCEPT;
+    template<class Res2>
+    friend Duration<Res2>
+    operator*(const Duration<Res2>& lhs, count_t n) BOOST_NOEXCEPT;
 
-    template<class Res>
-    friend BOOST_CONSTEXPR Duration<Res>
-    operator*(count_t n, const Duration<Res>& rhs) BOOST_NOEXCEPT;
+    template<class Res2>
+    friend Duration<Res2>
+    operator*(count_t n, const Duration<Res2>& rhs) BOOST_NOEXCEPT;
 
     template<class Res1, class Res2>
-    friend BOOST_CONSTEXPR count_t
+    friend count_t
     operator/(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT;
 
-    template<class Res>
-    friend BOOST_CONSTEXPR Duration<Res>
-    operator/(const Duration<Res>& lhs, count_t n) BOOST_NOEXCEPT;
+    template<class Res2>
+    friend Duration<Res2>
+    operator/(const Duration<Res2>& lhs, count_t n) BOOST_NOEXCEPT;
 
     template<class Res1, class Res2>
-    friend BOOST_CONSTEXPR Duration<typename aux::Common<Res1, Res2>::type>
+    friend Duration<typename aux::Common<Res1, Res2>::type>
     operator%(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT;
 
-    BOOST_CONSTEXPR Duration& operator++(void) BOOST_NOEXCEPT
+    Duration& operator++(void) BOOST_NOEXCEPT
     {
         ++count_;
         return *this;
     }
 
-    BOOST_CONSTEXPR Duration operator++(int) BOOST_NOEXCEPT
+    Duration operator++(int) BOOST_NOEXCEPT
     {
         return Duration(count_++);
     }
 
-    BOOST_CONSTEXPR Duration& operator--(void) BOOST_NOEXCEPT
+    Duration& operator--(void) BOOST_NOEXCEPT
     {
         --count_;
         return *this;
     }
 
-    BOOST_CONSTEXPR Duration operator--(int) BOOST_NOEXCEPT
+    Duration operator--(int) BOOST_NOEXCEPT
     {
         return Duration(count_--);
     }
 
-    BOOST_CONSTEXPR Duration& operator+=(const Duration& rhs) BOOST_NOEXCEPT
+    Duration& operator+=(const Duration& rhs) BOOST_NOEXCEPT
     {
         count_ += rhs.count_;
         return *this;
     }
 
-    BOOST_CONSTEXPR Duration& operator-=(const Duration& rhs) BOOST_NOEXCEPT
+    Duration& operator-=(const Duration& rhs) BOOST_NOEXCEPT
     {
         count_ -= rhs.count_;
         return *this;
     }
 
     template<class Res2>
-    BOOST_CONSTEXPR Duration& operator+=(const Duration<Res2>& rhs) BOOST_NOEXCEPT
+    Duration& operator+=(const Duration<Res2>& rhs) BOOST_NOEXCEPT
     {
         count_ += aux::ConvertCount<Res2, Res>(rhs.count_);
         return *this;
     }
 
     template<class Res2>
-    BOOST_CONSTEXPR Duration& operator-=(const Duration<Res2>& rhs) BOOST_NOEXCEPT
+    Duration& operator-=(const Duration<Res2>& rhs) BOOST_NOEXCEPT
     {
         count_ -= aux::ConvertCount<Res2, Res>(rhs.count_);
         return *this;
     }
 
-    BOOST_CONSTEXPR Duration& operator*=(count_t n) BOOST_NOEXCEPT
+    Duration& operator*=(count_t n) BOOST_NOEXCEPT
     {
         count_ *= n;
         return *this;
     }
 
-    BOOST_CONSTEXPR Duration& operator/=(count_t n) BOOST_NOEXCEPT
+    Duration& operator/=(count_t n) BOOST_NOEXCEPT
     {
         count_ /= n;
         return *this;
     }
 
-    BOOST_CONSTEXPR Duration& operator%=(const Duration& rhs) BOOST_NOEXCEPT
+    Duration& operator%=(const Duration& rhs) BOOST_NOEXCEPT
     {
         count_ %= rhs.count_;
         return *this;
     }
 
     template<class Res2>
-    BOOST_CONSTEXPR Duration& operator%=(const Duration<Res2>& rhs) BOOST_NOEXCEPT
+    Duration& operator%=(const Duration<Res2>& rhs) BOOST_NOEXCEPT
     {
         count_ %= aux::ConvertCount<Res2, Res>(rhs.count_);
         return *this;
     }
 
-    BOOST_CONSTEXPR Duration operator-(void) BOOST_NOEXCEPT
+    Duration operator-(void) BOOST_NOEXCEPT
     {
         return Duration(-count_);
     }
 
-    BOOST_CONSTEXPR bool operator!(void) BOOST_NOEXCEPT
+    bool operator!(void) BOOST_NOEXCEPT
     {
         return !count_;
     }
 
 #if !defined(BOOST_NO_CXX11_EXPLICIT_CONVERSION_OPERATORS)
-    explicit BOOST_CONSTEXPR operator bool() const BOOST_NOEXCEPT
+    explicit operator bool() const BOOST_NOEXCEPT
     {
         return !!count_;
     }
@@ -731,7 +722,7 @@ public:
     /**
      * @brief Get the number of fundamental periods.
      */
-    BOOST_CONSTEXPR count_t GetCount(void) const BOOST_NOEXCEPT
+    count_t GetCount(void) const BOOST_NOEXCEPT
     {
         return count_;
     }
@@ -739,7 +730,7 @@ public:
     /**
      * @brief Get the fundamental period in seconds.
      */
-    static BOOST_CONSTEXPR double GetResolution(void) BOOST_NOEXCEPT
+    static double GetResolution(void) BOOST_NOEXCEPT
     {
         static const double res = static_cast<double>(Res::num)
                                 / static_cast<double>(Res::den);
@@ -749,7 +740,7 @@ public:
     /**
      * @brief Get the number of fundamental period per second.
      */
-    static BOOST_CONSTEXPR double GetFrequency(void) BOOST_NOEXCEPT
+    static double GetFrequency(void) BOOST_NOEXCEPT
     {
         static const double freq = static_cast<double>(Res::den)
                                  / static_cast<double>(Res::num);
@@ -759,7 +750,7 @@ public:
     /**
      * @brief Get the size of duration in bytes.
      */
-    static BOOST_CONSTEXPR size_t GetSize(void) BOOST_NOEXCEPT
+    static size_t GetSize(void) BOOST_NOEXCEPT
     {
         return sizeof (count_t);
     }
@@ -817,12 +808,12 @@ public:
      * @brief Convert to formatted string.
      *
      * The format looks like:
-     * @code
+     * ~~~
      * "<DD> <HH>:<MM>:<SS> <mmm>m <uuu>u <nnn>n <ppp>p <fff>f <aaa>a <zzz>z <yyy>y"
-     * @endcode
+     * ~~~
      *
      * The "DD" days part is omitted, if the duration is less than a day.
-     * The units smaller than second are shown if they are not \c UnderflowTag.
+     * The units smaller than second are shown if they are not `UnderflowTag`.
      */
     std::string ToString(void) const;
 
@@ -867,50 +858,50 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 // Comparison./*{{{*/
 template<class Res1, class Res2>
-inline BOOST_CONSTEXPR bool
+inline bool
 operator<(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT
 {
-    typedef aux::WhichIsFiner<Res1, Res2>::type  F;
+    typedef typename aux::WhichIsFiner<Res1, Res2>::type  F;
     return aux::Less<Res1, Res2>(lhs.count_, rhs.count_, F());
 }
 
 template<class Res1, class Res2>
-inline BOOST_CONSTEXPR bool
+inline bool
 operator<=(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT
 {
-    typedef aux::WhichIsFiner<Res1, Res2>::type  F;
+    typedef typename aux::WhichIsFiner<Res1, Res2>::type  F;
     return aux::LessEqual<Res1, Res2>(lhs.count_, rhs.count_, F());
 }
 
 template<class Res1, class Res2>
-inline BOOST_CONSTEXPR bool
+inline bool
 operator==(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT
 {
-    typedef aux::WhichIsFiner<Res1, Res2>::type  F;
+    typedef typename aux::WhichIsFiner<Res1, Res2>::type  F;
     return aux::Equal<Res1, Res2>(lhs.count_, rhs.count_, F());
 }
 
 template<class Res1, class Res2>
-inline BOOST_CONSTEXPR bool
+inline bool
 operator!=(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT
 {
-    typedef aux::WhichIsFiner<Res1, Res2>::type  F;
+    typedef typename aux::WhichIsFiner<Res1, Res2>::type  F;
     return !aux::Equal<Res1, Res2>(lhs.count_, rhs.count_, F());
 }
 
 template<class Res1, class Res2>
-inline BOOST_CONSTEXPR bool
+inline bool
 operator>(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT
 {
-    typedef aux::WhichIsFiner<Res1, Res2>::type  F;
+    typedef typename aux::WhichIsFiner<Res1, Res2>::type  F;
     return !aux::LessEqual<Res1, Res2>(lhs.count_, rhs.count_, F());
 }
 
 template<class Res1, class Res2>
-inline BOOST_CONSTEXPR bool
+inline bool
 operator>=(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT
 {
-    typedef aux::WhichIsFiner<Res1, Res2>::type  F;
+    typedef typename aux::WhichIsFiner<Res1, Res2>::type  F;
     return !aux::Less<Res1, Res2>(lhs.count_, rhs.count_, F());
 }
 
@@ -920,7 +911,7 @@ operator>=(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT
 ////////////////////////////////////////////////////////////////////////////////
 // Arithmetic./*{{{*/
 template<class Res1, class Res2>
-inline BOOST_CONSTEXPR Duration<typename aux::Common<Res1, Res2>::type>
+inline Duration<typename aux::Common<Res1, Res2>::type>
 operator+(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT
 {
     typedef typename aux::Common<Res1, Res2>::type Res3;
@@ -929,7 +920,7 @@ operator+(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT
 }
 
 template<class Res1, class Res2>
-inline BOOST_CONSTEXPR Duration<typename aux::Common<Res1, Res2>::type>
+inline Duration<typename aux::Common<Res1, Res2>::type>
 operator-(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT
 {
     typedef typename aux::Common<Res1, Res2>::type Res3;
@@ -938,21 +929,21 @@ operator-(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT
 }
 
 template<class Res>
-inline BOOST_CONSTEXPR Duration<Res>
+inline Duration<Res>
 operator*(const Duration<Res>& lhs, count_t n) BOOST_NOEXCEPT
 {
     return Duration<Res>(lhs.count_ * n);
 }
 
 template<class Res>
-inline BOOST_CONSTEXPR Duration<Res>
+inline Duration<Res>
 operator*(count_t n, const Duration<Res>& rhs) BOOST_NOEXCEPT
 {
     return Duration<Res>(n * rhs.count_);
 }
 
 template<class Res1, class Res2>
-inline BOOST_CONSTEXPR count_t
+inline count_t
 operator/(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT
 {
     typedef typename aux::Common<Res1, Res2>::type Res3;
@@ -961,14 +952,14 @@ operator/(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT
 }
 
 template<class Res>
-inline BOOST_CONSTEXPR Duration<Res>
+inline Duration<Res>
 operator/(const Duration<Res>& lhs, count_t n) BOOST_NOEXCEPT
 {
     return Duration<Res>(lhs.count_ / n);
 }
 
 template<class Res1, class Res2>
-inline BOOST_CONSTEXPR Duration<typename aux::Common<Res1, Res2>::type>
+inline Duration<typename aux::Common<Res1, Res2>::type>
 operator%(const Duration<Res1>& lhs, const Duration<Res2>& rhs) BOOST_NOEXCEPT
 {
     typedef typename aux::Common<Res1, Res2>::type Res3;
@@ -1059,7 +1050,7 @@ operator<<(std::basic_ostream<CharT, TraitsT>& os, const Duration<Res>& dt)
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
- * @brief Support for <code>boost::hash<Duration></code>.
+ * @brief Support for `boost::hash<Duration>`.
  */
 template<class Res>
 inline size_t
@@ -1078,61 +1069,61 @@ swap(Duration<Res>& lhs, Duration<Res>& rhs) BOOST_NOEXCEPT
 
 ////////////////////////////////////////////////////////////////////////////////
 // Makers./*{{{*/
-inline BOOST_CONSTEXPR Duration<atto>
+inline Duration<atto>
 AttoSeconds(count_t n) BOOST_NOEXCEPT
 {
     return Duration<atto>(n);
 }
 
-inline BOOST_CONSTEXPR Duration<femto>
+inline Duration<femto>
 FemtoSeconds(count_t n) BOOST_NOEXCEPT
 {
     return Duration<femto>(n);
 }
 
-inline BOOST_CONSTEXPR Duration<pico>
+inline Duration<pico>
 PicoSeconds(count_t n) BOOST_NOEXCEPT
 {
     return Duration<pico>(n);
 }
 
-inline BOOST_CONSTEXPR Duration<nano>
+inline Duration<nano>
 NanoSeconds(count_t n) BOOST_NOEXCEPT
 {
     return Duration<nano>(n);
 }
 
-inline BOOST_CONSTEXPR Duration<micro>
+inline Duration<micro>
 MicroSeconds(count_t n) BOOST_NOEXCEPT
 {
     return Duration<micro>(n);
 }
 
-inline BOOST_CONSTEXPR Duration<milli>
+inline Duration<milli>
 MilliSeconds(count_t n) BOOST_NOEXCEPT
 {
     return Duration<milli>(n);
 }
 
-inline BOOST_CONSTEXPR Duration<ratio<1>>
+inline Duration<ratio<1>>
 Seconds(count_t n) BOOST_NOEXCEPT
 {
     return Duration<ratio<1>>(n);
 }
 
-inline BOOST_CONSTEXPR Duration<ratio<1>>
+inline Duration<ratio<1>>
 Minutes(count_t n) BOOST_NOEXCEPT
 {
     return Duration<ratio<1>>(n * 60);
 }
 
-inline BOOST_CONSTEXPR Duration<ratio<1>>
+inline Duration<ratio<1>>
 Hours(count_t n) BOOST_NOEXCEPT
 {
     return Duration<ratio<1>>(n * 3600);
 }
 
-inline BOOST_CONSTEXPR Duration<ratio<1>>
+inline Duration<ratio<1>>
 Days(count_t n) BOOST_NOEXCEPT
 {
     return Duration<ratio<1>>(n * 86400);

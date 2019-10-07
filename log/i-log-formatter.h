@@ -55,11 +55,9 @@ NSFX_DEFINE_CLASS_UID(ILogFormatter, "edu.uestc.nsfx.ILogFormatter");
  * @brief User of log formatter.
  * @class ILogFormatter
  *
- * Prototype:
+ * Prototype: `void Use(Ptr<ILogFormatter> formatter)`.
  *
- *     void Use(Ptr<ILogFormatter> formatter);
- *
- * @see \c ILogFormatter
+ * @see `ILogFormatter`.
  */
 NSFX_DEFINE_USER_INTERFACE(
     ILogFormatterUser, "edu.uestc.nsfx.ILogFormatterUser",

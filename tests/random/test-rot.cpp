@@ -23,26 +23,26 @@ NSFX_TEST_SUITE(rot)
     NSFX_TEST_CASE(rotl)
     {
         NSFX_TEST_EXPECT_EQ(nsfx::random::aux::rotl(
-                0x15555555UL, 1),
-                0x2aaaaaaaUL);
+                0x15555555, 1),
+                0x2aaaaaaa);
         NSFX_TEST_EXPECT_EQ(nsfx::random::aux::rotl(
-                0x15555555UL, 2),
-                0x55555554UL);
+                0x15555555, 2),
+                0x55555554);
         NSFX_TEST_EXPECT_EQ(nsfx::random::aux::rotl(
-                0x15555555UL, 3),
-                0xaaaaaaa8UL);
+                0x15555555, 3),
+                0xaaaaaaa8);
         NSFX_TEST_EXPECT_EQ(nsfx::random::aux::rotl(
-                0x15555555UL, 4),
-                0x55555551UL);
+                0x15555555, 4),
+                0x55555551);
         NSFX_TEST_EXPECT_EQ(nsfx::random::aux::rotl(
-                0x15555555UL, 5),
-                0xaaaaaaa2UL);
+                0x15555555, 5),
+                0xaaaaaaa2);
         NSFX_TEST_EXPECT_EQ(nsfx::random::aux::rotl(
-                0x15555555UL, 6),
-                0x55555545UL);
+                0x15555555, 6),
+                0x55555545);
         NSFX_TEST_EXPECT_EQ(nsfx::random::aux::rotl(
-                0x15555555UL, 32),
-                0x15555555UL);
+                0x15555555, 32),
+                0x15555555);
 
         NSFX_TEST_EXPECT_EQ(nsfx::random::aux::rotl(
                 0x1555555555555555ULL, 1),
@@ -70,26 +70,26 @@ NSFX_TEST_SUITE(rot)
     NSFX_TEST_CASE(rotr)
     {
         NSFX_TEST_EXPECT_EQ(nsfx::random::aux::rotr(
-                0x15555555UL, 1),
-                0x8aaaaaaaUL);
+                0x15555555, 1),
+                0x8aaaaaaa);
         NSFX_TEST_EXPECT_EQ(nsfx::random::aux::rotr(
-                0x15555555UL, 2),
-                0x45555555UL);
+                0x15555555, 2),
+                0x45555555);
         NSFX_TEST_EXPECT_EQ(nsfx::random::aux::rotr(
-                0x15555555UL, 3),
-                0xa2aaaaaaUL);
+                0x15555555, 3),
+                0xa2aaaaaa);
         NSFX_TEST_EXPECT_EQ(nsfx::random::aux::rotr(
-                0x15555555UL, 4),
-                0x51555555UL);
+                0x15555555, 4),
+                0x51555555);
         NSFX_TEST_EXPECT_EQ(nsfx::random::aux::rotr(
-                0x15555555UL, 5),
-                0xa8aaaaaaUL);
+                0x15555555, 5),
+                0xa8aaaaaa);
         NSFX_TEST_EXPECT_EQ(nsfx::random::aux::rotr(
-                0x15555555UL, 6),
-                0x54555555UL);
+                0x15555555, 6),
+                0x54555555);
         NSFX_TEST_EXPECT_EQ(nsfx::random::aux::rotr(
-                0x15555555UL, 32),
-                0x15555555UL);
+                0x15555555, 32),
+                0x15555555);
 
         NSFX_TEST_EXPECT_EQ(nsfx::random::aux::rotr(
                 0x1555555555555555ULL, 1),
@@ -116,8 +116,8 @@ NSFX_TEST_SUITE(rot)
         for (size_t k = 0; k <= 32; ++k)
         {
             NSFX_TEST_EXPECT_EQ(
-                nsfx::random::aux::rotl(0x9abcdefUL, k),
-                nsfx::random::aux::rotr(0x9abcdefUL, 32-k));
+                nsfx::random::aux::rotl(0x9abcdef, k),
+                nsfx::random::aux::rotr(0x9abcdef, 32-k));
         }
 
         for (size_t k = 0; k <= 64; ++k)

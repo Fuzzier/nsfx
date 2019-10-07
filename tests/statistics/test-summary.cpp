@@ -17,7 +17,7 @@
 #include <nsfx/statistics/probe/probe.h>
 #include <nsfx/statistics/probe/probe-container.h>
 #include <nsfx/statistics/summary/summary.h>
-#include <boost\math\special_functions\fpclassify.hpp>
+#include <boost/math/special_functions/fpclassify.hpp>
 #include <iostream>
 
 

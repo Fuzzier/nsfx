@@ -74,8 +74,8 @@ private:
  * @ingroup Log
  * @brief A string-based log value.
  *
- * This log value offers C string (<code>const char*</code>).
- * Internally, it stores a C++ string (\c std::string).
+ * This log value offers C string (`const char*`).
+ * Internally, it stores a C++ string (`std::string`).
  */
 class CstrLogValue :
     public ITypedLogValue<const char*>
@@ -176,7 +176,7 @@ inline LogValue MakeCstrLogValue(std::string&& str)
  * @brief Make a log value that stores a constant value.
  *
  * @tparam T    The type of stored value.
- * @tparam Args The types of arguments to construct a \c T object.
+ * @tparam Args The types of arguments to construct a `T` object.
  */
 template<class T, class... Args>
 inline LogValue MakeConstantLogValue(Args&&... args)

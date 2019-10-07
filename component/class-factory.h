@@ -33,13 +33,13 @@ NSFX_OPEN_NAMESPACE
  * @ingroup Component
  * @brief A class factory.
  *
- * @tparam T A class that conforms to \c ObjectImplConcept.
+ * @tparam T A class that conforms to `ObjectImplConcept`.
  *
- * The factory uses \c Object or \c AggObject to make \c T a concrete class
+ * The factory uses `Object` or `AggObject` to make `T` a concrete class
  * according to whether a controller is specified.
  *
- * The specialized class template conforms to \c ObjectImplConcept.
- * Thus, it shall be used in conjunction with \c Object or \c AggObject.
+ * The specialized class template conforms to `ObjectImplConcept`.
+ * Thus, it shall be used in conjunction with `Object` or `AggObject`.
  */
 template<class T>
 class ClassFactory :
