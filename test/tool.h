@@ -887,7 +887,6 @@ public:
      */
     std::string GetTolerance(void) const
     {
-        typedef typename std::common_type<Limit, Tol>::type  CommonType;
 # if (NSFX_TEST_TOOL_OPERATOR == 0) // Absolute closeness
         return TestFormatValue((tol_));
 # else // !(NSFX_TEST_TOOL_OPERATOR == 0) // Relative closeness

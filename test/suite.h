@@ -81,10 +81,10 @@ public:
     Suite(Suite&& rhs) :
         parent_      (rhs.parent_),
         name_        (std::move(rhs.name_)),
-        suiteVector_ (std::move(rhs.suiteVector_)),
-        suiteMap_    (std::move(rhs.suiteMap_)),
         caseVector_  (std::move(rhs.caseVector_)),
-        caseMap_     (std::move(rhs.caseMap_))
+        caseMap_     (std::move(rhs.caseMap_)),
+        suiteVector_ (std::move(rhs.suiteVector_)),
+        suiteMap_    (std::move(rhs.suiteMap_))
     {
     }
 
@@ -94,10 +94,10 @@ public:
         {
             parent_      = rhs.parent_;
             name_        = std::move(rhs.name_);
-            suiteVector_ = std::move(rhs.suiteVector_);
-            suiteMap_    = std::move(rhs.suiteMap_);
             caseVector_  = std::move(rhs.caseVector_);
             caseMap_     = std::move(rhs.caseMap_);
+            suiteVector_ = std::move(rhs.suiteVector_);
+            suiteMap_    = std::move(rhs.suiteMap_);
         }
         return *this;
     }

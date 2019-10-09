@@ -59,8 +59,8 @@ NSFX_TEST_SUITE(CircularSequenceNumberTraits)/*{{{*/
     NSFX_TEST_CASE(17)
     {
         typedef nsfx::CircularSequenceNumberTraits<17> TraitsType;
-        NSFX_TEST_EXPECT_EQ((TraitsType::ValueType)TraitsType::MAX_GAP, 0x0000FFFF);
-        NSFX_TEST_EXPECT_EQ((TraitsType::ValueType)TraitsType::MAX_VALUE, 0x0001FFFF);
+        NSFX_TEST_EXPECT_EQ((TraitsType::ValueType)TraitsType::MAX_GAP, 0x0000FFFFU);
+        NSFX_TEST_EXPECT_EQ((TraitsType::ValueType)TraitsType::MAX_VALUE, 0x0001FFFFU);
         NSFX_TEST_EXPECT((std::is_same<typename TraitsType::ValueType,
                           nsfx::uint32_t>::value));
     }
@@ -68,8 +68,8 @@ NSFX_TEST_SUITE(CircularSequenceNumberTraits)/*{{{*/
     NSFX_TEST_CASE(32)
     {
         typedef nsfx::CircularSequenceNumberTraits<32> TraitsType;
-        NSFX_TEST_EXPECT_EQ((TraitsType::ValueType)TraitsType::MAX_GAP, 0x7FFFFFFF);
-        NSFX_TEST_EXPECT_EQ((TraitsType::ValueType)TraitsType::MAX_VALUE, 0xFFFFFFFF);
+        NSFX_TEST_EXPECT_EQ((TraitsType::ValueType)TraitsType::MAX_GAP, 0x7FFFFFFFU);
+        NSFX_TEST_EXPECT_EQ((TraitsType::ValueType)TraitsType::MAX_VALUE, 0xFFFFFFFFU);
         NSFX_TEST_EXPECT((std::is_same<typename TraitsType::ValueType,
                           nsfx::uint32_t>::value));
     }
@@ -77,8 +77,8 @@ NSFX_TEST_SUITE(CircularSequenceNumberTraits)/*{{{*/
     NSFX_TEST_CASE(33)
     {
         typedef nsfx::CircularSequenceNumberTraits<33> TraitsType;
-        NSFX_TEST_EXPECT_EQ((TraitsType::ValueType)TraitsType::MAX_GAP, 0x00000000FFFFFFFFULL);
-        NSFX_TEST_EXPECT_EQ((TraitsType::ValueType)TraitsType::MAX_VALUE, 0x00000001FFFFFFFFULL);
+        NSFX_TEST_EXPECT_EQ((TraitsType::ValueType)TraitsType::MAX_GAP, 0x00000000FFFFFFFFU);
+        NSFX_TEST_EXPECT_EQ((TraitsType::ValueType)TraitsType::MAX_VALUE, 0x00000001FFFFFFFFU);
         NSFX_TEST_EXPECT((std::is_same<typename TraitsType::ValueType,
                           nsfx::uint64_t>::value));
     }
@@ -86,8 +86,8 @@ NSFX_TEST_SUITE(CircularSequenceNumberTraits)/*{{{*/
     NSFX_TEST_CASE(64)
     {
         typedef nsfx::CircularSequenceNumberTraits<64> TraitsType;
-        NSFX_TEST_EXPECT_EQ((TraitsType::ValueType)TraitsType::MAX_GAP, 0x7FFFFFFFFFFFFFFFULL);
-        NSFX_TEST_EXPECT_EQ((TraitsType::ValueType)TraitsType::MAX_VALUE, 0xFFFFFFFFFFFFFFFFULL);
+        NSFX_TEST_EXPECT_EQ((TraitsType::ValueType)TraitsType::MAX_GAP, 0x7FFFFFFFFFFFFFFFU);
+        NSFX_TEST_EXPECT_EQ((TraitsType::ValueType)TraitsType::MAX_VALUE, 0xFFFFFFFFFFFFFFFFU);
         NSFX_TEST_EXPECT((std::is_same<typename TraitsType::ValueType,
                           nsfx::uint64_t>::value));
     }

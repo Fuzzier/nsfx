@@ -77,10 +77,10 @@ private:
     // Movable.
 public:
     Case(Case&& rhs) :
-        name_   (std::move(rhs.name_)),
         parent_ (rhs.parent_),
-        impl_   (std::move(rhs.impl_)),
-        results_(std::move(rhs.results_))
+        name_   (std::move(rhs.name_)),
+        results_(std::move(rhs.results_)),
+        impl_   (std::move(rhs.impl_))
     {
     }
 
@@ -88,10 +88,10 @@ public:
     {
         if (this != &rhs)
         {
-            name_    = std::move(rhs.name_);
             parent_  = rhs.parent_;
-            impl_    = std::move(rhs.impl_);
+            name_    = std::move(rhs.name_);
             results_ = std::move(rhs.results_);
+            impl_    = std::move(rhs.impl_);
         }
         return *this;
     }
