@@ -108,7 +108,7 @@ public:
     /**
      * @brief Generate a new random number.
      */
-    virtual int32_t Generate(void) = 0;
+    virtual uint32_t Generate(void) = 0;
 
     /**
      * @brief Reset the distribution.
@@ -129,7 +129,7 @@ public:
      *
      * @return \c 0.
      */
-    virtual int32_t GetMinValue(void) = 0;
+    virtual uint32_t GetMinValue(void) = 0;
 
     /**
      * @brief The maximum value that can be potentially generated.
@@ -139,7 +139,7 @@ public:
      *
      * @return <code>GetNumValues() - 1</code>.
      */
-    virtual int32_t GetMaxValue(void) = 0;
+    virtual uint32_t GetMaxValue(void) = 0;
 
     /**
      * @brief The parameter <i>n</i> associated with the discrete distribution.

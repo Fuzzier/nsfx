@@ -235,7 +235,7 @@ struct TestDistributions
         double count = 0;
         for (size_t i = 0; i < N; ++i)
         {
-            uint32_t x = d->Generate();
+            uint64_t x = d->Generate();
             count += x;
         }
         double expected = 1000 * 0.25;
@@ -564,7 +564,7 @@ struct TestDistributions
         double count = 0;
         for (size_t i = 0; i < N; ++i)
         {
-            double x = d->Generate();
+            uint64_t x = d->Generate();
             count += x;
         }
         double expected = 0 * 0.5 + 1 * 0.3 + 2 * 0.2;

@@ -47,7 +47,21 @@ class StdDiscreteDistribution :
     public IDiscreteDistribution
 {
     typedef StdDiscreteDistribution ThisClass;
-    typedef boost::random::discrete_distribution<int32_t, double> DistributionType;
+    /**
+     * @internal
+     * Use `size_t` instead of `uint32_t` to avoid warnings under x64.
+     * It is an issue at 'boost/random/discrete_distribution.hpp:507':
+     * @code{.cpp}
+     * _impl.get_weight(i)
+     * @endcode
+     * The prototype is `get_weight(IntType)`.
+     * If `i` is defined as `size_t`, then `i` would be cast to a narrower
+     * `IntType` under x64, and triggers a warning.
+     * On the other hand, defining `IntType` as `uint64_t` is not supported
+     * under x86, since `i` is a 32-bit, and cannot provide 64-bit range.
+     * @endinternal
+     */
+    typedef boost::random::discrete_distribution</*IntType*/size_t, double> DistributionType;
     typedef StdRng RngType;
 
     struct Iterator
@@ -127,9 +141,9 @@ public:
 
     virtual ~StdDiscreteDistribution(void) {}
 
-    virtual int32_t Generate(void) NSFX_OVERRIDE
+    virtual uint32_t Generate(void) NSFX_OVERRIDE
     {
-        return dist_(rng_->GetRng());
+        return static_cast<uint32_t>(dist_(rng_->GetRng()));
     }
 
     virtual void Reset(void) NSFX_OVERRIDE
@@ -137,14 +151,14 @@ public:
         return dist_.reset();
     }
 
-    virtual int32_t GetMinValue(void) NSFX_OVERRIDE
+    virtual uint32_t GetMinValue(void) NSFX_OVERRIDE
     {
-        return (dist_.min)();
+        return static_cast<uint32_t>((dist_.min)());
     }
 
-    virtual int32_t GetMaxValue(void) NSFX_OVERRIDE
+    virtual uint32_t GetMaxValue(void) NSFX_OVERRIDE
     {
-        return (dist_.max)();
+        return static_cast<uint32_t>((dist_.max)());
     }
 
     virtual uint32_t GetNumValues(void) NSFX_OVERRIDE
