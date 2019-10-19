@@ -125,7 +125,34 @@ NSFX_CLOSE_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
-#if defined(NSFX_GCC)
+#if defined(NSFX_MSVC)
+/* Define a global traits class template. */
+template<class >
+class NsfxUidTraits
+{
+public:
+    BOOST_STATIC_CONSTANT(bool, value = false); /* UID is undefined. */
+};
+
+////////////////////////////////////////
+// Macros.
+# define NSFX_DEFINE_CLASS_UID(T, UID)                           \
+    /* Declare an overloaded function. */                        \
+    NsfxUidTraits<T>                                             \
+    NsfxGetUidTraits(::boost::type_identity<T>) BOOST_NOEXCEPT;  \
+    /* Specialization the global traits class template. */       \
+    template<> class ::NsfxUidTraits<T>                          \
+    {                                                            \
+    public:                                                      \
+        BOOST_STATIC_CONSTANT(bool, value = true);               \
+        static ::nsfx::Uid GetUid(void) BOOST_NOEXCEPT           \
+        {                                                        \
+            return ::nsfx::Uid(UID);                             \
+        }                                                        \
+    }
+
+////////////////////////////////////////////////////////////////////////////////
+#else // !defined(NSFX_MSVC)
 // A fallback UID traits class.
 class NsfxUidTraitsFallback
 {
@@ -150,7 +177,7 @@ NsfxUidTraitsFallback NsfxGetUidTraits(T) BOOST_NOEXCEPT;
  * @param UID The UID of the class.
  *            It **must** be a string literal or a string with static lifetime.
  */
-#define NSFX_DEFINE_CLASS_UID(T, UID)                            \
+# define NSFX_DEFINE_CLASS_UID(T, UID)                           \
     /* Declare a local traits class template. */                 \
     template<class > class NsfxUidTraits;                        \
     /* Declare an overloaded function. */                        \
@@ -158,36 +185,6 @@ NsfxUidTraitsFallback NsfxGetUidTraits(T) BOOST_NOEXCEPT;
     NsfxGetUidTraits(::boost::type_identity<T>) BOOST_NOEXCEPT;  \
     /* Specialization the local traits class template. */        \
     template<> class NsfxUidTraits<T>                            \
-    {                                                            \
-    public:                                                      \
-        BOOST_STATIC_CONSTANT(bool, value = true);               \
-        static ::nsfx::Uid GetUid(void) BOOST_NOEXCEPT           \
-        {                                                        \
-            return ::nsfx::Uid(UID);                             \
-        }                                                        \
-    }
-
-#endif // defined(NSFX_GCC)
-
-
-////////////////////////////////////////
-#if defined(NSFX_MSVC)
-/* Define a global traits class template. */
-template<class >
-class NsfxUidTraits
-{
-public:
-    BOOST_STATIC_CONSTANT(bool, value = false); /* UID is undefined. */
-};
-
-////////////////////////////////////////
-// Macros.
-#define NSFX_DEFINE_CLASS_UID(T, UID)                            \
-    /* Declare an overloaded function. */                        \
-    NsfxUidTraits<T>                                             \
-    NsfxGetUidTraits(::boost::type_identity<T>) BOOST_NOEXCEPT;  \
-    /* Specialization the global traits class template. */       \
-    template<> class ::NsfxUidTraits<T>                          \
     {                                                            \
     public:                                                      \
         BOOST_STATIC_CONSTANT(bool, value = true);               \
@@ -362,13 +359,11 @@ NSFX_OPEN_NAMESPACE
 template<class T>
 class UidTraits
 {
-#if defined(NSFX_GCC)
-    typedef decltype(NsfxGetUidTraits(typename ::boost::type_identity<T>()))
-            TraitsType;
-#endif // defined(NSFX_GCC)
-
 #if defined(NSFX_MSVC)
     typedef ::NsfxUidTraits<T>  TraitsType;
+#else // !defined(NSFX_MSVC)
+    typedef decltype(NsfxGetUidTraits(typename ::boost::type_identity<T>()))
+            TraitsType;
 #endif // defined(NSFX_MSVC)
 
     // If the UID is not defined for the class, give an explicit error message.

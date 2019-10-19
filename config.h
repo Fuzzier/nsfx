@@ -47,41 +47,49 @@
 #include <boost/config.hpp>
 
 // NSFX_MSVC
-// NSFX_X86, NSFX_X64
 #if defined(BOOST_MSVC)
 # define NSFX_MSVC  BOOST_MSVC
 # if NSFX_MSVC < 1600 // Lower than Microsoft Visual C++ 2010
 #  error Microsoft Visual C++ 2010 or above version is required.
 # endif // NSFX_MSVC < 1600
 
-# if defined(_M_IX86)
-#  define NSFX_X86 1
-# endif // defined(_M_IX86)
-
-# if defined(_M_X64)
-#  define NSFX_X64 1
-# endif // defined(_M_IX64)
-
-// Disable warning for using unchecked iterators.
+// Disable warning C4355: 'this' pointer is used in constructor.
+# pragma warning(disable : 4355)
+// Disable warning C4819: file contains non-ascii characters.
+# pragma warning(disable : 4819)
+// Disable warning C4996: deprecated declaration.
 # pragma warning(disable : 4996)
 #endif // defined(BOOST_MSVC)
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // NSFX_GCC
-// NSFX_X86, NSFX_X64
 #if defined(BOOST_GCC)
 # define NSFX_GCC  BOOST_GCC
 # if NSFX_GCC < 40600 // Lower than GCC 4.6.0
 #  error GCC version 4.6.0 or above version is required.
 # endif // NSFX_GCC < 40700
-
-# if defined(__LP64__)
-#  define NSFX_X64 1
-# else // if !defined(__LP64__)
-#  define NSFX_X86 1
-# endif // defined(__LP64__)
 #endif // defined(BOOST_GCC)
+
+
+////////////////////////////////////////////////////////////////////////////////
+// NSFX_CLANG
+#if defined(BOOST_CLANG)
+# define NSFX_CLANG  BOOST_CLANG
+#endif // defined(BOOST_GCC)
+
+
+////////////////////////////////////////////////////////////////////////////////
+// NSFX_X86
+#if defined(_M_IX86) || defined(__i386__)
+# define NSFX_X86 1
+// NSFX_X64
+#elif defined(_M_X64) || defined(__x86_64__) || defined(__amd64__)
+# define NSFX_X64 1
+// ERROR
+#else
+# error Unsupported architecture.
+#endif
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -98,6 +106,11 @@ typedef decltype(nullptr) nullptr_t;
 #if defined(NSFX_MSVC)
 # define NSFX_OVERRIDE override
 #endif // defined(NSFX_MSVC)
+
+
+#if defined(NSFX_CLANG)
+# define NSFX_OVERRIDE override
+#endif // defined(NSFX_CLANG)
 
 
 #if defined(NSFX_GCC)
@@ -120,7 +133,7 @@ typedef decltype(nullptr) nullptr_t;
 #endif // defined(NSFX_MSVC)
 
 
-#if defined(NSFX_GCC)
+#if defined(NSFX_GCC) || defined(NSFX_CLANG)
 # define NSFX_FINAL final
 #endif // defined(NSFX_GCC)
 
