@@ -642,6 +642,11 @@ NSFX_TEST_SUITE(BufferIterator)
             NSFX_TEST_EXPECT_EQ(t64, n64);
             NSFX_TEST_EXPECT_EQ(*p64, b64);
 
+            it.Fill(0xef, sizeof (uint64_t));
+            it -= sizeof (uint64_t);
+            it.ReadB(reinterpret_cast<uint8_t*>(&t64), sizeof (uint64_t));
+            it -= sizeof (uint64_t);
+            NSFX_TEST_EXPECT_EQ(t64, 0xefefefefefefefef);
         }
 
         NSFX_TEST_CASE(AroundBuffer)

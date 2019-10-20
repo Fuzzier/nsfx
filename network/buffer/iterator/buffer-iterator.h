@@ -193,6 +193,19 @@ private:
     void InternalWrite(const uint8_t* bytes, size_t size, size_t offset, KeepEndianTag) BOOST_NOEXCEPT;
     void InternalWrite(const uint8_t* bytes, size_t size, size_t offset, ReverseEndianTag) BOOST_NOEXCEPT;
 
+    // Fill bytes.
+public:
+    /**
+     * @brief Fill.
+     *
+     * @param[in] v    The value used to fill.
+     * @param[in] size The number of bytes to fill.
+     */
+    void Fill(uint8_t v, size_t size) BOOST_NOEXCEPT;
+
+private:
+    void InternalFill(uint8_t v, size_t size, size_t offset) BOOST_NOEXCEPT;
+
     // Read data.
 public:
     /**
@@ -696,6 +709,20 @@ BufferIterator::InternalWrite(const uint8_t* bytes, size_t size, size_t offset, 
         bytes_[offset++] = bytes[size];
         ++cursor_;
     }
+}
+
+inline void
+BufferIterator::Fill(uint8_t v, size_t size) BOOST_NOEXCEPT
+{
+    WritableCheck(size);
+    InternalFill(v, size, cursor_);
+}
+
+inline void
+BufferIterator::InternalFill(uint8_t v, size_t size, size_t offset) BOOST_NOEXCEPT
+{
+    std::memset(bytes_ + offset, v, size);
+    cursor_ += size;
 }
 
 template<class T>
