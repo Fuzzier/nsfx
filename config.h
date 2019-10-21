@@ -53,6 +53,8 @@
 #  error Microsoft Visual C++ 2010 or above version is required.
 # endif // NSFX_MSVC < 1600
 
+// Disable warning C4200: zero-sized array in struct/union.
+# pragma warning(disable : 4200)
 // Disable warning C4355: 'this' pointer is used in constructor.
 # pragma warning(disable : 4355)
 // Disable warning C4819: file contains non-ascii characters.
