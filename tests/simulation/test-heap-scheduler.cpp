@@ -185,6 +185,44 @@ NSFX_TEST_SUITE(HeapScheduler)
         }
     }/*}}}*/
 
+    NSFX_TEST_CASE(ScheduleDuringFire)
+    {
+        try
+        {
+            Ptr<nsfx::IScheduler> sch =
+                nsfx::CreateObject<nsfx::IScheduler>(
+                    "edu.uestc.nsfx.HeapScheduler");
+            {
+                Ptr<nsfx::IClock> clock =
+                    nsfx::CreateObject<nsfx::IClock>(
+                        "edu.uestc.nsfx.test.Clock");
+                Ptr<nsfx::IClockUser>(sch)->Use(clock);
+            }
+            clk = nsfx::TimePoint::Epoch();
+
+            size_t n = 0;
+            nsfx::ScheduleNow(sch, [&] {
+                ++n;
+                nsfx::ScheduleIn(sch, nsfx::Seconds(1), [&] { ++n; });
+            });
+
+            sch->FireAndRemoveNextEvent();
+            NSFX_TEST_EXPECT_EQ(n, 1);
+
+            clk += nsfx::Seconds(1);
+            sch->FireAndRemoveNextEvent();
+            NSFX_TEST_EXPECT_EQ(n, 2);
+
+        }
+        catch (boost::exception& e)
+        {
+            std::cout << diagnostic_information(e) << std::endl;
+        }
+        catch (std::exception& e)
+        {
+            std::cout << e.what() << std::endl;
+        }
+    }
 }
 
 

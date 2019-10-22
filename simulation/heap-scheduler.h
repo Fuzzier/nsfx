@@ -159,13 +159,15 @@ public:
 
     virtual void FireAndRemoveNextEvent(void) NSFX_OVERRIDE
     {
-        IEventHandle* result = nullptr;
         if (events_.size())
         {
             std::pop_heap(events_.begin(), events_.end(), HeapLessThan());
-            events_.back()->Fire();
-            events_.back()->Release();
+            EventHandle* event = events_.back();
+            // Must pop back before firing the event.
+            // Otherwise, during firing, new scheduling can corrupt the heap.
             events_.pop_back();
+            event->Fire();
+            event->Release();
             // BOOST_ASSERT(IsOrdered());
         }
     }

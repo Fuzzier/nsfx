@@ -28,6 +28,7 @@
 #include <nsfx/simulation/i-scheduler.h>
 #include <nsfx/simulation/list-scheduler.h>
 #include <nsfx/simulation/set-scheduler.h>
+#include <nsfx/simulation/heap-scheduler.h>
 
 #include <nsfx/simulation/i-simulator.h>
 #include <nsfx/simulation/simulator.h>
