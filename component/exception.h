@@ -72,6 +72,17 @@ struct CannotInitialize : ComponentException {};
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// Object configuration.
+/**
+ * @ingroup Exception
+ * @brief An object is incorrectly configured.
+ *
+ * The reasons may be invalid or inconsistent configuration values.
+ */
+struct InvalidConfiguration : ComponentException {};
+
+
+////////////////////////////////////////////////////////////////////////////////
 // Class registration.
 /**
  * @ingroup Exception
