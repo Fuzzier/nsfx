@@ -75,7 +75,13 @@ struct CannotInitialize : ComponentException {};
 // Object configuration.
 /**
  * @ingroup Exception
- * @brief An object is incorrectly configured.
+ * @brief An object is not configured.
+ */
+struct Unconfigured : ComponentException {};
+
+/**
+ * @ingroup Exception
+ * @brief A configuration value is invalid.
  *
  * The reasons may be invalid or inconsistent configuration values.
  */
