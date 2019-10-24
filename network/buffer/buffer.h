@@ -559,7 +559,7 @@ Buffer::InternalCopyTo(uint8_t* dst, size_t size, ContinuousTag) const BOOST_NOE
 inline size_t
 Buffer::InternalCopyTo(uint8_t* dst, size_t size, SegmentedTag) const BOOST_NOEXCEPT
 {
-    InternalCopyTo(dst, size, ContinuousTag());
+    return InternalCopyTo(dst, size, ContinuousTag());
 }
 
 inline void Buffer::AddAtStart(size_t size)
