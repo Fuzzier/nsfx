@@ -21,14 +21,14 @@ LIBS=
 AR=
 
 CFLAGS=
-CPPFLAGS=-I$(NSFX_PATH)/.. -std=c++0x -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=false
+CPPFLAGS=-I$(NSFX_PATH)/.. -std=c++17
 LDFLAGS=
 ARFLAGS=
 
-ifndef RELEASE
-CPPFLAGS+=-g
-else
+ifeq ($(BUILD_TYPE), Release)
 CPPFLAGS+=-O3 -DBOOST_DISABLE_ASSERTS
+else
+CPPFLAGS+=-g
 endif
 
 .PHONY: all clean run                                              \

@@ -19,12 +19,10 @@ LD=link.exe
 LIBS=ws2_32.lib iphlpapi.lib
 AR=lib.exe
 
-# disable warning C4355: 'this' pointer is used in constructor.
 # disable warning C4819: file contains non-ascii characters.
 
 CFLAGS=/nologo
-CPPFLAGS=/EHsc /W3 /MD /Zi /wd4355 /wd4819 /I"$(NSFX_PATH)/.." \
-         /DBOOST_MATH_PROMOTE_DOUBLE_POLICY=false
+CPPFLAGS=/EHsc /W3 /MD /Zi /wd4819 /I"$(NSFX_PATH)/.."
 LDFLAGS=/NOLOGO /INCREMENTAL:NO
 ARFLAGS=/NOLOGO
 
@@ -44,7 +42,7 @@ ARCH=AVX
 !ENDIF
 
 
-!IFDEF RELEASE
+!IF "$(BUILD_TYPE)"=="Release"
 CPPFLAGS=$(CPPFLAGS) /Ox /arch:$(ARCH) /DBOOST_DISABLE_ASSERTS
 !ELSE
 CPPFLAGS=$(CPPFLAGS) /Od
