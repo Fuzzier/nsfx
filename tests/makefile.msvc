@@ -14,66 +14,125 @@
  ##
 
 NSFX_PATH=..
+INCLUDE_FLAG=/I"$(NSFX_PATH)/.."
+LIBS=
+
+################################################################################
+# Updated: 2019-11-09
+################################################################################
 CC=cl.exe
 LD=link.exe
-LIBS=ws2_32.lib iphlpapi.lib
 AR=lib.exe
 
-# disable warning C4819: file contains non-ascii characters.
-
-CFLAGS=/nologo
-CPPFLAGS=/EHsc /W3 /MD /Zi /wd4819 /I"$(NSFX_PATH)/.."
+CFLAGS=/nologo /W3 /MD $(INCLUDE_FLAG)
+CPPFLAGS=/EHsc
 LDFLAGS=/NOLOGO /INCREMENTAL:NO
 ARFLAGS=/NOLOGO
 
+## `/source-charset:utf-8`
+# * Use `/wd4819` to disable warning C4819: file contains non-ascii characters.
+# * From Visual C++ 2012: `/source-charset:utf-8`.
+CHARSET_FLAG=/source-charset:utf-8
+
+## `/std:c++14|c++17|c++latest`
+# * From Visual C++ 2015 Update 3: `c++14`
+# * From Visual C++ 2017 15.3: `c++17`
+CXXSTD_FLAG=/std:c++17
+
+## `/arch:<AVX|AVX2>`
+# * From Visual C++ 2010: `AVX`
+# * From Visual C++ 2013 Update 2: `AVX2`
+ARCH_FLAG=/arch:AVX2
+
+## `/Zm<n% of default>`
+# * For Visual C++ 2010, variadic template is emulated by extensive amount of
+#   non-variadic templates.
+#   Thus, a larger amount of memory is required.
+# MEMALLOC_FLAG
 
 !IF     ([cl.exe 2>&1 | FINDSTR /R /C:"Version 19.2" >NUL] == 0) # VC2019
-ARCH=AVX2
 !ELSEIF ([cl.exe 2>&1 | FINDSTR /R /C:"Version 19.1" >NUL] == 0) # VC2017
-ARCH=AVX2
 !ELSEIF ([cl.exe 2>&1 | FINDSTR /R /C:"Version 19.0" >NUL] == 0) # VC2015
-ARCH=AVX2
-!ELSEIF ([cl.exe 2>&1 | FINDSTR /R /C:"Version 18.0" >NUL] == 0) # VC2013 (Suppose Update 2 is installed)
-ARCH=AVX2
+CXXSTD_FLAG=/std:c++14
+!ELSEIF ([cl.exe 2>&1 | FINDSTR /R /C:"Version 18.0" >NUL] == 0) # VC2013
+! UNDEF CXXSTD_FLAG
 !ELSEIF ([cl.exe 2>&1 | FINDSTR /R /C:"Version 17.0" >NUL] == 0) # VC2012
-ARCH=AVX
+! UNDEF CXXSTD_FLAG
+ARCH_FLAG=/arch:AVX
 !ELSEIF ([cl.exe 2>&1 | FINDSTR /R /C:"Version 16.0" >NUL] == 0) # VC2010
-ARCH=AVX
+CHARSET_FLAG=/wd4819
+! UNDEF CXXSTD_FLAG
+ARCH_FLAG=/arch:AVX
+MEMALLOC_FLAG=/Zm250
 !ENDIF
 
+CFLAGS=$(CFLAGS) $(CHARSET_FLAG)
+
+!IFDEF CXXSTD_FLAG
+CPPFLAGS=$(CPPFLAGS) $(CXXSTD_FLAG)
+!ENDIF
+
+!IFDEF MEMALLOC_FLAG
+CPPFLAGS=$(CPPFLAGS) $(MEMALLOC_FLAG)
+!ENDIF
 
 !IF "$(BUILD_TYPE)"=="Release"
-CPPFLAGS=$(CPPFLAGS) /Ox /arch:$(ARCH) /DBOOST_DISABLE_ASSERTS
+CFLAGS=$(CFLAGS) /Ox $(ARCH_FLAG)
+CPPFLAGS=$(CPPFLAGS) /DBOOST_DISABLE_ASSERTS
+!ELSEIF "$(BUILD_TYPE)"=="RelWithDebInfo"
+CFLAGS=$(CFLAGS) /Zi /Ox $(ARCH_FLAG)
+CPPFLAGS=$(CPPFLAGS) /DBOOST_DISABLE_ASSERTS
+LDFLAGS=$(LDFLAGS) /DEBUG
 !ELSE
-CPPFLAGS=$(CPPFLAGS) /Od
+CFLAGS=$(CFLAGS) /Zi /Od
+LDFLAGS=$(LDFLAGS) /DEBUG
 !ENDIF
 
+# Clean all output files.
+clean :
+	del /s /q *.pch 1>nul 2>nul
+	del /s /q *.obj 1>nul 2>nul
+	del /s /q *.pdb 1>nul 2>nul
+	del /s /q *.ilk 1>nul 2>nul
+	del /s /q *.exp 1>nul 2>nul
+	del /s /q *.lib 1>nul 2>nul
+	del /s /q *.dll 1>nul 2>nul
+	del /s /q *.exe 1>nul 2>nul
+	del /s /q *.log 1>nul 2>nul
+
+# Ignore command errors (e.g., 'dir' found nothing) by adding switch "+I".
+!CMDSWITCHES +I
+# Run all executables.
+run :
+	for /f "delims=" %d in ('dir /b *.exe 2^>nul') do @( \
+		echo ====== %~d ====== & \
+		"%~d" )
+
+# Clean all except for the pre-compiled header.
+PCHOBJ=config.obj
+cl :
+	for /f "delims=" %d in ('dir /s /b *.obj 2^>nul') do @( \
+		if "%~nxd" neq "$(PCHOBJ)" del "%~d" 1>nul 2>nul )
+	for /f "delims=" %d in ('dir /s /b *.pdb 2^>nul') do @( \
+		echo %~nd| findstr "^vc[0-9][0-9][0-9]$$" >nul || \
+		del "%~d" 1>nul 2>nul )
+	del /s /q *.ilk 1>nul 2>nul
+	del /s /q *.exp 1>nul 2>nul
+	del /s /q *.lib 1>nul 2>nul
+	del /s /q *.dll 1>nul 2>nul
+	del /s /q *.exe 1>nul 2>nul
+	del /s /q *.log 1>nul 2>nul
+!CMDSWITCHES -I
+
+################################################################################
 
 .PHONY: all clean run                                              \
         test utility chrono component event log random statistics  \
         simulation network                                         \
 
-clean :
-	del /s /q *.obj 1>nul 2>nul
-	del /s /q *.pdb 1>nul 2>nul
-	del /s /q *.ilk 1>nul 2>nul
-	del /s /q *.exp 1>nul 2>nul
-	del /s /q *.exe 1>nul 2>nul
-	del /s /q *.dll 1>nul 2>nul
-	del /s /q *.log 1>nul 2>nul
-	del /s /q *.txt 1>nul 2>nul
-
 all : test utility chrono                    \
       component event log random statistics  \
       simulation network                     \
-
-# Ignore command errors (e.g., 'dir' found nothing) by adding switch "+I".
-!CMDSWITCHES +I
-run :
-	for /f "delims=" %d in ('dir /b *.exe 2^>nul') do @( \
-		echo ====== %~d ====== & \
-		"%~d" )
-!CMDSWITCHES -I
 
 ################################################################################
 EXCEPTION_HEADERS=                      \
