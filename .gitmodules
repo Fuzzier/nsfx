@@ -1,0 +1,4 @@
+[submodule "tutorials"]
+	path = tutorials
+	url = ./
+	branch = tutorials
