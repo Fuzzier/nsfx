@@ -14,73 +14,99 @@
  ##
 
 NSFX_PATH=..
-INCLUDE_FLAG=/I"$(NSFX_PATH)/.."
+INCLUDES=/I"$(NSFX_PATH)/.."
 LIBS=
 
 ################################################################################
-# Updated: 2019-11-09
+# Updated: 2019-11-12
 ################################################################################
 CC=cl.exe
 LD=link.exe
 AR=lib.exe
 
-CFLAGS=/nologo /W3 /MD $(INCLUDE_FLAG)
+CFLAGS=/nologo /W3 /MD $(INCLUDES)
 CPPFLAGS=/EHsc
 LDFLAGS=/NOLOGO /INCREMENTAL:NO
 ARFLAGS=/NOLOGO
 
+# Check VC version.
+!IF [echo MSC_VER=_MSC_VER> mscver.c && $(CC) /EP mscver.c > mscver.~ 2>nul]
+! IF [del mscver.c mscver.~ 2>nul]
+! ENDIF
+! MESSAGE *** ERROR ***
+! MESSAGE Cannot run Visual C to determine its version. Make sure $(CC) is in PATH.
+! ERROR Make aborted.
+!ELSE
+! INCLUDE mscver.~
+! IF [del mscver.c mscver.~]
+! ENDIF
+!ENDIF
+
+!IF [echo MSC_FULL_VER=_MSC_FULL_VER> mscfullver.c && $(CC) /EP mscfullver.c > mscfullver.~ 2>nul]
+! IF [del mscfullver.c mscfullver.~ 2>nul]
+! ENDIF
+! MESSAGE *** ERROR ***
+! MESSAGE Cannot run Visual C to determine its version. Make sure $(CC) is in PATH.
+! ERROR Make aborted.
+!ELSE
+! INCLUDE mscfullver.~
+! IF [del mscfullver.c mscfullver.~]
+! ENDIF
+!ENDIF
+
+# VC 2010 SP1 or above is required.
+!IF $(MSC_VER) < 1600 || $(MSC_FULL_VER) < 160040219
+! MESSAGE *** ERROR ***
+! MESSAGE Unsupported VC version. Make sure VC 2010 SP1 or above versions are used.
+! ERROR Make aborted.
+!ENDIF
+
 ## `/source-charset:utf-8`
-# * Use `/wd4819` to disable warning C4819: file contains non-ascii characters.
-# * From Visual C++ 2012: `/source-charset:utf-8`.
-CHARSET_FLAG=/source-charset:utf-8
+# * From VC 2012: `/source-charset:utf-8`.
+# * Otherwise, disable warning C4819: file contains non-ascii characters.
+!IF $(MSC_VER) >= 1700
+CFLAGS=$(CFLAGS) /source-charset:utf-8
+!ELSE # IF $(MSC_VER) < 1700
+CFLAGS=$(CFLAGS) /wd4819
+!ENDIF
 
 ## `/std:c++14|c++17|c++latest`
-# * From Visual C++ 2015 Update 3: `c++14`
-# * From Visual C++ 2017 15.3: `c++17`
-CXXSTD_FLAG=/std:c++17
-
-## `/arch:<AVX|AVX2>`
-# * From Visual C++ 2010: `AVX`
-# * From Visual C++ 2013 Update 2: `AVX2`
-ARCH_FLAG=/arch:AVX2
+# * From VC 2017 15.3    : `c++17`
+# * From VC 2015 Update 3: `c++14`
+!IF $(MSC_VER) >= 1911
+CPPFLAGS=$(CPPFLAGS) /std:c++17
+!ELSEIF $(MSC_FULL_VER) >= 190024210
+CPPFLAGS=$(CPPFLAGS) /std:c++14
+!ENDIF
 
 ## `/Zm<n% of default>`
-# * For Visual C++ 2010, variadic template is emulated by extensive amount of
-#   non-variadic templates.
-#   Thus, a larger amount of memory is required.
-# MEMALLOC_FLAG
-
-!IF     ([cl.exe 2>&1 | FINDSTR /R /C:"Version 19.2" >NUL] == 0) # VC2019
-!ELSEIF ([cl.exe 2>&1 | FINDSTR /R /C:"Version 19.1" >NUL] == 0) # VC2017
-!ELSEIF ([cl.exe 2>&1 | FINDSTR /R /C:"Version 19.0" >NUL] == 0) # VC2015
-CXXSTD_FLAG=/std:c++14
-!ELSEIF ([cl.exe 2>&1 | FINDSTR /R /C:"Version 18.0" >NUL] == 0) # VC2013
-! UNDEF CXXSTD_FLAG
-!ELSEIF ([cl.exe 2>&1 | FINDSTR /R /C:"Version 17.0" >NUL] == 0) # VC2012
-! UNDEF CXXSTD_FLAG
-ARCH_FLAG=/arch:AVX
-!ELSEIF ([cl.exe 2>&1 | FINDSTR /R /C:"Version 16.0" >NUL] == 0) # VC2010
-CHARSET_FLAG=/wd4819
-! UNDEF CXXSTD_FLAG
-ARCH_FLAG=/arch:AVX
-MEMALLOC_FLAG=/Zm250
+# * VC 2010 does not support variadic template.
+#   Thus, variadic template is emulated by an extensive amount of non-variadic
+#   templates, and a larger amount of memory is required.
+!IF $(MSC_VER) <= 1600
+CPPFLAGS=$(CPPFLAGS) /Zm250
 !ENDIF
 
-CFLAGS=$(CFLAGS) $(CHARSET_FLAG)
+## `/analyze`
+# * From VC 2012: supported.
+# !IF $(MSC_VER) >= 1700
+# CFLAGS=$(CFLAGS) /analyze
+# !ENDIF
 
-!IFDEF CXXSTD_FLAG
-CPPFLAGS=$(CPPFLAGS) $(CXXSTD_FLAG)
-!ENDIF
-
-!IFDEF MEMALLOC_FLAG
-CPPFLAGS=$(CPPFLAGS) $(MEMALLOC_FLAG)
+## `/arch:<AVX|AVX2>`
+# * From VC 2013 Update 2: `AVX2`
+# * From VC 2010         : `AVX`
+!IF $(MSC_FULL_VER) >= 180030501
+ARCH=AVX2
+!ElSE
+ARCH=AVX
 !ENDIF
 
 !IF "$(BUILD_TYPE)"=="Release"
-CFLAGS=$(CFLAGS) /Ox $(ARCH_FLAG)
+CFLAGS=$(CFLAGS) /Ox /arch:$(ARCH)
 CPPFLAGS=$(CPPFLAGS) /DBOOST_DISABLE_ASSERTS
 !ELSEIF "$(BUILD_TYPE)"=="RelWithDebInfo"
-CFLAGS=$(CFLAGS) /Zi /Ox $(ARCH_FLAG)
+CFLAGS=$(CFLAGS) /Zi /Ox /arch:$(ARCH)
 CPPFLAGS=$(CPPFLAGS) /DBOOST_DISABLE_ASSERTS
 LDFLAGS=$(LDFLAGS) /DEBUG
 !ELSE
@@ -114,7 +140,7 @@ cl :
 	for /f "delims=" %d in ('dir /s /b *.obj 2^>nul') do @( \
 		if "%~nxd" neq "$(PCHOBJ)" del "%~d" 1>nul 2>nul )
 	for /f "delims=" %d in ('dir /s /b *.pdb 2^>nul') do @( \
-		echo %~nd| findstr "^vc[0-9][0-9][0-9]$$" >nul || \
+		echo %~nd| findstr "^vc[0-9][0-9][0-9]$$" >nul ||   \
 		del "%~d" 1>nul 2>nul )
 	del /s /q *.ilk 1>nul 2>nul
 	del /s /q *.exp 1>nul 2>nul
@@ -126,43 +152,43 @@ cl :
 
 ################################################################################
 
-.PHONY: all clean run                                              \
-        test utility chrono component event log random statistics  \
-        simulation network                                         \
+.PHONY: all clean run                                             \
+        test utility chrono component event log random statistics \
+        simulation network                                        \
 
-all : test utility chrono                    \
-      component event log random statistics  \
-      simulation network                     \
+all : test utility chrono                   \
+      component event log random statistics \
+      simulation network                    \
 
 ################################################################################
-EXCEPTION_HEADERS=                      \
-    $(NSFX_PATH)/config.h               \
-    $(NSFX_PATH)/exception/exception.h  \
+EXCEPTION_HEADERS=                     \
+    $(NSFX_PATH)/config.h              \
+    $(NSFX_PATH)/exception/exception.h \
 
 ################################################################################
 # test
-test :          \
-    test-case   \
-    test-suite  \
+test :         \
+    test-case  \
+    test-suite \
 
-TEST_HEADERS=                            \
-    $(NSFX_PATH)/test.h                  \
-    $(NSFX_PATH)/test/config.h           \
-    $(NSFX_PATH)/test/visitor-concept.h  \
-    $(NSFX_PATH)/test/tool-type.h        \
-    $(NSFX_PATH)/test/tool-level.h       \
-    $(NSFX_PATH)/test/result.h           \
-    $(NSFX_PATH)/test/case.h             \
-    $(NSFX_PATH)/test/suite.h            \
-    $(NSFX_PATH)/test/logger.h           \
-    $(NSFX_PATH)/test/runner.h           \
-    $(NSFX_PATH)/test/builder.h          \
-    $(NSFX_PATH)/test/tool-iterate.h     \
-    $(NSFX_PATH)/test/tool.h             \
+TEST_HEADERS=                           \
+    $(NSFX_PATH)/test.h                 \
+    $(NSFX_PATH)/test/config.h          \
+    $(NSFX_PATH)/test/visitor-concept.h \
+    $(NSFX_PATH)/test/tool-type.h       \
+    $(NSFX_PATH)/test/tool-level.h      \
+    $(NSFX_PATH)/test/result.h          \
+    $(NSFX_PATH)/test/case.h            \
+    $(NSFX_PATH)/test/suite.h           \
+    $(NSFX_PATH)/test/logger.h          \
+    $(NSFX_PATH)/test/runner.h          \
+    $(NSFX_PATH)/test/builder.h         \
+    $(NSFX_PATH)/test/tool-iterate.h    \
+    $(NSFX_PATH)/test/tool.h            \
 
-HEADERS=                  \
-    $(TEST_HEADERS)       \
-    $(EXCEPTION_HEADERS)  \
+HEADERS=                 \
+    $(TEST_HEADERS)      \
+    $(EXCEPTION_HEADERS) \
 
 ########################################
 test-case : test-case.exe
@@ -182,23 +208,23 @@ test-suite.exe : $(SRC) $(HEADERS)
 
 ################################################################################
 # utility
-utility :                          \
-    test-least-int                 \
-    test-circular-sequence-number  \
+utility :                         \
+    test-least-int                \
+    test-circular-sequence-number \
 
-UTILITY_HEADERS=                                     \
-    $(NSFX_PATH)/utility.h                           \
-    $(NSFX_PATH)/utility/config.h                    \
-    $(NSFX_PATH)/utility/ratio.h                     \
-    $(NSFX_PATH)/utility/endian.h                    \
-    $(NSFX_PATH)/utility/rounding.h                  \
-    $(NSFX_PATH)/utility/least-int.h                 \
-    $(NSFX_PATH)/utility/circular-sequence-number.h  \
+UTILITY_HEADERS=                                    \
+    $(NSFX_PATH)/utility.h                          \
+    $(NSFX_PATH)/utility/config.h                   \
+    $(NSFX_PATH)/utility/ratio.h                    \
+    $(NSFX_PATH)/utility/endian.h                   \
+    $(NSFX_PATH)/utility/rounding.h                 \
+    $(NSFX_PATH)/utility/least-int.h                \
+    $(NSFX_PATH)/utility/circular-sequence-number.h \
 
-HEADERS=                  \
-    $(UTILITY_HEADERS)    \
-    $(TEST_HEADERS)       \
-    $(EXCEPTION_HEADERS)  \
+HEADERS=                 \
+    $(UTILITY_HEADERS)   \
+    $(TEST_HEADERS)      \
+    $(EXCEPTION_HEADERS) \
 
 ########################################
 test-least-int : test-least-int.exe
@@ -218,22 +244,22 @@ test-circular-sequence-number.exe : $(SRC) $(HEADERS)
 
 ################################################################################
 # chrono
-chrono :                     \
-    test-duration            \
-    test-virtual-time-point  \
+chrono :                    \
+    test-duration           \
+    test-virtual-time-point \
 
-CHRONO_HEADERS=                               \
-    $(NSFX_PATH)/config.h                     \
-    $(NSFX_PATH)/chrono/config.h              \
-    $(NSFX_PATH)/chrono/duration.h            \
-    $(NSFX_PATH)/chrono/time-point.h          \
-    $(NSFX_PATH)/chrono/virtual-time-point.h  \
-    $(UTILITY_HEADERS)                        \
+CHRONO_HEADERS=                              \
+    $(NSFX_PATH)/config.h                    \
+    $(NSFX_PATH)/chrono/config.h             \
+    $(NSFX_PATH)/chrono/duration.h           \
+    $(NSFX_PATH)/chrono/time-point.h         \
+    $(NSFX_PATH)/chrono/virtual-time-point.h \
+    $(UTILITY_HEADERS)                       \
 
-HEADERS=                  \
-    $(CHRONO_HEADERS)     \
-    $(TEST_HEADERS)       \
-    $(EXCEPTION_HEADERS)  \
+HEADERS=                 \
+    $(CHRONO_HEADERS)    \
+    $(TEST_HEADERS)      \
+    $(EXCEPTION_HEADERS) \
 
 ########################################
 test-duration : test-duration.exe
@@ -253,32 +279,32 @@ test-virtual-time-point.exe : $(SRC) $(HEADERS)
 
 ################################################################################
 # component
-component :              \
-    test-uid             \
-    test-ptr             \
-    test-object          \
-    test-class-factory   \
-    test-class-registry  \
+component :             \
+    test-uid            \
+    test-ptr            \
+    test-object         \
+    test-class-factory  \
+    test-class-registry \
 
-COMPONENT_HEADERS=                             \
-    $(NSFX_PATH)/component.h                   \
-    $(NSFX_PATH)/component/config.h            \
-    $(NSFX_PATH)/component/exception.h         \
-    $(NSFX_PATH)/component/uid.h               \
-    $(NSFX_PATH)/component/i-object.h          \
-    $(NSFX_PATH)/component/object.h            \
-    $(NSFX_PATH)/component/ptr.h               \
-    $(NSFX_PATH)/component/i-user.h            \
-    $(NSFX_PATH)/component/i-class-factory.h   \
-    $(NSFX_PATH)/component/class-factory.h     \
-    $(NSFX_PATH)/component/i-class-registry.h  \
-    $(NSFX_PATH)/component/class-registry.h    \
+COMPONENT_HEADERS=                            \
+    $(NSFX_PATH)/component.h                  \
+    $(NSFX_PATH)/component/config.h           \
+    $(NSFX_PATH)/component/exception.h        \
+    $(NSFX_PATH)/component/uid.h              \
+    $(NSFX_PATH)/component/i-object.h         \
+    $(NSFX_PATH)/component/object.h           \
+    $(NSFX_PATH)/component/ptr.h              \
+    $(NSFX_PATH)/component/i-user.h           \
+    $(NSFX_PATH)/component/i-class-factory.h  \
+    $(NSFX_PATH)/component/class-factory.h    \
+    $(NSFX_PATH)/component/i-class-registry.h \
+    $(NSFX_PATH)/component/class-registry.h   \
 
-HEADERS=                  \
-    $(COMPONENT_HEADERS)  \
-    $(CHRONO_HEADERS)     \
-    $(TEST_HEADERS)       \
-    $(EXCEPTION_HEADERS)  \
+HEADERS=                 \
+    $(COMPONENT_HEADERS) \
+    $(CHRONO_HEADERS)    \
+    $(TEST_HEADERS)      \
+    $(EXCEPTION_HEADERS) \
 
 ########################################
 test-uid : test-uid.exe
@@ -322,27 +348,27 @@ test-class-registry.exe : $(SRC) $(HEADERS)
 
 ################################################################################
 # event
-event :              \
-    test-event-sink  \
-    test-event       \
-    test-portainer   \
+event :             \
+    test-event-sink \
+    test-event      \
+    test-portainer  \
 
-EVENT_HEADERS=                         \
-    $(NSFX_PATH)/event.h               \
-    $(NSFX_PATH)/event/config.h        \
-    $(NSFX_PATH)/event/exception.h     \
-    $(NSFX_PATH)/event/i-event-sink.h  \
-    $(NSFX_PATH)/event/event-sink.h    \
-    $(NSFX_PATH)/event/i-event.h       \
-    $(NSFX_PATH)/event/event.h         \
-    $(NSFX_PATH)/event/portainer.h     \
+EVENT_HEADERS=                        \
+    $(NSFX_PATH)/event.h              \
+    $(NSFX_PATH)/event/config.h       \
+    $(NSFX_PATH)/event/exception.h    \
+    $(NSFX_PATH)/event/i-event-sink.h \
+    $(NSFX_PATH)/event/event-sink.h   \
+    $(NSFX_PATH)/event/i-event.h      \
+    $(NSFX_PATH)/event/event.h        \
+    $(NSFX_PATH)/event/portainer.h    \
 
-HEADERS=                  \
-    $(EVENT_HEADERS)      \
-    $(COMPONENT_HEADERS)  \
-    $(CHRONO_HEADERS)     \
-    $(TEST_HEADERS)       \
-    $(EXCEPTION_HEADERS)  \
+HEADERS=                 \
+    $(EVENT_HEADERS)     \
+    $(COMPONENT_HEADERS) \
+    $(CHRONO_HEADERS)    \
+    $(TEST_HEADERS)      \
+    $(EXCEPTION_HEADERS) \
 
 ########################################
 test-event : test-event.exe
@@ -370,41 +396,41 @@ test-portainer.exe : $(SRC) $(HEADERS)
 
 ################################################################################
 # log
-log :                     \
-	test-log-value        \
-	test-log-record       \
-    test-log-filter       \
-    test-logger           \
-    test-log-formatter    \
-    test-log-stream-sink  \
+log :                    \
+	test-log-value       \
+	test-log-record      \
+    test-log-filter      \
+    test-logger          \
+    test-log-formatter   \
+    test-log-stream-sink \
 
-LOG_HEADERS=                                 \
-    $(NSFX_PATH)/log.h                       \
-    $(NSFX_PATH)/log/config.h                \
-    $(NSFX_PATH)/log/exception.h             \
-    $(NSFX_PATH)/log/log-value.h             \
-    $(NSFX_PATH)/log/make-log-value.h        \
-    $(NSFX_PATH)/log/log-value-traits.h      \
-    $(NSFX_PATH)/log/std-log-value-traits.h  \
-    $(NSFX_PATH)/log/log-record.h            \
-    $(NSFX_PATH)/log/i-log.h                 \
-    $(NSFX_PATH)/log/log-severity.h          \
-    $(NSFX_PATH)/log/log-tool.h              \
-    $(NSFX_PATH)/log/i-log-filter.h          \
-    $(NSFX_PATH)/log/create-log-filter.h     \
-    $(NSFX_PATH)/log/logger.h                \
-    $(NSFX_PATH)/log/i-log-formatter.h       \
-    $(NSFX_PATH)/log/create-log-formatter.h  \
-    $(NSFX_PATH)/log/i-log-stream-sink.h     \
-    $(NSFX_PATH)/log/log-stream-sink.h       \
+LOG_HEADERS=                                \
+    $(NSFX_PATH)/log.h                      \
+    $(NSFX_PATH)/log/config.h               \
+    $(NSFX_PATH)/log/exception.h            \
+    $(NSFX_PATH)/log/log-value.h            \
+    $(NSFX_PATH)/log/make-log-value.h       \
+    $(NSFX_PATH)/log/log-value-traits.h     \
+    $(NSFX_PATH)/log/std-log-value-traits.h \
+    $(NSFX_PATH)/log/log-record.h           \
+    $(NSFX_PATH)/log/i-log.h                \
+    $(NSFX_PATH)/log/log-severity.h         \
+    $(NSFX_PATH)/log/log-tool.h             \
+    $(NSFX_PATH)/log/i-log-filter.h         \
+    $(NSFX_PATH)/log/create-log-filter.h    \
+    $(NSFX_PATH)/log/logger.h               \
+    $(NSFX_PATH)/log/i-log-formatter.h      \
+    $(NSFX_PATH)/log/create-log-formatter.h \
+    $(NSFX_PATH)/log/i-log-stream-sink.h    \
+    $(NSFX_PATH)/log/log-stream-sink.h      \
 
-HEADERS=                  \
-    $(LOG_HEADERS)        \
-    $(EVENT_HEADERS)      \
-    $(COMPONENT_HEADERS)  \
-    $(CHRONO_HEADERS)     \
-    $(TEST_HEADERS)       \
-    $(EXCEPTION_HEADERS)  \
+HEADERS=                 \
+    $(LOG_HEADERS)       \
+    $(EVENT_HEADERS)     \
+    $(COMPONENT_HEADERS) \
+    $(CHRONO_HEADERS)    \
+    $(TEST_HEADERS)      \
+    $(EXCEPTION_HEADERS) \
 
 ########################################
 test-log-value : test-log-value.exe
@@ -456,87 +482,87 @@ test-log-stream-sink.exe : $(SRC) $(HEADERS)
 
 ################################################################################
 # random
-random :                          \
-    test-rot                      \
-    test-splitmix-engine          \
-    test-xoshiro-engine           \
-    test-xoroshiro-engine         \
-    test-pseudo-random-generator  \
+random :                         \
+    test-rot                     \
+    test-splitmix-engine         \
+    test-xoshiro-engine          \
+    test-xoroshiro-engine        \
+    test-pseudo-random-generator \
 
-RANDOM_HEADERS=                                                             \
-    $(NSFX_PATH)/random.h                                                   \
-    $(NSFX_PATH)/random/config.h                                            \
-    $(NSFX_PATH)/random/detail/rot.h                                        \
-    $(NSFX_PATH)/random/detail/is-power-2.h                                 \
-    $(NSFX_PATH)/random/distribution/i-uniform-uint32-distribution.h        \
-    $(NSFX_PATH)/random/distribution/i-uniform-int32-distribution.h         \
-    $(NSFX_PATH)/random/distribution/i-uniform-uint64-distribution.h        \
-    $(NSFX_PATH)/random/distribution/i-uniform-int64-distribution.h         \
-    $(NSFX_PATH)/random/distribution/i-uniform-double-distribution.h        \
-    $(NSFX_PATH)/random/distribution/i-uniform-float-distribution.h         \
-    $(NSFX_PATH)/random/distribution/i-bernoulli-distribution.h             \
-    $(NSFX_PATH)/random/distribution/i-binomial-distribution.h              \
-    $(NSFX_PATH)/random/distribution/i-geometric-distribution.h             \
-    $(NSFX_PATH)/random/distribution/i-negative-binomial-distribution.h     \
-    $(NSFX_PATH)/random/distribution/i-poisson-distribution.h               \
-    $(NSFX_PATH)/random/distribution/i-exponential-distribution.h           \
-    $(NSFX_PATH)/random/distribution/i-gamma-distribution.h                 \
-    $(NSFX_PATH)/random/distribution/i-weibull-distribution.h               \
-    $(NSFX_PATH)/random/distribution/i-extreme-value-distribution.h         \
-    $(NSFX_PATH)/random/distribution/i-beta-distribution.h                  \
-    $(NSFX_PATH)/random/distribution/i-laplace-distribution.h               \
-    $(NSFX_PATH)/random/distribution/i-normal-distribution.h                \
-    $(NSFX_PATH)/random/distribution/i-lognormal-distribution.h             \
-    $(NSFX_PATH)/random/distribution/i-chi-squared-distribution.h           \
-    $(NSFX_PATH)/random/distribution/i-cauchy-distribution.h                \
-    $(NSFX_PATH)/random/distribution/i-fisher-f-distribution.h              \
-    $(NSFX_PATH)/random/distribution/i-student-t-distribution.h             \
-    $(NSFX_PATH)/random/distribution/i-discrete-distribution.h              \
-    $(NSFX_PATH)/random/distribution/i-piecewise-constant-distribution.h    \
-    $(NSFX_PATH)/random/distribution/i-piecewise-linear-distribution.h      \
-    $(NSFX_PATH)/random/distribution/i-triangle-distribution.h              \
-    $(NSFX_PATH)/random/distribution/std-uniform-uint32-distribution.h      \
-    $(NSFX_PATH)/random/distribution/std-uniform-int32-distribution.h       \
-    $(NSFX_PATH)/random/distribution/std-uniform-uint64-distribution.h      \
-    $(NSFX_PATH)/random/distribution/std-uniform-int64-distribution.h       \
-    $(NSFX_PATH)/random/distribution/std-uniform-double-distribution.h      \
-    $(NSFX_PATH)/random/distribution/std-uniform-float-distribution.h       \
-    $(NSFX_PATH)/random/distribution/std-bernoulli-distribution.h           \
-    $(NSFX_PATH)/random/distribution/std-binomial-distribution.h            \
-    $(NSFX_PATH)/random/distribution/std-geometric-distribution.h           \
-    $(NSFX_PATH)/random/distribution/std-negative-binomial-distribution.h   \
-    $(NSFX_PATH)/random/distribution/std-poisson-distribution.h             \
-    $(NSFX_PATH)/random/distribution/std-exponential-distribution.h         \
-    $(NSFX_PATH)/random/distribution/std-gamma-distribution.h               \
-    $(NSFX_PATH)/random/distribution/std-weibull-distribution.h             \
-    $(NSFX_PATH)/random/distribution/std-extreme-value-distribution.h       \
-    $(NSFX_PATH)/random/distribution/std-beta-distribution.h                \
-    $(NSFX_PATH)/random/distribution/std-laplace-distribution.h             \
-    $(NSFX_PATH)/random/distribution/std-normal-distribution.h              \
-    $(NSFX_PATH)/random/distribution/std-lognormal-distribution.h           \
-    $(NSFX_PATH)/random/distribution/std-chi-squared-distribution.h         \
-    $(NSFX_PATH)/random/distribution/std-cauchy-distribution.h              \
-    $(NSFX_PATH)/random/distribution/std-fisher-f-distribution.h            \
-    $(NSFX_PATH)/random/distribution/std-student-t-distribution.h           \
-    $(NSFX_PATH)/random/distribution/std-discrete-distribution.h            \
-    $(NSFX_PATH)/random/distribution/std-piecewise-constant-distribution.h  \
-    $(NSFX_PATH)/random/distribution/std-piecewise-linear-distribution.h    \
-    $(NSFX_PATH)/random/distribution/std-triangle-distribution.h            \
-    $(NSFX_PATH)/random/engine/splitmix-engine.h                            \
-    $(NSFX_PATH)/random/engine/xoroshiro-engine.h                           \
-    $(NSFX_PATH)/random/engine/xoshiro-engine.h                             \
-    $(NSFX_PATH)/random/i-random.h                                          \
-    $(NSFX_PATH)/random/i-random-uint32-generator.h                         \
-    $(NSFX_PATH)/random/i-random-uint64-generator.h                         \
-    $(NSFX_PATH)/random/i-random-double-generator.h                         \
-    $(NSFX_PATH)/random/i-pseudo-random-engine.h                            \
-    $(NSFX_PATH)/random/pseudo-random-generator.h                           \
+RANDOM_HEADERS=                                                            \
+    $(NSFX_PATH)/random.h                                                  \
+    $(NSFX_PATH)/random/config.h                                           \
+    $(NSFX_PATH)/random/detail/rot.h                                       \
+    $(NSFX_PATH)/random/detail/is-power-2.h                                \
+    $(NSFX_PATH)/random/distribution/i-uniform-uint32-distribution.h       \
+    $(NSFX_PATH)/random/distribution/i-uniform-int32-distribution.h        \
+    $(NSFX_PATH)/random/distribution/i-uniform-uint64-distribution.h       \
+    $(NSFX_PATH)/random/distribution/i-uniform-int64-distribution.h        \
+    $(NSFX_PATH)/random/distribution/i-uniform-double-distribution.h       \
+    $(NSFX_PATH)/random/distribution/i-uniform-float-distribution.h        \
+    $(NSFX_PATH)/random/distribution/i-bernoulli-distribution.h            \
+    $(NSFX_PATH)/random/distribution/i-binomial-distribution.h             \
+    $(NSFX_PATH)/random/distribution/i-geometric-distribution.h            \
+    $(NSFX_PATH)/random/distribution/i-negative-binomial-distribution.h    \
+    $(NSFX_PATH)/random/distribution/i-poisson-distribution.h              \
+    $(NSFX_PATH)/random/distribution/i-exponential-distribution.h          \
+    $(NSFX_PATH)/random/distribution/i-gamma-distribution.h                \
+    $(NSFX_PATH)/random/distribution/i-weibull-distribution.h              \
+    $(NSFX_PATH)/random/distribution/i-extreme-value-distribution.h        \
+    $(NSFX_PATH)/random/distribution/i-beta-distribution.h                 \
+    $(NSFX_PATH)/random/distribution/i-laplace-distribution.h              \
+    $(NSFX_PATH)/random/distribution/i-normal-distribution.h               \
+    $(NSFX_PATH)/random/distribution/i-lognormal-distribution.h            \
+    $(NSFX_PATH)/random/distribution/i-chi-squared-distribution.h          \
+    $(NSFX_PATH)/random/distribution/i-cauchy-distribution.h               \
+    $(NSFX_PATH)/random/distribution/i-fisher-f-distribution.h             \
+    $(NSFX_PATH)/random/distribution/i-student-t-distribution.h            \
+    $(NSFX_PATH)/random/distribution/i-discrete-distribution.h             \
+    $(NSFX_PATH)/random/distribution/i-piecewise-constant-distribution.h   \
+    $(NSFX_PATH)/random/distribution/i-piecewise-linear-distribution.h     \
+    $(NSFX_PATH)/random/distribution/i-triangle-distribution.h             \
+    $(NSFX_PATH)/random/distribution/std-uniform-uint32-distribution.h     \
+    $(NSFX_PATH)/random/distribution/std-uniform-int32-distribution.h      \
+    $(NSFX_PATH)/random/distribution/std-uniform-uint64-distribution.h     \
+    $(NSFX_PATH)/random/distribution/std-uniform-int64-distribution.h      \
+    $(NSFX_PATH)/random/distribution/std-uniform-double-distribution.h     \
+    $(NSFX_PATH)/random/distribution/std-uniform-float-distribution.h      \
+    $(NSFX_PATH)/random/distribution/std-bernoulli-distribution.h          \
+    $(NSFX_PATH)/random/distribution/std-binomial-distribution.h           \
+    $(NSFX_PATH)/random/distribution/std-geometric-distribution.h          \
+    $(NSFX_PATH)/random/distribution/std-negative-binomial-distribution.h  \
+    $(NSFX_PATH)/random/distribution/std-poisson-distribution.h            \
+    $(NSFX_PATH)/random/distribution/std-exponential-distribution.h        \
+    $(NSFX_PATH)/random/distribution/std-gamma-distribution.h              \
+    $(NSFX_PATH)/random/distribution/std-weibull-distribution.h            \
+    $(NSFX_PATH)/random/distribution/std-extreme-value-distribution.h      \
+    $(NSFX_PATH)/random/distribution/std-beta-distribution.h               \
+    $(NSFX_PATH)/random/distribution/std-laplace-distribution.h            \
+    $(NSFX_PATH)/random/distribution/std-normal-distribution.h             \
+    $(NSFX_PATH)/random/distribution/std-lognormal-distribution.h          \
+    $(NSFX_PATH)/random/distribution/std-chi-squared-distribution.h        \
+    $(NSFX_PATH)/random/distribution/std-cauchy-distribution.h             \
+    $(NSFX_PATH)/random/distribution/std-fisher-f-distribution.h           \
+    $(NSFX_PATH)/random/distribution/std-student-t-distribution.h          \
+    $(NSFX_PATH)/random/distribution/std-discrete-distribution.h           \
+    $(NSFX_PATH)/random/distribution/std-piecewise-constant-distribution.h \
+    $(NSFX_PATH)/random/distribution/std-piecewise-linear-distribution.h   \
+    $(NSFX_PATH)/random/distribution/std-triangle-distribution.h           \
+    $(NSFX_PATH)/random/engine/splitmix-engine.h                           \
+    $(NSFX_PATH)/random/engine/xoroshiro-engine.h                          \
+    $(NSFX_PATH)/random/engine/xoshiro-engine.h                            \
+    $(NSFX_PATH)/random/i-random.h                                         \
+    $(NSFX_PATH)/random/i-random-uint32-generator.h                        \
+    $(NSFX_PATH)/random/i-random-uint64-generator.h                        \
+    $(NSFX_PATH)/random/i-random-double-generator.h                        \
+    $(NSFX_PATH)/random/i-pseudo-random-engine.h                           \
+    $(NSFX_PATH)/random/pseudo-random-generator.h                          \
 
-HEADERS=                  \
-    $(RANDOM_HEADERS)     \
-    $(COMPONENT_HEADERS)  \
-    $(TEST_HEADERS)       \
-    $(EXCEPTION_HEADERS)  \
+HEADERS=                 \
+    $(RANDOM_HEADERS)    \
+    $(COMPONENT_HEADERS) \
+    $(TEST_HEADERS)      \
+    $(EXCEPTION_HEADERS) \
 
 ########################################
 test-rot : test-rot.exe
@@ -580,29 +606,29 @@ test-pseudo-random-generator.exe : $(SRC) $(HEADERS)
 
 ################################################################################
 # statistics
-statistics :      \
-    test-probe    \
-    test-summary  \
+statistics :     \
+    test-probe   \
+    test-summary \
 
-STATISTICS_HEADERS=                                     \
-    $(NSFX_PATH)/statistics.h                           \
-    $(NSFX_PATH)/statistics/config.h                    \
-    $(NSFX_PATH)/statistics/exception.h                 \
-    $(NSFX_PATH)/statistics/probe/i-probe-event.h       \
-    $(NSFX_PATH)/statistics/probe/i-probe-container.h   \
-    $(NSFX_PATH)/statistics/probe/i-probe-enumerator.h  \
-    $(NSFX_PATH)/statistics/probe/probe.h               \
-    $(NSFX_PATH)/statistics/probe/probe-container.h     \
-    $(NSFX_PATH)/statistics/probe/probe-enumerator.h    \
-    $(NSFX_PATH)/statistics/summary/i-summary.h         \
-    $(NSFX_PATH)/statistics/summary/summary.h           \
+STATISTICS_HEADERS=                                    \
+    $(NSFX_PATH)/statistics.h                          \
+    $(NSFX_PATH)/statistics/config.h                   \
+    $(NSFX_PATH)/statistics/exception.h                \
+    $(NSFX_PATH)/statistics/probe/i-probe-event.h      \
+    $(NSFX_PATH)/statistics/probe/i-probe-container.h  \
+    $(NSFX_PATH)/statistics/probe/i-probe-enumerator.h \
+    $(NSFX_PATH)/statistics/probe/probe.h              \
+    $(NSFX_PATH)/statistics/probe/probe-container.h    \
+    $(NSFX_PATH)/statistics/probe/probe-enumerator.h   \
+    $(NSFX_PATH)/statistics/summary/i-summary.h        \
+    $(NSFX_PATH)/statistics/summary/summary.h          \
 
-HEADERS=                   \
-    $(STATISTICS_HEADERS)  \
-    $(EVENT_HEADERS)       \
-    $(COMPONENT_HEADERS)   \
-    $(TEST_HEADERS)        \
-    $(EXCEPTION_HEADERS)   \
+HEADERS=                  \
+    $(STATISTICS_HEADERS) \
+    $(EVENT_HEADERS)      \
+    $(COMPONENT_HEADERS)  \
+    $(TEST_HEADERS)       \
+    $(EXCEPTION_HEADERS)  \
 
 ########################################
 test-probe : test-probe.exe
@@ -622,34 +648,34 @@ test-summary.exe : $(SRC) $(HEADERS)
 
 ################################################################################
 # simulation
-simulation :             \
-    test-event-handle    \
-    test-list-scheduler  \
-    test-set-scheduler   \
-    test-heap-scheduler  \
-    test-simulator       \
+simulation :            \
+    test-event-handle   \
+    test-list-scheduler \
+    test-set-scheduler  \
+    test-heap-scheduler \
+    test-simulator      \
 
-SIMULATION_HEADERS=                           \
-    $(NSFX_PATH)/simulation.h                 \
-    $(NSFX_PATH)/simulation/config.h          \
-    $(NSFX_PATH)/simulation/exception.h       \
-    $(NSFX_PATH)/simulation/i-clock.h         \
-    $(NSFX_PATH)/simulation/i-event-handle.h  \
-    $(NSFX_PATH)/simulation/event-handle.h    \
-    $(NSFX_PATH)/simulation/i-scheduler.h     \
-    $(NSFX_PATH)/simulation/list-scheduler.h  \
-    $(NSFX_PATH)/simulation/set-scheduler.h   \
-    $(NSFX_PATH)/simulation/heap-scheduler.h  \
-    $(NSFX_PATH)/simulation/i-simulator.h     \
-    $(NSFX_PATH)/simulation/simulator.h       \
+SIMULATION_HEADERS=                          \
+    $(NSFX_PATH)/simulation.h                \
+    $(NSFX_PATH)/simulation/config.h         \
+    $(NSFX_PATH)/simulation/exception.h      \
+    $(NSFX_PATH)/simulation/i-clock.h        \
+    $(NSFX_PATH)/simulation/i-event-handle.h \
+    $(NSFX_PATH)/simulation/event-handle.h   \
+    $(NSFX_PATH)/simulation/i-scheduler.h    \
+    $(NSFX_PATH)/simulation/list-scheduler.h \
+    $(NSFX_PATH)/simulation/set-scheduler.h  \
+    $(NSFX_PATH)/simulation/heap-scheduler.h \
+    $(NSFX_PATH)/simulation/i-simulator.h    \
+    $(NSFX_PATH)/simulation/simulator.h      \
 
-HEADERS=                   \
-    $(SIMULATION_HEADERS)  \
-    $(EVENT_HEADERS)       \
-    $(COMPONENT_HEADERS)   \
-    $(CHRONO_HEADERS)      \
-    $(TEST_HEADERS)        \
-    $(EXCEPTION_HEADERS)   \
+HEADERS=                  \
+    $(SIMULATION_HEADERS) \
+    $(EVENT_HEADERS)      \
+    $(COMPONENT_HEADERS)  \
+    $(CHRONO_HEADERS)     \
+    $(TEST_HEADERS)       \
+    $(EXCEPTION_HEADERS)  \
 
 ########################################
 test-event-handle : test-event-handle.exe
@@ -693,77 +719,77 @@ test-simulator.exe : $(SRC) $(HEADERS)
 
 ################################################################################
 # network
-network :      \
-    buffer     \
-    packet     \
-    address    \
-    buffer-io  \
+network :     \
+    buffer    \
+    packet    \
+    address   \
+    buffer-io \
 
-buffer :                     \
-    test-buffer              \
-    test-const-buffer        \
-    test-zc-buffer           \
-    test-const-zc-buffer     \
-    test-fixed-buffer        \
-    test-const-fixed-buffer  \
-    test-buffer-iterator     \
-    test-zc-buffer-iterator  \
+buffer :                    \
+    test-buffer             \
+    test-const-buffer       \
+    test-zc-buffer          \
+    test-const-zc-buffer    \
+    test-fixed-buffer       \
+    test-const-fixed-buffer \
+    test-buffer-iterator    \
+    test-zc-buffer-iterator \
 
-packet:                   \
-    test-tag              \
-    test-tag-index        \
-    test-tag-index-array  \
-    test-tag-list         \
-    test-packet           \
+packet:                  \
+    test-tag             \
+    test-tag-index       \
+    test-tag-index-array \
+    test-tag-list        \
+    test-packet          \
 
-address:          \
-    test-address  \
+address:         \
+    test-address \
 
-buffer-io :             \
-    test-arithmetic-io  \
-    test-duration-io    \
-    test-time-point-io  \
-    test-address-io     \
+buffer-io :            \
+    test-arithmetic-io \
+    test-duration-io   \
+    test-time-point-io \
+    test-address-io    \
 
-NETWORK_HEADERS=                                                     \
-    $(NSFX_PATH)/network.h                                           \
-    $(NSFX_PATH)/network/config.h                                    \
-    $(NSFX_PATH)/network/buffer.h                                    \
-    $(NSFX_PATH)/network/buffer/storage/basic-buffer-storage.h       \
-    $(NSFX_PATH)/network/buffer/iterator/basic-buffer-iterator.h     \
-    $(NSFX_PATH)/network/buffer/iterator/buffer-iterator.h           \
-    $(NSFX_PATH)/network/buffer/iterator/const-buffer-iterator.h     \
-    $(NSFX_PATH)/network/buffer/iterator/zc-buffer-iterator.h        \
-    $(NSFX_PATH)/network/buffer/iterator/const-zc-buffer-iterator.h  \
-    $(NSFX_PATH)/network/buffer/basic-buffer.h                       \
-    $(NSFX_PATH)/network/buffer/buffer.h                             \
-    $(NSFX_PATH)/network/buffer/const-buffer.h                       \
-    $(NSFX_PATH)/network/buffer/zc-buffer.h                          \
-    $(NSFX_PATH)/network/buffer/const-zc-buffer.h                    \
-    $(NSFX_PATH)/network/buffer/fixed-buffer.h                       \
-    $(NSFX_PATH)/network/buffer/const-fixed-buffer.h                 \
-    $(NSFX_PATH)/network/packet.h                                    \
-    $(NSFX_PATH)/network/packet/exception.h                          \
-    $(NSFX_PATH)/network/packet/tag/basic-tag.h                      \
-    $(NSFX_PATH)/network/packet/tag/basic-tag-index.h                \
-    $(NSFX_PATH)/network/packet/tag/basic-tag-index-array.h          \
-    $(NSFX_PATH)/network/packet/tag/basic-tag-list.h                 \
-    $(NSFX_PATH)/network/packet/packet.h                             \
-    $(NSFX_PATH)/network/address/address-little-endian.h             \
-    $(NSFX_PATH)/network/address.h                                   \
-    $(NSFX_PATH)/network/buffer/io/arithmetic-io.h                   \
-    $(NSFX_PATH)/network/buffer/io/duration-io.h                     \
-    $(NSFX_PATH)/network/buffer/io/time-point-io.h                   \
-    $(NSFX_PATH)/network/buffer/io/address-io.h                      \
+NETWORK_HEADERS=                                                    \
+    $(NSFX_PATH)/network.h                                          \
+    $(NSFX_PATH)/network/config.h                                   \
+    $(NSFX_PATH)/network/buffer.h                                   \
+    $(NSFX_PATH)/network/buffer/storage/basic-buffer-storage.h      \
+    $(NSFX_PATH)/network/buffer/iterator/basic-buffer-iterator.h    \
+    $(NSFX_PATH)/network/buffer/iterator/buffer-iterator.h          \
+    $(NSFX_PATH)/network/buffer/iterator/const-buffer-iterator.h    \
+    $(NSFX_PATH)/network/buffer/iterator/zc-buffer-iterator.h       \
+    $(NSFX_PATH)/network/buffer/iterator/const-zc-buffer-iterator.h \
+    $(NSFX_PATH)/network/buffer/basic-buffer.h                      \
+    $(NSFX_PATH)/network/buffer/buffer.h                            \
+    $(NSFX_PATH)/network/buffer/const-buffer.h                      \
+    $(NSFX_PATH)/network/buffer/zc-buffer.h                         \
+    $(NSFX_PATH)/network/buffer/const-zc-buffer.h                   \
+    $(NSFX_PATH)/network/buffer/fixed-buffer.h                      \
+    $(NSFX_PATH)/network/buffer/const-fixed-buffer.h                \
+    $(NSFX_PATH)/network/packet.h                                   \
+    $(NSFX_PATH)/network/packet/exception.h                         \
+    $(NSFX_PATH)/network/packet/tag/basic-tag.h                     \
+    $(NSFX_PATH)/network/packet/tag/basic-tag-index.h               \
+    $(NSFX_PATH)/network/packet/tag/basic-tag-index-array.h         \
+    $(NSFX_PATH)/network/packet/tag/basic-tag-list.h                \
+    $(NSFX_PATH)/network/packet/packet.h                            \
+    $(NSFX_PATH)/network/address/address-little-endian.h            \
+    $(NSFX_PATH)/network/address.h                                  \
+    $(NSFX_PATH)/network/buffer/io/arithmetic-io.h                  \
+    $(NSFX_PATH)/network/buffer/io/duration-io.h                    \
+    $(NSFX_PATH)/network/buffer/io/time-point-io.h                  \
+    $(NSFX_PATH)/network/buffer/io/address-io.h                     \
 
-HEADERS=                   \
-    $(NETWORK_HEADERS)     \
-    $(SIMULATION_HEADERS)  \
-    $(EVENT_HEADERS)       \
-    $(COMPONENT_HEADERS)   \
-    $(CHRONO_HEADERS)      \
-    $(TEST_HEADERS)        \
-    $(EXCEPTION_HEADERS)   \
+HEADERS=                  \
+    $(NETWORK_HEADERS)    \
+    $(SIMULATION_HEADERS) \
+    $(EVENT_HEADERS)      \
+    $(COMPONENT_HEADERS)  \
+    $(CHRONO_HEADERS)     \
+    $(TEST_HEADERS)       \
+    $(EXCEPTION_HEADERS)  \
 
 ########################################
 test-buffer : test-buffer.exe

@@ -49,9 +49,10 @@
 // NSFX_MSVC
 #if defined(BOOST_MSVC)
 # define NSFX_MSVC  BOOST_MSVC
-# if NSFX_MSVC < 1600 // Lower than Microsoft Visual C++ 2010
-#  error Microsoft Visual C++ 2010 or above version is required.
-# endif // NSFX_MSVC < 1600
+// If lower than Microsoft Visual C++ 2010 SP1
+# if (NSFX_MSVC < 1600 || _MSC_FULL_VER < 160040219)
+#  error Microsoft Visual C++ 2010 SP1 or above version is required.
+# endif // (NSFX_MSVC < 1600 || _MSC_FULL_VER < 160040219)
 
 // Disable warning C4200: zero-sized array in struct/union.
 # pragma warning(disable : 4200)
