@@ -209,8 +209,8 @@ test-suite.exe : $(SRC) $(HEADERS)
 ################################################################################
 # utility
 utility :                         \
-    test-least-int                \
     test-circular-sequence-number \
+    test-lollipop-sequence-number \
 
 UTILITY_HEADERS=                                    \
     $(NSFX_PATH)/utility.h                          \
@@ -218,8 +218,8 @@ UTILITY_HEADERS=                                    \
     $(NSFX_PATH)/utility/ratio.h                    \
     $(NSFX_PATH)/utility/endian.h                   \
     $(NSFX_PATH)/utility/rounding.h                 \
-    $(NSFX_PATH)/utility/least-int.h                \
     $(NSFX_PATH)/utility/circular-sequence-number.h \
+    $(NSFX_PATH)/utility/lollipop-sequence-number.h \
 
 HEADERS=                 \
     $(UTILITY_HEADERS)   \
@@ -227,19 +227,19 @@ HEADERS=                 \
     $(EXCEPTION_HEADERS) \
 
 ########################################
-test-least-int : test-least-int.exe
-
-SRC=utility/test-least-int.cpp
-
-test-least-int.exe : $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
-
-########################################
 test-circular-sequence-number : test-circular-sequence-number.exe
 
 SRC=utility/test-circular-sequence-number.cpp
 
 test-circular-sequence-number.exe : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-lollipop-sequence-number : test-lollipop-sequence-number.exe
+
+SRC=utility/test-lollipop-sequence-number.cpp
+
+test-lollipop-sequence-number.exe : $(SRC) $(HEADERS)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ################################################################################

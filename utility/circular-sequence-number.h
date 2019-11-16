@@ -18,13 +18,13 @@
 
 
 #include <nsfx/utility/config.h>
-#include <nsfx/utility/least-int.h>
-#include <nsfx/exception/exception.h>
+#include <boost/integer.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/core/swap.hpp>
+#include <type_traits> // conditional
+#include <nsfx/utility/endian.h>
+#include <nsfx/network/buffer/iterator/basic-buffer-iterator.h>
 #include <iostream>
-#include <sstream>
-#include <type_traits> // integral_constant, is_same, conditional
 
 
 NSFX_OPEN_NAMESPACE
@@ -33,41 +33,51 @@ NSFX_OPEN_NAMESPACE
 /////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Utility
- * @brief A cyclic sequence number.
+ * @brief The traits of cyclic sequence number.
  *
- * @tparam bits The number of bits. Must be within `[2, 64]`.
+ * Users **shall not** use this class directly.
+ * Instead, use `CircularSequenceNumber::TraitsType` to access the traits.
  */
 template<size_t bits>
 class CircularSequenceNumberTraits/*{{{*/
 {
-    static_assert(bits >= 2 && bits <= 64,
-                  "Invalid number of bits for CircularSequenceNumber.");
+    static_assert(1 <= bits && bits <= 64,
+                  "Invalid number of bits for circular sequence number.");
 
 public:
-    typedef typename LeastInt<bits>::UIntType ValueType;
+    typedef typename boost::uint_t<bits>::least  ValueType;
 
-    BOOST_STATIC_CONSTANT(ValueType, MAX_GAP =
-        static_cast<ValueType>(-1) >> (sizeof (ValueType) * 8 - bits + 1)
-    );
-
+    // 2^bits - 1
     BOOST_STATIC_CONSTANT(ValueType, MAX_VALUE =
         static_cast<ValueType>(-1) >> (sizeof (ValueType) * 8 - bits)
     );
+
+    // 2^(bits-1) - 1
+    BOOST_STATIC_CONSTANT(ValueType, GAP_VALUE = MAX_VALUE / 2);
 
 };/*}}}*/
 
 
 /////////////////////////////////////////////////////////////////////////////////
+/**
+ * @ingroup Utility
+ * @brief A circular sequence number.
+ *
+ * @tparam bits The number of bits. Must be within `[1, 64]`.
+ *
+ * The type of the underlying value is the smallest unsigned integral type
+ * whose bit size is no less than `bits`.
+ *
+ * @remark When `bits == 1`, then the range of the circular sequence number is
+ *         `[0, 1]`, and both `0 < 1` and `1 < 0` are `true`.
+ */
 template<size_t bits>
 class CircularSequenceNumber/*{{{*/
 {
-    static_assert(bits >= 2 && bits <= 64,
-                  "Invalid number of bits for CircularSequenceNumber.");
-
 public:
-    typedef CircularSequenceNumber              ThisType;
-    typedef CircularSequenceNumberTraits<bits>  TraitsType;
-    typedef typename TraitsType::ValueType      ValueType;
+    typedef CircularSequenceNumber             ThisType;
+    typedef CircularSequenceNumberTraits<bits> TraitsType;
+    typedef typename TraitsType::ValueType     ValueType;
 
 public:
     CircularSequenceNumber(void) BOOST_NOEXCEPT :
@@ -76,12 +86,8 @@ public:
     }
 
     explicit CircularSequenceNumber(ValueType value) :
-        value_(value)
+        value_(value <= TraitsType::MAX_VALUE ? value : TraitsType::MAX_VALUE)
     {
-        if (value > TraitsType::MAX_VALUE)
-        {
-            BOOST_THROW_EXCEPTION(OutOfBounds());
-        }
     }
 
     ValueType GetValue(void) const BOOST_NOEXCEPT
@@ -89,17 +95,36 @@ public:
         return value_;
     }
 
+    /**
+     * @brief The number bytes that is just enough to hold `bits`.
+     *
+     * Buffer I/O will read/write just such number of bytes.
+     */
+    static size_t GetSize(void) BOOST_NOEXCEPT
+    {
+        typedef bits_endian_traits<ValueType, bits>  B;
+        return B::size;
+    }
+
     static size_t GetBitSize(void) BOOST_NOEXCEPT
     {
         return bits;
     }
 
-    static size_t GetSize(void) BOOST_NOEXCEPT
+    // Increment.
+private:
+    void InternalIncrement(void) BOOST_NOEXCEPT
     {
-        return (bits + 7) >> 3;
+        if (value_ < TraitsType::MAX_VALUE)
+        {
+            ++value_;
+        }
+        else
+        {
+            value_ = 0;
+        }
     }
 
-    // Operators.
 public:
     ThisType& operator++(void) BOOST_NOEXCEPT
     {
@@ -114,68 +139,63 @@ public:
         return ThisType(old);
     }
 
-    ThisType& operator--(void) BOOST_NOEXCEPT
-    {
-        InternalDecrement();
-        return *this;
-    }
-
-    ThisType operator--(int) BOOST_NOEXCEPT
-    {
-        ValueType old = value_;
-        InternalDecrement();
-        return ThisType(old);
-    }
-
+    // Comparison.
 private:
-    void InternalIncrement(void) BOOST_NOEXCEPT
+    struct OneBitTag   {};
+    struct ManyBitsTag {};
+    template<size_t bits_> struct BitTag : ManyBitsTag {};
+    template<> struct BitTag<1> : OneBitTag {};
+    typedef BitTag<bits>  MyBitTag;
+
+    // The circular number has only 1 bit.
+    static bool InternalLessThan(ValueType lhs, ValueType rhs, OneBitTag) BOOST_NOEXCEPT
     {
-        ++value_;
-        if (value_ > TraitsType::MAX_VALUE)
-        {
-            value_ = 0;
-        }
+        return lhs != rhs;
     }
 
-    void InternalDecrement(void) BOOST_NOEXCEPT
+    static bool InternalLessEqual(ValueType lhs, ValueType rhs, OneBitTag) BOOST_NOEXCEPT
     {
-        if (value_ == 0)
+        return true;
+    }
+
+    // The circular number has 2 or more bits.
+    static bool InternalLessThan(ValueType lhs, ValueType rhs, ManyBitsTag) BOOST_NOEXCEPT
+    {
+        bool result;
+        if (lhs < rhs)
         {
-            value_ = TraitsType::MAX_VALUE;
+            result = (rhs - lhs) <= TraitsType::GAP_VALUE;
         }
         else
         {
-            --value_;
+            result = (lhs - rhs) > TraitsType::GAP_VALUE;
         }
+        return result;
+    }
+
+    static bool InternalLessEqual(ValueType lhs, ValueType rhs, ManyBitsTag) BOOST_NOEXCEPT
+    {
+        bool result;
+        if (lhs <= rhs)
+        {
+            result = (rhs - lhs) <= TraitsType::GAP_VALUE;
+        }
+        else
+        {
+            result = (lhs - rhs) > TraitsType::GAP_VALUE;
+        }
+        return result;
     }
 
 public:
     bool operator< (const ThisType& rhs) const BOOST_NOEXCEPT
     {
-        if (value_ < rhs.value_)
-        {
-            return static_cast<ValueType>(rhs.value_ - value_) <=
-                TraitsType::MAX_GAP;
-        }
-        else
-        {
-            return static_cast<ValueType>(value_ - rhs.value_) >
-                TraitsType::MAX_GAP;
-        }
+        return InternalLessThan(value_, rhs.value_, MyBitTag());
     }
 
     bool operator<=(const ThisType& rhs) const BOOST_NOEXCEPT
     {
-        if (value_ <= rhs.value_)
-        {
-            return static_cast<ValueType>(rhs.value_ - value_) <=
-                TraitsType::MAX_GAP;
-        }
-        else
-        {
-            return static_cast<ValueType>(value_ - rhs.value_) >
-                TraitsType::MAX_GAP;
-        }
+        return InternalLessEqual(value_, rhs.value_, MyBitTag());
     }
 
     bool operator==(const ThisType& rhs) const BOOST_NOEXCEPT
@@ -190,12 +210,12 @@ public:
 
     bool operator> (const ThisType& rhs) const BOOST_NOEXCEPT
     {
-        return !(*this <= rhs);
+        return InternalLessThan(rhs.value_, value_, MyBitTag());
     }
 
     bool operator>=(const ThisType& rhs) const BOOST_NOEXCEPT
     {
-        return !(*this < rhs);
+        return InternalLessEqual(rhs.value_, value_, MyBitTag());
     }
 
     void swap(ThisType& rhs) BOOST_NOEXCEPT
@@ -206,31 +226,57 @@ public:
         }
     }
 
-    std::string ToString(void) const
+    ////////////////////////////////////////
+    // Buffer I/O.
+public:
+    template<bool zcAware>
+    void Write(BasicBufferIterator</*readOnly*/false, zcAware>& it) const
     {
-        return ToString(
-            std::integral_constant<bool, sizeof (ValueType) == 1>());
+        typedef bits_endian_traits<ValueType, bits>  B;
+        it.Write(bytes_ + B::offset, B::size);
+    }
+
+    template<bool zcAware>
+    void WriteL(BasicBufferIterator</*readOnly*/false, zcAware>& it) const
+    {
+        typedef bits_endian_traits<ValueType, bits>  B;
+        it.WriteL(bytes_ + B::offset, B::size);
+    }
+
+    template<bool zcAware>
+    void WriteB(BasicBufferIterator</*readOnly*/false, zcAware>& it) const
+    {
+        typedef bits_endian_traits<ValueType, bits>  B;
+        it.WriteB(bytes_ + B::offset, B::size);
+    }
+
+    template<bool readOnly, bool zcAware>
+    void Read(BasicBufferIterator<readOnly, zcAware>& it)
+    {
+        typedef bits_endian_traits<ValueType, bits>  B;
+        it.Read(bytes_ + B::offset, B::size);
+    }
+
+    template<bool readOnly, bool zcAware>
+    void ReadL(BasicBufferIterator<readOnly, zcAware>& it)
+    {
+        typedef bits_endian_traits<ValueType, bits>  B;
+        it.ReadL(bytes_ + B::offset, B::size);
+    }
+
+    template<bool readOnly, bool zcAware>
+    void ReadB(BasicBufferIterator<readOnly, zcAware>& it)
+    {
+        typedef bits_endian_traits<ValueType, bits>  B;
+        it.ReadB(bytes_ + B::offset, B::size);
     }
 
 private:
-    std::string ToString(std::true_type /* 8-bit */) const
+    union
     {
-        std::ostringstream oss;
-        oss << static_cast<typename LeastInt<32>::UIntType>(value_);
-        oss << value_;
-        return oss.str();
-    }
-
-    std::string ToString(std::false_type /* larger than 8-bit */) const
-    {
-        std::ostringstream oss;
-        oss << value_;
-        return oss.str();
-    }
-
-
-private:
-    ValueType value_;
+        ValueType value_;
+        uint8_t   bytes_[sizeof (ValueType)];
+    };
 
 };/*}}}*/
 
@@ -239,10 +285,10 @@ private:
 // Free functions./*{{{*/
 template<size_t bits>
 inline size_t
-hash_value(const CircularSequenceNumber<bits>& csn) BOOST_NOEXCEPT
+hash_value(const CircularSequenceNumber<bits>& sn) BOOST_NOEXCEPT
 {
     typedef typename CircularSequenceNumber<bits>::ValueType  ValueType;
-    return boost::hash<ValueType>()(csn.GetValue());
+    return boost::hash<ValueType>()(sn.GetValue());
 }
 
 template<size_t bits>
@@ -256,11 +302,57 @@ swap(CircularSequenceNumber<bits>& lhs,
 template<class Char, class Traits, size_t bits>
 inline std::basic_ostream<Char, Traits>&
 operator<<(std::basic_ostream<Char, Traits>& os,
-           const CircularSequenceNumber<bits>& seqno)
+           const CircularSequenceNumber<bits>& sn)
 {
-    return os << seqno.ToString();
+    typedef CircularSequenceNumber<bits>::ValueType  ValueType;
+    typedef std::conditional<sizeof (ValueType) <= sizeof (unsigned int),
+                             unsigned int, ValueType>::type  U;
+    return os << static_cast<U>(sn.GetValue());
 }
 
+////////////////////////////////////////
+// Buffer I/O.
+template<bool zcAware, size_t bits>
+void Write(BasicBufferIterator</*readOnly*/false, zcAware>& it,
+           const CircularSequenceNumber<bits>& sn)
+{
+    sn.Write(it);
+}
+
+template<bool zcAware, size_t bits>
+void WriteL(BasicBufferIterator</*readOnly*/false, zcAware>& it,
+           const CircularSequenceNumber<bits>& sn)
+{
+    sn.WriteL(it);
+}
+
+template<bool zcAware, size_t bits>
+void WriteB(BasicBufferIterator</*readOnly*/false, zcAware>& it,
+           const CircularSequenceNumber<bits>& sn)
+{
+    sn.WriteB(it);
+}
+
+template<bool readOnly, bool zcAware, size_t bits>
+void Read(BasicBufferIterator<readOnly, zcAware>& it,
+           CircularSequenceNumber<bits>* sn)
+{
+    sn->Read(it);
+}
+
+template<bool readOnly, bool zcAware, size_t bits>
+void ReadL(BasicBufferIterator<readOnly, zcAware>& it,
+           CircularSequenceNumber<bits>* sn)
+{
+    sn->ReadL(it);
+}
+
+template<bool readOnly, bool zcAware, size_t bits>
+void ReadB(BasicBufferIterator<readOnly, zcAware>& it,
+           CircularSequenceNumber<bits>* sn)
+{
+    sn->ReadB(it);
+}
 
 /*}}}*/
 
