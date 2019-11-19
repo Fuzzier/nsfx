@@ -568,6 +568,63 @@ operator+(typename ConstBiArrayIterator<T, I>::difference_type n,
     return it + n;
 }
 
+// Support mixed operations between BiArrayIterator and ConstBiArrayIterator.
+template<class T, size_t I>
+inline bool
+operator==(const BiArrayIterator<T, I>& lhs,
+           const ConstBiArrayIterator<T, I>& rhs) BOOST_NOEXCEPT
+{
+    return rhs == lhs;
+}
+
+template<class T, size_t I>
+inline bool
+operator!=(const BiArrayIterator<T, I>& lhs,
+           const ConstBiArrayIterator<T, I>& rhs) BOOST_NOEXCEPT
+{
+    return rhs != lhs;
+}
+
+template<class T, size_t I>
+inline bool
+operator<(const BiArrayIterator<T, I>& lhs,
+          const ConstBiArrayIterator<T, I>& rhs) BOOST_NOEXCEPT
+{
+    return rhs > lhs;
+}
+
+template<class T, size_t I>
+inline bool
+operator>(const BiArrayIterator<T, I>& lhs,
+          const ConstBiArrayIterator<T, I>& rhs) BOOST_NOEXCEPT
+{
+    return rhs < lhs;
+}
+
+template<class T, size_t I>
+inline bool
+operator<=(const BiArrayIterator<T, I>& lhs,
+          const ConstBiArrayIterator<T, I>& rhs) BOOST_NOEXCEPT
+{
+    return rhs >= lhs;
+}
+
+template<class T, size_t I>
+inline bool
+operator>=(const BiArrayIterator<T, I>& lhs,
+          const ConstBiArrayIterator<T, I>& rhs) BOOST_NOEXCEPT
+{
+    return rhs <= lhs;
+}
+
+template<class T, size_t I>
+inline typename ConstBiArrayIterator<T, I>::difference_type
+operator-(const BiArrayIterator<T, I>& lhs,
+          const ConstBiArrayIterator<T, I>& rhs) BOOST_NOEXCEPT
+{
+    return -(rhs - lhs);
+}
+
 /*}}}*/
 
 
@@ -576,19 +633,19 @@ template<class T, size_t I>
 class BiArray
 {
 public:
-    typedef detail::bi_array<T, I>  container_type;
-    typedef T          value_type;
-    typedef T&         reference;
-    typedef const T&   const_reference;
-    typedef T*         pointer;
-    typedef const T*   const_pointer;
-    typedef ptrdiff_t  difference_type;
-    typedef size_t     size_type;
+    typedef T         value_type;
+    typedef T&        reference;
+    typedef const T&  const_reference;
+    typedef T*        pointer;
+    typedef const T*  const_pointer;
+    typedef ptrdiff_t difference_type;
+    typedef size_t    size_type;
 
-    typedef BiArrayIterator<T, I>       iterator;
-    typedef ConstBiArrayIterator<T, I>  const_iterator;
-    // typedef const T*   reverse_iterator;
-    // typedef const T*   const_reverse_iterator;
+    BOOST_STATIC_CONSTANT(size_t, base = I);
+
+    typedef detail::bi_array<T, I>     container_type;
+    typedef BiArrayIterator<T, I>      iterator;
+    typedef ConstBiArrayIterator<T, I> const_iterator;
 
 public:
     /**
@@ -621,9 +678,20 @@ private:
     BOOST_DELETED_FUNCTION(BiArray& operator=(const BiArray& rhs));
 
 public:
+    /**
+     * @brief The number of elements of the array.
+     */
     size_type size(void) const BOOST_NOEXCEPT
     {
         return bi_array_size(ar_);
+    }
+
+    /**
+     * @brief The maximum number of elements supported.
+     */
+    static BOOST_CONSTEXPR size_type max_size(void) BOOST_NOEXCEPT
+    {
+        return (size_type)(-1);
     }
 
     bool empty(void) const BOOST_NOEXCEPT
@@ -713,12 +781,12 @@ public:
 
     const_iterator begin(void) const BOOST_NOEXCEPT
     {
-        return const_iterator(bi_array_begin(ar_));
+        return cbegin();
     }
 
     const_iterator end(void) const BOOST_NOEXCEPT
     {
-        return const_iterator(bi_array_end(ar_));
+        return cend();
     }
 
     const_iterator cbegin(void) const BOOST_NOEXCEPT
@@ -769,20 +837,6 @@ inline typename BiArray<T, I>::const_iterator
 end(const BiArray<T, I>& ar) BOOST_NOEXCEPT
 {
     return ar.end();
-}
-
-template<class T, size_t I>
-inline typename BiArray<T, I>::const_iterator
-cbegin(const BiArray<T, I>& ar) BOOST_NOEXCEPT
-{
-    return ar.cbegin();
-}
-
-template<class T, size_t I>
-inline typename BiArray<T, I>::const_iterator
-cend(const BiArray<T, I>& ar) BOOST_NOEXCEPT
-{
-    return ar.cend();
 }
 
 

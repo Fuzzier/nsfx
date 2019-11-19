@@ -94,18 +94,22 @@ test-suite : $(SRC) $(HEADERS)
 
 ################################################################################
 # utility
-utility :                          \
-    test-circular-sequence-number  \
-    test-lollipop-sequence-number  \
+utility :                         \
+    test-circular-sequence-number \
+    test-lollipop-sequence-number \
+    test-bi-array                 \
+    test-bi-matrix                \
 
-UTILITY_HEADERS=                                     \
-    $(NSFX_PATH)/utility.h                           \
-    $(NSFX_PATH)/utility/config.h                    \
-    $(NSFX_PATH)/utility/ratio.h                     \
-    $(NSFX_PATH)/utility/endian.h                    \
-    $(NSFX_PATH)/utility/rounding.h                  \
-    $(NSFX_PATH)/utility/circular-sequence-number.h  \
-    $(NSFX_PATH)/utility/lollipop-sequence-number.h  \
+UTILITY_HEADERS=                                    \
+    $(NSFX_PATH)/utility.h                          \
+    $(NSFX_PATH)/utility/config.h                   \
+    $(NSFX_PATH)/utility/ratio.h                    \
+    $(NSFX_PATH)/utility/endian.h                   \
+    $(NSFX_PATH)/utility/rounding.h                 \
+    $(NSFX_PATH)/utility/circular-sequence-number.h \
+    $(NSFX_PATH)/utility/lollipop-sequence-number.h \
+    $(NSFX_PATH)/utility/bi-array.h                 \
+    $(NSFX_PATH)/utility/bi-matrix.h                \
 
 HEADERS=                  \
     $(UTILITY_HEADERS)    \
@@ -122,6 +126,18 @@ test-circular-sequence-number : $(SRC) $(HEADERS)
 SRC=utility/test-lollipop-sequence-number.cpp
 
 test-lollipop-sequence-number : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
+
+########################################
+SRC=utility/test-bi-array.cpp
+
+test-bi-array : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
+
+########################################
+SRC=utility/test-bi-matrix.cpp
+
+test-bi-matrix : $(SRC) $(HEADERS)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ################################################################################

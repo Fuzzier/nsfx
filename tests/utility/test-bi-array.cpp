@@ -20,7 +20,7 @@
 
 NSFX_TEST_SUITE(BiArray)
 {
-    NSFX_TEST_SUITE(POD)
+    NSFX_TEST_SUITE(Primitive)/*{{{*/
     {
         enum { I = 1 };
         typedef nsfx::BiArray<int, I>  ArrayType;
@@ -127,7 +127,8 @@ NSFX_TEST_SUITE(BiArray)
             // Operator ==, !=.
             NSFX_TEST_EXPECT(it == it);
             NSFX_TEST_EXPECT(it != ar.begin());
-            // Dereference as rvalue.
+            // Operator *, ->.
+            // NOTE: primitive type has no operator->.
             it = ar.begin();
             *it = 1200;
             NSFX_TEST_EXPECT_EQ(ar(I), 1200);
@@ -136,9 +137,9 @@ NSFX_TEST_SUITE(BiArray)
             ArrayType::iterator it2;
             // Decrement.
             it = ar.end();
-            NSFX_TEST_EXPECT_EQ(*--it, ar(I+2));
-            NSFX_TEST_EXPECT_EQ(*it--, ar(I+2));
-            NSFX_TEST_EXPECT_EQ(*it, ar(I+1));
+            NSFX_TEST_EXPECT_EQ(*--it, ar(I+ar.size()-1));
+            NSFX_TEST_EXPECT_EQ(*it--, ar(I+ar.size()-1));
+            NSFX_TEST_EXPECT_EQ(*it, ar(I+ar.size()-2));
             // Operator +, -.
             it = ar.begin() + 2;
             NSFX_TEST_EXPECT_EQ(*it, ar(I+2));
@@ -176,11 +177,13 @@ NSFX_TEST_SUITE(BiArray)
             // Copy-constructible.
             ArrayType::const_iterator it = ar.cbegin();
             NSFX_TEST_EXPECT_EQ(*it, ar(I));
+            // NOTE: copy-construct from iterator.
             NSFX_TEST_EXPECT(ar.cbegin() == ArrayType::const_iterator(ar.begin()));
             NSFX_TEST_EXPECT(ar.cend() == ArrayType::const_iterator(ar.end()));
             // Copy-assignable.
-            it = ar.begin();
             it = ar.cbegin();
+            // NOTE: copy-assign from iterator.
+            it = ar.begin();
             NSFX_TEST_EXPECT_EQ(*it, ar(I));
             // Increment.
             NSFX_TEST_EXPECT_EQ(*it++, ar(I));
@@ -189,16 +192,20 @@ NSFX_TEST_SUITE(BiArray)
             // Operator ==, !=.
             NSFX_TEST_EXPECT(it == it);
             NSFX_TEST_EXPECT(it != ar.cbegin());
-            // Dereference as lvalue.
+            // NOTE: iterator ? const_iterator.
+            NSFX_TEST_EXPECT(ar.begin() == ar.cbegin());
+            NSFX_TEST_EXPECT(ar.begin() != ar.cend());
+            // Operator *, ->.
+            // NOTE: readonly, primitive type has no operator->.
             it = ar.cbegin();
-            NSFX_TEST_EXPECT_EQ(*it, 12);
+            NSFX_TEST_EXPECT_EQ(*it, ar(I));
             // Default constructible.
             ArrayType::const_iterator it2;
             // Decrement.
             it = ar.cend();
-            NSFX_TEST_EXPECT_EQ(*--it, ar(I+2));
-            NSFX_TEST_EXPECT_EQ(*it--, ar(I+2));
-            NSFX_TEST_EXPECT_EQ(*it, ar(I+1));
+            NSFX_TEST_EXPECT_EQ(*--it, ar(I+ar.size()-1));
+            NSFX_TEST_EXPECT_EQ(*it--, ar(I+ar.size()-1));
+            NSFX_TEST_EXPECT_EQ(*it, ar(I+ar.size()-2));
             // Operator +, -.
             it = ar.cbegin() + 2;
             NSFX_TEST_EXPECT_EQ(*it, ar(I+2));
@@ -207,6 +214,8 @@ NSFX_TEST_SUITE(BiArray)
             it = 2 + it;
             NSFX_TEST_EXPECT_EQ(*it, ar(I+2));
             NSFX_TEST_EXPECT_EQ(it - ar.cbegin(), 2);
+            // NOTE: iterator - const_iterator.
+            NSFX_TEST_EXPECT_EQ(ar.end() - ar.cbegin(), ar.size());
             // Operator <, >, <=, >=.
             NSFX_TEST_EXPECT(ar.cbegin() < it);
             NSFX_TEST_EXPECT(it > ar.cbegin());
@@ -214,6 +223,11 @@ NSFX_TEST_SUITE(BiArray)
             NSFX_TEST_EXPECT(it <= it);
             NSFX_TEST_EXPECT(it >= ar.cbegin());
             NSFX_TEST_EXPECT(it >= it);
+            // NOTE: iterator ? const_iterator.
+            NSFX_TEST_EXPECT(ar.begin() < ar.cend());
+            NSFX_TEST_EXPECT(ar.begin() <= ar.cend());
+            NSFX_TEST_EXPECT(ar.end() > ar.cbegin());
+            NSFX_TEST_EXPECT(ar.end() >= ar.cbegin());
             // Operator +=, -=.
             it = ar.cbegin();
             it += 2;
@@ -226,8 +240,54 @@ NSFX_TEST_SUITE(BiArray)
             NSFX_TEST_EXPECT_EQ(it[1], ar(I+1));
             NSFX_TEST_EXPECT_EQ(it[2], ar(I+2));
         }
+    }/*}}}*/
 
-    }
+    NSFX_TEST_SUITE(Class)/*{{{*/
+    {
+        struct A {
+            A(void) : m_(1) {};
+            A(int m) : m_(m) {};
+            bool operator==(const A& rhs) const { return m_ == rhs.m_; }
+            bool operator==(int rhs) const { return m_ == rhs; }
+            int m_;
+        };
+        enum { I = 1 };
+        typedef nsfx::BiArray<A, I>  ArrayType;
+
+        NSFX_TEST_CASE(Ctor0)
+        {
+            ArrayType ar;
+            NSFX_TEST_EXPECT_EQ(ar.size(), 0);
+            NSFX_TEST_EXPECT(ar.empty());
+        }
+
+        NSFX_TEST_CASE(Ctor1)
+        {
+            ArrayType ar(3);
+            NSFX_TEST_EXPECT_EQ(ar.size(), 3);
+            NSFX_TEST_EXPECT(!ar.empty());
+        }
+
+        NSFX_TEST_CASE(InitialValue)
+        {
+            ArrayType ar(3);
+            for (size_t i = I; i < I + ar.size(); ++i)
+            {
+                NSFX_TEST_EXPECT(ar.at(i) == 1);
+                NSFX_TEST_EXPECT(ar[i] == 1);
+                NSFX_TEST_EXPECT(ar(i) == 1);
+            }
+            const ArrayType& car = ar;
+            for (size_t i = I; i < I + ar.size(); ++i)
+            {
+                NSFX_TEST_EXPECT(car.at(i) == 1);
+                NSFX_TEST_EXPECT(car[i] == 1);
+                NSFX_TEST_EXPECT(car(i) == 1);
+            }
+        }
+
+    }/*}}}*/
+
 }
 
 
