@@ -15,7 +15,7 @@
 
 #include <nsfx/test.h>
 #include <nsfx/utility/circular-sequence-number.h>
-#include "nsfx/network/buffer/buffer.h"
+#include <nsfx/network/buffer/buffer.h>
 #include <iostream>
 
 

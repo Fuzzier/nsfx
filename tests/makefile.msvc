@@ -18,13 +18,13 @@ INCLUDES=/I"$(NSFX_PATH)/.."
 LIBS=
 
 ################################################################################
-# Updated: 2019-11-12
+# Updated: 2019-11-19
 ################################################################################
 CC=cl.exe
 LD=link.exe
 AR=lib.exe
 
-CFLAGS=/nologo /W3 /MD $(INCLUDES)
+CFLAGS=/nologo /W3 $(INCLUDES)
 CPPFLAGS=/EHsc
 LDFLAGS=/NOLOGO /INCREMENTAL:NO
 ARFLAGS=/NOLOGO
@@ -103,14 +103,14 @@ ARCH=AVX
 !ENDIF
 
 !IF "$(BUILD_TYPE)"=="Release"
-CFLAGS=$(CFLAGS) /Ox /arch:$(ARCH)
+CFLAGS=$(CFLAGS) /MD /Ox /arch:$(ARCH)
 CPPFLAGS=$(CPPFLAGS) /DBOOST_DISABLE_ASSERTS
 !ELSEIF "$(BUILD_TYPE)"=="RelWithDebInfo"
-CFLAGS=$(CFLAGS) /Zi /Ox /arch:$(ARCH)
+CFLAGS=$(CFLAGS) /MD /Zi /Ox /arch:$(ARCH)
 CPPFLAGS=$(CPPFLAGS) /DBOOST_DISABLE_ASSERTS
 LDFLAGS=$(LDFLAGS) /DEBUG
 !ELSE
-CFLAGS=$(CFLAGS) /Zi /Od
+CFLAGS=$(CFLAGS) /MDd /Zi /Od
 LDFLAGS=$(LDFLAGS) /DEBUG
 !ENDIF
 
@@ -211,6 +211,8 @@ test-suite.exe : $(SRC) $(HEADERS)
 utility :                         \
     test-circular-sequence-number \
     test-lollipop-sequence-number \
+    test-bi-array                 \
+    test-bi-matrix                \
 
 UTILITY_HEADERS=                                    \
     $(NSFX_PATH)/utility.h                          \
@@ -220,6 +222,8 @@ UTILITY_HEADERS=                                    \
     $(NSFX_PATH)/utility/rounding.h                 \
     $(NSFX_PATH)/utility/circular-sequence-number.h \
     $(NSFX_PATH)/utility/lollipop-sequence-number.h \
+    $(NSFX_PATH)/utility/bi-array.h                 \
+    $(NSFX_PATH)/utility/bi-matrix.h                \
 
 HEADERS=                 \
     $(UTILITY_HEADERS)   \
@@ -240,6 +244,22 @@ test-lollipop-sequence-number : test-lollipop-sequence-number.exe
 SRC=utility/test-lollipop-sequence-number.cpp
 
 test-lollipop-sequence-number.exe : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-bi-array : test-bi-array.exe
+
+SRC=utility/test-bi-array.cpp
+
+test-bi-array.exe : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-bi-matrix : test-bi-matrix.exe
+
+SRC=utility/test-bi-matrix.cpp
+
+test-bi-matrix.exe : $(SRC) $(HEADERS)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ################################################################################
