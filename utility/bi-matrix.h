@@ -62,7 +62,7 @@ struct bi_matrix
 {
     size_t size1_; ///< The number of rows.
     size_t size2_; ///< The number of columns.
-    T      items_[];
+    T*     data_;
 };
 
 ////////////////////////////////////////
@@ -297,49 +297,97 @@ bi_matrix_column_iterator_deref(bi_matrix_column_iterator<T, I, J, S> it)
  *           Defaults to `bi_matrix_row_major`.
  *
  * @param[out] mx      The matrix.
+ *                     It **must** be an *uninitialized* matrix.
  * @param[in]  rows    The number of rows.
  * @param[in]  columns The number of columns.
  *
- * `mx` is made an argument to enable deduction of function template arguments.
+ * The elements are default initialized.
  */
 template<class T, size_t I, size_t J, bi_matrix_layout_t S>
 inline void
-bi_matrix_create(bi_matrix<T, I, J, S>** mx, size_t rows, size_t columns)
+bi_matrix_init(bi_matrix<T, I, J, S>* mx, size_t rows, size_t columns)
 {
     typedef bi_matrix<T, I, J, S>  matrix_type;
-    matrix_type* result;
+    size_t size = rows * columns;
     BOOST_ASSERT(mx);
-    result = (matrix_type*)::operator new (
-                sizeof (matrix_type) + rows * columns * sizeof (T));
-    result->size1_ = rows;
-    result->size2_ = columns;
-    if (std::is_pod<T>::value)
+    mx->size1_ = rows;
+    mx->size2_ = columns;
+    mx->data_  = 0;
+    if (size)
     {
-        std::memset(result->items_, 0, rows * columns * sizeof (T));
-    }
-    else
-    {
-        T* p = result->items_;
-        T* last = p + rows * columns;
-        while (p != last)
+        mx->data_ = (T*)::operator new (size * sizeof (T));
+        if (std::is_pod<T>::value)
         {
-            new (p++) T();
+            std::memset(mx->data_, 0, size * sizeof (T));
+        }
+        else
+        {
+            T* p = mx->data_;
+            T* last = p + size;
+            while (p != last)
+            {
+                new (p++) T();
+            }
         }
     }
-    *mx = result;
 }
 
 template<class T, size_t I, size_t J, bi_matrix_layout_t S>
 inline void
 bi_matrix_destroy(bi_matrix<T, I, J, S>* mx)
 {
-    ::operator delete (mx);
+    BOOST_ASSERT(mx);
+    ::operator delete (mx->data_);
+}
+
+/**
+ * @brief Copy a matrix.
+ *
+ * @tparam T The type of the element.
+ * @tparam I The index of the first row.
+ * @tparam J The index of the first column.
+ * @tparam S The storage orgnization.
+ *
+ * @param[in]  src The source matrix.
+ *                 It **must** be an *initialized* matrix.
+ * @param[out] dst The destination matrix.
+ *                 It **must** be an *uninitialized* matrix.
+ */
+template<class T, size_t I, size_t J, bi_matrix_layout_t S>
+inline void
+bi_matrix_copy(const bi_matrix<T, I, J, S>* src, bi_matrix<T, I, J, S>* dst)
+{
+    typedef bi_matrix<T, I, J, S>  matrix_type;
+    size_t size = src->size1_ * src->size2_;
+    BOOST_ASSERT(src);
+    BOOST_ASSERT(dst);
+    dst->size1_ = src->size1_;
+    dst->size2_ = src->size2_;
+    dst->data_  = src->data_;
+    if (size)
+    {
+        dst->data_ = (T*)::operator new (size * sizeof (T));
+        if (std::is_pod<T>::value)
+        {
+            std::memcpy(dst->data_, src->data_, size * sizeof (T));
+        }
+        else
+        {
+            T* d = dst->data_;
+            T* s = src->data_;
+            T* last = s + size;
+            while (s != last)
+            {
+                new (d++) T(*s++);
+            }
+        }
+    }
 }
 
 /** @brief The total number of elements. */
 template<class T, size_t I, size_t J, bi_matrix_layout_t S>
 inline size_t
-bi_matrix_size(bi_matrix<T, I, J, S>* mx) BOOST_NOEXCEPT
+bi_matrix_size(const bi_matrix<T, I, J, S>* mx) BOOST_NOEXCEPT
 {
     return mx->size1_ * mx->size2_;
 }
@@ -347,7 +395,7 @@ bi_matrix_size(bi_matrix<T, I, J, S>* mx) BOOST_NOEXCEPT
 /** @brief The number of rows. */
 template<class T, size_t I, size_t J, bi_matrix_layout_t S>
 inline size_t
-bi_matrix_size1(bi_matrix<T, I, J, S>* mx) BOOST_NOEXCEPT
+bi_matrix_size1(const bi_matrix<T, I, J, S>* mx) BOOST_NOEXCEPT
 {
     return mx->size1_;
 }
@@ -355,65 +403,65 @@ bi_matrix_size1(bi_matrix<T, I, J, S>* mx) BOOST_NOEXCEPT
 /** @brief The number of columns. */
 template<class T, size_t I, size_t J, bi_matrix_layout_t S>
 inline size_t
-bi_matrix_size2(bi_matrix<T, I, J, S>* mx) BOOST_NOEXCEPT
+bi_matrix_size2(const bi_matrix<T, I, J, S>* mx) BOOST_NOEXCEPT
 {
     return mx->size2_;
 }
 
 template<class T, size_t I, size_t J, bi_matrix_layout_t S>
 inline T*
-bi_matrix_at(bi_matrix<T, I, J, S>* mx, size_t n) BOOST_NOEXCEPT
+bi_matrix_at(const bi_matrix<T, I, J, S>* mx, size_t n) BOOST_NOEXCEPT
 {
     BOOST_ASSERT(0 <= n && n < mx->size1_ * mx->size2_);
-    return mx->items_ + n;
+    return mx->data_ + n;
 }
 
 template<class T, size_t I, size_t J>
 inline T*
-bi_matrix_at(bi_matrix<T, I, J, bi_matrix_row_major>* mx, size_t i, size_t j) BOOST_NOEXCEPT
+bi_matrix_at(const bi_matrix<T, I, J, bi_matrix_row_major>* mx, size_t i, size_t j) BOOST_NOEXCEPT
 {
     BOOST_ASSERT(I <= i && i < I + mx->size1_);
     BOOST_ASSERT(J <= j && j < J + mx->size2_);
-    return mx->items_ + (i - I) * mx->size2_ + (j - J);
+    return mx->data_ + (i - I) * mx->size2_ + (j - J);
 }
 
 template<class T, size_t I, size_t J>
 inline T*
-bi_matrix_at(bi_matrix<T, I, J, bi_matrix_column_major>* mx, size_t i, size_t j) BOOST_NOEXCEPT
+bi_matrix_at(const bi_matrix<T, I, J, bi_matrix_column_major>* mx, size_t i, size_t j) BOOST_NOEXCEPT
 {
     BOOST_ASSERT(I <= i && i < I + mx->size1_);
     BOOST_ASSERT(J <= j && j < J + mx->size2_);
-    return mx->items_ + (j - J) * mx->size1_ + (i - I);
+    return mx->data_ + (j - J) * mx->size1_ + (i - I);
 }
 
 template<class T, size_t I, size_t J, bi_matrix_layout_t S>
 inline T*
-bi_matrix_front(bi_matrix<T, I, J, S>* mx) BOOST_NOEXCEPT
+bi_matrix_front(const bi_matrix<T, I, J, S>* mx) BOOST_NOEXCEPT
 {
     BOOST_ASSERT(mx->size1_ && mx->size2_);
-    return mx->items_;
+    return mx->data_;
 }
 
 template<class T, size_t I, size_t J, bi_matrix_layout_t S>
 inline T*
-bi_matrix_back(bi_matrix<T, I, J, S>* mx) BOOST_NOEXCEPT
+bi_matrix_back(const bi_matrix<T, I, J, S>* mx) BOOST_NOEXCEPT
 {
     BOOST_ASSERT(mx->size1_ && mx->size2_);
-    return mx->items_ + (mx->size1_ * mx->size2_ - 1);
+    return mx->data_ + (mx->size1_ * mx->size2_ - 1);
 }
 
 template<class T, size_t I, size_t J, bi_matrix_layout_t S>
 inline T*
-bi_matrix_data(bi_matrix<T, I, J, S>* mx) BOOST_NOEXCEPT
+bi_matrix_data(const bi_matrix<T, I, J, S>* mx) BOOST_NOEXCEPT
 {
-    return mx->items_;
+    return mx->data_;
 }
 
 template<class T, size_t I, size_t J, bi_matrix_layout_t S>
 inline void
-bi_matrix_fill(bi_matrix<T, I, J, S>* mx, const T& v)
+bi_matrix_fill(const bi_matrix<T, I, J, S>* mx, const T& v)
 {
-    T* p = mx->items_;
+    T* p = mx->data_;
     T* last = p + mx->size1_ * mx->size2_;
     while (p != last)
     {
@@ -424,11 +472,11 @@ bi_matrix_fill(bi_matrix<T, I, J, S>* mx, const T& v)
 /** @brief Fill a row. */
 template<class T, size_t I, size_t J>
 inline void
-bi_matrix_fill1(bi_matrix<T, I, J, bi_matrix_row_major>* mx,
+bi_matrix_fill1(const bi_matrix<T, I, J, bi_matrix_row_major>* mx,
                 size_t i, const T& v)
 {
     BOOST_ASSERT(I <= i && i < I + mx->size1_);
-    T* p = mx->items_ + (i - I) * mx->size2_;
+    T* p = mx->data_ + (i - I) * mx->size2_;
     T* last = p + mx->size2_;
     while (p != last)
     {
@@ -439,11 +487,11 @@ bi_matrix_fill1(bi_matrix<T, I, J, bi_matrix_row_major>* mx,
 /** @brief Fill a row. */
 template<class T, size_t I, size_t J>
 inline void
-bi_matrix_fill1(bi_matrix<T, I, J, bi_matrix_column_major>* mx,
+bi_matrix_fill1(const bi_matrix<T, I, J, bi_matrix_column_major>* mx,
                 size_t i, const T& v)
 {
     BOOST_ASSERT(I <= i && i < I + mx->size1_);
-    T* p = mx->items_ + (i - I);
+    T* p = mx->data_ + (i - I);
     for (size_t j = 0; j < mx->size2_; ++j)
     {
         *p = v;
@@ -454,11 +502,11 @@ bi_matrix_fill1(bi_matrix<T, I, J, bi_matrix_column_major>* mx,
 /** @brief Fill a column. */
 template<class T, size_t I, size_t J>
 inline void
-bi_matrix_fill2(bi_matrix<T, I, J, bi_matrix_row_major>* mx,
+bi_matrix_fill2(const bi_matrix<T, I, J, bi_matrix_row_major>* mx,
                 size_t j, const T& v)
 {
     BOOST_ASSERT(J <= j && j < J + mx->size1_);
-    T* p = mx->items_ + (j - J);
+    T* p = mx->data_ + (j - J);
     for (size_t i = 0; i < mx->size1_; ++i)
     {
         *p = v;
@@ -469,11 +517,11 @@ bi_matrix_fill2(bi_matrix<T, I, J, bi_matrix_row_major>* mx,
 /** @brief Fill a column. */
 template<class T, size_t I, size_t J>
 inline void
-bi_matrix_fill2(bi_matrix<T, I, J, bi_matrix_column_major>* mx,
+bi_matrix_fill2(const bi_matrix<T, I, J, bi_matrix_column_major>* mx,
                 size_t j, const T& v)
 {
     BOOST_ASSERT(J <= j && j < J + mx->size1_);
-    T* p = mx->items_ + (j - J) * mx->size1_;
+    T* p = mx->data_ + (j - J) * mx->size1_;
     T* last = p + mx->size1_;
     while (p != last)
     {
@@ -484,17 +532,17 @@ bi_matrix_fill2(bi_matrix<T, I, J, bi_matrix_column_major>* mx,
 /** @brief The begin iterator of the matrix. */
 template<class T, size_t I, size_t J, bi_matrix_layout_t S>
 inline T*
-bi_matrix_begin(bi_matrix<T, I, J, S>* mx) BOOST_NOEXCEPT
+bi_matrix_begin(const bi_matrix<T, I, J, S>* mx) BOOST_NOEXCEPT
 {
-    return mx->items_;
+    return mx->data_;
 }
 
-/** @brief The end iterator (exclusive) of the matrix. */
+/** @brief The end iterator of the matrix. */
 template<class T, size_t I, size_t J, bi_matrix_layout_t S>
 inline T*
-bi_matrix_end(bi_matrix<T, I, J, S>* mx) BOOST_NOEXCEPT
+bi_matrix_end(const bi_matrix<T, I, J, S>* mx) BOOST_NOEXCEPT
 {
-    return mx->items_ + mx->size1_ + mx->size2_;
+    return mx->data_ + mx->size1_ + mx->size2_;
 }
 
 } // namespace detail }}}
@@ -517,6 +565,8 @@ bi_matrix_end(bi_matrix<T, I, J, S>* mx) BOOST_NOEXCEPT
  * @param[out] mx      The matrix.
  * @param[in]  rows    The number of rows.
  * @param[in]  columns The number of columns.
+ *
+ * The elements are default initialized.
  */
 template<class T, size_t I = 0, size_t J = I,
          bi_matrix_layout_t S = bi_matrix_row_major>
@@ -2695,10 +2745,9 @@ public:
     /**
      * @brief Construct an empty matrix.
      */
-    BiMatrix(void) :
-        mx_(nullptr)
+    BiMatrix(void) BOOST_NOEXCEPT
     {
-        bi_matrix_create(&mx_, 0, 0);
+        bi_matrix_init(&mx_, 0, 0);
     }
 
     /**
@@ -2706,31 +2755,56 @@ public:
      *
      * @param[in] size The size of the matrix.
      */
-    explicit BiMatrix(size_type rows, size_type columns) :
-        mx_(nullptr)
+    BiMatrix(size_type rows, size_type columns)
     {
         BOOST_ASSERT(rows <= max_size1());
         BOOST_ASSERT(columns <= max_size2());
-        bi_matrix_create(&mx_, rows, columns);
-    }
-
-    BiMatrix(container_type* mx) BOOST_NOEXCEPT :
-        mx_(mx)
-    {
+        bi_matrix_init(&mx_, rows, columns);
     }
 
     ~BiMatrix(void)
     {
-        bi_matrix_destroy(mx_);
+        bi_matrix_destroy(&mx_);
     }
 
-public:
+    BiMatrix(const BiMatrix& rhs)
+    {
+        bi_matrix_copy(&rhs.mx_, &mx_);
+    }
+
+    BiMatrix& operator=(const BiMatrix& rhs)
+    {
+        if (this != &rhs)
+        {
+            bi_matrix_destroy(&mx_);
+            bi_matrix_copy(&rhs.mx_, &mx_);
+        }
+        return *this;
+    }
+
+    BiMatrix(BiMatrix&& rhs) BOOST_NOEXCEPT
+    {
+        bi_matrix_init(&mx_, 0, 0);
+        swap(rhs);
+    }
+
+    BiMatrix& operator=(BiMatrix&& rhs)
+    {
+        if (this != &rhs)
+        {
+            bi_matrix_destroy(&mx_);
+            bi_matrix_init(&mx_, 0, 0);
+            swap(rhs);
+        }
+        return *this;
+    }
+
     /**
      * @brief The total number of elements.
      */
     size_type size(void) const BOOST_NOEXCEPT
     {
-        return bi_matrix_size(mx_);
+        return bi_matrix_size(&mx_);
     }
 
     /**
@@ -2738,7 +2812,7 @@ public:
      */
     size_type size1(void) const BOOST_NOEXCEPT
     {
-        return bi_matrix_size1(mx_);
+        return bi_matrix_size1(&mx_);
     }
 
     /**
@@ -2746,7 +2820,7 @@ public:
      */
     size_type size2(void) const BOOST_NOEXCEPT
     {
-        return bi_matrix_size2(mx_);
+        return bi_matrix_size2(&mx_);
     }
 
     /**
@@ -2767,7 +2841,7 @@ public:
 
     bool empty(void) const BOOST_NOEXCEPT
     {
-        return !bi_matrix_size1(mx_) || !bi_matrix_size2(mx_);
+        return !bi_matrix_size1(&mx_) || !bi_matrix_size2(&mx_);
     }
 
     /**
@@ -2778,7 +2852,7 @@ public:
      */
     T& operator[](size_type n) BOOST_NOEXCEPT
     {
-        return *bi_matrix_at(mx_, n);
+        return *bi_matrix_at(&mx_, n);
     }
 
     /**
@@ -2789,7 +2863,7 @@ public:
      */
     const T& operator[](size_type n) const BOOST_NOEXCEPT
     {
-        return *bi_matrix_at(mx_, n);
+        return *bi_matrix_at(&mx_, n);
     }
 
     /**
@@ -2800,7 +2874,7 @@ public:
      */
     T& operator()(size_type n) BOOST_NOEXCEPT
     {
-        return *bi_matrix_at(mx_, n);
+        return *bi_matrix_at(&mx_, n);
     }
 
     /**
@@ -2811,7 +2885,7 @@ public:
      */
     const T& operator()(size_type n) const BOOST_NOEXCEPT
     {
-        return *bi_matrix_at(mx_, n);
+        return *bi_matrix_at(&mx_, n);
     }
 
     /**
@@ -2824,7 +2898,7 @@ public:
      */
     T& operator()(size_type i, size_type j) BOOST_NOEXCEPT
     {
-        return *bi_matrix_at(mx_, i, j);
+        return *bi_matrix_at(&mx_, i, j);
     }
 
     /**
@@ -2837,7 +2911,7 @@ public:
      */
     const T& operator()(size_type i, size_type j) const BOOST_NOEXCEPT
     {
-        return *bi_matrix_at(mx_, i, j);
+        return *bi_matrix_at(&mx_, i, j);
     }
 
     /**
@@ -2850,7 +2924,7 @@ public:
      */
     T& at(size_type i, size_type j) BOOST_NOEXCEPT
     {
-        return *bi_matrix_at(mx_, i, j);
+        return *bi_matrix_at(&mx_, i, j);
     }
 
     /**
@@ -2863,7 +2937,7 @@ public:
      */
     const T& at(size_type i, size_type j) const BOOST_NOEXCEPT
     {
-        return *bi_matrix_at(mx_, i, j);
+        return *bi_matrix_at(&mx_, i, j);
     }
 
     /**
@@ -2871,7 +2945,7 @@ public:
      */
     T& front(void) BOOST_NOEXCEPT
     {
-        return *bi_matrix_front(mx_);
+        return *bi_matrix_front(&mx_);
     }
 
     /**
@@ -2879,7 +2953,7 @@ public:
      */
     const T& front(void) const BOOST_NOEXCEPT
     {
-        return *bi_matrix_front(mx_);
+        return *bi_matrix_front(&mx_);
     }
 
     /**
@@ -2887,7 +2961,7 @@ public:
      */
     T& back(void) BOOST_NOEXCEPT
     {
-        return *bi_matrix_back(mx_);
+        return *bi_matrix_back(&mx_);
     }
 
     /**
@@ -2895,7 +2969,7 @@ public:
      */
     const T& back(void) const BOOST_NOEXCEPT
     {
-        return *bi_matrix_back(mx_);
+        return *bi_matrix_back(&mx_);
     }
 
     /**
@@ -2903,7 +2977,7 @@ public:
      */
     T* data(void) BOOST_NOEXCEPT
     {
-        return bi_matrix_data(mx_);
+        return bi_matrix_data(&mx_);
     }
 
     /**
@@ -2911,7 +2985,7 @@ public:
      */
     const T* data(void) const BOOST_NOEXCEPT
     {
-        return bi_matrix_data(mx_);
+        return bi_matrix_data(&mx_);
     }
 
     /**
@@ -2919,7 +2993,7 @@ public:
      */
     void fill(const T& v)
     {
-        bi_matrix_fill(mx_, v);
+        bi_matrix_fill(&mx_, v);
     }
 
     /**
@@ -2931,7 +3005,7 @@ public:
      */
     void fill1(size_type i, const T& v)
     {
-        bi_matrix_fill1(mx_, i, v);
+        bi_matrix_fill1(&mx_, i, v);
     }
 
     /**
@@ -2943,14 +3017,16 @@ public:
      */
     void fill2(size_type j, const T& v)
     {
-        bi_matrix_fill2(mx_, j, v);
+        bi_matrix_fill2(&mx_, j, v);
     }
 
     void swap(BiMatrix& rhs) BOOST_NOEXCEPT
     {
         if (this != &rhs)
         {
-            boost::swap(mx_, rhs.mx_);
+            boost::swap(mx_.size1_, rhs.mx_.size1_);
+            boost::swap(mx_.size2_, rhs.mx_.size2_);
+            boost::swap(mx_.data_, rhs.mx_.data_);
         }
     }
 
@@ -2959,7 +3035,7 @@ public:
      */
     iterator begin(void) BOOST_NOEXCEPT
     {
-        return iterator(mx_->items_);
+        return iterator(mx_.data_);
     }
 
     /**
@@ -2967,7 +3043,7 @@ public:
      */
     iterator end(void) BOOST_NOEXCEPT
     {
-        return iterator(mx_->items_ + size());
+        return iterator(mx_.data_ + size());
     }
 
     /**
@@ -2991,7 +3067,7 @@ public:
      */
     const_iterator cbegin(void) const BOOST_NOEXCEPT
     {
-        return const_iterator(mx_->items_);
+        return const_iterator(mx_.data_);
     }
 
     /**
@@ -2999,7 +3075,7 @@ public:
      */
     const_iterator cend(void) const BOOST_NOEXCEPT
     {
-        return const_iterator(mx_->items_ + size());
+        return const_iterator(mx_.data_ + size());
     }
 
 private:
@@ -3009,66 +3085,66 @@ private:
     BiMatrixRowIterator<T, I, J, bi_matrix_row_major>
     begin1(size_type i, storage_t<bi_matrix_row_major>) BOOST_NOEXCEPT
     {
-        BOOST_ASSERT(I <= i && i < I + mx_->size1_);
+        BOOST_ASSERT(I <= i && i < I + mx_.size1_);
         return BiMatrixRowIterator<T, I, J, bi_matrix_row_major>(
-                mx_->items_ + (i - I) * mx_->size2_);
+                mx_.data_ + (i - I) * mx_.size2_);
     }
 
     ConstBiMatrixRowIterator<T, I, J, bi_matrix_row_major>
     begin1(size_type i, storage_t<bi_matrix_row_major>) const BOOST_NOEXCEPT
     {
-        BOOST_ASSERT(I <= i && i < I + mx_->size1_);
+        BOOST_ASSERT(I <= i && i < I + mx_.size1_);
         return ConstBiMatrixRowIterator<T, I, J, bi_matrix_row_major>(
-                mx_->items_ + (i - I) * mx_->size2_);
+                mx_.data_ + (i - I) * mx_.size2_);
     }
 
     BiMatrixRowIterator<T, I, J, bi_matrix_column_major>
     begin1(size_type i, storage_t<bi_matrix_column_major>) BOOST_NOEXCEPT
     {
-        BOOST_ASSERT(I <= i && i < I + mx_->size1_);
+        BOOST_ASSERT(I <= i && i < I + mx_.size1_);
         return BiMatrixRowIterator<T, I, J, bi_matrix_column_major>(
-                mx_->items_ + (i - I), mx_->size1_);
+                mx_.data_ + (i - I), mx_.size1_);
     }
 
     ConstBiMatrixRowIterator<T, I, J, bi_matrix_column_major>
     begin1(size_type i, storage_t<bi_matrix_column_major>) const BOOST_NOEXCEPT
     {
-        BOOST_ASSERT(I <= i && i < I + mx_->size1_);
+        BOOST_ASSERT(I <= i && i < I + mx_.size1_);
         return ConstBiMatrixRowIterator<T, I, J, bi_matrix_column_major>(
-                mx_->items_ + (i - I), mx_->size1_);
+                mx_.data_ + (i - I), mx_.size1_);
     }
 
     ////////////////////
     BiMatrixColumnIterator<T, I, J, bi_matrix_row_major>
     begin2(size_type j, storage_t<bi_matrix_row_major>) BOOST_NOEXCEPT
     {
-        BOOST_ASSERT(J <= j && j < J + mx_->size2_);
+        BOOST_ASSERT(J <= j && j < J + mx_.size2_);
         return BiMatrixColumnIterator<T, I, J, bi_matrix_row_major>(
-                mx_->items_ + (j - J), mx_->size2_);
+                mx_.data_ + (j - J), mx_.size2_);
     }
 
     ConstBiMatrixColumnIterator<T, I, J, bi_matrix_row_major>
     begin2(size_type j, storage_t<bi_matrix_row_major>) const BOOST_NOEXCEPT
     {
-        BOOST_ASSERT(J <= j && j < J + mx_->size2_);
+        BOOST_ASSERT(J <= j && j < J + mx_.size2_);
         return ConstBiMatrixColumnIterator<T, I, J, bi_matrix_row_major>(
-                mx_->items_ + (j - J), mx_->size2_);
+                mx_.data_ + (j - J), mx_.size2_);
     }
 
     BiMatrixColumnIterator<T, I, J, bi_matrix_column_major>
     begin2(size_type j, storage_t<bi_matrix_column_major>) BOOST_NOEXCEPT
     {
-        BOOST_ASSERT(J <= j && j < J + mx_->size2_);
+        BOOST_ASSERT(J <= j && j < J + mx_.size2_);
         return BiMatrixColumnIterator<T, I, J, bi_matrix_column_major>(
-                mx_->items_ + (j - J) * mx_->size1_);
+                mx_.data_ + (j - J) * mx_.size1_);
     }
 
     ConstBiMatrixColumnIterator<T, I, J, bi_matrix_column_major>
     begin2(size_type j, storage_t<bi_matrix_column_major>) const BOOST_NOEXCEPT
     {
-        BOOST_ASSERT(J <= j && j < J + mx_->size2_);
+        BOOST_ASSERT(J <= j && j < J + mx_.size2_);
         return ConstBiMatrixColumnIterator<T, I, J, bi_matrix_column_major>(
-                mx_->items_ + (j - J) * mx_->size1_);
+                mx_.data_ + (j - J) * mx_.size1_);
     }
 
 public:
@@ -3091,7 +3167,7 @@ public:
      */
     row_iterator end1(size_type i) BOOST_NOEXCEPT
     {
-        return begin1(i) + mx_->size2_;
+        return begin1(i) + mx_.size2_;
     }
 
     /**
@@ -3113,7 +3189,7 @@ public:
      */
     const_row_iterator cend1(size_type i) const BOOST_NOEXCEPT
     {
-        return cbegin1(i) + mx_->size2_;
+        return cbegin1(i) + mx_.size2_;
     }
 
     /**
@@ -3135,7 +3211,7 @@ public:
      */
     column_iterator end2(size_type j) BOOST_NOEXCEPT
     {
-        return begin2(j) + mx_->size1_;
+        return begin2(j) + mx_.size1_;
     }
 
     /**
@@ -3157,11 +3233,11 @@ public:
      */
     const_column_iterator cend2(size_type j) const BOOST_NOEXCEPT
     {
-        return cbegin2(j) + mx_->size1_;
+        return cbegin2(j) + mx_.size1_;
     }
 
 private:
-    container_type* mx_;
+    container_type mx_;
 };
 
 

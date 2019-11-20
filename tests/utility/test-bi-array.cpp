@@ -39,6 +39,46 @@ NSFX_TEST_SUITE(BiArray)
             NSFX_TEST_EXPECT(!ar.empty());
         }
 
+        NSFX_TEST_CASE(Copy)
+        {
+            ArrayType ar(3);
+            ar(I) = 12;
+            ar(I+1) = 34;
+            ar(I+2) = 56;
+            ArrayType ar2(ar);
+            NSFX_TEST_EXPECT_EQ(ar2.size(), 3);
+            NSFX_TEST_EXPECT_EQ(ar2(I), 12);
+            NSFX_TEST_EXPECT_EQ(ar2(I+1), 34);
+            NSFX_TEST_EXPECT_EQ(ar2(I+2), 56);
+            ArrayType ar3(4);
+            ar3 = ar2;
+            NSFX_TEST_EXPECT_EQ(ar3.size(), 3);
+            NSFX_TEST_EXPECT_EQ(ar3(I), 12);
+            NSFX_TEST_EXPECT_EQ(ar3(I+1), 34);
+            NSFX_TEST_EXPECT_EQ(ar3(I+2), 56);
+        }
+
+        NSFX_TEST_CASE(Move)
+        {
+            ArrayType ar(3);
+            ar(I) = 12;
+            ar(I+1) = 34;
+            ar(I+2) = 56;
+            ArrayType ar2(std::move(ar));
+            NSFX_TEST_EXPECT_EQ(ar.size(), 0);
+            NSFX_TEST_EXPECT_EQ(ar2.size(), 3);
+            NSFX_TEST_EXPECT_EQ(ar2(I), 12);
+            NSFX_TEST_EXPECT_EQ(ar2(I+1), 34);
+            NSFX_TEST_EXPECT_EQ(ar2(I+2), 56);
+            ArrayType ar3(4);
+            ar3 = std::move(ar2);
+            NSFX_TEST_EXPECT_EQ(ar2.size(), 0);
+            NSFX_TEST_EXPECT_EQ(ar3.size(), 3);
+            NSFX_TEST_EXPECT_EQ(ar3(I), 12);
+            NSFX_TEST_EXPECT_EQ(ar3(I+1), 34);
+            NSFX_TEST_EXPECT_EQ(ar3(I+2), 56);
+        }
+
         NSFX_TEST_CASE(InitialValue)
         {
             ArrayType ar(3);
@@ -249,6 +289,7 @@ NSFX_TEST_SUITE(BiArray)
             A(int m) : m_(m) {};
             bool operator==(const A& rhs) const { return m_ == rhs.m_; }
             bool operator==(int rhs) const { return m_ == rhs; }
+            A& operator=(int m) { m_ = m; return *this; }
             int m_;
         };
         enum { I = 1 };
@@ -284,6 +325,46 @@ NSFX_TEST_SUITE(BiArray)
                 NSFX_TEST_EXPECT(car[i] == 1);
                 NSFX_TEST_EXPECT(car(i) == 1);
             }
+        }
+
+        NSFX_TEST_CASE(Copy)
+        {
+            ArrayType ar(3);
+            ar(I) = 12;
+            ar(I+1) = 34;
+            ar(I+2) = 56;
+            ArrayType ar2(ar);
+            NSFX_TEST_EXPECT(ar2.size() == 3);
+            NSFX_TEST_EXPECT(ar2(I) == 12);
+            NSFX_TEST_EXPECT(ar2(I+1) == 34);
+            NSFX_TEST_EXPECT(ar2(I+2) == 56);
+            ArrayType ar3(4);
+            ar3 = ar2;
+            NSFX_TEST_EXPECT(ar3.size() == 3);
+            NSFX_TEST_EXPECT(ar3(I) == 12);
+            NSFX_TEST_EXPECT(ar3(I+1) == 34);
+            NSFX_TEST_EXPECT(ar3(I+2) == 56);
+        }
+
+        NSFX_TEST_CASE(Move)
+        {
+            ArrayType ar(3);
+            ar(I) = 12;
+            ar(I+1) = 34;
+            ar(I+2) = 56;
+            ArrayType ar2(std::move(ar));
+            NSFX_TEST_EXPECT_EQ(ar.size(), 0);
+            NSFX_TEST_EXPECT_EQ(ar2.size(), 3);
+            NSFX_TEST_EXPECT(ar2(I) == 12);
+            NSFX_TEST_EXPECT(ar2(I+1) == 34);
+            NSFX_TEST_EXPECT(ar2(I+2) == 56);
+            ArrayType ar3(4);
+            ar3 = std::move(ar2);
+            NSFX_TEST_EXPECT_EQ(ar2.size(), 0);
+            NSFX_TEST_EXPECT_EQ(ar3.size(), 3);
+            NSFX_TEST_EXPECT(ar3(I) == 12);
+            NSFX_TEST_EXPECT(ar3(I+1) == 34);
+            NSFX_TEST_EXPECT(ar3(I+2) == 56);
         }
 
     }/*}}}*/

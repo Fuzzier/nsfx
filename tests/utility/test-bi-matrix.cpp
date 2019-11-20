@@ -48,6 +48,50 @@ NSFX_TEST_SUITE(BiMatrix)
                 NSFX_TEST_EXPECT(!mx.empty());
             }
 
+            NSFX_TEST_CASE(Copy)
+            {
+                MatrixType mx(4, 3);
+                mx(I,   J) = 11; mx(I,   J+1) = 12; mx(I,   J+2) = 13;
+                mx(I+1, J) = 21; mx(I+1, J+1) = 22; mx(I+1, J+2) = 23;
+                mx(I+2, J) = 31; mx(I+2, J+1) = 32; mx(I+2, J+2) = 33;
+                mx(I+3, J) = 41; mx(I+3, J+1) = 42; mx(I+3, J+2) = 43;
+                MatrixType mx2(mx);
+                NSFX_TEST_EXPECT_EQ(mx2.size1(), 4);
+                NSFX_TEST_EXPECT_EQ(mx2.size2(), 3);
+                NSFX_TEST_EXPECT_EQ(mx2(I,J), 11);
+                NSFX_TEST_EXPECT_EQ(mx2(I+3,J+2), 43);
+                MatrixType mx3(1, 2);
+                mx3 = mx2;
+                NSFX_TEST_EXPECT_EQ(mx3.size1(), 4);
+                NSFX_TEST_EXPECT_EQ(mx3.size2(), 3);
+                NSFX_TEST_EXPECT_EQ(mx3(I,J), 11);
+                NSFX_TEST_EXPECT_EQ(mx3(I+3,J+2), 43);
+            }
+
+            NSFX_TEST_CASE(Move)
+            {
+                MatrixType mx(4, 3);
+                mx(I,   J) = 11; mx(I,   J+1) = 12; mx(I,   J+2) = 13;
+                mx(I+1, J) = 21; mx(I+1, J+1) = 22; mx(I+1, J+2) = 23;
+                mx(I+2, J) = 31; mx(I+2, J+1) = 32; mx(I+2, J+2) = 33;
+                mx(I+3, J) = 41; mx(I+3, J+1) = 42; mx(I+3, J+2) = 43;
+                MatrixType mx2(std::move(mx));
+                NSFX_TEST_EXPECT_EQ(mx.size1(), 0);
+                NSFX_TEST_EXPECT_EQ(mx.size2(), 0);
+                NSFX_TEST_EXPECT_EQ(mx2.size1(), 4);
+                NSFX_TEST_EXPECT_EQ(mx2.size2(), 3);
+                NSFX_TEST_EXPECT_EQ(mx2(I,J), 11);
+                NSFX_TEST_EXPECT_EQ(mx2(I+3,J+2), 43);
+                MatrixType mx3(1, 2);
+                mx3 = std::move(mx2);
+                NSFX_TEST_EXPECT_EQ(mx2.size1(), 0);
+                NSFX_TEST_EXPECT_EQ(mx2.size2(), 0);
+                NSFX_TEST_EXPECT_EQ(mx3.size1(), 4);
+                NSFX_TEST_EXPECT_EQ(mx3.size2(), 3);
+                NSFX_TEST_EXPECT_EQ(mx3(I,J), 11);
+                NSFX_TEST_EXPECT_EQ(mx3(I+3,J+2), 43);
+            }
+
             NSFX_TEST_CASE(InitialValue)
             {
                 MatrixType mx(4, 3);
@@ -571,6 +615,7 @@ NSFX_TEST_SUITE(BiMatrix)
                 A(int m) : m_(m) {};
                 bool operator==(const A& rhs) const { return m_ == rhs.m_; }
                 bool operator==(int rhs) const { return m_ == rhs; }
+                A& operator=(int m) { m_ = m; return *this; }
                 int m_;
             };
             enum { I = 1, J = 2 };
@@ -593,6 +638,50 @@ NSFX_TEST_SUITE(BiMatrix)
                 NSFX_TEST_EXPECT_EQ(mx.size1(), 4);
                 NSFX_TEST_EXPECT_EQ(mx.size2(), 3);
                 NSFX_TEST_EXPECT(!mx.empty());
+            }
+
+            NSFX_TEST_CASE(Copy)
+            {
+                MatrixType mx(4, 3);
+                mx(I,   J) = 11; mx(I,   J+1) = 12; mx(I,   J+2) = 13;
+                mx(I+1, J) = 21; mx(I+1, J+1) = 22; mx(I+1, J+2) = 23;
+                mx(I+2, J) = 31; mx(I+2, J+1) = 32; mx(I+2, J+2) = 33;
+                mx(I+3, J) = 41; mx(I+3, J+1) = 42; mx(I+3, J+2) = 43;
+                MatrixType mx2(mx);
+                NSFX_TEST_EXPECT(mx2.size1() == 4);
+                NSFX_TEST_EXPECT(mx2.size2() == 3);
+                NSFX_TEST_EXPECT(mx2(I,J) == 11);
+                NSFX_TEST_EXPECT(mx2(I+3,J+2) == 43);
+                MatrixType mx3(1, 2);
+                mx3 = mx2;
+                NSFX_TEST_EXPECT(mx3.size1() == 4);
+                NSFX_TEST_EXPECT(mx3.size2() == 3);
+                NSFX_TEST_EXPECT(mx3(I,J) == 11);
+                NSFX_TEST_EXPECT(mx3(I+3,J+2) == 43);
+            }
+
+            NSFX_TEST_CASE(Move)
+            {
+                MatrixType mx(4, 3);
+                mx(I,   J) = 11; mx(I,   J+1) = 12; mx(I,   J+2) = 13;
+                mx(I+1, J) = 21; mx(I+1, J+1) = 22; mx(I+1, J+2) = 23;
+                mx(I+2, J) = 31; mx(I+2, J+1) = 32; mx(I+2, J+2) = 33;
+                mx(I+3, J) = 41; mx(I+3, J+1) = 42; mx(I+3, J+2) = 43;
+                MatrixType mx2(std::move(mx));
+                NSFX_TEST_EXPECT(mx.size1() == 0);
+                NSFX_TEST_EXPECT(mx.size2() == 0);
+                NSFX_TEST_EXPECT(mx2.size1() == 4);
+                NSFX_TEST_EXPECT(mx2.size2() == 3);
+                NSFX_TEST_EXPECT(mx2(I,J) == 11);
+                NSFX_TEST_EXPECT(mx2(I+3,J+2) == 43);
+                MatrixType mx3(1, 2);
+                mx3 = std::move(mx2);
+                NSFX_TEST_EXPECT(mx2.size1() == 0);
+                NSFX_TEST_EXPECT(mx2.size2() == 0);
+                NSFX_TEST_EXPECT(mx3.size1() == 4);
+                NSFX_TEST_EXPECT(mx3.size2() == 3);
+                NSFX_TEST_EXPECT(mx3(I,J) == 11);
+                NSFX_TEST_EXPECT(mx3(I+3,J+2) == 43);
             }
 
             NSFX_TEST_CASE(InitialValue)

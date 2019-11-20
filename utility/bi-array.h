@@ -20,7 +20,7 @@
 #include <nsfx/config.h>
 #include <boost/core/swap.hpp>
 #include <type_traits> // is_pod
-#include <cstring> // memset
+#include <cstring> // memset, memcpy
 #include <iterator>
 
 
@@ -42,9 +42,8 @@ template<class T, size_t I>
 struct bi_array
 {
     size_t size_;
-    T      items_[];
+    T*     data_;
 };
-
 
 ////////////////////////////////////////
 /**
@@ -55,79 +54,130 @@ struct bi_array
  * @tparam I The index of the first element.
  *
  * @param[out] ar   The array.
+ *                  It **must** be an *uninitialized* array.
  * @param[in]  size The size of the array.
  *
- * `ar` is made an argument to enable deduction of function template arguments.
+ * The elements are default initialized.
  */
 template<class T, size_t I>
 inline void
-bi_array_create(bi_array<T, I>** ar, size_t size)
+bi_array_init(bi_array<T, I>* ar, size_t size)
 {
     typedef bi_array<T, I>  array_type;
-    array_type* result;
     BOOST_ASSERT(ar);
-    result = (array_type*)::operator new (
-                sizeof (array_type) + size * sizeof (T));
-    result->size_ = size;
-    if (std::is_pod<T>::value)
+    ar->size_ = size;
+    ar->data_ = nullptr;
+    if (size)
     {
-        std::memset(result->items_, 0, size * sizeof (T));
-    }
-    else
-    {
-        T* p = result->items_;
-        T* last = p + size;
-        while (p != last)
+        ar->data_ = (T*)::operator new (size * sizeof (T));
+        if (std::is_pod<T>::value)
         {
-            new (p++) T();
+            std::memset(ar->data_, 0, size * sizeof (T));
+        }
+        else
+        {
+            T* p = ar->data_;
+            T* last = p + size;
+            while (p != last)
+            {
+                new (p++) T();
+            }
         }
     }
-    *ar = result;
 }
 
+/**
+ * @brief Destroy an array.
+ *
+ * @tparam T The type of the element.
+ * @tparam I The index of the first element.
+ *
+ * @param[in,out] ar The array.
+ */
 template<class T, size_t I>
 inline void
 bi_array_destroy(bi_array<T, I>* ar)
 {
-    ::operator delete (ar);
+    BOOST_ASSERT(ar);
+    ::operator delete(ar->data_);
+}
+
+/**
+ * @brief Copy an array.
+ *
+ * @tparam T The type of the element.
+ * @tparam I The index of the first element.
+ *
+ * @param[in]  src The source array.
+ *                 It **must** be an *initialized* array.
+ * @param[out] dst The destination array.
+ *                 It **must** be an *uninitialized* array.
+ */
+template<class T, size_t I>
+inline void
+bi_array_copy(const bi_array<T, I>* src, bi_array<T, I>* dst)
+{
+    typedef bi_array<T, I>  array_type;
+    BOOST_ASSERT(src);
+    BOOST_ASSERT(dst);
+    bi_array_init(dst, 0);
+    if (src->size_)
+    {
+        dst->size_ = src->size_;
+        dst->data_ = (T*)::operator new (src->size_ * sizeof (T));
+        if (std::is_pod<T>::value)
+        {
+            std::memcpy(dst->data_, src->data_, src->size_ * sizeof (T));
+        }
+        else
+        {
+            T* d = dst->data_;
+            T* s = src->data_;
+            T* last = s + src->size_;
+            while (s != last)
+            {
+                new (d++) T(*s++);
+            }
+        }
+    }
 }
 
 template<class T, size_t I>
 inline size_t
-bi_array_size(bi_array<T, I>* ar) BOOST_NOEXCEPT
+bi_array_size(const bi_array<T, I>* ar) BOOST_NOEXCEPT
 {
     return ar->size_;
 }
 
 template<class T, size_t I>
 inline T*
-bi_array_at(bi_array<T, I>* ar, size_t i) BOOST_NOEXCEPT
+bi_array_at(const bi_array<T, I>* ar, size_t i) BOOST_NOEXCEPT
 {
     BOOST_ASSERT(I <= i && i < I + ar->size_);
-    return ar->items_ + (i - I);
+    return ar->data_ + (i - I);
 }
 
 template<class T, size_t I>
 inline T*
-bi_array_front(bi_array<T, I>* ar) BOOST_NOEXCEPT
+bi_array_front(const bi_array<T, I>* ar) BOOST_NOEXCEPT
 {
     BOOST_ASSERT(ar->size_);
-    return ar->items_;
+    return ar->data_;
 }
 
 template<class T, size_t I>
 inline T*
-bi_array_back(bi_array<T, I>* ar) BOOST_NOEXCEPT
+bi_array_back(const bi_array<T, I>* ar) BOOST_NOEXCEPT
 {
     BOOST_ASSERT(ar->size_);
-    return ar->items_ + (ar->size_ - 1);
+    return ar->data_ + (ar->size_ - 1);
 }
 
 template<class T, size_t I>
 inline void
-bi_array_fill(bi_array<T, I>* ar, const T& v)
+bi_array_fill(const bi_array<T, I>* ar, const T& v)
 {
-    T* p = ar->items_;
+    T* p = ar->data_;
     T* last = p + ar->size_;
     while (p != last)
     {
@@ -137,23 +187,23 @@ bi_array_fill(bi_array<T, I>* ar, const T& v)
 
 template<class T, size_t I>
 inline T*
-bi_array_data(bi_array<T, I>* ar) BOOST_NOEXCEPT
+bi_array_data(const bi_array<T, I>* ar) BOOST_NOEXCEPT
 {
-    return ar->items_;
+    return ar->data_;
 }
 
 template<class T, size_t I>
 inline T*
-bi_array_begin(bi_array<T, I>* ar) BOOST_NOEXCEPT
+bi_array_begin(const bi_array<T, I>* ar) BOOST_NOEXCEPT
 {
-    return ar->items_;
+    return ar->data_;
 }
 
 template<class T, size_t I>
 inline T*
-bi_array_end(bi_array<T, I>* ar) BOOST_NOEXCEPT
+bi_array_end(const bi_array<T, I>* ar) BOOST_NOEXCEPT
 {
-    return ar->items_ + ar->size_;
+    return ar->data_ + ar->size_;
 }
 
 } // namespace detail }}}
@@ -629,6 +679,13 @@ operator-(const BiArrayIterator<T, I>& lhs,
 
 
 ////////////////////////////////////////////////////////////////////////////////
+/**
+ * @ingroup Utility
+ * @brief An array with a base index.
+ *
+ * @tparam T The type of the element.
+ * @tparam I The index of the first element.
+ */
 template<class T, size_t I>
 class BiArray
 {
@@ -651,31 +708,59 @@ public:
     /**
      * @brief Construct an empty array.
      */
-    BiArray(void) :
-        ar_(nullptr)
+    BiArray(void) BOOST_NOEXCEPT
     {
-        bi_array_create(&ar_, 0);
+        bi_array_init(&ar_, 0);
     }
 
     /**
      * @brief Construct an array.
      *
      * @param[in] size The size of the array.
+     *
+     * The elements are default initialized.
      */
-    explicit BiArray(size_type size) :
-        ar_(nullptr)
+    explicit BiArray(size_type size)
     {
-        bi_array_create(&ar_, size);
+        bi_array_init(&ar_, size);
     }
 
     ~BiArray(void)
     {
-        bi_array_destroy(ar_);
+        bi_array_destroy(&ar_);
     }
 
-private:
-    BOOST_DELETED_FUNCTION(BiArray(const BiArray& rhs));
-    BOOST_DELETED_FUNCTION(BiArray& operator=(const BiArray& rhs));
+    BiArray(const BiArray& rhs)
+    {
+        bi_array_copy(&rhs.ar_, &ar_);
+    }
+
+    BiArray& operator=(const BiArray& rhs)
+    {
+        if (&ar_ != &rhs.ar_)
+        {
+            bi_array_destroy(&ar_);
+            bi_array_copy(&rhs.ar_, &ar_);
+        }
+        return *this;
+    }
+
+    BiArray(BiArray&& rhs) BOOST_NOEXCEPT
+    {
+        swap(rhs);
+        bi_array_init(&rhs.ar_, 0);
+    }
+
+    BiArray& operator=(BiArray&& rhs)
+    {
+        if (&ar_ != &rhs.ar_)
+        {
+            bi_array_destroy(&ar_);
+            bi_array_init(&ar_, 0);
+            swap(rhs);
+        }
+        return *this;
+    }
 
 public:
     /**
@@ -683,7 +768,7 @@ public:
      */
     size_type size(void) const BOOST_NOEXCEPT
     {
-        return bi_array_size(ar_);
+        return bi_array_size(&ar_);
     }
 
     /**
@@ -696,87 +781,88 @@ public:
 
     bool empty(void) const BOOST_NOEXCEPT
     {
-        return !bi_array_size(ar_);
+        return !bi_array_size(&ar_);
     }
 
     reference at(size_type i) BOOST_NOEXCEPT
     {
-        return *bi_array_at(ar_, i);
+        return *bi_array_at(&ar_, i);
     }
 
     const_reference at(size_type i) const BOOST_NOEXCEPT
     {
-        return *bi_array_at(ar_, i);
+        return *bi_array_at(&ar_, i);
     }
 
     reference operator[](size_type i) BOOST_NOEXCEPT
     {
-        return *bi_array_at(ar_, i);
+        return *bi_array_at(&ar_, i);
     }
 
     const_reference operator[](size_type i) const BOOST_NOEXCEPT
     {
-        return *bi_array_at(ar_, i);
+        return *bi_array_at(&ar_, i);
     }
 
     reference operator()(size_type i) BOOST_NOEXCEPT
     {
-        return *bi_array_at(ar_, i);
+        return *bi_array_at(&ar_, i);
     }
 
     const_reference operator()(size_type i) const BOOST_NOEXCEPT
     {
-        return *bi_array_at(ar_, i);
+        return *bi_array_at(&ar_, i);
     }
 
     reference front(void) BOOST_NOEXCEPT
     {
-        return *bi_array_front(ar_);
+        return *bi_array_front(&ar_);
     }
 
     const_reference front(void) const BOOST_NOEXCEPT
     {
-        return *bi_array_front(ar_);
+        return *bi_array_front(&ar_);
     }
 
     reference back(void) BOOST_NOEXCEPT
     {
-        return *bi_array_back(ar_);
+        return *bi_array_back(&ar_);
     }
 
     const_reference back(void) const BOOST_NOEXCEPT
     {
-        return *bi_array_back(ar_);
+        return *bi_array_back(&ar_);
     }
 
     pointer data(void) BOOST_NOEXCEPT
     {
-        return bi_array_data(ar_);
+        return bi_array_data(&ar_);
     }
 
     const_pointer data(void) const BOOST_NOEXCEPT
     {
-        return bi_array_data(ar_);
+        return bi_array_data(&ar_);
     }
 
     void fill(const_reference v)
     {
-        bi_array_fill(ar_, v);
+        bi_array_fill(&ar_, v);
     }
 
     void swap(BiArray& rhs) BOOST_NOEXCEPT
     {
-        boost::swap(ar_, rhs.ar_);
+        boost::swap(ar_.size_, rhs.ar_.size_);
+        boost::swap(ar_.data_, rhs.ar_.data_);
     }
 
     iterator begin(void) BOOST_NOEXCEPT
     {
-        return iterator(bi_array_begin(ar_));
+        return iterator(bi_array_begin(&ar_));
     }
 
     iterator end(void) BOOST_NOEXCEPT
     {
-        return iterator(bi_array_end(ar_));
+        return iterator(bi_array_end(&ar_));
     }
 
     const_iterator begin(void) const BOOST_NOEXCEPT
@@ -791,16 +877,16 @@ public:
 
     const_iterator cbegin(void) const BOOST_NOEXCEPT
     {
-        return const_iterator(bi_array_begin(ar_));
+        return const_iterator(bi_array_begin(&ar_));
     }
 
     const_iterator cend(void) const BOOST_NOEXCEPT
     {
-        return const_iterator(bi_array_end(ar_));
+        return const_iterator(bi_array_end(&ar_));
     }
 
 private:
-    container_type* ar_;
+    container_type ar_;
 };
 
 
