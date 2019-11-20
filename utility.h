@@ -21,6 +21,9 @@
 #include <nsfx/utility/ratio.h>
 #include <nsfx/utility/endian.h>
 #include <nsfx/utility/circular-sequence-number.h>
+#include <nsfx/utility/lollipop-sequence-number.h>
+#include <nsfx/utility/bi-array.h>
+#include <nsfx/utility/bi-matrix.h>
 
 
 #endif // UTILITY_H__82D5AF77_EE92_4CD9_BCE1_43C2025E5981
