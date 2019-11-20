@@ -59,6 +59,96 @@ public:
 
 
 /////////////////////////////////////////////////////////////////////////////////
+namespace details/*{{{*/
+{
+
+template<size_t bits>
+struct circular_sequence_number_bits_tag {};
+
+////////////////////////////////////////
+// Increment.
+template<size_t bits>
+inline typename CircularSequenceNumberTraits<bits>::ValueType
+circular_sequence_number_inc(
+    typename CircularSequenceNumberTraits<bits>::ValueType sn)
+{
+    if (sn < CircularSequenceNumberTraits<bits>::MAX_VALUE)
+    {
+        ++sn;
+    }
+    else
+    {
+        sn = 0;
+    }
+    return sn;
+}
+
+////////////////////////////////////////
+// Less than.
+template<size_t bits>
+inline bool
+circular_sequence_number_less_than(
+    typename CircularSequenceNumberTraits<bits>::ValueType lhs,
+    typename CircularSequenceNumberTraits<bits>::ValueType rhs,
+    circular_sequence_number_bits_tag</*bits*/1>)
+{
+    return lhs != rhs;
+}
+
+template<size_t bits>
+inline bool
+circular_sequence_number_less_than(
+    typename CircularSequenceNumberTraits<bits>::ValueType lhs,
+    typename CircularSequenceNumberTraits<bits>::ValueType rhs,
+    circular_sequence_number_bits_tag<bits/*>1*/>)
+{
+    bool result = false;
+    if (lhs < rhs)
+    {
+        result = (rhs - lhs) <= CircularSequenceNumberTraits<bits>::GAP_VALUE;
+    }
+    else
+    {
+        result = (lhs - rhs) > CircularSequenceNumberTraits<bits>::GAP_VALUE;
+    }
+    return result;
+}
+
+////////////////////////////////////////
+// Less equal.
+template<size_t bits>
+inline bool
+circular_sequence_number_less_equal(
+    typename CircularSequenceNumberTraits<bits>::ValueType lhs,
+    typename CircularSequenceNumberTraits<bits>::ValueType rhs,
+    circular_sequence_number_bits_tag</*bits*/1>)
+{
+    return true;
+}
+
+template<size_t bits>
+inline bool
+circular_sequence_number_less_equal(
+    typename CircularSequenceNumberTraits<bits>::ValueType lhs,
+    typename CircularSequenceNumberTraits<bits>::ValueType rhs,
+    circular_sequence_number_bits_tag<bits/*>1*/>)
+{
+    bool result = false;
+    if (lhs <= rhs)
+    {
+        result = (rhs - lhs) <= CircularSequenceNumberTraits<bits>::GAP_VALUE;
+    }
+    else
+    {
+        result = (lhs - rhs) > CircularSequenceNumberTraits<bits>::GAP_VALUE;
+    }
+    return result;
+}
+
+} // namespace details/*}}}*/
+
+
+/////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Utility
  * @brief A circular sequence number.
@@ -112,90 +202,34 @@ public:
     }
 
     // Increment.
-private:
-    void InternalIncrement(void) BOOST_NOEXCEPT
-    {
-        if (value_ < TraitsType::MAX_VALUE)
-        {
-            ++value_;
-        }
-        else
-        {
-            value_ = 0;
-        }
-    }
-
 public:
     ThisType& operator++(void) BOOST_NOEXCEPT
     {
-        InternalIncrement();
+        value_ = details::circular_sequence_number_inc<bits>(value_);
         return *this;
     }
 
     ThisType operator++(int) BOOST_NOEXCEPT
     {
         ValueType old = value_;
-        InternalIncrement();
+        value_ = details::circular_sequence_number_inc<bits>(value_);
         return ThisType(old);
     }
 
     // Comparison.
-private:
-    struct OneBitTag   {};
-    struct ManyBitsTag {};
-    template<size_t bits_> struct BitTag : ManyBitsTag {};
-    template<> struct BitTag<1> : OneBitTag {};
-    typedef BitTag<bits>  MyBitTag;
-
-    // The circular number has only 1 bit.
-    static bool InternalLessThan(ValueType lhs, ValueType rhs, OneBitTag) BOOST_NOEXCEPT
-    {
-        return lhs != rhs;
-    }
-
-    static bool InternalLessEqual(ValueType lhs, ValueType rhs, OneBitTag) BOOST_NOEXCEPT
-    {
-        return true;
-    }
-
-    // The circular number has 2 or more bits.
-    static bool InternalLessThan(ValueType lhs, ValueType rhs, ManyBitsTag) BOOST_NOEXCEPT
-    {
-        bool result;
-        if (lhs < rhs)
-        {
-            result = (rhs - lhs) <= TraitsType::GAP_VALUE;
-        }
-        else
-        {
-            result = (lhs - rhs) > TraitsType::GAP_VALUE;
-        }
-        return result;
-    }
-
-    static bool InternalLessEqual(ValueType lhs, ValueType rhs, ManyBitsTag) BOOST_NOEXCEPT
-    {
-        bool result;
-        if (lhs <= rhs)
-        {
-            result = (rhs - lhs) <= TraitsType::GAP_VALUE;
-        }
-        else
-        {
-            result = (lhs - rhs) > TraitsType::GAP_VALUE;
-        }
-        return result;
-    }
-
 public:
     bool operator< (const ThisType& rhs) const BOOST_NOEXCEPT
     {
-        return InternalLessThan(value_, rhs.value_, MyBitTag());
+        return details::circular_sequence_number_less_than<bits>(
+            value_, rhs.value_,
+            details::circular_sequence_number_bits_tag<bits>());
     }
 
     bool operator<=(const ThisType& rhs) const BOOST_NOEXCEPT
     {
-        return InternalLessEqual(value_, rhs.value_, MyBitTag());
+        return details::circular_sequence_number_less_equal<bits>(
+            value_, rhs.value_,
+            details::circular_sequence_number_bits_tag<bits>());
     }
 
     bool operator==(const ThisType& rhs) const BOOST_NOEXCEPT
@@ -210,12 +244,16 @@ public:
 
     bool operator> (const ThisType& rhs) const BOOST_NOEXCEPT
     {
-        return InternalLessThan(rhs.value_, value_, MyBitTag());
+        return details::circular_sequence_number_less_than<bits>(
+            rhs.value_, value_,
+            details::circular_sequence_number_bits_tag<bits>());
     }
 
     bool operator>=(const ThisType& rhs) const BOOST_NOEXCEPT
     {
-        return InternalLessEqual(rhs.value_, value_, MyBitTag());
+        return details::circular_sequence_number_less_equal<bits>(
+            rhs.value_, value_,
+            details::circular_sequence_number_bits_tag<bits>());
     }
 
     void swap(ThisType& rhs) BOOST_NOEXCEPT
@@ -304,9 +342,10 @@ inline std::basic_ostream<Char, Traits>&
 operator<<(std::basic_ostream<Char, Traits>& os,
            const CircularSequenceNumber<bits>& sn)
 {
-    typedef CircularSequenceNumber<bits>::ValueType  ValueType;
-    typedef std::conditional<sizeof (ValueType) <= sizeof (unsigned int),
-                             unsigned int, ValueType>::type  U;
+    typedef typename CircularSequenceNumber<bits>::ValueType  ValueType;
+    typedef typename std::conditional<
+                        sizeof (ValueType) <= sizeof (unsigned int),
+                        unsigned int, ValueType>::type  U;
     return os << static_cast<U>(sn.GetValue());
 }
 

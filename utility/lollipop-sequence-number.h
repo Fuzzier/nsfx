@@ -44,19 +44,165 @@ class LollipopSequenceNumberTraits/*{{{*/
 public:
     typedef typename boost::uint_t<bits>::least  ValueType;
 
-    // Maximum number of the circular part, `2^bits - 1`.
+    // Maximum number of the lollipop part, `2^bits - 1`.
     BOOST_STATIC_CONSTANT(ValueType, MAX_VALUE =
         static_cast<ValueType>(-1) >> (sizeof (ValueType) * 8 - bits));
 
-    // First number of the circular part.
+    // First number of the lollipop part.
     BOOST_STATIC_CONSTANT(ValueType, START_VALUE =
                           static_cast<ValueType>(start));
 
-    // Gap of the circular part, no more than half of the circular number space.
+    // Gap of the lollipop part, no more than half of the lollipop number space.
     BOOST_STATIC_CONSTANT(ValueType, GAP_VALUE = (MAX_VALUE - start) / 2);
 
+    // 1: only one number.
+    // 2: two numbers.
+    // 3: three or more numbers.
+    BOOST_STATIC_CONSTANT(size_t, CIRCULAR_SPACE =
+        MAX_VALUE == START_VALUE     ? 1 :
+        MAX_VALUE == START_VALUE + 1 ? 2 : 3);
 };/*}}}*/
 
+
+////////////////////////////////////////////////////////////////////////////////
+namespace details/*{{{*/
+{
+
+template<size_t n> // n = CICURLAR_SPACE
+struct lollipop_sequence_number_circular_space_tag {};
+
+
+////////////////////////////////////////
+// Increment.
+template<size_t bits, typename boost::uint_t<bits>::least start>
+inline typename LollipopSequenceNumberTraits<bits, start>::ValueType
+lollipop_sequence_number_inc(
+    typename LollipopSequenceNumberTraits<bits, start>::ValueType sn)
+{
+    typedef LollipopSequenceNumberTraits<bits, start>  TraitsType;
+    if (sn < TraitsType::MAX_VALUE)
+    {
+        ++sn;
+    }
+    else
+    {
+        sn = TraitsType::START_VALUE;
+    }
+    return sn;
+}
+
+////////////////////////////////////////
+// Less than.
+template<size_t bits, typename boost::uint_t<bits>::least start>
+inline bool
+lollipop_sequence_number_less_than(
+    typename LollipopSequenceNumberTraits<bits, start>::ValueType lhs,
+    typename LollipopSequenceNumberTraits<bits, start>::ValueType rhs,
+    lollipop_sequence_number_circular_space_tag</*n*/1>)
+{
+    // The circular part has only one number, that is `start`.
+    return lhs < rhs;
+}
+
+template<size_t bits, typename boost::uint_t<bits>::least start>
+inline bool
+lollipop_sequence_number_less_than(
+    typename LollipopSequenceNumberTraits<bits, start>::ValueType lhs,
+    typename LollipopSequenceNumberTraits<bits, start>::ValueType rhs,
+    lollipop_sequence_number_circular_space_tag</*n*/2>)
+{
+    // The circular part has only two numbers, that is `start` and `start+1`.
+    typedef LollipopSequenceNumberTraits<bits, start>  TraitsType;
+    bool result = true;
+    if (rhs < TraitsType::START_VALUE)
+    {
+        result = lhs < rhs;
+    }
+    return result;
+}
+
+template<size_t bits, typename boost::uint_t<bits>::least start>
+inline bool
+lollipop_sequence_number_less_than(
+    typename LollipopSequenceNumberTraits<bits, start>::ValueType lhs,
+    typename LollipopSequenceNumberTraits<bits, start>::ValueType rhs,
+    lollipop_sequence_number_circular_space_tag</*n*/3>)
+{
+    // The circular part has three or more numbers.
+    typedef LollipopSequenceNumberTraits<bits, start>  TraitsType;
+    bool result = false;
+    if (lhs < TraitsType::START_VALUE)
+    {
+        result = lhs < rhs;
+    }
+    else if (lhs < rhs)
+    {
+        result = (rhs - lhs) <= TraitsType::GAP_VALUE;
+    }
+    else if (rhs >= TraitsType::START_VALUE)
+    {
+        result = (lhs - rhs) > TraitsType::GAP_VALUE;
+    }
+    return result;
+}
+
+////////////////////////////////////////
+// Less equal.
+template<size_t bits, typename boost::uint_t<bits>::least start>
+inline bool
+lollipop_sequence_number_less_equal(
+    typename LollipopSequenceNumberTraits<bits, start>::ValueType lhs,
+    typename LollipopSequenceNumberTraits<bits, start>::ValueType rhs,
+    lollipop_sequence_number_circular_space_tag</*n*/1>)
+{
+    // The circular part has only one number, that is `start`.
+    return lhs <= rhs;
+}
+
+template<size_t bits, typename boost::uint_t<bits>::least start>
+inline bool
+lollipop_sequence_number_less_equal(
+    typename LollipopSequenceNumberTraits<bits, start>::ValueType lhs,
+    typename LollipopSequenceNumberTraits<bits, start>::ValueType rhs,
+    lollipop_sequence_number_circular_space_tag</*n*/2>)
+{
+    // The circular part has only two numbers, that is `start` and `start+1`.
+    typedef LollipopSequenceNumberTraits<bits, start>  TraitsType;
+    bool result = true;
+    if (rhs < TraitsType::START_VALUE)
+    {
+        result = lhs <= rhs;
+    }
+    return result;
+}
+
+template<size_t bits, typename boost::uint_t<bits>::least start>
+inline bool
+lollipop_sequence_number_less_equal(
+    typename LollipopSequenceNumberTraits<bits, start>::ValueType lhs,
+    typename LollipopSequenceNumberTraits<bits, start>::ValueType rhs,
+    lollipop_sequence_number_circular_space_tag</*n*/3>)
+{
+    // The circular part has three or more numbers.
+    typedef LollipopSequenceNumberTraits<bits, start>  TraitsType;
+    bool result = false;
+    if (lhs < TraitsType::START_VALUE)
+    {
+        result = lhs <= rhs;
+    }
+    else if (lhs <= rhs)
+    {
+        result = (rhs - lhs) <= TraitsType::GAP_VALUE;
+    }
+    else if (rhs >= TraitsType::START_VALUE)
+    {
+        result = (lhs - rhs) > TraitsType::GAP_VALUE;
+    }
+    return result;
+}
+
+} // namespace details
+/*}}}*/
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
@@ -64,11 +210,11 @@ public:
  * @brief A lollipop sequence number.
  *
  * @tparam bits The number of bits. Must be within `[1, 64]`.
- * @tparam start The first number of the circular part.
+ * @tparam start The first number of the lollipop part.
  *               It **must** be within `[0, N-1]`, where `N = 2^bits`.
  *
  * The range of lollipop sequence number is `[0, N-1]`.
- * The linear part is `[0, start-1]`, and the circular part is `[start, N-1]`.
+ * The linear part is `[0, start-1]`, and the lollipop part is `[start, N-1]`.
  *
  * The default value of `start` is `N/2 = 2^(bits-1)`.
  *
@@ -117,123 +263,36 @@ public:
     }
 
     // Increment.
-private:
-    void InternalIncrement(void) BOOST_NOEXCEPT
-    {
-        if (value_ == TraitsType::MAX_VALUE)
-        {
-            value_ = TraitsType::START_VALUE;
-        }
-        else
-        {
-            ++value_;
-        }
-    }
-
 public:
     ThisType& operator++(void) BOOST_NOEXCEPT
     {
-        InternalIncrement();
+        value_ = details::lollipop_sequence_number_inc<bits, start>(value_);
         return *this;
     }
 
     ThisType operator++(int) BOOST_NOEXCEPT
     {
         ValueType old = value_;
-        InternalIncrement();
+        value_ = details::lollipop_sequence_number_inc<bits, start>(value_);
         return ThisType(old);
     }
 
     // Comparison.
-private:
-    // Space of circular part.
-    struct OneNumberTag  {};
-    struct TwoNumbersTag   {};
-    struct MoreNumbersTag {};
-    template<ValueType space> struct SpaceTag : MoreNumbersTag {};
-    template<> struct SpaceTag<1> : TwoNumbersTag {};
-    template<> struct SpaceTag<0> : OneNumberTag {};
-    typedef SpaceTag<TraitsType::MAX_VALUE - TraitsType::START_VALUE>
-            MySpaceTag;
-
-    // The circular part has only one number, that is `start`.
-    static bool InternalLessThan(ValueType lhs, ValueType rhs, OneNumberTag) BOOST_NOEXCEPT
-    {
-        return lhs < rhs;
-    }
-
-    static bool InternalLessEqual(ValueType lhs, ValueType rhs, OneNumberTag) BOOST_NOEXCEPT
-    {
-        return lhs <= rhs;
-    }
-
-    // The circular part has only two numbers, that is `start` and `start+1`.
-    static bool InternalLessThan(ValueType lhs, ValueType rhs, TwoNumbersTag) BOOST_NOEXCEPT
-    {
-        bool result = true;
-        if (rhs < TraitsType::START_VALUE)
-        {
-            result = lhs < rhs;
-        }
-        return result;
-    }
-
-    static bool InternalLessEqual(ValueType lhs, ValueType rhs, TwoNumbersTag) BOOST_NOEXCEPT
-    {
-        bool result = true;
-        if (rhs < TraitsType::START_VALUE)
-        {
-            result = lhs <= rhs;
-        }
-        return result;
-    }
-
-    // The circular part has more than two numbers.
-    static bool InternalLessThan(ValueType lhs, ValueType rhs, MoreNumbersTag) BOOST_NOEXCEPT
-    {
-        bool result = false;
-        if (lhs < TraitsType::START_VALUE)
-        {
-            result = lhs < rhs;
-        }
-        else if (lhs < rhs)
-        {
-            result = (rhs - lhs) <= TraitsType::GAP_VALUE;
-        }
-        else if (rhs >= TraitsType::START_VALUE)
-        {
-            result = (lhs - rhs) > TraitsType::GAP_VALUE;
-        }
-        return result;
-    }
-
-    static bool InternalLessEqual(ValueType lhs, ValueType rhs, MoreNumbersTag) BOOST_NOEXCEPT
-    {
-        bool result = false;
-        if (lhs < TraitsType::START_VALUE)
-        {
-            result = lhs <= rhs;
-        }
-        else if (lhs <= rhs)
-        {
-            result = (rhs - lhs) <= TraitsType::GAP_VALUE;
-        }
-        else if (rhs >= TraitsType::START_VALUE)
-        {
-            result = (lhs - rhs) > TraitsType::GAP_VALUE;
-        }
-        return result;
-    }
-
 public:
     bool operator< (const ThisType& rhs) const BOOST_NOEXCEPT
     {
-        return InternalLessThan(value_, rhs.value_, MySpaceTag());
+        typedef details::lollipop_sequence_number_circular_space_tag<
+                    TraitsType::CIRCULAR_SPACE> tag;
+        return details::lollipop_sequence_number_less_than<bits, start>(
+                value_, rhs.value_, tag());
     }
 
     bool operator<=(const ThisType& rhs) const BOOST_NOEXCEPT
     {
-        return InternalLessEqual(value_, rhs.value_, MySpaceTag());
+        typedef details::lollipop_sequence_number_circular_space_tag<
+                    TraitsType::CIRCULAR_SPACE> tag;
+        return details::lollipop_sequence_number_less_equal<bits, start>(
+                value_, rhs.value_, tag());
     }
 
     bool operator==(const ThisType& rhs) const BOOST_NOEXCEPT
@@ -248,12 +307,18 @@ public:
 
     bool operator> (const ThisType& rhs) const BOOST_NOEXCEPT
     {
-        return InternalLessThan(rhs.value_, value_, MySpaceTag());
+        typedef details::lollipop_sequence_number_circular_space_tag<
+                    TraitsType::CIRCULAR_SPACE> tag;
+        return details::lollipop_sequence_number_less_than<bits, start>(
+                rhs.value_, value_, tag());
     }
 
     bool operator>=(const ThisType& rhs) const BOOST_NOEXCEPT
     {
-        return InternalLessEqual(rhs.value_, value_, MySpaceTag());
+        typedef details::lollipop_sequence_number_circular_space_tag<
+                    TraitsType::CIRCULAR_SPACE> tag;
+        return details::lollipop_sequence_number_less_equal<bits, start>(
+                rhs.value_, value_, tag());
     }
 
     void swap(ThisType& rhs) BOOST_NOEXCEPT
@@ -337,14 +402,16 @@ swap(LollipopSequenceNumber<bits, start>& lhs,
     return lhs.swap(rhs);
 }
 
-template<class Char, class Traits, size_t bits, typename boost::uint_t<bits>::least start>
+template<class Char, class Traits,
+         size_t bits, typename boost::uint_t<bits>::least start>
 inline std::basic_ostream<Char, Traits>&
 operator<<(std::basic_ostream<Char, Traits>& os,
            const LollipopSequenceNumber<bits, start>& sn)
 {
-    typedef LollipopSequenceNumber<bits, start>::ValueType  ValueType;
-    typedef std::conditional<sizeof (ValueType) <= sizeof (unsigned int),
-                             unsigned int, ValueType>::type  U;
+    typedef typename LollipopSequenceNumber<bits, start>::ValueType  ValueType;
+    typedef typename std::conditional<
+                sizeof (ValueType) <= sizeof (unsigned int),
+                unsigned int, ValueType>::type  U;
     return os << static_cast<U>(sn.GetValue());
 }
 
