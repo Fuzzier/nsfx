@@ -99,6 +99,8 @@ utility :                         \
     test-lollipop-sequence-number \
     test-bi-array                 \
     test-bi-matrix                \
+    test-bi-matrix                \
+    test-lexical-compare          \
 
 UTILITY_HEADERS=                                    \
     $(NSFX_PATH)/utility.h                          \
@@ -138,6 +140,12 @@ test-bi-array : $(SRC) $(HEADERS)
 SRC=utility/test-bi-matrix.cpp
 
 test-bi-matrix : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
+
+########################################
+SRC=utility/test-lexical-compare.cpp
+
+test-lexical-compare : $(SRC) $(HEADERS)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ################################################################################

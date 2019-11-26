@@ -17,7 +17,7 @@
 #define BI_MATRIX_H__B32755F1_A11E_47D0_A318_C215FDDFD5A0
 
 
-#include <nsfx/config.h>
+#include <nsfx/utility/config.h>
 #include <boost/core/swap.hpp>
 #include <type_traits> // is_pod
 #include <cstring> // memset

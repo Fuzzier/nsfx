@@ -213,6 +213,7 @@ utility :                         \
     test-lollipop-sequence-number \
     test-bi-array                 \
     test-bi-matrix                \
+	test-lexical-compare          \
 
 UTILITY_HEADERS=                                    \
     $(NSFX_PATH)/utility.h                          \
@@ -224,6 +225,7 @@ UTILITY_HEADERS=                                    \
     $(NSFX_PATH)/utility/lollipop-sequence-number.h \
     $(NSFX_PATH)/utility/bi-array.h                 \
     $(NSFX_PATH)/utility/bi-matrix.h                \
+    $(NSFX_PATH)/utility/lexical-compare.h          \
 
 HEADERS=                 \
     $(UTILITY_HEADERS)   \
@@ -260,6 +262,14 @@ test-bi-matrix : test-bi-matrix.exe
 SRC=utility/test-bi-matrix.cpp
 
 test-bi-matrix.exe : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-lexical-compare : test-lexical-compare.exe
+
+SRC=utility/test-lexical-compare.cpp
+
+test-lexical-compare.exe : $(SRC) $(HEADERS)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ################################################################################

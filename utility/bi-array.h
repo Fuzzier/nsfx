@@ -17,7 +17,7 @@
 #define BI_ARRAY_H__1BECB3B6_CA0A_4A46_AB9C_7F2E0838EAEC
 
 
-#include <nsfx/config.h>
+#include <nsfx/utility/config.h>
 #include <boost/core/swap.hpp>
 #include <type_traits> // is_pod
 #include <cstring> // memset, memcpy
