@@ -24,19 +24,20 @@
 #include <nsfx/test/case.h>
 #include <nsfx/test/suite.h>
 #include <nsfx/test/runner.h>
+#include <memory> // unique_ptr
 #include <sstream>
 #include <iomanip>
 #include <locale> // locale, isprint
 #include <type_traits> // integral_constant, is_same, common_type, is_integral
 
 
+////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Test
- *
  * @brief Define test tools.
  *
- * The following test tools are defined.
- * @code
+ * The following test tools are defined:
+ * @code{.cpp}
  * NSFX_TEST_EXPECT(pred)                           // Truthful.
  * NSFX_TEST_EXPECT_EQ(actual, limit)               // Equal.
  * NSFX_TEST_EXPECT_NE(actual, limit)               // Not equal.
@@ -44,8 +45,8 @@
  * NSFX_TEST_EXPECT_LE(actual, limit)               // Less equal.
  * NSFX_TEST_EXPECT_GT(actual, limit)               // Greater than.
  * NSFX_TEST_EXPECT_GE(actual, limit)               // Greater equal.
- * NSFX_TEST_EXPECT_AC(actual, limit, tolerance)    // absolute closeness.
- * NSFX_TEST_EXPECT_RC(actual, limit, tolerance)    // relative closeness.
+ * NSFX_TEST_EXPECT_AC(actual, limit, tolerance)    // Absolute closeness.
+ * NSFX_TEST_EXPECT_RC(actual, limit, tolerance)    // Relative closeness.
  *
  * NSFX_TEST_ASSERT(pred)
  * NSFX_TEST_ASSERT_EQ(actual, limit)
@@ -57,7 +58,14 @@
  * NSFX_TEST_ASSERT_AC(actual, limit, tolerance)
  * NSFX_TEST_ASSERT_RC(actual, limit, tolerance)
  * @endcode
+ *
+ * Users can also use `NSFX_TEST_MESSAGE()` to output messages.
  */
+
+
+////////////////////////////////////////////////////////////////////////////////
+NSFX_TEST_OPEN_NAMESPACE
+
 
 template<class T, bool integral = std::is_integral<T>::value>
 struct ValueFormatter
@@ -178,10 +186,14 @@ struct ValueFormatter<std::string>
 };
 
 template<class T>
-inline std::string TestFormatValue(T value)
+inline std::string FormatValue(T value)
 {
     return ValueFormatter<T>()(value);
 }
+
+
+NSFX_TEST_CLOSE_NAMESPACE
+
 
 // Define class templates.
 #define NSFX_TEST_TOOL_FILENAME <nsfx/test/tool.h>
@@ -192,14 +204,13 @@ inline std::string TestFormatValue(T value)
 // Message./*{{{*/
 /**
  * @ingroup Test
- *
  * @brief Output message.
  */
-#define NSFX_TEST_MESSAGE()                                         \
-    /* Set the message for output. */                               \
-    for (bool go = true; go; go = false)                            \
-    for (std::ostringstream oss; go;                                \
-         ::nsfx::test::runner::ShowMessage(oss.str()), go = false)  \
+#define NSFX_TEST_MESSAGE()                                                     \
+    /* Set the message for output. */                                           \
+    if (bool go = true)                                                         \
+    for (std::ostringstream oss; go;                                            \
+         ::nsfx::test::runner::ShowMessage(oss.str()), go = false)              \
         oss
 /*}}}*/
 
@@ -207,33 +218,30 @@ inline std::string TestFormatValue(T value)
 // Predicate./*{{{*/
 /**
  * @ingroup Test
- *
  * @brief Implement testing assertion.
  *
- * @param TYPE tool type.
- * @param LEVEL tool level.
- * @param DESC description.
- * @param ACT  actual value.
+ * @param[in] TYPE  The tool type.
+ * @param[in] LEVEL The tool level.
+ * @param[in] DESC  The description.
+ * @param[in] ACT   The actual value.
+ *
+ * The actual value is evaluated only once by the `checker`.
+ * If the test assertion failed, the result is stored in the `checker`.
  */
 #define NSFX_TEST_PREDICATE_IMPL(TYPE, LEVEL, DESC, ACT)                        \
     /* If the testing is not stopped.  */                                       \
-    for (bool go = true; go && !::nsfx::test::runner::GetStopFlag(); go = false)\
+    if (!::nsfx::test::runner::GetStopFlag())                                   \
     /* If the actual value is false.   */                                       \
-    for (auto pred = ::nsfx::test::MakePredicateChecker(ACT);                   \
-         go && !pred; go = false)                                               \
+    for (auto checker = ::nsfx::test::MakePredicateChecker(ACT);                \
+         !checker.Done();                                                       \
     /* Construct and commit a result.  */                                       \
-    for (::nsfx::test::Result result(                                           \
-            TYPE, LEVEL, DESC,                                                  \
-            pred.GetActual(),                                                   \
-            __FUNCTION__, __FILE__, __LINE__); go;                              \
-            ::nsfx::test::runner::CommitResult(std::move(result)), go = false)  \
+         checker.CommitResult(                                                  \
+            TYPE, LEVEL, DESC, __FUNCTION__, __FILE__, __LINE__))               \
     /* Set the message for the result. */                                       \
-    for (std::ostringstream oss; go; result.SetMessage(oss.str()), go = false)  \
-        oss
+        checker.GetStream()
 
 /**
  * @ingroup Test
- *
  * @brief Expected testing assertion.
  *
  * @param actual Must be insertable to C++ stream.
@@ -246,7 +254,6 @@ inline std::string TestFormatValue(T value)
 
 /**
  * @ingroup Test
- *
  * @brief Required testing assertion.
  *
  * @param actual Must be insertable to C++ stream.
@@ -259,92 +266,66 @@ inline std::string TestFormatValue(T value)
 /*}}}*/
 
 
-// Equal./*{{{*/
+// Compare./*{{{*/
 /**
  * @ingroup Test
- *
  * @brief Implements testing assertion.
  *
- * @param TYPE tool type.
- * @param LEVEL tool level.
- * @param DESC description.
- * @param ACT  actual value.
- * @param LIM  expected value.
+ * @param[in] TYPE  The tool type.
+ * @param[in] LEVEL The tool level.
+ * @param[in] DESC  The description.
+ * @param[in] ACT   The actual value.
+ * @param[in] LIM   The expected value.
+ * @param OP        The name of the operator.
+ *                  * `Equal`
+ *                  * `NotEqual`
+ *                  * `LessThan`
+ *                  * `LessEqual`
+ *                  * `GreaterThan`
+ *                  * `GreaterEqual`
  */
-#define NSFX_TEST_EQUAL_IMPL(TYPE, LEVEL, DESC, ACT, LIM)                       \
+#define NSFX_TEST_COMPARE_IMPL(TYPE, LEVEL, DESC, ACT, LIM, OP)                 \
     /* If the testing is not stopped.  */                                       \
-    for (bool go = true; go && !::nsfx::test::runner::GetStopFlag(); go = false)\
+    if (!::nsfx::test::runner::GetStopFlag())                                   \
     /* If the actual value is false.   */                                       \
-    for (auto pred = ::nsfx::test::MakeEqualChecker((ACT), (LIM));              \
-         go && !pred; go = false)                                               \
+    for (auto checker = ::nsfx::test::Make ##OP## Checker((ACT), (LIM));        \
+         !checker.Done();                                                       \
     /* Construct and commit a result.  */                                       \
-    for (::nsfx::test::Result result(                                           \
-            TYPE, LEVEL, DESC,                                                  \
-            pred.GetActual(), pred.GetLimit(),                                  \
-            __FUNCTION__, __FILE__, __LINE__); go;                              \
-            ::nsfx::test::runner::CommitResult(std::move(result)), go = false)  \
+         checker.CommitResult(                                                  \
+            TYPE, LEVEL, DESC, __FUNCTION__, __FILE__, __LINE__))               \
     /* Set the message for the result. */                                       \
-    for (std::ostringstream oss; go; result.SetMessage(oss.str()), go = false)  \
-        oss
+        checker.GetStream()
 
+// Equal.
 /**
  * @ingroup Test
- *
  * @brief Expected testing assertion.
  *
  * @param actual Must be insertable to C++ stream.
  * @param limit  Must be insertable to C++ stream.
  */
 #define NSFX_TEST_EXPECT_EQ(actual, limit)                                      \
-    NSFX_TEST_EQUAL_IMPL(                                                       \
+    NSFX_TEST_COMPARE_IMPL(                                                     \
         ::nsfx::test::ToolType::EQ,                                             \
         ::nsfx::test::ToolLevel::EXPECT,                                        \
-        #actual " == " #limit, actual, limit)
+        #actual " == " #limit, actual, limit,                                   \
+        Equal)
 
 /**
  * @ingroup Test
- *
  * @brief Required testing assertion.
  *
  * @param actual Must be insertable to C++ stream.
  * @param limit  Must be insertable to C++ stream.
  */
 #define NSFX_TEST_ASSERT_EQ(actual, limit)                                      \
-    NSFX_TEST_EQUAL_IMPL(                                                       \
+    NSFX_TEST_COMPARE_IMPL(                                                     \
         ::nsfx::test::ToolType::EQ,                                             \
         ::nsfx::test::ToolLevel::ASSERT,                                        \
-        #actual " == " #limit, actual, limit)
-/*}}}*/
+        #actual " == " #limit, actual, limit,                                   \
+        Equal)
 
-
-// Not equal./*{{{*/
-/**
- * @ingroup Test
- *
- * @brief Implements testing assertion.
- *
- * @param TYPE tool type.
- * @param LEVEL tool level.
- * @param DESC description.
- * @param ACT  actual value.
- * @param LIM  expected value.
- */
-#define NSFX_TEST_NOT_EQUAL_IMPL(TYPE, LEVEL, DESC, ACT, LIM)                   \
-    /* If the testing is not stopped.  */                                       \
-    for (bool go = true; go && !::nsfx::test::runner::GetStopFlag(); go = false)\
-    /* If the actual value is false.   */                                       \
-    for (auto pred = ::nsfx::test::MakeNotEqualChecker((ACT), (LIM));           \
-         go && !pred; go = false)                                               \
-    /* Construct and commit a result.  */                                       \
-    for (::nsfx::test::Result result(                                           \
-            TYPE, LEVEL, DESC,                                                  \
-            pred.GetActual(), pred.GetLimit(),                                  \
-            __FUNCTION__, __FILE__, __LINE__); go;                              \
-            ::nsfx::test::runner::CommitResult(std::move(result)), go = false)  \
-    /* Set the message for the result. */                                       \
-    for (std::ostringstream oss; go; result.SetMessage(oss.str()), go = false)  \
-        oss
-
+// Not equal.
 /**
  * @ingroup Test
  *
@@ -354,10 +335,11 @@ inline std::string TestFormatValue(T value)
  * @param limit  Must be insertable to C++ stream.
  */
 #define NSFX_TEST_EXPECT_NE(actual, limit)                                      \
-    NSFX_TEST_NOT_EQUAL_IMPL(                                                   \
+    NSFX_TEST_COMPARE_IMPL(                                                     \
         ::nsfx::test::ToolType::NE,                                             \
         ::nsfx::test::ToolLevel::EXPECT,                                        \
-        #actual " != " #limit, actual, limit)
+        #actual " != " #limit, actual, limit,                                   \
+        NotEqual)
 
 /**
  * @ingroup Test
@@ -368,41 +350,14 @@ inline std::string TestFormatValue(T value)
  * @param limit  Must be insertable to C++ stream.
  */
 #define NSFX_TEST_ASSERT_NE(actual, limit)                                      \
-    NSFX_TEST_NOT_EQUAL_IMPL(                                                   \
+    NSFX_TEST_COMPARE_IMPL(                                                     \
         ::nsfx::test::ToolType::NE,                                             \
         ::nsfx::test::ToolLevel::ASSERT,                                        \
-        #actual " != " #limit, actual, limit)
-/*}}}*/
+        #actual " != " #limit, actual, limit,                                   \
+        NotEqual)
 
 
-// Less than./*{{{*/
-/**
- * @ingroup Test
- *
- * @brief Implements testing assertion.
- *
- * @param TYPE tool type.
- * @param LEVEL tool level.
- * @param DESC description.
- * @param ACT  actual value.
- * @param LIM  expected value.
- */
-#define NSFX_TEST_LESS_THAN_IMPL(TYPE, LEVEL, DESC, ACT, LIM)                   \
-    /* If the testing is not stopped.  */                                       \
-    for (bool go = true; go && !::nsfx::test::runner::GetStopFlag(); go = false)\
-    /* If the actual value is false.   */                                       \
-    for (auto pred = ::nsfx::test::MakeLessThanChecker((ACT), (LIM));           \
-         go && !pred; go = false)                                               \
-    /* Construct and commit a result.  */                                       \
-    for (::nsfx::test::Result result(                                           \
-            TYPE, LEVEL, DESC,                                                  \
-            pred.GetActual(), pred.GetLimit(),                                  \
-            __FUNCTION__, __FILE__, __LINE__); go;                              \
-            ::nsfx::test::runner::CommitResult(std::move(result)), go = false)  \
-    /* Set the message for the result. */                                       \
-    for (std::ostringstream oss; go; result.SetMessage(oss.str()), go = false)  \
-        oss
-
+// Less than.
 /**
  * @ingroup Test
  *
@@ -412,10 +367,11 @@ inline std::string TestFormatValue(T value)
  * @param limit  Must be insertable to C++ stream.
  */
 #define NSFX_TEST_EXPECT_LT(actual, limit)                                      \
-    NSFX_TEST_LESS_THAN_IMPL(                                                   \
+    NSFX_TEST_COMPARE_IMPL(                                                     \
         ::nsfx::test::ToolType::LT,                                             \
         ::nsfx::test::ToolLevel::EXPECT,                                        \
-        #actual " < " #limit, actual, limit)
+        #actual " < " #limit, actual, limit,                                    \
+        LessThan)
 
 /**
  * @ingroup Test
@@ -426,41 +382,14 @@ inline std::string TestFormatValue(T value)
  * @param limit  Must be insertable to C++ stream.
  */
 #define NSFX_TEST_ASSERT_LT(actual, limit)                                      \
-    NSFX_TEST_LESS_THAN_IMPL(                                                   \
+    NSFX_TEST_COMPARE_IMPL(                                                     \
         ::nsfx::test::ToolType::LT,                                             \
         ::nsfx::test::ToolLevel::ASSERT,                                        \
-        #actual " < " #limit, actual, limit)
-/*}}}*/
+        #actual " < " #limit, actual, limit,                                    \
+        LessThan)
 
 
-// Less equal./*{{{*/
-/**
- * @ingroup Test
- *
- * @brief Implements testing assertion.
- *
- * @param TYPE tool type.
- * @param LEVEL tool level.
- * @param DESC description.
- * @param ACT  actual value.
- * @param LIM  expected value.
- */
-#define NSFX_TEST_LESS_EQUAL_IMPL(TYPE, LEVEL, DESC, ACT, LIM)                  \
-    /* If the testing is not stopped.  */                                       \
-    for (bool go = true; go && !::nsfx::test::runner::GetStopFlag(); go = false)\
-    /* If the actual value is false.   */                                       \
-    for (auto pred = ::nsfx::test::MakeLessEqualChecker((ACT), (LIM));          \
-         go && !pred; go = false)                                               \
-    /* Construct and commit a result.  */                                       \
-    for (::nsfx::test::Result result(                                           \
-            TYPE, LEVEL, DESC,                                                  \
-            pred.GetActual(), pred.GetLimit(),                                  \
-            __FUNCTION__, __FILE__, __LINE__); go;                              \
-            ::nsfx::test::runner::CommitResult(std::move(result)), go = false)  \
-    /* Set the message for the result. */                                       \
-    for (std::ostringstream oss; go; result.SetMessage(oss.str()), go = false)  \
-        oss
-
+// Less equal.
 /**
  * @ingroup Test
  *
@@ -470,10 +399,11 @@ inline std::string TestFormatValue(T value)
  * @param limit  Must be insertable to C++ stream.
  */
 #define NSFX_TEST_EXPECT_LE(actual, limit)                                      \
-    NSFX_TEST_LESS_EQUAL_IMPL(                                                  \
+    NSFX_TEST_COMPARE_IMPL(                                                     \
         ::nsfx::test::ToolType::LE,                                             \
         ::nsfx::test::ToolLevel::EXPECT,                                        \
-        #actual " <= " #limit, actual, limit)
+        #actual " <= " #limit, actual, limit,                                   \
+        LessEqual)
 
 /**
  * @ingroup Test
@@ -484,41 +414,14 @@ inline std::string TestFormatValue(T value)
  * @param limit  Must be insertable to C++ stream.
  */
 #define NSFX_TEST_ASSERT_LE(actual, limit)                                      \
-    NSFX_TEST_LESS_EQUAL_IMPL(                                                  \
+    NSFX_TEST_COMPARE_IMPL(                                                     \
         ::nsfx::test::ToolType::LE,                                             \
         ::nsfx::test::ToolLevel::ASSERT,                                        \
-        #actual " <= " #limit, actual, limit)
-/*}}}*/
+        #actual " <= " #limit, actual, limit,                                   \
+        LessEqual)
 
 
-// Greater than./*{{{*/
-/**
- * @ingroup Test
- *
- * @brief Implements testing assertion.
- *
- * @param TYPE tool type.
- * @param LEVEL tool level.
- * @param DESC description.
- * @param ACT  actual value.
- * @param LIM  expected value.
- */
-#define NSFX_TEST_GREATER_THAN_IMPL(TYPE, LEVEL, DESC, ACT, LIM)                \
-    /* If the testing is not stopped.  */                                       \
-    for (bool go = true; go && !::nsfx::test::runner::GetStopFlag(); go = false)\
-    /* If the actual value is false.   */                                       \
-    for (auto pred = ::nsfx::test::MakeGreaterThanChecker((ACT), (LIM));        \
-         go && !pred; go = false)                                               \
-    /* Construct and commit a result.  */                                       \
-    for (::nsfx::test::Result result(                                           \
-            TYPE, LEVEL, DESC,                                                  \
-            pred.GetActual(), pred.GetLimit(),                                  \
-            __FUNCTION__, __FILE__, __LINE__); go;                              \
-            ::nsfx::test::runner::CommitResult(std::move(result)), go = false)  \
-    /* Set the message for the result. */                                       \
-    for (std::ostringstream oss; go; result.SetMessage(oss.str()), go = false)  \
-        oss
-
+// Greater than.
 /**
  * @ingroup Test
  *
@@ -528,10 +431,11 @@ inline std::string TestFormatValue(T value)
  * @param limit  Must be insertable to C++ stream.
  */
 #define NSFX_TEST_EXPECT_GT(actual, limit)                                      \
-    NSFX_TEST_GREATER_THAN_IMPL(                                                \
+    NSFX_TEST_COMPARE_IMPL(                                                     \
         ::nsfx::test::ToolType::GT,                                             \
         ::nsfx::test::ToolLevel::EXPECT,                                        \
-        #actual " > " #limit, actual, limit)
+        #actual " > " #limit, actual, limit,                                    \
+        GreaterThan)
 
 /**
  * @ingroup Test
@@ -542,41 +446,14 @@ inline std::string TestFormatValue(T value)
  * @param limit  Must be insertable to C++ stream.
  */
 #define NSFX_TEST_ASSERT_GT(actual, limit)                                      \
-    NSFX_TEST_GREATER_THAN_IMPL(                                                \
+    NSFX_TEST_COMPARE_IMPL(                                                     \
         ::nsfx::test::ToolType::GT,                                             \
         ::nsfx::test::ToolLevel::ASSERT,                                        \
-        #actual " > " #limit, actual, limit)
-/*}}}*/
+        #actual " > " #limit, actual, limit,                                    \
+        GreaterThan)
 
 
-// Greater equal./*{{{*/
-/**
- * @ingroup Test
- *
- * @brief Implements testing assertion.
- *
- * @param TYPE tool type.
- * @param LEVEL tool level.
- * @param DESC description.
- * @param ACT  actual value.
- * @param LIM  expected value.
- */
-#define NSFX_TEST_GREATER_EQUAL_IMPL(TYPE, LEVEL, DESC, ACT, LIM)               \
-    /* If the testing is not stopped.  */                                       \
-    for (bool go = true; go && !::nsfx::test::runner::GetStopFlag(); go = false)\
-    /* If the actual value is false.   */                                       \
-    for (auto pred = ::nsfx::test::MakeGreaterEqualChecker((ACT), (LIM));       \
-         go && !pred; go = false)                                               \
-    /* Construct and commit a result.  */                                       \
-    for (::nsfx::test::Result result(                                           \
-            TYPE, LEVEL, DESC,                                                  \
-            pred.GetActual(), pred.GetLimit(),                                  \
-            __FUNCTION__, __FILE__, __LINE__); go;                              \
-            ::nsfx::test::runner::CommitResult(std::move(result)), go = false)  \
-    /* Set the message for the result. */                                       \
-    for (std::ostringstream oss; go; result.SetMessage(oss.str()), go = false)  \
-        oss
-
+// Greater equal.
 /**
  * @ingroup Test
  *
@@ -586,10 +463,11 @@ inline std::string TestFormatValue(T value)
  * @param limit  Must be insertable to C++ stream.
  */
 #define NSFX_TEST_EXPECT_GE(actual, limit)                                      \
-    NSFX_TEST_GREATER_EQUAL_IMPL(                                               \
+    NSFX_TEST_COMPARE_IMPL(                                                     \
         ::nsfx::test::ToolType::GE,                                             \
         ::nsfx::test::ToolLevel::EXPECT,                                        \
-        #actual " >= " #limit, actual, limit)
+        #actual " >= " #limit, actual, limit,                                   \
+        GreaterEqual)
 
 /**
  * @ingroup Test
@@ -600,45 +478,44 @@ inline std::string TestFormatValue(T value)
  * @param limit  Must be insertable to C++ stream.
  */
 #define NSFX_TEST_ASSERT_GE(actual, limit)                                      \
-    NSFX_TEST_GREATER_EQUAL_IMPL(                                               \
+    NSFX_TEST_COMPARE_IMPL(                                                     \
         ::nsfx::test::ToolType::GE,                                             \
         ::nsfx::test::ToolLevel::ASSERT,                                        \
-        #actual " >= " #limit, actual, limit)
+        #actual " >= " #limit, actual, limit,                                   \
+        GreaterEqual)
 /*}}}*/
 
 
-// Absolute closeness./*{{{*/
+// Closeness./*{{{*/
 /**
  * @ingroup Test
- *
  * @brief Implements testing assertion.
  *
- * @param TYPE tool type.
- * @param LEVEL tool level.
- * @param DESC description.
- * @param ACT  actual value.
- * @param LIM  expected value.
- * @param TOL  tolerance value.
+ * @param[in] TYPE  The tool type.
+ * @param[in] LEVEL The tool level.
+ * @param[in] DESC  The description.
+ * @param[in] ACT   The actual value.
+ * @param[in] LIM   The expected value.
+ * @param[in] TOL   The tolerance value.
+ * @param OP        The name of the operator.
+ *                  * `AbsoluteCloseness`
+ *                  * `RelativeCloseness`
  */
-#define NSFX_TEST_ABSOLUTE_CLOSENESS_IMPL(TYPE, LEVEL, DESC, ACT, LIM, TOL)             \
-    /* If the testing is not stopped.  */                                               \
-    for (bool go = true; go && !::nsfx::test::runner::GetStopFlag(); go = false)        \
-    /* If the actual value is false.   */                                               \
-    for (auto pred = ::nsfx::test::MakeAbsoluteClosenessChecker((ACT), (LIM), (TOL));   \
-         go && !pred; go = false)                                                       \
-    /* Construct and commit a result.  */                                               \
-    for (::nsfx::test::Result result(                                                   \
-            TYPE, LEVEL, DESC,                                                          \
-            pred.GetActual(), pred.GetLimit(), pred.GetTolerance(),                     \
-            __FUNCTION__, __FILE__, __LINE__); go;                                      \
-            ::nsfx::test::runner::CommitResult(std::move(result)), go = false)          \
-    /* Set the message for the result. */                                               \
-    for (std::ostringstream oss; go; result.SetMessage(oss.str()), go = false)          \
-        oss
+#define NSFX_TEST_CLOSENESS_IMPL(TYPE, LEVEL, DESC, ACT, LIM, TOL, OP)          \
+    /* If the testing is not stopped.  */                                       \
+    if (!::nsfx::test::runner::GetStopFlag())                                   \
+    /* If the actual value is false.   */                                       \
+    for (auto checker = ::nsfx::test::Make ##OP## Checker((ACT), (LIM), (TOL)); \
+         !checker.Done();                                                       \
+    /* Construct and commit a result.  */                                       \
+         checker.CommitResult(                                                  \
+            TYPE, LEVEL, DESC, __FUNCTION__, __FILE__, __LINE__))               \
+    /* Set the message for the result. */                                       \
+        checker.GetStream()
 
+// Absolute closeness.
 /**
  * @ingroup Test
- *
  * @brief Expected testing assertion.
  *
  * @param actual    Must be insertable to C++ stream.
@@ -646,15 +523,15 @@ inline std::string TestFormatValue(T value)
  * @param tolerance Must be insertable to C++ stream.
  */
 #define NSFX_TEST_EXPECT_AC(actual, limit, tolerance)                           \
-        NSFX_TEST_ABSOLUTE_CLOSENESS_IMPL(                                      \
+        NSFX_TEST_CLOSENESS_IMPL(                                               \
             ::nsfx::test::ToolType::AC,                                         \
             ::nsfx::test::ToolLevel::EXPECT,                                    \
             "|" #actual " - " #limit "| <= " #tolerance,                        \
-            actual, limit, tolerance)
+            actual, limit, tolerance,                                           \
+            AbsoluteCloseness)
 
 /**
  * @ingroup Test
- *
  * @brief Required testing assertion.
  *
  * @param actual    Must be insertable to C++ stream.
@@ -662,46 +539,16 @@ inline std::string TestFormatValue(T value)
  * @param tolerance Must be insertable to C++ stream.
  */
 #define NSFX_TEST_ASSERT_AC(actual, limit, tolerance)                           \
-        NSFX_TEST_ABSOLUTE_CLOSENESS_IMPL(                                      \
+        NSFX_TEST_CLOSENESS_IMPL(                                               \
             ::nsfx::test::ToolType::AC,                                         \
             ::nsfx::test::ToolLevel::ASSERT,                                    \
             "|" #actual " - " #limit "| <= " #tolerance,                        \
-            actual, limit, tolerance)
-/*}}}*/
+            actual, limit, tolerance,                                           \
+            AbsoluteCloseness)
 
-
-// Relative closeness./*{{{*/
+// Relative closeness.
 /**
  * @ingroup Test
- *
- * @brief Implements testing assertion.
- *
- * @param TYPE tool type.
- * @param LEVEL tool level.
- * @param DESC description.
- * @param ACT  actual value.
- * @param LIM  expected value.
- * @param TOL  tolerance value.
- */
-#define NSFX_TEST_RELATIVE_CLOSENESS_IMPL(TYPE, LEVEL, DESC, ACT, LIM, TOL)             \
-    /* If the testing is not stopped.  */                                               \
-    for (bool go = true; go && !::nsfx::test::runner::GetStopFlag(); go = false)        \
-    /* If the actual value is false.   */                                               \
-    for (auto pred = ::nsfx::test::MakeRelativeClosenessChecker((ACT), (LIM), (TOL));   \
-         go && !pred; go = false)                                                       \
-    /* Construct and commit a result.  */                                               \
-    for (::nsfx::test::Result result(                                                   \
-            TYPE, LEVEL, DESC,                                                          \
-            pred.GetActual(), pred.GetLimit(), pred.GetTolerance(),                     \
-            __FUNCTION__, __FILE__, __LINE__); go;                                      \
-            ::nsfx::test::runner::CommitResult(std::move(result)), go = false)          \
-    /* Set the message for the result. */                                               \
-    for (std::ostringstream oss; go; result.SetMessage(oss.str()), go = false)          \
-        oss
-
-/**
- * @ingroup Test
- *
  * @brief Expected testing assertion.
  *
  * @param actual    Must be insertable to C++ stream.
@@ -709,15 +556,15 @@ inline std::string TestFormatValue(T value)
  * @param tolerance Must be insertable to C++ stream.
  */
 #define NSFX_TEST_EXPECT_RC(actual, limit, tolerance)                           \
-        NSFX_TEST_ABSOLUTE_CLOSENESS_IMPL(                                      \
+        NSFX_TEST_CLOSENESS_IMPL(                                               \
             ::nsfx::test::ToolType::RC,                                         \
             ::nsfx::test::ToolLevel::EXPECT,                                    \
             "|" #actual " - " #limit "| <= " #limit " * " #tolerance,           \
-            actual, limit, limit * tolerance)
+            actual, limit, tolerance,                                           \
+            RelativeCloseness)
 
 /**
  * @ingroup Test
- *
  * @brief Required testing assertion.
  *
  * @param actual    Must be insertable to C++ stream.
@@ -725,11 +572,12 @@ inline std::string TestFormatValue(T value)
  * @param tolerance Must be insertable to C++ stream.
  */
 #define NSFX_TEST_ASSERT_RC(actual, limit, tolerance)                           \
-        NSFX_TEST_RELATIVE_CLOSENESS_IMPL(                                      \
+        NSFX_TEST_CLOSENESS_IMPL(                                               \
             ::nsfx::test::ToolType::RC,                                         \
             ::nsfx::test::ToolLevel::ASSERT,                                    \
             "|" #actual " - " #limit "| <= " #limit " * " #tolerance,           \
-            actual, limit, limit * tolerance)
+            actual, limit, tolerance,                                           \
+            RelativeCloseness)
 /*}}}*/
 
 
@@ -746,41 +594,69 @@ NSFX_TEST_OPEN_NAMESPACE
 template<class Actual>
 class NSFX_TEST_TOOL_CHECKER /*{{{*/
 {
+    struct Data
+    {
+        template<class A>
+        Data(A&& actual) :
+            actual_(std::forward<A>(actual))
+        {}
+
+        template<class Desc>
+        void CommitResult(ToolType type, ToolLevel level, Desc&& desc,
+                          const char* func, const char* file, size_t lineno)
+        {
+            runner::CommitResult(
+                std::unique_ptr<Result>(new Result(
+                    type, level, std::forward<Desc>(desc),
+                    FormatValue(actual_),
+                    func, file, lineno, oss_.str())));
+        }
+
+        std::ostream& GetStream(void) BOOST_NOEXCEPT
+        {
+            return oss_;
+        }
+
+        Actual actual_;
+        std::ostringstream oss_;
+    };
+
 public:
     template<class A>
-    NSFX_TEST_TOOL_CHECKER(A&& actual) :
-        actual_(std::forward<A>(actual))
+    NSFX_TEST_TOOL_CHECKER(A&& actual)
     {
-        result_ = (NSFX_TEST_TOOL_OPERATOR actual_);
+        if (!(NSFX_TEST_TOOL_OPERATOR actual))
+        {
+            // Store the result of the evaluation if the test assertion failed.
+            data_ = std::unique_ptr<Data>(new Data(std::forward<A>(actual)));
+        }
     }
 
-    // Methods.
-public:
-    std::string GetActual(void) const
+    NSFX_TEST_TOOL_CHECKER(NSFX_TEST_TOOL_CHECKER&& rhs) BOOST_NOEXCEPT :
+        data_(std::move(rhs.data_)) {}
+
+    bool Done(void) const BOOST_NOEXCEPT
     {
-        return TestFormatValue((actual_));
+        return !data_;
     }
 
-    std::string GetLimit(void) const
+    std::ostream& GetStream(void) const BOOST_NOEXCEPT
     {
-        return "true";
+        return data_->GetStream();
     }
 
-    bool GetResult(void) const
+    template<class Desc>
+    void CommitResult(ToolType type, ToolLevel level, Desc&& desc,
+                      const char* func, const char* file, size_t lineno)
     {
-        return result_;
+        data_->CommitResult(type, level, std::forward<Desc>(desc),
+                            func, file, lineno);
+        data_ = nullptr;
     }
 
-    operator bool() const
-    {
-        return result_;
-    }
-
-    // Properties.
 private:
-    bool   result_;
-    Actual actual_;
-
+    std::unique_ptr<Data> data_; ///< Available only if the test assertion failed.
+                                 ///< Allocated on heap to be less stack-consuming.
 }; /*}}}*/
 
 // MakeChecker
@@ -798,42 +674,72 @@ NSFX_TEST_TOOL_MAKE_CHECKER(Actual&& actual)
 template<class Actual, class Limit>
 class NSFX_TEST_TOOL_CHECKER /*{{{*/
 {
+    struct Data
+    {
+        template<class A, class L>
+        Data(A&& actual, L&& limit) :
+            actual_(std::forward<A>(actual)),
+            limit_(std::forward<L>(limit))
+        {}
+
+        template<class Desc>
+        void CommitResult(ToolType type, ToolLevel level, Desc&& desc,
+                          const char* func, const char* file, size_t lineno)
+        {
+            runner::CommitResult(
+                std::unique_ptr<Result>(new Result(
+                    type, level, std::forward<Desc>(desc),
+                    FormatValue(actual_), FormatValue(limit_),
+                    func, file, lineno, oss_.str())));
+        }
+
+        std::ostream& GetStream(void) BOOST_NOEXCEPT
+        {
+            return oss_;
+        }
+
+        Actual actual_;
+        Limit  limit_;
+        std::ostringstream oss_;
+    };
+
 public:
     template<class A, class L>
-    NSFX_TEST_TOOL_CHECKER(A&& actual, L&& limit) :
-        actual_(std::forward<A>(actual)),
-        limit_(std::forward<L>(limit))
+    NSFX_TEST_TOOL_CHECKER(A&& actual, L&& limit)
     {
-        result_ = (actual_ NSFX_TEST_TOOL_OPERATOR limit_);
+        if (!(actual NSFX_TEST_TOOL_OPERATOR limit))
+        {
+            data_ = std::unique_ptr<Data>(new Data(
+                std::forward<A>(actual),
+                std::forward<L>(limit)));
+        }
     }
 
-    // Methods.
-public:
-    std::string GetActual(void) const
+    NSFX_TEST_TOOL_CHECKER(NSFX_TEST_TOOL_CHECKER&& rhs) BOOST_NOEXCEPT :
+        data_(std::move(rhs.data_)) {}
+
+    bool Done(void) const BOOST_NOEXCEPT
     {
-        return TestFormatValue((actual_));
+        return !data_;
     }
 
-    std::string GetLimit(void) const
+    std::ostream& GetStream(void) const BOOST_NOEXCEPT
     {
-        return TestFormatValue((limit_));
+        return data_->GetStream();
     }
 
-    bool GetResult(void) const
+    template<class Desc>
+    void CommitResult(ToolType type, ToolLevel level, Desc&& desc,
+                      const char* func, const char* file, size_t lineno)
     {
-        return result_;
+        data_->CommitResult(type, level, std::forward<Desc>(desc),
+                            func, file, lineno);
+        data_ = nullptr;
     }
 
-    operator bool() const
-    {
-        return result_;
-    }
-
-    // Properties.
 private:
-    bool   result_;
-    Actual actual_;
-    Limit  limit_;
+    std::unique_ptr<Data> data_; ///< Available only if the test assertion failed.
+                                 ///< Allocated on heap to be less stack-consuming.
 
 };/*}}}*/
 
@@ -843,8 +749,8 @@ inline NSFX_TEST_TOOL_CHECKER<typename std::decay<Actual>::type,
                               typename std::decay<Limit>::type>
 NSFX_TEST_TOOL_MAKE_CHECKER(Actual&& actual, Limit&& limit)
 {
-    typedef typename std::decay<Actual>::type  A;
-    typedef typename std::decay<Limit>::type   L;
+    typedef typename std::decay<Actual>::type A;
+    typedef typename std::decay<Limit>::type  L;
     return NSFX_TEST_TOOL_CHECKER<A, L>(std::forward<Actual>(actual),
                                         std::forward<Limit>(limit));
 }
@@ -855,61 +761,85 @@ NSFX_TEST_TOOL_MAKE_CHECKER(Actual&& actual, Limit&& limit)
 template<class Actual, class Limit, class Tol>
 class NSFX_TEST_TOOL_CHECKER /*{{{*/
 {
+    struct Data
+    {
+        template<class A, class L, class T>
+        Data(A&& actual, L&& limit, T&& tol) :
+            actual_(std::forward<A>(actual)),
+            limit_(std::forward<L>(limit)),
+            tol_(std::forward<T>(tol))
+        {}
+
+        template<class Desc>
+        void CommitResult(ToolType type, ToolLevel level, Desc&& desc,
+                          const char* func, const char* file, size_t lineno)
+        {
+            runner::CommitResult(
+                std::unique_ptr<Result>(new Result(
+                    type, level, std::forward<Desc>(desc),
+                    FormatValue(actual_), FormatValue(limit_),
+# if (NSFX_TEST_TOOL_OPERATOR == 0) // Absolute closeness
+                    FormatValue(tol_),
+# else // !(NSFX_TEST_TOOL_OPERATOR == 0) // Relative closeness
+                    FormatValue(limit_* tol_),
+# endif // (NSFX_TEST_TOOL_OPERATOR == n)
+                    func, file, lineno, oss_.str())));
+        }
+
+        std::ostream& GetStream(void) BOOST_NOEXCEPT
+        {
+            return oss_;
+        }
+
+        Actual actual_;
+        Limit  limit_;
+        Tol    tol_;
+        std::ostringstream oss_;
+    };
+
 public:
     template<class A, class L, class T>
-    NSFX_TEST_TOOL_CHECKER(A&& actual, L&& limit, T&& tol) :
-        actual_(std::forward<A>(actual)),
-        limit_(std::forward<L>(limit)),
-        tol_(std::forward<T>(tol))
+    NSFX_TEST_TOOL_CHECKER(A&& actual, L&& limit, T&& tol)
     {
 # if (NSFX_TEST_TOOL_OPERATOR == 0) // Absolute closeness
-        result_ = !((tol_ < actual_ - limit_) || (tol_ < limit_ - actual_));
+        if ((tol < actual - limit) || (tol < limit - actual))
 # else // !(NSFX_TEST_TOOL_OPERATOR == 0) // Relative closeness
-        result_ = !((tol_ * limit_ < actual_ - limit_ ) ||
-                    (tol_ * limit_ < limit_  - actual_));
+        if ((limit * tol < actual - limit ) ||
+            (limit * tol < limit  - actual))
 # endif // (NSFX_TEST_TOOL_OPERATOR == n)
+        {
+            data_ = std::unique_ptr<Data>(new Data(
+                std::forward<A>(actual),
+                std::forward<L>(limit),
+                std::forward<T>(tol)));
+        }
     }
 
-    // Methods.
-public:
-    std::string GetActual(void) const
+    NSFX_TEST_TOOL_CHECKER(NSFX_TEST_TOOL_CHECKER&& rhs) BOOST_NOEXCEPT :
+        data_(std::move(rhs.data_)) {}
+
+    bool Done(void) const BOOST_NOEXCEPT
     {
-        return TestFormatValue((actual_));
+        return !data_;
     }
 
-    std::string GetLimit(void) const
+    std::ostream& GetStream(void) const BOOST_NOEXCEPT
     {
-        return TestFormatValue((limit_));
+        return data_->GetStream();
     }
 
-    /**
-     * @brief Get the absolute tolerance value.
-     */
-    std::string GetTolerance(void) const
+    template<class Desc>
+    void CommitResult(ToolType type, ToolLevel level, Desc&& desc,
+                      const char* func, const char* file, size_t lineno)
     {
-# if (NSFX_TEST_TOOL_OPERATOR == 0) // Absolute closeness
-        return TestFormatValue((tol_));
-# else // !(NSFX_TEST_TOOL_OPERATOR == 0) // Relative closeness
-        return TestFormatValue((limit_ * tol_));
-# endif // (NSFX_TEST_TOOL_OPERATOR == n)
+        data_->CommitResult(type, level, std::forward<Desc>(desc),
+                            func, file, lineno);
+        data_ = nullptr;
     }
 
-    bool GetResult(void) const
-    {
-        return result_;
-    }
-
-    operator bool() const
-    {
-        return result_;
-    }
-
-    // Properties.
 private:
-    bool   result_;
-    Actual actual_;
-    Limit  limit_;
-    Tol    tol_;
+    std::unique_ptr<Data> data_; ///< Available only if the test assertion failed.
+                                 ///< Allocated on heap to be less stack-consuming.
 
 }; /*}}}*/
 
@@ -920,9 +850,9 @@ inline NSFX_TEST_TOOL_CHECKER<typename std::decay<Actual>::type,
                               typename std::decay<Tol>::type>
 NSFX_TEST_TOOL_MAKE_CHECKER(Actual&& actual, Limit&& limit, Tol&& tol)
 {
-    typedef typename std::decay<Actual>::type  A;
-    typedef typename std::decay<Limit>::type   L;
-    typedef typename std::decay<Tol>::type     T;
+    typedef typename std::decay<Actual>::type A;
+    typedef typename std::decay<Limit>::type  L;
+    typedef typename std::decay<Tol>::type    T;
     return NSFX_TEST_TOOL_CHECKER<A, L, T>(std::forward<Actual>(actual),
                                            std::forward<Limit>(limit),
                                            std::forward<Tol>(tol));

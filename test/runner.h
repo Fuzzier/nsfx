@@ -20,6 +20,8 @@
 #include <nsfx/test/config.h>
 #include <nsfx/test/case.h>
 #include <nsfx/test/suite.h>
+#include <nsfx/test/logger.h>
+#include <memory> // unique_ptr
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -95,13 +97,13 @@ public:
      * A test result is committed when a test assertion has failed.
      * If the test level is \c TestLevel::ASSERT, the stop flag is set.
      */
-    void CommitResult(Result&& result)
+    void CommitResult(std::unique_ptr<Result>&& result)
     {
-        if (result.GetToolLevel() == ToolLevel::ASSERT)
+        if (result->GetToolLevel() == ToolLevel::ASSERT)
         {
             SetStopFlag();
         }
-        ShowResult(result);
+        ShowResult(&*result);
         GetActiveCase()->AddResult(std::move(result));
     }
 
@@ -174,12 +176,12 @@ private:
         }
     }
 
-    void ShowResult(const Result& result)
+    void ShowResult(Result* result)
     {
         struct Visitor /*{{{*/
         {
             Visitor(Suite* prevSuite, Case* prevCase, Case* activeCase,
-                    const Result& result) :
+                    Result* result) :
                 prevSuite_(prevSuite),
                 prevCase_(prevCase),
                 activeCase_(activeCase),
@@ -219,28 +221,27 @@ private:
                 os << casei->GetName() << std::endl;
             }
 
-            void DisplayResult(std::ostream& os, const Result& result,
-                               size_t depth)
+            void DisplayResult(std::ostream& os, Result* result, size_t depth)
             {
                 os << std::string(depth + 2, ' ');
                 // Make clear the position of error.
-                os << result.GetFileName();
-                os << "(" << result.GetLineNumber() << "): ";
-                os << result.GetToolLevel() << ". ";
-                os << "\"" << result.GetDescription() << "\" ";
-                os << "[" << result.GetDetail() <<  "].";
-                if (!result.GetMessage().empty())
+                os << result->GetFileName();
+                os << "(" << result->GetLineNumber() << "): ";
+                os << result->GetToolLevel() << ". ";
+                os << "\"" << result->GetDescription() << "\" ";
+                os << "[" << result->GetDetail() <<  "].";
+                if (!result->GetMessage().empty())
                 {
-                    os << " " << result.GetMessage();
+                    os << " " << result->GetMessage();
                 }
                 os << std::endl;
             }
 
         private:
-            Suite* prevSuite_;
-            Case*  prevCase_;
-            Case*  activeCase_;
-            const Result& result_;
+            Suite*  prevSuite_;
+            Case*   prevCase_;
+            Case*   activeCase_;
+            Result* result_;
 
         }; // struct Visitor /*}}}*/
 
@@ -369,7 +370,7 @@ inline bool GetStopFlag(void)
     return Runner::GetInstance()->GetStopFlag();
 }
 
-inline void CommitResult(Result&& result)
+inline void CommitResult(std::unique_ptr<Result>&& result)
 {
     Runner::GetInstance()->CommitResult(std::move(result));
 }

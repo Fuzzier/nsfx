@@ -30,10 +30,7 @@ NSFX_TEST_OPEN_NAMESPACE
 
 /**
  * @ingroup Test
- *
  * @brief The default test fixture.
- *
- * @internal
  */
 class NullFixture
 {
@@ -49,7 +46,6 @@ NSFX_TEST_CLOSE_NAMESPACE
 /**
  * @ingroup Test
  * @brief The active test suite in current namespace.
- * @internal
  *
  * Its purpose is to temporarily override the variable value in a new namespace,
  * and provide a stack-like mechanism that restores the variable value when
@@ -60,8 +56,8 @@ NSFX_TEST_CLOSE_NAMESPACE
  * cases can be provided.
  *
  * The value is not updated at runtime, so don't access it at runtime.
- * Use \c Runner::GetActiveCase() to access the currently running test case,
- * and use \c Case::GetSuite() to access the test suite that contains the case.
+ * Use `Runner::GetActiveCase()` to access the currently running test case,
+ * and use `Case::GetSuite()` to access the test suite that contains the case.
  */
 static ::nsfx::test::Suite* NSFX_ACTIVE_TEST_SUITE =
         ::nsfx::test::runner::GetMasterSuite();
@@ -69,7 +65,6 @@ static ::nsfx::test::Suite* NSFX_ACTIVE_TEST_SUITE =
 /**
  * @ingroup Test
  * @brief The active test fixture in current namespace.
- * @internal
  *
  * Its purpose is to temporarily override the typedef in a new namespace,
  * and provide a stack-like mechanism that restores the typedef when
@@ -79,9 +74,9 @@ static ::nsfx::test::Suite* NSFX_ACTIVE_TEST_SUITE =
  * test suites and cases. Especially, abitrary level of test suites and cases
  * can be provided.
  *
- * Anytime, use \c NSFX_TEST_SUITE_F(name, F) to use custom fixture \c F.
- * Anytime, use \c NSFX_TEST_CASE_F(name, F) to use custom fixture \c F.
- * The above two macros doesn't override \c NSFX_ACTIVE_FIXTURE in their
+ * Anytime, use `NSFX_TEST_SUITE_F(name, F)` to use custom fixture `F`.
+ * Anytime, use `NSFX_TEST_CASE_F(name, F)` to use custom fixture `F`.
+ * The above two macros doesn't override `NSFX_ACTIVE_FIXTURE` in their
  * container suite (restored via stack-like mechanism).
  */
 typedef ::nsfx::test::NullFixture NSFX_ACTIVE_FIXTURE;
@@ -92,9 +87,7 @@ typedef ::nsfx::test::NullFixture NSFX_ACTIVE_FIXTURE;
 // MACROS./*{{{*/
 /**
  * @ingroup Test
- *
- * @brief Define test suite with a fixture.
- * @internal
+ * @brief Define a test suite with a fixture.
  *
  * @remarks This construct doesn't combine test suites with the same name
  *          in different translation units.
@@ -121,7 +114,6 @@ typedef ::nsfx::test::NullFixture NSFX_ACTIVE_FIXTURE;
 
 /**
  * @ingroup Test
- *
  * @brief Define a test suite without changing the active fixture.
  */
 #define NSFX_TEST_SUITE(name)                                                   \
@@ -129,7 +121,6 @@ typedef ::nsfx::test::NullFixture NSFX_ACTIVE_FIXTURE;
 
 /**
  * @ingroup Test
- *
  * @brief Define a test suite while specifying the active fixture.
  */
 #define NSFX_TEST_SUITE_F(name, FixtureType)                                    \
@@ -137,9 +128,7 @@ typedef ::nsfx::test::NullFixture NSFX_ACTIVE_FIXTURE;
 
 /**
  * @ingroup Test
- *
  * @brief Define a test case with a fixture.
- * @internal
  */
 #define NSFX_TEST_CASE_IMPL(name, case_name, register_name, FixtureType)        \
     /* A test case with a fixture. */                                           \
@@ -161,10 +150,9 @@ typedef ::nsfx::test::NullFixture NSFX_ACTIVE_FIXTURE;
 
 /**
  * @ingroup Test
- *
  * @brief Define a test case with the active fixture.
  *
- * @code
+ * @code{.cpp}
  * NSFX_TEST_CASE(case1)
  * {
  *   int i = 0;
@@ -177,10 +165,9 @@ typedef ::nsfx::test::NullFixture NSFX_ACTIVE_FIXTURE;
 
 /**
  * @ingroup Test
- *
  * @brief Define a test case with the speficied fixture.
  *
- * @code
+ * @code{.cpp}
  * struct MyFixture
  * {
  *   MyFixture(void) :

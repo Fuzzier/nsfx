@@ -30,7 +30,6 @@ NSFX_TEST_OPEN_NAMESPACE
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @ingroup Test
- *
  * @brief Result of failed test assertions.
  */
 class Result
@@ -39,7 +38,8 @@ public:
     template<class Desc, class Actual, class Limit, class Tol>
     Result(ToolType type, ToolLevel level, Desc&& description,
            Actual&& actual, Limit&& limit, Tol&& tolerance,
-           const char* func, const char* filename, size_t lineno) :
+           const char* func, const char* filename, size_t lineno,
+           std::string&& message) :
         type_       (type),
         level_      (level),
         description_(std::forward<Desc>(description)),
@@ -48,14 +48,16 @@ public:
         tolerance_  (std::forward<Tol>(tolerance)),
         function_   (func),
         filename_   (filename),
-        lineno_     (lineno)
+        lineno_     (lineno),
+        message_    (message)
     {
     }
 
     template<class Desc, class Actual, class Limit>
     Result(ToolType type, ToolLevel level, Desc&& description,
            Actual&& actual, Limit&& limit,
-           const char* func, const char* filename, size_t lineno) :
+           const char* func, const char* filename, size_t lineno,
+           std::string&& message) :
         type_       (type),
         level_      (level),
         description_(std::forward<Desc>(description)),
@@ -63,21 +65,24 @@ public:
         limit_      (std::forward<Limit>(limit)),
         function_   (func),
         filename_   (filename),
-        lineno_     (lineno)
+        lineno_     (lineno),
+        message_    (message)
     {
     }
 
     template<class Desc, class Actual>
     Result(ToolType type, ToolLevel level, Desc&& description,
            Actual&& actual,
-           const char* func, const char* filename, size_t lineno) :
+           const char* func, const char* filename, size_t lineno,
+           std::string&& message) :
         type_       (type),
         level_      (level),
         description_(std::forward<Desc>(description)),
         actual_     (std::forward<Actual>(actual)),
         function_   (func),
         filename_   (filename),
-        lineno_     (lineno)
+        lineno_     (lineno),
+        message_    (message)
     {
     }
 
@@ -119,7 +124,6 @@ public:
         }
         return *this;
     }
-
 
     // Methods.
 public:
@@ -206,7 +210,6 @@ public:
     {
         return lineno_;
     }
-
 
     // Properties.
 private:

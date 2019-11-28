@@ -38,7 +38,6 @@ class Suite;
  * Also, when a test assertion fails, a test result is generated,
  * which is stored in this object.
  *
- * <p>
  * A test case can be added to only one test suite, as it's constructed with
  * a parent test suite, and there's no way to change the parent test suite.
  */
@@ -54,17 +53,16 @@ public:
     public:
         /**
          * @brief Run a user-defined test case.
-         *
-         * @param currentCase The current test case.
          */
         virtual void Run(void) = 0;
 
     }; // class Impl
 
-
 public:
     /**
-     * @brief Users must use \c Suite::AddCase() to create test cases.
+     * @brief Construct a test case.
+     *
+     * Users **must** use `Suite::AddCase()` to create test cases.
      */
     template<class Functor>
     Case(Suite* parent, const std::string& name, Functor&& functor);
@@ -96,7 +94,6 @@ public:
         return *this;
     }
 
-
     // Methods.
 public:
     void Run(void)
@@ -104,7 +101,7 @@ public:
         impl_->Run();
     }
 
-    void AddResult(Result&& result)
+    void AddResult(std::unique_ptr<Result>&& result)
     {
         results_.push_back(std::move(result));
     }
@@ -135,7 +132,6 @@ public:
         }
     }
 
-
     // Properties.
 private:
     /**
@@ -152,7 +148,7 @@ private:
     /**
      * @brief The test results of failed tests.
      */
-    vector<Result> results_;
+    vector<std::unique_ptr<Result>> results_;
 
     std::unique_ptr<Impl> impl_;
 
@@ -161,6 +157,7 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
+ * @ingroup Test
  * @brief Test case implementation that stores a nullary callable object.
  *
  * @tparam Functor The type of the nullary callable object.
