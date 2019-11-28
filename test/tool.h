@@ -625,7 +625,8 @@ public:
     template<class A>
     NSFX_TEST_TOOL_CHECKER(A&& actual)
     {
-        if (!(NSFX_TEST_TOOL_OPERATOR actual))
+        done_ = (NSFX_TEST_TOOL_OPERATOR actual);
+        if (!done_)
         {
             // Store the result of the evaluation if the test assertion failed.
             data_ = std::unique_ptr<Data>(new Data(std::forward<A>(actual)));
@@ -637,7 +638,7 @@ public:
 
     bool Done(void) const BOOST_NOEXCEPT
     {
-        return !data_;
+        return done_;
     }
 
     std::ostream& GetStream(void) const BOOST_NOEXCEPT
@@ -651,10 +652,11 @@ public:
     {
         data_->CommitResult(type, level, std::forward<Desc>(desc),
                             func, file, lineno);
-        data_ = nullptr;
+        done_ = true;
     }
 
 private:
+    bool  done_;
     std::unique_ptr<Data> data_; ///< Available only if the test assertion failed.
                                  ///< Allocated on heap to be less stack-consuming.
 }; /*}}}*/
@@ -707,7 +709,8 @@ public:
     template<class A, class L>
     NSFX_TEST_TOOL_CHECKER(A&& actual, L&& limit)
     {
-        if (!(actual NSFX_TEST_TOOL_OPERATOR limit))
+        done_ = (actual NSFX_TEST_TOOL_OPERATOR limit);
+        if (!done_)
         {
             data_ = std::unique_ptr<Data>(new Data(
                 std::forward<A>(actual),
@@ -720,7 +723,7 @@ public:
 
     bool Done(void) const BOOST_NOEXCEPT
     {
-        return !data_;
+        return done_;
     }
 
     std::ostream& GetStream(void) const BOOST_NOEXCEPT
@@ -734,10 +737,11 @@ public:
     {
         data_->CommitResult(type, level, std::forward<Desc>(desc),
                             func, file, lineno);
-        data_ = nullptr;
+        done_ = true;
     }
 
 private:
+    bool done_;
     std::unique_ptr<Data> data_; ///< Available only if the test assertion failed.
                                  ///< Allocated on heap to be less stack-consuming.
 
@@ -802,11 +806,12 @@ public:
     NSFX_TEST_TOOL_CHECKER(A&& actual, L&& limit, T&& tol)
     {
 # if (NSFX_TEST_TOOL_OPERATOR == 0) // Absolute closeness
-        if ((tol < actual - limit) || (tol < limit - actual))
+        done_ = !((tol < actual - limit) || (tol < limit - actual));
 # else // !(NSFX_TEST_TOOL_OPERATOR == 0) // Relative closeness
-        if ((limit * tol < actual - limit ) ||
-            (limit * tol < limit  - actual))
+        done_ = !((limit * tol < actual - limit ) ||
+                  (limit * tol < limit  - actual));
 # endif // (NSFX_TEST_TOOL_OPERATOR == n)
+        if (!done_)
         {
             data_ = std::unique_ptr<Data>(new Data(
                 std::forward<A>(actual),
@@ -820,7 +825,7 @@ public:
 
     bool Done(void) const BOOST_NOEXCEPT
     {
-        return !data_;
+        return done_;
     }
 
     std::ostream& GetStream(void) const BOOST_NOEXCEPT
@@ -834,10 +839,11 @@ public:
     {
         data_->CommitResult(type, level, std::forward<Desc>(desc),
                             func, file, lineno);
-        data_ = nullptr;
+        done_ = true;
     }
 
 private:
+    bool done_;
     std::unique_ptr<Data> data_; ///< Available only if the test assertion failed.
                                  ///< Allocated on heap to be less stack-consuming.
 
