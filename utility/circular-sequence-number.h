@@ -18,6 +18,7 @@
 
 
 #include <nsfx/utility/config.h>
+#include <nsfx/utility/tags.h> // compare_tag
 #include <boost/integer.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/core/swap.hpp>
@@ -59,11 +60,8 @@ public:
 
 
 /////////////////////////////////////////////////////////////////////////////////
-namespace details/*{{{*/
+namespace detail/*{{{*/
 {
-
-template<size_t bits>
-struct circular_sequence_number_bits_tag {};
 
 ////////////////////////////////////////
 // Increment.
@@ -90,7 +88,7 @@ inline bool
 circular_sequence_number_less_than(
     typename CircularSequenceNumberTraits<bits>::ValueType lhs,
     typename CircularSequenceNumberTraits<bits>::ValueType rhs,
-    circular_sequence_number_bits_tag</*bits*/1>)
+    /*bits==1*/eq_t<1>)
 {
     return lhs != rhs;
 }
@@ -100,7 +98,7 @@ inline bool
 circular_sequence_number_less_than(
     typename CircularSequenceNumberTraits<bits>::ValueType lhs,
     typename CircularSequenceNumberTraits<bits>::ValueType rhs,
-    circular_sequence_number_bits_tag<bits/*>1*/>)
+    /*bits>1*/gt_t<1>)
 {
     bool result = false;
     if (lhs < rhs)
@@ -121,7 +119,7 @@ inline bool
 circular_sequence_number_less_equal(
     typename CircularSequenceNumberTraits<bits>::ValueType lhs,
     typename CircularSequenceNumberTraits<bits>::ValueType rhs,
-    circular_sequence_number_bits_tag</*bits*/1>)
+    /*bits==1*/eq_t<1>)
 {
     return true;
 }
@@ -131,7 +129,7 @@ inline bool
 circular_sequence_number_less_equal(
     typename CircularSequenceNumberTraits<bits>::ValueType lhs,
     typename CircularSequenceNumberTraits<bits>::ValueType rhs,
-    circular_sequence_number_bits_tag<bits/*>1*/>)
+    /*bits>1*/gt_t<1>)
 {
     bool result = false;
     if (lhs <= rhs)
@@ -145,7 +143,7 @@ circular_sequence_number_less_equal(
     return result;
 }
 
-} // namespace details/*}}}*/
+} // namespace detail/*}}}*/
 
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -205,14 +203,14 @@ public:
 public:
     ThisType& operator++(void) BOOST_NOEXCEPT
     {
-        value_ = details::circular_sequence_number_inc<bits>(value_);
+        value_ = detail::circular_sequence_number_inc<bits>(value_);
         return *this;
     }
 
     ThisType operator++(int) BOOST_NOEXCEPT
     {
         ValueType old = value_;
-        value_ = details::circular_sequence_number_inc<bits>(value_);
+        value_ = detail::circular_sequence_number_inc<bits>(value_);
         return ThisType(old);
     }
 
@@ -220,16 +218,18 @@ public:
 public:
     bool operator< (const ThisType& rhs) const BOOST_NOEXCEPT
     {
-        return details::circular_sequence_number_less_than<bits>(
+        return detail::circular_sequence_number_less_than<bits>(
             value_, rhs.value_,
-            details::circular_sequence_number_bits_tag<bits>());
+            // eq_t<1> or gt_t<1>
+            typename compare_tag<1, bits>::type());
     }
 
     bool operator<=(const ThisType& rhs) const BOOST_NOEXCEPT
     {
-        return details::circular_sequence_number_less_equal<bits>(
+        return detail::circular_sequence_number_less_equal<bits>(
             value_, rhs.value_,
-            details::circular_sequence_number_bits_tag<bits>());
+            // eq_t<1> or gt_t<1>
+            typename compare_tag<1, bits>::type());
     }
 
     bool operator==(const ThisType& rhs) const BOOST_NOEXCEPT
@@ -244,16 +244,18 @@ public:
 
     bool operator> (const ThisType& rhs) const BOOST_NOEXCEPT
     {
-        return details::circular_sequence_number_less_than<bits>(
+        return detail::circular_sequence_number_less_than<bits>(
             rhs.value_, value_,
-            details::circular_sequence_number_bits_tag<bits>());
+            // eq_t<1> or gt_t<1>
+            typename compare_tag<1, bits>::type());
     }
 
     bool operator>=(const ThisType& rhs) const BOOST_NOEXCEPT
     {
-        return details::circular_sequence_number_less_equal<bits>(
+        return detail::circular_sequence_number_less_equal<bits>(
             rhs.value_, value_,
-            details::circular_sequence_number_bits_tag<bits>());
+            // eq_t<1> or gt_t<1>
+            typename compare_tag<1, bits>::type());
     }
 
     void swap(ThisType& rhs) BOOST_NOEXCEPT

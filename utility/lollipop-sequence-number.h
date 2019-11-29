@@ -58,14 +58,14 @@ public:
     // 1: only one number.
     // 2: two numbers.
     // 3: three or more numbers.
-    BOOST_STATIC_CONSTANT(size_t, CIRCULAR_SPACE =
+    BOOST_STATIC_CONSTANT(size_t, CIRCULAR_SPACE = (
         MAX_VALUE == START_VALUE     ? 1 :
-        MAX_VALUE == START_VALUE + 1 ? 2 : 3);
+        MAX_VALUE == START_VALUE + 1 ? 2 : 3));
 };/*}}}*/
 
 
 ////////////////////////////////////////////////////////////////////////////////
-namespace details/*{{{*/
+namespace detail/*{{{*/
 {
 
 template<size_t n> // n = CICURLAR_SPACE
@@ -201,7 +201,7 @@ lollipop_sequence_number_less_equal(
     return result;
 }
 
-} // namespace details
+} // namespace detail
 /*}}}*/
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -266,14 +266,14 @@ public:
 public:
     ThisType& operator++(void) BOOST_NOEXCEPT
     {
-        value_ = details::lollipop_sequence_number_inc<bits, start>(value_);
+        value_ = detail::lollipop_sequence_number_inc<bits, start>(value_);
         return *this;
     }
 
     ThisType operator++(int) BOOST_NOEXCEPT
     {
         ValueType old = value_;
-        value_ = details::lollipop_sequence_number_inc<bits, start>(value_);
+        value_ = detail::lollipop_sequence_number_inc<bits, start>(value_);
         return ThisType(old);
     }
 
@@ -281,17 +281,17 @@ public:
 public:
     bool operator< (const ThisType& rhs) const BOOST_NOEXCEPT
     {
-        typedef details::lollipop_sequence_number_circular_space_tag<
+        typedef detail::lollipop_sequence_number_circular_space_tag<
                     TraitsType::CIRCULAR_SPACE> tag;
-        return details::lollipop_sequence_number_less_than<bits, start>(
+        return detail::lollipop_sequence_number_less_than<bits, start>(
                 value_, rhs.value_, tag());
     }
 
     bool operator<=(const ThisType& rhs) const BOOST_NOEXCEPT
     {
-        typedef details::lollipop_sequence_number_circular_space_tag<
+        typedef detail::lollipop_sequence_number_circular_space_tag<
                     TraitsType::CIRCULAR_SPACE> tag;
-        return details::lollipop_sequence_number_less_equal<bits, start>(
+        return detail::lollipop_sequence_number_less_equal<bits, start>(
                 value_, rhs.value_, tag());
     }
 
@@ -307,17 +307,17 @@ public:
 
     bool operator> (const ThisType& rhs) const BOOST_NOEXCEPT
     {
-        typedef details::lollipop_sequence_number_circular_space_tag<
+        typedef detail::lollipop_sequence_number_circular_space_tag<
                     TraitsType::CIRCULAR_SPACE> tag;
-        return details::lollipop_sequence_number_less_than<bits, start>(
+        return detail::lollipop_sequence_number_less_than<bits, start>(
                 rhs.value_, value_, tag());
     }
 
     bool operator>=(const ThisType& rhs) const BOOST_NOEXCEPT
     {
-        typedef details::lollipop_sequence_number_circular_space_tag<
+        typedef detail::lollipop_sequence_number_circular_space_tag<
                     TraitsType::CIRCULAR_SPACE> tag;
-        return details::lollipop_sequence_number_less_equal<bits, start>(
+        return detail::lollipop_sequence_number_less_equal<bits, start>(
                 rhs.value_, value_, tag());
     }
 
