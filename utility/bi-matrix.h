@@ -18,18 +18,20 @@
 
 
 #include <nsfx/utility/config.h>
+#include <nsfx/utility/array-tool.h>
 #include <boost/core/swap.hpp>
-#include <type_traits> // is_pod
-#include <cstring> // memset
 #include <iterator>
 
+/**
+ * @ingroup Utility
+ * @{
+ */
 
 NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
- * @ingroup Utility
  * @brief The storage layout of a `bi_matrix`.
  */
 enum bi_matrix_layout_t
@@ -44,7 +46,6 @@ namespace detail /*{{{*/
 {
 
 /**
- * @ingroup Utility
  * @brief A matrix with base indices.
  *
  * @tparam T The type of the element.
@@ -286,7 +287,6 @@ bi_matrix_column_iterator_deref(bi_matrix_column_iterator<T, I, J, S> it)
 
 ////////////////////////////////////////
 /**
- * @ingroup Utility
  * @brief Create a matrix.
  *
  * @tparam T The type of the element.
@@ -316,19 +316,41 @@ bi_matrix_init(bi_matrix<T, I, J, S>* mx, size_t rows, size_t columns)
     if (size)
     {
         mx->data_ = (T*)::operator new (size * sizeof (T));
-        if (std::is_pod<T>::value)
-        {
-            std::memset(mx->data_, 0, size * sizeof (T));
-        }
-        else
-        {
-            T* p = mx->data_;
-            T* last = p + size;
-            while (p != last)
-            {
-                new (p++) T();
-            }
-        }
+        array_init(mx->data_, size);
+    }
+}
+
+/**
+ * @brief Create a matrix with a default value.
+ *
+ * @tparam T The type of the element.
+ * @tparam I The index of the first row.
+ * @tparam J The index of the first column.
+ * @tparam S The storage orgnization.
+ *           Can be `bi_matrix_row_major` or `bi_matrix_column_major`.
+ *           Defaults to `bi_matrix_row_major`.
+ *
+ * @param[out] mx      The matrix.
+ *                     It **must** be an *uninitialized* matrix.
+ * @param[in]  rows    The number of rows.
+ * @param[in]  columns The number of columns.
+ * @param[in]  v       The default value.
+ */
+template<class T, size_t I, size_t J, bi_matrix_layout_t S>
+inline void
+bi_matrix_init(bi_matrix<T, I, J, S>* mx, size_t rows, size_t columns,
+               const T& v)
+{
+    typedef bi_matrix<T, I, J, S>  matrix_type;
+    size_t size = rows * columns;
+    BOOST_ASSERT(mx);
+    mx->size1_ = rows;
+    mx->size2_ = columns;
+    mx->data_  = 0;
+    if (size)
+    {
+        mx->data_ = (T*)::operator new (size * sizeof (T));
+        array_init(mx->data_, size, v);
     }
 }
 
@@ -337,6 +359,7 @@ inline void
 bi_matrix_destroy(bi_matrix<T, I, J, S>* mx)
 {
     BOOST_ASSERT(mx);
+    array_destroy(mx->data_, mx->size1_ * mx->size2_);
     ::operator delete (mx->data_);
 }
 
@@ -550,7 +573,6 @@ bi_matrix_end(const bi_matrix<T, I, J, S>* mx) BOOST_NOEXCEPT
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
- * @ingroup Utility
  * @brief An matrix with base indices.
  *
  * @tparam T The type of the element.
@@ -2762,6 +2784,18 @@ public:
         bi_matrix_init(&mx_, rows, columns);
     }
 
+    /**
+     * @brief Construct an matrix with a default value.
+     *
+     * @param[in] size The size of the matrix.
+     */
+    BiMatrix(size_type rows, size_type columns, const T& v)
+    {
+        BOOST_ASSERT(rows <= max_size1());
+        BOOST_ASSERT(columns <= max_size2());
+        bi_matrix_init(&mx_, rows, columns, v);
+    }
+
     ~BiMatrix(void)
     {
         bi_matrix_destroy(&mx_);
@@ -3341,5 +3375,8 @@ end2(const BiMatrix<T, I, J, S>& mx) BOOST_NOEXCEPT
 
 NSFX_CLOSE_NAMESPACE
 
+/**
+ * @}
+ */
 
 #endif // BI_MATRIX_H__B32755F1_A11E_47D0_A318_C215FDDFD5A0

@@ -18,11 +18,14 @@
 
 
 #include <nsfx/utility/config.h>
+#include <nsfx/utility/array-tool.h>
 #include <boost/core/swap.hpp>
-#include <type_traits> // is_pod
-#include <cstring> // memset, memcpy
 #include <iterator>
 
+/**
+ * @ingroup Utility
+ * @{
+ */
 
 NSFX_OPEN_NAMESPACE
 
@@ -32,7 +35,6 @@ namespace detail /*{{{*/
 {
 
 /**
- * @ingroup Utility
  * @brief An array with a base index.
  *
  * @tparam T The type of the element.
@@ -47,7 +49,6 @@ struct bi_array
 
 ////////////////////////////////////////
 /**
- * @ingroup Utility
  * @brief Create an array.
  *
  * @tparam T The type of the element.
@@ -70,19 +71,33 @@ bi_array_init(bi_array<T, I>* ar, size_t size)
     if (size)
     {
         ar->data_ = (T*)::operator new (size * sizeof (T));
-        if (std::is_pod<T>::value)
-        {
-            std::memset(ar->data_, 0, size * sizeof (T));
-        }
-        else
-        {
-            T* p = ar->data_;
-            T* last = p + size;
-            while (p != last)
-            {
-                new (p++) T();
-            }
-        }
+        array_init(ar->data_, ar->size_);
+    }
+}
+
+/**
+ * @brief Create an array with a default value.
+ *
+ * @tparam T The type of the element.
+ * @tparam I The index of the first element.
+ *
+ * @param[out] ar   The array.
+ *                  It **must** be an *uninitialized* array.
+ * @param[in]  size The size of the array.
+ * @param[in]  v    The default value.
+ */
+template<class T, size_t I>
+inline void
+bi_array_init(bi_array<T, I>* ar, size_t size, const T& v)
+{
+    typedef bi_array<T, I>  array_type;
+    BOOST_ASSERT(ar);
+    ar->size_ = size;
+    ar->data_ = nullptr;
+    if (size)
+    {
+        ar->data_ = (T*)::operator new (size * sizeof (T));
+        array_init(ar->data_, ar->size_, v);
     }
 }
 
@@ -99,6 +114,7 @@ inline void
 bi_array_destroy(bi_array<T, I>* ar)
 {
     BOOST_ASSERT(ar);
+    array_destroy(ar->data_, ar->size_);
     ::operator delete(ar->data_);
 }
 
@@ -125,20 +141,7 @@ bi_array_copy(const bi_array<T, I>* src, bi_array<T, I>* dst)
     {
         dst->size_ = src->size_;
         dst->data_ = (T*)::operator new (src->size_ * sizeof (T));
-        if (std::is_pod<T>::value)
-        {
-            std::memcpy(dst->data_, src->data_, src->size_ * sizeof (T));
-        }
-        else
-        {
-            T* d = dst->data_;
-            T* s = src->data_;
-            T* last = s + src->size_;
-            while (s != last)
-            {
-                new (d++) T(*s++);
-            }
-        }
+        array_copy_init(src->data_, dst->data_, src->size_);
     }
 }
 
@@ -211,7 +214,6 @@ bi_array_end(const bi_array<T, I>* ar) BOOST_NOEXCEPT
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
- * @ingroup Utility
  * @brief An array with a base index.
  *
  * @tparam T The type of the element.
@@ -680,7 +682,6 @@ operator-(const BiArrayIterator<T, I>& lhs,
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
- * @ingroup Utility
  * @brief An array with a base index.
  *
  * @tparam T The type of the element.
@@ -723,6 +724,11 @@ public:
     explicit BiArray(size_type size)
     {
         bi_array_init(&ar_, size);
+    }
+
+    BiArray(size_type size, const T& v)
+    {
+        bi_array_init(&ar_, size, v);
     }
 
     ~BiArray(void)
@@ -928,5 +934,8 @@ end(const BiArray<T, I>& ar) BOOST_NOEXCEPT
 
 NSFX_CLOSE_NAMESPACE
 
+/**
+ * @}
+ */
 
 #endif // BI_ARRAY_H__1BECB3B6_CA0A_4A46_AB9C_7F2E0838EAEC
