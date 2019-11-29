@@ -24,11 +24,12 @@
 #include <nsfx/test/case.h>
 #include <nsfx/test/suite.h>
 #include <nsfx/test/runner.h>
-#include <memory> // unique_ptr
+#include <nsfx/utility/tags.h> // compare_tag
+#include <nsfx/utility/hex-output.h> // as_hex()
 #include <sstream>
 #include <iomanip>
 #include <locale> // locale, isprint
-#include <type_traits> // enable_if, is_integral
+#include <type_traits> // is_integral
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -67,44 +68,6 @@
 NSFX_TEST_OPEN_NAMESPACE
 
 
-namespace detail { /*{{{*/
-
-template<class T>
-struct IntWrapper
-{
-    IntWrapper(T value) : value_(value) {}
-    T value_;
-};
-
-template<class Char, class CharTraits, class T>
-inline typename
-std::enable_if<sizeof (T) == 8, std::basic_ostream<Char, CharTraits>&>::type
-operator<<(std::basic_ostream<Char, CharTraits>& os, IntWrapper<T> v)
-{
-    return os << "0x"
-              << std::setw(sizeof (T)) << std::setfill('0') << std::hex
-              << std::nouppercase
-              << (uint32_t)(((uint64_t)(v.value_) & 0xffffffff00000000) >> 32)
-              << '`'
-              << std::setw(sizeof (T)) << std::setfill('0') << std::hex
-              << std::nouppercase
-              << (uint32_t)(((uint64_t)(v.value_) & 0x00000000ffffffff));
-}
-
-template<class Char, class CharTraits, class T>
-inline typename
-std::enable_if<sizeof (T) < 8, std::basic_ostream<Char, CharTraits>&>::type
-operator<<(std::basic_ostream<Char, CharTraits>& os, IntWrapper<T> v)
-{
-    typedef typename std::make_unsigned<T>::type  U;
-    return os << "0x"
-              << std::setw(sizeof (T) * 2) << std::setfill('0') << std::hex
-              << std::nouppercase << (unsigned int)((U)(v.value_));
-}
-
-} // namespace detail /*}}}*/
-
-
 template<class T, bool integral = std::is_integral<T>::value>
 struct ValueFormatter;
 
@@ -131,19 +94,14 @@ struct ValueFormatter<T, /*integral*/false>
 template<class T>
 struct ValueFormatter<T, /*integral*/true>
 {
-    enum kind {
-        i8,
-        ibig,
-    };
-    template<kind x> struct kind_tag {};
-
     std::string operator()(T value) const
     {
-        typedef kind_tag<sizeof (T) == 1 ? i8 : ibig> tag;
+        // eq_t<8> or gt_t<8>.
+        typedef typename compare_tag<8, sizeof (T) * 8>::type  tag;
         return operator()(value, tag());
     }
 
-    std::string operator()(T value, kind_tag<i8>) const
+    std::string operator()(T value, eq_t<8>) const
     {
         std::ostringstream oss;
         if (std::isprint(value, std::locale()))
@@ -154,26 +112,26 @@ struct ValueFormatter<T, /*integral*/true>
         {
             oss << ' ';
         }
-        oss << " (" << detail::IntWrapper<T>(value) << ")";
+        oss << " (" << as_hex(value) << ")";
         return oss.str();
     }
 
-    std::string operator()(T value, kind_tag<ibig>) const
+    std::string operator()(T value, gt_t<8>) const
     {
         std::ostringstream oss;
-        oss << value << " (" << detail::IntWrapper<T>(value) << ")";
+        oss << value << " (" << as_hex(value) << ")";
         return oss.str();
     }
 
 };
 
 template<class T>
-struct ValueFormatter<T*, false>
+struct ValueFormatter<T*, /*integral*/false>
 {
     std::string operator()(T* value) const
     {
         std::ostringstream oss;
-        oss << detail::IntWrapper<ptrdiff_t>((ptrdiff_t)(value));
+        oss << as_hex(value);
         return oss.str();
     }
 };
