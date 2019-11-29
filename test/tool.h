@@ -28,7 +28,7 @@
 #include <sstream>
 #include <iomanip>
 #include <locale> // locale, isprint
-#include <type_traits> // integral_constant, is_same, common_type, is_integral
+#include <type_traits> // enable_if, is_integral
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -67,8 +67,58 @@
 NSFX_TEST_OPEN_NAMESPACE
 
 
+namespace detail { /*{{{*/
+
+template<class T>
+struct IntWrapper
+{
+    IntWrapper(T value) : value_(value) {}
+    T value_;
+};
+
+template<class Char, class CharTraits, class T>
+inline typename
+std::enable_if<sizeof (T) == 8, std::basic_ostream<Char, CharTraits>&>::type
+operator<<(std::basic_ostream<Char, CharTraits>& os, IntWrapper<T> v)
+{
+    return os << "0x"
+              << std::setw(sizeof (T)) << std::setfill('0') << std::hex
+              << std::nouppercase
+              << (uint32_t)(((uint64_t)(v.value_) & 0xffffffff00000000) >> 32)
+              << '`'
+              << std::setw(sizeof (T)) << std::setfill('0') << std::hex
+              << std::nouppercase
+              << (uint32_t)(((uint64_t)(v.value_) & 0x00000000ffffffff));
+}
+
+template<class Char, class CharTraits, class T>
+inline typename
+std::enable_if<sizeof (T) < 8, std::basic_ostream<Char, CharTraits>&>::type
+operator<<(std::basic_ostream<Char, CharTraits>& os, IntWrapper<T> v)
+{
+    typedef typename std::make_unsigned<T>::type  U;
+    return os << "0x"
+              << std::setw(sizeof (T) * 2) << std::setfill('0') << std::hex
+              << std::nouppercase << (unsigned int)((U)(v.value_));
+}
+
+} // namespace detail /*}}}*/
+
+
 template<class T, bool integral = std::is_integral<T>::value>
-struct ValueFormatter
+struct ValueFormatter;
+
+template<>
+struct ValueFormatter<bool>
+{
+    const char* operator()(bool value) const BOOST_NOEXCEPT
+    {
+        return value ? "true" : "false";
+    }
+};
+
+template<class T>
+struct ValueFormatter<T, /*integral*/false>
 {
     std::string operator()(T value) const
     {
@@ -78,29 +128,22 @@ struct ValueFormatter
     }
 };
 
-template<>
-struct ValueFormatter<bool>
-{
-    std::string operator()(bool value) const
-    {
-        std::ostringstream oss;
-        oss << std::boolalpha << value;
-        return oss.str();
-    }
-};
-
 template<class T>
-struct ValueFormatter<T, true>
+struct ValueFormatter<T, /*integral*/true>
 {
+    enum kind {
+        i8,
+        ibig,
+    };
+    template<kind x> struct kind_tag {};
+
     std::string operator()(T value) const
     {
-        return operator()(
-            value,
-            typename std::integral_constant<size_t, sizeof (T)>::type());
+        typedef kind_tag<sizeof (T) == 1 ? i8 : ibig> tag;
+        return operator()(value, tag());
     }
 
-    std::string operator()(
-        T value, typename std::integral_constant<size_t, 1>::type) const
+    std::string operator()(T value, kind_tag<i8>) const
     {
         std::ostringstream oss;
         if (std::isprint(value, std::locale()))
@@ -111,41 +154,14 @@ struct ValueFormatter<T, true>
         {
             oss << ' ';
         }
-        oss << " (0x"
-            << std::setw(sizeof (T) * 2) << std::setfill('0') << std::hex
-            << std::nouppercase << (static_cast<size_t>(value) & 0xff)
-            << ")";
+        oss << " (" << detail::IntWrapper<T>(value) << ")";
         return oss.str();
     }
 
-    std::string operator()(
-        T value, typename std::integral_constant<size_t, 2>::type) const
+    std::string operator()(T value, kind_tag<ibig>) const
     {
         std::ostringstream oss;
-        oss << value << " (0x"
-            << std::setw(sizeof (T) * 2) << std::setfill('0') << std::hex
-            << std::nouppercase << (static_cast<size_t>(value) & 0xffff)
-            << ")";
-        return oss.str();
-    }
-
-    std::string operator()(
-        T value, typename std::integral_constant<size_t, 4>::type) const
-    {
-        std::ostringstream oss;
-        oss << value << " (0x"
-            << std::setw(sizeof (T) * 2) << std::setfill('0') << std::hex
-            << std::nouppercase << value << ")";
-        return oss.str();
-    }
-
-    std::string operator()(
-        T value, typename std::integral_constant<size_t, 8>::type) const
-    {
-        std::ostringstream oss;
-        oss << value << " (0x"
-            << std::setw(sizeof (T) * 2) << std::setfill('0') << std::hex
-            << std::nouppercase << value << ")";
+        oss << value << " (" << detail::IntWrapper<T>(value) << ")";
         return oss.str();
     }
 
@@ -157,8 +173,7 @@ struct ValueFormatter<T*, false>
     std::string operator()(T* value) const
     {
         std::ostringstream oss;
-        oss << "0x" << std::setw(sizeof (T*) * 2) << std::setfill('0')
-            << std::hex << std::nouppercase << value;
+        oss << detail::IntWrapper<ptrdiff_t>((ptrdiff_t)(value));
         return oss.str();
     }
 };
@@ -186,10 +201,61 @@ struct ValueFormatter<std::string>
 };
 
 template<class T>
-inline std::string FormatValue(T value)
+inline std::string FormatValue(const T& value)
 {
     return ValueFormatter<T>()(value);
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+class MessageChecker/*{{{*/
+{
+    struct Data
+    {
+        void ShowMessage(void)
+        {
+            runner::ShowMessage(oss_.str());
+        }
+
+        std::ostream& GetStream(void) BOOST_NOEXCEPT
+        {
+            return oss_;
+        }
+
+        std::ostringstream oss_;
+    };
+
+public:
+    MessageChecker(void) :
+        data_(new Data)
+    {}
+
+    MessageChecker(MessageChecker&& rhs) BOOST_NOEXCEPT :
+        data_(rhs.data_)
+    {
+        rhs.data_ = nullptr;
+    }
+
+    bool Done(void) const BOOST_NOEXCEPT
+    {
+        return !data_;
+    }
+
+    std::ostream& GetStream(void) const BOOST_NOEXCEPT
+    {
+        return data_->GetStream();
+    }
+
+    void ShowMessage(void)
+    {
+        data_->ShowMessage();
+        delete data_;
+        data_ = nullptr;
+    }
+
+private:
+    Data* data_;
+};/*}}}*/
 
 
 NSFX_TEST_CLOSE_NAMESPACE
@@ -208,10 +274,9 @@ NSFX_TEST_CLOSE_NAMESPACE
  */
 #define NSFX_TEST_MESSAGE()                                                     \
     /* Set the message for output. */                                           \
-    if (bool go = true)                                                         \
-    for (std::ostringstream oss; go;                                            \
-         ::nsfx::test::runner::ShowMessage(oss.str()), go = false)              \
-        oss
+    for (auto checker = ::nsfx::test::MessageChecker();                         \
+         !checker.Done(); checker.ShowMessage())                                \
+        checker.GetStream()
 /*}}}*/
 
 
@@ -601,15 +666,13 @@ class NSFX_TEST_TOOL_CHECKER /*{{{*/
             actual_(std::forward<A>(actual))
         {}
 
-        template<class Desc>
-        void CommitResult(ToolType type, ToolLevel level, Desc&& desc,
+        void CommitResult(ToolType type, ToolLevel level, const char* desc,
                           const char* func, const char* file, size_t lineno)
         {
-            runner::CommitResult(
-                std::unique_ptr<Result>(new Result(
-                    type, level, std::forward<Desc>(desc),
+            runner::CommitResult(Result(
+                    type, level, desc,
                     FormatValue(actual_),
-                    func, file, lineno, oss_.str())));
+                    func, file, lineno, oss_.str()));
         }
 
         std::ostream& GetStream(void) BOOST_NOEXCEPT
@@ -625,20 +688,26 @@ public:
     template<class A>
     NSFX_TEST_TOOL_CHECKER(A&& actual)
     {
-        done_ = (NSFX_TEST_TOOL_OPERATOR actual);
-        if (!done_)
+        if (NSFX_TEST_TOOL_OPERATOR actual)
+        {
+            data_ = nullptr;
+        }
+        else
         {
             // Store the result of the evaluation if the test assertion failed.
-            data_ = std::unique_ptr<Data>(new Data(std::forward<A>(actual)));
+            data_ = new Data(std::forward<A>(actual));
         }
     }
 
     NSFX_TEST_TOOL_CHECKER(NSFX_TEST_TOOL_CHECKER&& rhs) BOOST_NOEXCEPT :
-        data_(std::move(rhs.data_)) {}
+        data_(rhs.data_)
+    {
+        rhs.data_ = nullptr;
+    }
 
     bool Done(void) const BOOST_NOEXCEPT
     {
-        return done_;
+        return !data_;
     }
 
     std::ostream& GetStream(void) const BOOST_NOEXCEPT
@@ -646,19 +715,18 @@ public:
         return data_->GetStream();
     }
 
-    template<class Desc>
-    void CommitResult(ToolType type, ToolLevel level, Desc&& desc,
+    void CommitResult(ToolType type, ToolLevel level, const char* desc,
                       const char* func, const char* file, size_t lineno)
     {
-        data_->CommitResult(type, level, std::forward<Desc>(desc),
-                            func, file, lineno);
-        done_ = true;
+        data_->CommitResult(type, level, desc, func, file, lineno);
+        delete data_;
+        data_ = nullptr;
     }
 
 private:
-    bool  done_;
-    std::unique_ptr<Data> data_; ///< Available only if the test assertion failed.
-                                 ///< Allocated on heap to be less stack-consuming.
+    Data* data_; ///< Available only if the test assertion failed.
+                 ///< Allocated on heap to be less stack-consuming.
+                 ///< It **must** be deallocated by calling `CommitResult()`.
 }; /*}}}*/
 
 // MakeChecker
@@ -684,15 +752,13 @@ class NSFX_TEST_TOOL_CHECKER /*{{{*/
             limit_(std::forward<L>(limit))
         {}
 
-        template<class Desc>
-        void CommitResult(ToolType type, ToolLevel level, Desc&& desc,
+        void CommitResult(ToolType type, ToolLevel level, const char* desc,
                           const char* func, const char* file, size_t lineno)
         {
-            runner::CommitResult(
-                std::unique_ptr<Result>(new Result(
-                    type, level, std::forward<Desc>(desc),
+            runner::CommitResult(Result(
+                    type, level, desc,
                     FormatValue(actual_), FormatValue(limit_),
-                    func, file, lineno, oss_.str())));
+                    func, file, lineno, oss_.str()));
         }
 
         std::ostream& GetStream(void) BOOST_NOEXCEPT
@@ -709,21 +775,26 @@ public:
     template<class A, class L>
     NSFX_TEST_TOOL_CHECKER(A&& actual, L&& limit)
     {
-        done_ = (actual NSFX_TEST_TOOL_OPERATOR limit);
-        if (!done_)
+        if (actual NSFX_TEST_TOOL_OPERATOR limit)
         {
-            data_ = std::unique_ptr<Data>(new Data(
-                std::forward<A>(actual),
-                std::forward<L>(limit)));
+            data_ = nullptr;
+        }
+        else
+        {
+            data_ = new Data(std::forward<A>(actual),
+                             std::forward<L>(limit));
         }
     }
 
     NSFX_TEST_TOOL_CHECKER(NSFX_TEST_TOOL_CHECKER&& rhs) BOOST_NOEXCEPT :
-        data_(std::move(rhs.data_)) {}
+        data_(rhs.data_)
+    {
+        rhs.data_ = nullptr;
+    }
 
     bool Done(void) const BOOST_NOEXCEPT
     {
-        return done_;
+        return !data_;
     }
 
     std::ostream& GetStream(void) const BOOST_NOEXCEPT
@@ -731,20 +802,18 @@ public:
         return data_->GetStream();
     }
 
-    template<class Desc>
-    void CommitResult(ToolType type, ToolLevel level, Desc&& desc,
+    void CommitResult(ToolType type, ToolLevel level, const char* desc,
                       const char* func, const char* file, size_t lineno)
     {
-        data_->CommitResult(type, level, std::forward<Desc>(desc),
-                            func, file, lineno);
-        done_ = true;
+        data_->CommitResult(type, level, desc, func, file, lineno);
+        delete data_;
+        data_ = nullptr;
     }
 
 private:
-    bool done_;
-    std::unique_ptr<Data> data_; ///< Available only if the test assertion failed.
-                                 ///< Allocated on heap to be less stack-consuming.
-
+    Data* data_; ///< Available only if the test assertion failed.
+                 ///< Allocated on heap to be less stack-consuming.
+                 ///< It **must** be deallocated by calling `CommitResult()`.
 };/*}}}*/
 
 // MakeChecker
@@ -774,20 +843,14 @@ class NSFX_TEST_TOOL_CHECKER /*{{{*/
             tol_(std::forward<T>(tol))
         {}
 
-        template<class Desc>
-        void CommitResult(ToolType type, ToolLevel level, Desc&& desc,
+        void CommitResult(ToolType type, ToolLevel level, const char* desc,
                           const char* func, const char* file, size_t lineno)
         {
-            runner::CommitResult(
-                std::unique_ptr<Result>(new Result(
-                    type, level, std::forward<Desc>(desc),
+            runner::CommitResult(Result(
+                    type, level, desc,
                     FormatValue(actual_), FormatValue(limit_),
-# if (NSFX_TEST_TOOL_OPERATOR == 0) // Absolute closeness
                     FormatValue(tol_),
-# else // !(NSFX_TEST_TOOL_OPERATOR == 0) // Relative closeness
-                    FormatValue(limit_* tol_),
-# endif // (NSFX_TEST_TOOL_OPERATOR == n)
-                    func, file, lineno, oss_.str())));
+                    func, file, lineno, oss_.str()));
         }
 
         std::ostream& GetStream(void) BOOST_NOEXCEPT
@@ -806,26 +869,36 @@ public:
     NSFX_TEST_TOOL_CHECKER(A&& actual, L&& limit, T&& tol)
     {
 # if (NSFX_TEST_TOOL_OPERATOR == 0) // Absolute closeness
-        done_ = !((tol < actual - limit) || (tol < limit - actual));
-# else // !(NSFX_TEST_TOOL_OPERATOR == 0) // Relative closeness
-        done_ = !((limit * tol < actual - limit ) ||
-                  (limit * tol < limit  - actual));
-# endif // (NSFX_TEST_TOOL_OPERATOR == n)
-        if (!done_)
+        if ((tol < actual - limit) || (tol < limit - actual))
         {
-            data_ = std::unique_ptr<Data>(new Data(
-                std::forward<A>(actual),
-                std::forward<L>(limit),
-                std::forward<T>(tol)));
+            data_ = new Data(std::forward<A>(actual),
+                             std::forward<L>(limit),
+                             std::forward<T>(tol));
+        }
+# else // !(NSFX_TEST_TOOL_OPERATOR == 0) // Relative closeness
+        auto tol2 = limit * tol; // Evaluate only once.
+        if ((tol2 < actual - limit ) || (tol2 < limit  - actual))
+        {
+            data_ = new Data(std::forward<A>(actual),
+                             std::forward<L>(limit),
+                             std::move(tol2));
+        }
+# endif // (NSFX_TEST_TOOL_OPERATOR == n)
+        else
+        {
+            data_ = nullptr;
         }
     }
 
     NSFX_TEST_TOOL_CHECKER(NSFX_TEST_TOOL_CHECKER&& rhs) BOOST_NOEXCEPT :
-        data_(std::move(rhs.data_)) {}
+        data_(rhs.data_)
+    {
+        rhs.data_ = nullptr;
+    }
 
     bool Done(void) const BOOST_NOEXCEPT
     {
-        return done_;
+        return !data_;
     }
 
     std::ostream& GetStream(void) const BOOST_NOEXCEPT
@@ -833,20 +906,18 @@ public:
         return data_->GetStream();
     }
 
-    template<class Desc>
-    void CommitResult(ToolType type, ToolLevel level, Desc&& desc,
+    void CommitResult(ToolType type, ToolLevel level, const char* desc,
                       const char* func, const char* file, size_t lineno)
     {
-        data_->CommitResult(type, level, std::forward<Desc>(desc),
-                            func, file, lineno);
-        done_ = true;
+        data_->CommitResult(type, level, desc, func, file, lineno);
+        delete data_;
+        data_ = nullptr;
     }
 
 private:
-    bool done_;
-    std::unique_ptr<Data> data_; ///< Available only if the test assertion failed.
-                                 ///< Allocated on heap to be less stack-consuming.
-
+    Data* data_; ///< Available only if the test assertion failed.
+                 ///< Allocated on heap to be less stack-consuming.
+                 ///< It **must** be deallocated by calling `CommitResult()`.
 }; /*}}}*/
 
 // MakeChecker

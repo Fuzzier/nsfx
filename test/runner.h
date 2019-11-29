@@ -21,7 +21,6 @@
 #include <nsfx/test/case.h>
 #include <nsfx/test/suite.h>
 #include <nsfx/test/logger.h>
-#include <memory> // unique_ptr
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -97,13 +96,13 @@ public:
      * A test result is committed when a test assertion has failed.
      * If the test level is \c TestLevel::ASSERT, the stop flag is set.
      */
-    void CommitResult(std::unique_ptr<Result>&& result)
+    void CommitResult(Result&& result)
     {
-        if (result->GetToolLevel() == ToolLevel::ASSERT)
+        if (result.GetToolLevel() == ToolLevel::ASSERT)
         {
             SetStopFlag();
         }
-        ShowResult(&*result);
+        ShowResult(&result);
         GetActiveCase()->AddResult(std::move(result));
     }
 
@@ -370,7 +369,7 @@ inline bool GetStopFlag(void)
     return Runner::GetInstance()->GetStopFlag();
 }
 
-inline void CommitResult(std::unique_ptr<Result>&& result)
+inline void CommitResult(Result&& result)
 {
     Runner::GetInstance()->CommitResult(std::move(result));
 }

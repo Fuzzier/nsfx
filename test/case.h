@@ -19,7 +19,7 @@
 #include <nsfx/test/config.h>
 #include <nsfx/test/result.h>
 #include <nsfx/test/visitor-concept.h>
-#include <memory>
+#include <memory> // unique_ptr
 
 
 NSFX_TEST_OPEN_NAMESPACE
@@ -101,7 +101,7 @@ public:
         impl_->Run();
     }
 
-    void AddResult(std::unique_ptr<Result>&& result)
+    void AddResult(Result&& result)
     {
         results_.push_back(std::move(result));
     }
@@ -148,7 +148,7 @@ private:
     /**
      * @brief The test results of failed tests.
      */
-    vector<std::unique_ptr<Result>> results_;
+    vector<Result> results_;
 
     std::unique_ptr<Impl> impl_;
 
