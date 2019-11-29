@@ -113,6 +113,14 @@ NSFX_TEST_SUITE(VirtualTimePoint)
         NSFX_TEST_EXPECT_EQ(tmax.GetDuration(), Duration::Max());
     }
 
+    NSFX_TEST_CASE(Boolean)
+    {
+        TimePoint t0;
+        NSFX_TEST_EXPECT(!t0);
+        TimePoint t1(Duration(1));
+        NSFX_TEST_EXPECT(!!t1);
+    }
+
 }
 
 

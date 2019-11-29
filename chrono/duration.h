@@ -847,7 +847,19 @@ public:
     {
         return Duration(INT64_MAX);
     }
+    /*}}}*/
 
+    // Boolean./*{{{*/
+    /**
+     * @brief A shortcut to check whether a duration is zero.
+     *
+     * @return The return value equals to `*this == Duration::Zero()`, which
+     *         also equals to `*this == Duration()`.
+     */
+    bool operator!(void) const BOOST_NOEXCEPT
+    {
+        return !count_;
+    }
     /*}}}*/
 
 private:

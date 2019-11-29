@@ -166,7 +166,19 @@ public:
     {
         return TimePoint(Duration::Max());
     }
+    /*}}}*/
 
+    // Boolean./*{{{*/
+    /**
+     * @brief A shortcut to check whether a time point is at the epoch.
+     *
+     * @return The return value equals to `*this == TimePoint::Epoch()`, which
+     *         also equals to `*this == TimePoint()`.
+     */
+    bool operator!(void) const BOOST_NOEXCEPT
+    {
+        return !dt_;
+    }
     /*}}}*/
 
 private:

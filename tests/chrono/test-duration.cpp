@@ -260,6 +260,14 @@ NSFX_TEST_SUITE(Duration)
                             std::numeric_limits<nsfx::chrono::count_t>::max());
     }
 
+    NSFX_TEST_CASE(Boolean)
+    {
+        Duration dt0;
+        NSFX_TEST_EXPECT(!dt0);
+        Duration dt1(1);
+        NSFX_TEST_EXPECT(!!dt1);
+    }
+
     NSFX_TEST_CASE(Double)
     {
         Duration dt;

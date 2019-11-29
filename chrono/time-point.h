@@ -69,6 +69,7 @@ public:
         Swappable();
         IO();
         Limits();
+        Boolean();
     }
 
 private:
@@ -133,6 +134,12 @@ private:
         TimePoint epoch = TimePoint::Epoch();
         TimePoint tmin  = TimePoint::Min();
         TimePoint tmax  = TimePoint::Max();
+    }
+
+    void Boolean(void)
+    {
+        TimePoint epoch = TimePoint::Epoch();
+        bool f = !epoch;
     }
 
 };
