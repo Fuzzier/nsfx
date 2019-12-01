@@ -28,7 +28,8 @@ NSFX_TEST_SUITE(ZcBufferIterator)
         b0.AddAtStart(100);
         b0.AddAtEnd(100);
         // [600 s 100 zs 300 ze 100 e 200]
-        nsfx::ZcBufferIterator it0 = b0.begin();
+        nsfx::ZcBufferIterator it0;
+        it0 = b0.begin();
         nsfx::ZcBufferIterator it1 = b0.end();
 
         NSFX_TEST_EXPECT_EQ(it0.GetStart(),  b0.GetStart());
@@ -623,7 +624,8 @@ NSFX_TEST_SUITE(ConstZcBufferIterator)
         b0.AddAtStart(100);
         b0.AddAtEnd(100);
         // [600 s 100 zs 300 ze 100 e 200]
-        nsfx::ConstZcBufferIterator it0 = b0.cbegin();
+        nsfx::ConstZcBufferIterator it0;
+        it0 = b0.cbegin();
         nsfx::ConstZcBufferIterator it1 = b0.cend();
 
         NSFX_TEST_EXPECT_EQ(it0.GetStart(),  b0.GetStart());

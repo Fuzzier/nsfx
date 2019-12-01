@@ -90,6 +90,8 @@ private:
 
     // Xtructors.
 public:
+    BasicBufferIterator(void) BOOST_NOEXCEPT;
+
     BasicBufferIterator(uint8_t* bytes, size_t start,
                         size_t end, size_t cursor) BOOST_NOEXCEPT;
 
@@ -363,6 +365,14 @@ typedef BasicBufferIterator</*readOnly=*/false, /*zcAware=*/false>
 
 ////////////////////////////////////////////////////////////////////////////////
 // BufferIterator.
+inline BufferIterator::BasicBufferIterator(void) BOOST_NOEXCEPT :
+    bytes_(nullptr),
+    start_(0),
+    end_(0),
+    cursor_(0)
+{
+}
+
 inline BufferIterator::BasicBufferIterator(uint8_t* bytes,
                                            size_t start,
                                            size_t end,
