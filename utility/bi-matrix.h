@@ -2773,9 +2773,22 @@ public:
     }
 
     /**
+     * @brief Construct a squre matrix.
+     *
+     * @param[in] size The number of rows and columns of the matrix.
+     */
+    explicit BiMatrix(size_type size)
+    {
+        BOOST_ASSERT(size <= max_size1());
+        BOOST_ASSERT(size <= max_size2());
+        bi_matrix_init(&mx_, size, size);
+    }
+
+    /**
      * @brief Construct an matrix.
      *
-     * @param[in] size The size of the matrix.
+     * @param[in] rows    The number of rows of the matrix.
+     * @param[in] columns The number of columns of the matrix.
      */
     BiMatrix(size_type rows, size_type columns)
     {
