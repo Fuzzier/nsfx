@@ -22,6 +22,9 @@
 #include <nsfx/component/exception.h>
 #include <boost/type_index.hpp>
 #include <boost/preprocessor/iterate.hpp>
+#include <boost/preprocessor/repetition/enum.hpp>
+#include <boost/preprocessor/repetition/enum_params.hpp>
+#include <boost/preprocessor/repetition/enum_binary_params.hpp>
 #include <type_traits> // is_base_of
 #include <functional>
 

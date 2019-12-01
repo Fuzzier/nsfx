@@ -209,6 +209,7 @@ test-suite.exe : $(SRC) $(HEADERS)
 ################################################################################
 # utility
 utility :                         \
+	test-nop                      \
     test-circular-sequence-number \
     test-lollipop-sequence-number \
     test-bi-array                 \
@@ -218,6 +219,7 @@ utility :                         \
 UTILITY_HEADERS=                                    \
     $(NSFX_PATH)/utility.h                          \
     $(NSFX_PATH)/utility/config.h                   \
+    $(NSFX_PATH)/utility/nop.h                      \
     $(NSFX_PATH)/utility/ratio.h                    \
     $(NSFX_PATH)/utility/endian.h                   \
     $(NSFX_PATH)/utility/rounding.h                 \
@@ -231,6 +233,14 @@ HEADERS=                 \
     $(UTILITY_HEADERS)   \
     $(TEST_HEADERS)      \
     $(EXCEPTION_HEADERS) \
+
+########################################
+test-nop : test-nop.exe
+
+SRC=utility/test-nop.cpp
+
+test-nop.exe : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
 test-circular-sequence-number : test-circular-sequence-number.exe
