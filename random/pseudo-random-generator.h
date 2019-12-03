@@ -70,9 +70,8 @@
 NSFX_OPEN_NAMESPACE
 
 
-namespace random {
-namespace aux {
-
+////////////////////////////////////////////////////////////////////////////////
+namespace aux { /*{{{*/
 
 template<class StdRng>
 struct RandomNumberGeneratorTraits
@@ -117,8 +116,7 @@ struct RandomNumberGeneratorTraits
 };
 
 
-} // namespace aux
-} // namespace random
+} // namespace aux /*}}}*/
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -131,24 +129,24 @@ struct RandomNumberGeneratorTraits
  *                number generator in BOOST Random Number library.
  *
  * Provided interfaces:
- * * \c IPseudoRandomEngine
- * * \c IRandomUInt32Generator (if \c StdRng::result_type is 32-bit unsigned integer)
- * * \c IRandomUInt64Generator (if \c StdRng::result_type is 64-bit unsigned integer)
- * * \c IRandomDoubleGenerator (if \c StdRng::result_type is float or double)
- * * \c IRandom
+ * * `IPseudoRandomEngine`
+ * * `IRandomUInt32Generator` (if `StdRng::result_type` is 32-bit unsigned integer)
+ * * `IRandomUInt64Generator` (if `StdRng::result_type` is 64-bit unsigned integer)
+ * * `IRandomDoubleGenerator` (if `StdRng::result_type` is float or double)
+ * * `IRandom`
  */
 template<class StdRng>
 class PseudoRandomEngine :
     public IPseudoRandomEngine,
-    public random::aux::RandomNumberGeneratorTraits<StdRng>::InterfaceType,
+    public aux::RandomNumberGeneratorTraits<StdRng>::InterfaceType,
     public IRandom
 {
     typedef PseudoRandomEngine ThisClass;
 
 public:
     typedef StdRng RngType;
-    typedef typename random::aux::RandomNumberGeneratorTraits<StdRng>::ResultType    ResultType;
-    typedef typename random::aux::RandomNumberGeneratorTraits<StdRng>::InterfaceType InterfaceType;
+    typedef typename aux::RandomNumberGeneratorTraits<StdRng>::ResultType    ResultType;
+    typedef typename aux::RandomNumberGeneratorTraits<StdRng>::InterfaceType InterfaceType;
 
     /**
      * @brief Construct the engine with the default seeding value.
@@ -206,7 +204,7 @@ public:
      * Called internaly by the distributions created by this class, so
      * they do not have to call virtual functions to generate random numbers.
      */
-    RngType& GetRng(void)
+    RngType& GetRng(void) BOOST_NOEXCEPT
     {
         return rng_;
     }
@@ -221,6 +219,12 @@ public:
                 Ptr<ThisClass>(this), lb, ub));
     }
 
+    virtual uint32_t GenerateUniformUint32(uint32_t lb, uint32_t ub) NSFX_OVERRIDE
+    {
+        boost::random::uniform_int_distribution<uint32_t> dist_(lb, ub);
+        return dist_(rng_);
+    }
+
     virtual Ptr<IUniformInt32Distribution>
             CreateUniformInt32Distribution(int32_t lb, int32_t ub) NSFX_OVERRIDE
     {
@@ -228,6 +232,12 @@ public:
         return Ptr<IUniformInt32Distribution>(
             new Object<StdUniformInt32Distribution<ThisClass>>(
                 Ptr<ThisClass>(this), lb, ub));
+    }
+
+    virtual int32_t GenerateUniformInt32(int32_t lb, int32_t ub) NSFX_OVERRIDE
+    {
+        boost::random::uniform_int_distribution<int32_t> dist_(lb, ub);
+        return dist_(rng_);
     }
 
     virtual Ptr<IUniformUint64Distribution>
@@ -239,6 +249,12 @@ public:
                 Ptr<ThisClass>(this), lb, ub));
     }
 
+    virtual uint64_t GenerateUniformUint64(uint64_t lb, uint64_t ub) NSFX_OVERRIDE
+    {
+        boost::random::uniform_int_distribution<uint64_t> dist_(lb, ub);
+        return dist_(rng_);
+    }
+
     virtual Ptr<IUniformInt64Distribution>
             CreateUniformInt64Distribution(int64_t lb, int64_t ub) NSFX_OVERRIDE
     {
@@ -246,6 +262,12 @@ public:
         return Ptr<IUniformInt64Distribution>(
             new Object<StdUniformInt64Distribution<ThisClass>>(
                 Ptr<ThisClass>(this), lb, ub));
+    }
+
+    virtual int64_t GenerateUniformInt64(int64_t lb, int64_t ub) NSFX_OVERRIDE
+    {
+        boost::random::uniform_int_distribution<int64_t> dist_(lb, ub);
+        return dist_(rng_);
     }
 
     virtual Ptr<IUniformDoubleDistribution>
@@ -257,6 +279,18 @@ public:
                 Ptr<ThisClass>(this), lb, ub));
     }
 
+    virtual double GenerateUniformDouble(double lb, double ub) NSFX_OVERRIDE
+    {
+        boost::random::uniform_real_distribution<double> dist_(lb, ub);
+        return dist_(rng_);
+    }
+
+    virtual double GenerateUniform01(void) NSFX_OVERRIDE
+    {
+        boost::random::uniform_01<double> dist_;
+        return dist_(rng_);
+    }
+
     virtual Ptr<IUniformFloatDistribution>
             CreateUniformFloatDistribution(float lb, float ub) NSFX_OVERRIDE
     {
@@ -264,6 +298,12 @@ public:
         return Ptr<IUniformFloatDistribution>(
             new Object<StdUniformFloatDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), lb, ub));
+    }
+
+    virtual float GenerateUniformFloat(float lb, float ub) NSFX_OVERRIDE
+    {
+        boost::random::uniform_real_distribution<float> dist_(lb, ub);
+        return dist_(rng_);
     }
 
     virtual Ptr<IBernoulliDistribution>
@@ -275,6 +315,12 @@ public:
                 Ptr<ThisClass>(this), prob));
     }
 
+    virtual bool GenerateBernoulli(double prob) NSFX_OVERRIDE
+    {
+        boost::random::bernoulli_distribution<double> dist_(prob);
+        return dist_(rng_);
+    }
+
     virtual Ptr<IBinomialDistribution>
             CreateBinomialDistribution(uint32_t numTrials, double prob) NSFX_OVERRIDE
     {
@@ -284,13 +330,11 @@ public:
                 Ptr<ThisClass>(this), numTrials, prob));
     }
 
-    virtual Ptr<IGeometricDistribution>
-            CreateGeometricDistribution(double prob) NSFX_OVERRIDE
+    virtual uint32_t GenerateBinomial(uint32_t numTrials, double prob) NSFX_OVERRIDE
     {
-        BOOST_ASSERT(0 <= prob && prob <= 1);
-        return Ptr<IGeometricDistribution>(
-            new Object<StdGeometricDistribution<ThisClass>>(
-                Ptr<ThisClass>(this), prob));
+        boost::random::binomial_distribution<int32_t, double>
+               dist_(numTrials, prob);
+        return dist_(rng_);
     }
 
     virtual Ptr<INegativeBinomialDistribution>
@@ -303,6 +347,28 @@ public:
                 Ptr<ThisClass>(this), numTrials, prob));
     }
 
+    virtual uint32_t GenerateNegativeBinomial(uint32_t numTrials, double prob) NSFX_OVERRIDE
+    {
+        boost::random::negative_binomial_distribution<uint32_t, double>
+               dist_(numTrials, prob);
+        return dist_(rng_);
+    }
+
+    virtual Ptr<IGeometricDistribution>
+            CreateGeometricDistribution(double prob) NSFX_OVERRIDE
+    {
+        BOOST_ASSERT(0 <= prob && prob <= 1);
+        return Ptr<IGeometricDistribution>(
+            new Object<StdGeometricDistribution<ThisClass>>(
+                Ptr<ThisClass>(this), prob));
+    }
+
+    virtual uint32_t GenerateGeometric(double prob) NSFX_OVERRIDE
+    {
+        boost::random::geometric_distribution<uint32_t, double> dist_(prob);
+        return dist_(rng_);
+    }
+
     virtual Ptr<IPoissonDistribution>
             CreatePoissonDistribution(double mean) NSFX_OVERRIDE
     {
@@ -312,6 +378,12 @@ public:
                 Ptr<ThisClass>(this), mean));
     }
 
+    virtual uint32_t GeneratePoisson(double mean) NSFX_OVERRIDE
+    {
+        boost::random::poisson_distribution<uint32_t, double> dist_(mean);
+        return dist_(rng_);
+    }
+
     virtual Ptr<IExponentialDistribution>
             CreateExponentialDistribution(double lambda) NSFX_OVERRIDE
     {
@@ -319,6 +391,12 @@ public:
         return Ptr<IExponentialDistribution>(
             new Object<StdExponentialDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), lambda));
+    }
+
+    virtual double GenerateExponential(double lambda) NSFX_OVERRIDE
+    {
+        boost::random::exponential_distribution<double> dist_(lambda);
+        return dist_(rng_);
     }
 
     virtual Ptr<IGammaDistribution>
@@ -331,6 +409,12 @@ public:
                 Ptr<ThisClass>(this), shape, scale));
     }
 
+    virtual double GenerateGamma(double shape, double scale) NSFX_OVERRIDE
+    {
+        boost::random::gamma_distribution<double> dist_(shape, scale);
+        return dist_(rng_);
+    }
+
     virtual Ptr<IWeibullDistribution>
             CreateWeibullDistribution(double shape, double scale) NSFX_OVERRIDE
     {
@@ -341,6 +425,12 @@ public:
                 Ptr<ThisClass>(this), shape, scale));
     }
 
+    virtual double GenerateWeibull(double shape, double scale) NSFX_OVERRIDE
+    {
+        boost::random::weibull_distribution<double> dist_(shape, scale);
+        return dist_(rng_);
+    }
+
     virtual Ptr<IExtremeValueDistribution>
             CreateExtremeValueDistribution(double location, double scale) NSFX_OVERRIDE
     {
@@ -348,6 +438,12 @@ public:
         return Ptr<IExtremeValueDistribution>(
             new Object<StdExtremeValueDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), location, scale));
+    }
+
+    virtual double GenerateExtremeValue(double location, double scale) NSFX_OVERRIDE
+    {
+        boost::random::extreme_value_distribution<double> dist_(location, scale);
+        return dist_(rng_);
     }
 
     virtual Ptr<IBetaDistribution>
@@ -360,6 +456,12 @@ public:
                 Ptr<ThisClass>(this), alpha, beta));
     }
 
+    virtual double GenerateBeta(double alpha, double beta) NSFX_OVERRIDE
+    {
+        boost::random::beta_distribution<double> dist_(alpha, beta);
+        return dist_(rng_);
+    }
+
     virtual Ptr<ILaplaceDistribution>
             CreateLaplaceDistribution(double mean, double scale) NSFX_OVERRIDE
     {
@@ -368,6 +470,12 @@ public:
         return Ptr<ILaplaceDistribution>(
             new Object<StdLaplaceDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), mean, scale));
+    }
+
+    virtual double GenerateLaplace(double mean, double scale) NSFX_OVERRIDE
+    {
+        boost::random::laplace_distribution<double> dist_(mean, scale);
+        return dist_(rng_);
     }
 
     virtual Ptr<INormalDistribution>
@@ -379,6 +487,12 @@ public:
                 Ptr<ThisClass>(this), mean, stddev));
     }
 
+    virtual double GenerateNormal(double mean, double stddev) NSFX_OVERRIDE
+    {
+        boost::random::normal_distribution<double> dist_(mean, stddev);
+        return dist_(rng_);
+    }
+
     virtual Ptr<ILognormalDistribution>
             CreateLognormalDistribution(double mean, double stddev) NSFX_OVERRIDE
     {
@@ -386,6 +500,12 @@ public:
         return Ptr<ILognormalDistribution>(
             new Object<StdLognormalDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), mean, stddev));
+    }
+
+    virtual double GenerateLognormal(double mean, double stddev) NSFX_OVERRIDE
+    {
+        boost::random::lognormal_distribution<double> dist_(mean, stddev);
+        return dist_(rng_);
     }
 
     virtual Ptr<IChiSquaredDistribution>
@@ -397,6 +517,12 @@ public:
                 Ptr<ThisClass>(this), degreesOfFreedom));
     }
 
+    virtual double GenerateChiSquared(double degreesOfFreedom) NSFX_OVERRIDE
+    {
+        boost::random::chi_squared_distribution<double> dist_(degreesOfFreedom);
+        return dist_(rng_);
+    }
+
     virtual Ptr<ICauchyDistribution>
             CreateCauchyDistribution(double location, double scale) NSFX_OVERRIDE
     {
@@ -404,6 +530,12 @@ public:
         return Ptr<ICauchyDistribution>(
             new Object<StdCauchyDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), location, scale));
+    }
+
+    virtual double GenerateCauchy(double location, double scale) NSFX_OVERRIDE
+    {
+        boost::random::cauchy_distribution<double> dist_(location, scale);
+        return dist_(rng_);
     }
 
     virtual Ptr<IFisherFDistribution>
@@ -416,6 +548,12 @@ public:
                 Ptr<ThisClass>(this), numerator, denominator));
     }
 
+    virtual double GenerateFisherF(double numerator, double denominator) NSFX_OVERRIDE
+    {
+        boost::random::fisher_f_distribution<double> dist_(numerator, denominator);
+        return dist_(rng_);
+    }
+
     virtual Ptr<IStudentTDistribution>
             CreateStudentTDistribution(double degreesOfFreedom) NSFX_OVERRIDE
     {
@@ -423,6 +561,12 @@ public:
         return Ptr<IStudentTDistribution>(
             new Object<StdStudentTDistribution<ThisClass>>(
                 Ptr<ThisClass>(this), degreesOfFreedom));
+    }
+
+    virtual double GenerateStudentT(double degreesOfFreedom) NSFX_OVERRIDE
+    {
+        boost::random::student_t_distribution<double> dist_(degreesOfFreedom);
+        return dist_(rng_);
     }
 
     virtual Ptr<IDiscreteDistribution>
@@ -460,6 +604,12 @@ public:
                 Ptr<ThisClass>(this), a, b, c));
     }
 
+    virtual double GenerateTriangle(double a, double b, double c) NSFX_OVERRIDE
+    {
+        boost::random::triangle_distribution<double> dist_(a, b, c);
+        return dist_(rng_);
+    }
+
 private:
     NSFX_INTERFACE_MAP_BEGIN(ThisClass)
         NSFX_INTERFACE_ENTRY(IPseudoRandomEngine)
@@ -480,18 +630,17 @@ private:
  * This is a pseudo-random generator discovered by David Blackman and
  * Sebastiano Vigna in 2018.
  *
- * It generates double precision floating-point numbers in the range of
- * <i>[0, 1)</i>.
+ * It generates double precision floating-point numbers in the range of `[0, 1)`.
  *
- * It has a state size of \c 256 bits, and a period of <code>2^256 - 1</code>.
+ * It has a state size of `256` bits, and a period of `2^256 - 1`.
  *
  * The seed value is a 64-bit unsigned integer.
- * The default seed value is \c 1u.
+ * The default seed value is `1u`.
  *
  * Provided interfaces:
- * * \c IPseudoRandomEngine
- * * \c IRandomDoubleGenerator
- * * \c IRandom
+ * * `IPseudoRandomEngine`
+ * * `IRandomDoubleGenerator`
+ * * `IRandom`
  */
 typedef PseudoRandomEngine<nsfx::xoshiro256plus_01>  Xoshiro256Plus01Engine;
 
@@ -508,15 +657,15 @@ NSFX_REGISTER_CLASS(Xoshiro256Plus01Engine, "edu.uestc.nsfx.Xoshiro256Plus01Engi
  *
  * It generates 64-bit unsigned integer numbers.
  *
- * It has a state size of \c 256 bits, and a period of <code>2^256 - 1</code>.
+ * It has a state size of `256` bits, and a period of `2^256 - 1`.
  *
  * The seed value is a 64-bit unsigned integer.
- * The default seed value is \c 1u.
+ * The default seed value is `1u`.
  *
  * Provided interfaces:
- * * \c IPseudoRandomEngine
- * * \c IRandomUInt64Generator
- * * \c IRandom
+ * * `IPseudoRandomEngine`
+ * * `IRandomUInt64Generator`
+ * * `IRandom`
  */
 typedef PseudoRandomEngine<nsfx::xoshiro256starstar>  Xoshiro256StarstarEngine;
 
@@ -531,18 +680,17 @@ NSFX_REGISTER_CLASS(Xoshiro256StarstarEngine, "edu.uestc.nsfx.Xoshiro256Starstar
  * This is a pseudo-random generator discovered by David Blackman and
  * Sebastiano Vigna in 2018.
  *
- * It generates single precision floating-point numbers in the range of
- * <i>[0, 1)</i>.
+ * It generates single precision floating-point numbers in the range of `[0, 1)`.
  *
- * It has a state size of \c 128 bits, and a period of <code>2^128 - 1</code>.
+ * It has a state size of `128` bits, and a period of `2^128 - 1`.
  *
  * The seed value is a 64-bit unsigned integer.
- * The default seed value is \c 1u.
+ * The default seed value is `1u`.
  *
  * Provided interfaces:
- * * \c IPseudoRandomEngine
- * * \c IRandomFloatGenerator
- * * \c IRandom
+ * * `IPseudoRandomEngine`
+ * * `IRandomFloatGenerator`
+ * * `IRandom`
  */
 typedef PseudoRandomEngine<nsfx::xoshiro128plus_01>  Xoshiro128Plus01Engine;
 
@@ -560,15 +708,15 @@ NSFX_REGISTER_CLASS(Xoshiro128Plus01Engine,
  *
  * It generates 32-bit unsigned integer numbers.
  *
- * It has a state size of \c 128 bits, and a period of <code>2^128 - 1</code>.
+ * It has a state size of `128` bits, and a period of `2^128 - 1`.
  *
  * The seed value is a 64-bit unsigned integer.
- * The default seed value is \c 1u.
+ * The default seed value is `1u`.
  *
  * Provided interfaces:
- * * \c IPseudoRandomEngine
- * * \c IRandomUInt32Generator
- * * \c IRandom
+ * * `IPseudoRandomEngine`
+ * * `IRandomUInt32Generator`
+ * * `IRandom`
  */
 typedef PseudoRandomEngine<nsfx::xoshiro128starstar>  Xoshiro128StarstarEngine;
 
@@ -586,15 +734,15 @@ NSFX_REGISTER_CLASS(Xoshiro128StarstarEngine,
  *
  * It generates 32-bit unsigned integer numbers.
  *
- * It has a state size of \c 19937 bits, and a period of <code>2^19937 - 1</code>.
+ * It has a state size of `19937` bits, and a period of `2^19937 - 1`.
  *
  * The seed value is a 32-bit unsigned integer.
- * The default seed value is \c 5489u.
+ * The default seed value is `5489u`.
  *
  * Provided interfaces:
- * * \c IPseudoRandomEngine
- * * \c IRandomUInt32Generator
- * * \c IRandom
+ * * `IPseudoRandomEngine`
+ * * `IRandomUInt32Generator`
+ * * `IRandom`
  */
 typedef PseudoRandomEngine<boost::random::mt19937>  Mt19937Engine;
 

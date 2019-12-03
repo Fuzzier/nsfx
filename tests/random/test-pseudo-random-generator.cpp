@@ -42,7 +42,7 @@ namespace aux
 
 struct TestDistributions
 {
-    static const size_t N = 100000;
+    static const size_t N = 300000;
 
     TestDistributions(nsfx::Ptr<nsfx::IRandom> r) : dg_(r) {}
 
@@ -56,8 +56,8 @@ struct TestDistributions
         TestUniformFloatDistribution();
         TestBernoulliDistribution();
         TestBinomialDistribution();
-        TestGeometricDistribution();
         TestNegativeBinomialDistribution();
+        TestGeometricDistribution();
         TestPoissonDistribution();
         TestExponentialDistribution();
         TestGammaDistribution();
@@ -90,12 +90,22 @@ struct TestDistributions
         {
             uint32_t x = d->Generate();
             count += x;
-            NSFX_TEST_EXPECT_GE(x, 0UL);
-            NSFX_TEST_EXPECT_LE(x, 100UL);
+            NSFX_TEST_EXPECT_GE(x, 0U);
+            NSFX_TEST_EXPECT_LE(x, 100U);
         }
         double expected = 100 / 2.0;
         NSFX_TEST_EXPECT_AC(expected, count / N, 1) << "uniform uint32";
         d->Reset();
+        ////////////////////
+        count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            uint32_t x = dg_->GenerateUniformUint32(0, 100);
+            count += x;
+            NSFX_TEST_EXPECT_GE(x, 0U);
+            NSFX_TEST_EXPECT_LE(x, 100U);
+        }
+        NSFX_TEST_EXPECT_AC(expected, count / N, 1) << "uniform uint32";
     }
 
     void TestUniformInt32Distribution()
@@ -111,12 +121,22 @@ struct TestDistributions
         {
             int32_t x = d->Generate();
             count += x;
-            NSFX_TEST_EXPECT_GE(x, -100L);
-            NSFX_TEST_EXPECT_LE(x,  100L);
+            NSFX_TEST_EXPECT_GE(x, -100);
+            NSFX_TEST_EXPECT_LE(x,  100);
         }
         double expected = 0;
         NSFX_TEST_EXPECT_AC(expected, count / N, 1) << "uniform int32";
         d->Reset();
+        ////////////////////
+        count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            int32_t x = dg_->GenerateUniformInt32(-100, 100);
+            count += x;
+            NSFX_TEST_EXPECT_GE(x, -100);
+            NSFX_TEST_EXPECT_LE(x,  100);
+        }
+        NSFX_TEST_EXPECT_AC(expected, count / N, 1) << "uniform int32";
     }
 
     void TestUniformUint64Distribution()
@@ -132,12 +152,22 @@ struct TestDistributions
         {
             uint64_t x = d->Generate();
             count += x;
-            NSFX_TEST_EXPECT_GE(x, 0ULL);
-            NSFX_TEST_EXPECT_LE(x, 100ULL);
+            NSFX_TEST_EXPECT_GE(x, 0U);
+            NSFX_TEST_EXPECT_LE(x, 100U);
         }
         double expected = 100 / 2.0;
         NSFX_TEST_EXPECT_AC(expected, count / N, 1) << "uniform uint64";
         d->Reset();
+        ////////////////////
+        count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            uint64_t x = dg_->GenerateUniformInt64(0, 100);
+            count += x;
+            NSFX_TEST_EXPECT_GE(x, 0);
+            NSFX_TEST_EXPECT_LE(x, 100);
+        }
+        NSFX_TEST_EXPECT_AC(expected, count / N, 1) << "uniform uint64";
     }
 
     void TestUniformInt64Distribution()
@@ -153,12 +183,22 @@ struct TestDistributions
         {
             int64_t x = d->Generate();
             count += x;
-            NSFX_TEST_EXPECT_GE(x, -100LL);
-            NSFX_TEST_EXPECT_LE(x,  100LL);
+            NSFX_TEST_EXPECT_GE(x, -100);
+            NSFX_TEST_EXPECT_LE(x,  100);
         }
         double expected = 0;
         NSFX_TEST_EXPECT_AC(expected, count / N, 1) << "uniform int64";
         d->Reset();
+        ////////////////////
+        count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            int64_t x = dg_->GenerateUniformInt64(-100, 100);
+            count += x;
+            NSFX_TEST_EXPECT_GE(x, -100);
+            NSFX_TEST_EXPECT_LE(x,  100);
+        }
+        NSFX_TEST_EXPECT_AC(expected, count / N, 1) << "uniform int64";
     }
 
     void TestUniformDoubleDistribution(void)
@@ -180,6 +220,26 @@ struct TestDistributions
         double expected = 0;
         NSFX_TEST_EXPECT_AC(expected, count / N, 1) << "uniform double";
         d->Reset();
+        ////////////////////
+        count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            double x = dg_->GenerateUniformDouble(-100, 100);
+            count += x;
+            NSFX_TEST_EXPECT_GE(x, -100);
+            NSFX_TEST_EXPECT_LT(x,  100);
+        }
+        NSFX_TEST_EXPECT_AC(expected, count / N, 1) << "uniform double";
+        ////////////////////
+        count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            double x = dg_->GenerateUniform01();
+            count += x;
+            NSFX_TEST_EXPECT_GE(x, 0);
+            NSFX_TEST_EXPECT_LT(x, 1);
+        }
+        NSFX_TEST_EXPECT_AC(expected, count / N, 1) << "uniform double 01";
     }
 
     void TestUniformFloatDistribution(void)
@@ -201,6 +261,16 @@ struct TestDistributions
         double expected = 0;
         NSFX_TEST_EXPECT_AC(expected, count / N, 1) << "uniform float";
         d->Reset();
+        ////////////////////
+        count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            float x = dg_->GenerateUniformFloat(-100, 100);
+            count += x;
+            NSFX_TEST_EXPECT_GE(x, -100);
+            NSFX_TEST_EXPECT_LT(x,  100);
+        }
+        NSFX_TEST_EXPECT_AC(expected, count / N, 1) << "uniform float";
     }
 
     void TestBernoulliDistribution(void)
@@ -222,6 +292,17 @@ struct TestDistributions
         double expected = 0.25;
         NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "Bernoulli";
         d->Reset();
+        ////////////////////
+        count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            bool x = dg_->GenerateBernoulli(0.25);
+            if (x)
+            {
+                ++count;
+            }
+        }
+        NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "Bernoulli";
     }
 
     void TestBinomialDistribution(void)
@@ -241,25 +322,14 @@ struct TestDistributions
         double expected = 1000 * 0.25;
         NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "binomial";
         d->Reset();
-    }
-
-    void TestGeometricDistribution(void)
-    {
-        nsfx::Ptr<nsfx::IGeometricDistribution> d =
-            dg_->CreateGeometricDistribution(0.25);
-        NSFX_TEST_EXPECT_EQ(d->GetMinValue(), 0);
-        NSFX_TEST_EXPECT_EQ(d->GetMaxValue(),
-                            (std::numeric_limits<uint32_t>::max)());
-        NSFX_TEST_EXPECT_EQ(d->GetProbability(), 0.25);
-        double count = 0;
+        ////////////////////
+        count = 0;
         for (size_t i = 0; i < N; ++i)
         {
-            uint32_t x = d->Generate();
+            uint64_t x = dg_->GenerateBinomial(1000, 0.25);
             count += x;
         }
-        double expected = (1 - 0.25) / 0.25;
-        NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "geometric";
-        d->Reset();
+        NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "binomial";
     }
 
     void TestNegativeBinomialDistribution(void)
@@ -280,6 +350,41 @@ struct TestDistributions
         double expected = 100 * (1 - 0.25) / 0.25;
         NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "negative binomial";
         d->Reset();
+        ////////////////////
+        count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            uint32_t x = dg_->GenerateNegativeBinomial(100, 0.25);
+            count += x;
+        }
+        NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "negative binomial";
+    }
+
+    void TestGeometricDistribution(void)
+    {
+        nsfx::Ptr<nsfx::IGeometricDistribution> d =
+            dg_->CreateGeometricDistribution(0.25);
+        NSFX_TEST_EXPECT_EQ(d->GetMinValue(), 0);
+        NSFX_TEST_EXPECT_EQ(d->GetMaxValue(),
+                            (std::numeric_limits<uint32_t>::max)());
+        NSFX_TEST_EXPECT_EQ(d->GetProbability(), 0.25);
+        double count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            uint32_t x = d->Generate();
+            count += x;
+        }
+        double expected = (1 - 0.25) / 0.25;
+        NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "geometric";
+        d->Reset();
+        ////////////////////
+        count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            uint32_t x = dg_->GenerateGeometric(0.25);
+            count += x;
+        }
+        NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "geometric";
     }
 
     void TestPoissonDistribution(void)
@@ -299,6 +404,14 @@ struct TestDistributions
         double expected = 1.0;
         NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "Poisson";
         d->Reset();
+        ////////////////////
+        count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            uint32_t x = dg_->GeneratePoisson(1.0);
+            count += x;
+        }
+        NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "Poisson";
     }
 
     void TestExponentialDistribution(void)
@@ -318,6 +431,14 @@ struct TestDistributions
         double expected = 1.0;
         NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "exponential";
         d->Reset();
+        ////////////////////
+        count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            double x = dg_->GenerateExponential(1.0);
+            count += x;
+        }
+        NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "exponential";
     }
 
     void TestGammaDistribution(void)
@@ -338,6 +459,14 @@ struct TestDistributions
         double expected = 2.0 * 3.0;
         NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "gamma";
         d->Reset();
+        ////////////////////
+        count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            double x = dg_->GenerateGamma(2.0, 3.0);
+            count += x;
+        }
+        NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "gamma";
     }
 
     void TestWeibullDistribution(void)
@@ -358,6 +487,14 @@ struct TestDistributions
         double expected = 3.0 * aux::tgamma(1 + 1 / 2.0);
         NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "Weibull";
         d->Reset();
+        ////////////////////
+        count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            double x = dg_->GenerateWeibull(2.0, 3.0);
+            count += x;
+        }
+        NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "Weibull";
     }
 
     void TestExtremeValueDistribution(void)
@@ -381,6 +518,15 @@ struct TestDistributions
         double expected = 2.0 + 3.0 * EulerMascheroniConstant;
         NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "extreme value";
         d->Reset();
+        ////////////////////
+        count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            double x = dg_->GenerateExtremeValue(2.0, 3.0);
+            count += x;
+        }
+        // Euler–Mascheroni constant
+        NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "extreme value";
     }
 
     void TestBetaDistribution(void)
@@ -400,6 +546,14 @@ struct TestDistributions
         double expected = 2.0 / (2.0 + 3.0);
         NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "beta";
         d->Reset();
+        ////////////////////
+        count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            double x = dg_->GenerateBeta(2.0, 3.0);
+            count += x;
+        }
+        NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "beta";
     }
 
     void TestLaplaceDistribution(void)
@@ -421,6 +575,14 @@ struct TestDistributions
         double expected = 1.0;
         NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "laplace";
         d->Reset();
+        ////////////////////
+        count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            double x = dg_->GenerateLaplace(1.0, 0.5);
+            count += x;
+        }
+        NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "laplace";
     }
 
     void TestNormalDistribution(void)
@@ -442,6 +604,14 @@ struct TestDistributions
         double expected = 2.0;
         NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "normal";
         d->Reset();
+        ////////////////////
+        count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            double x = dg_->GenerateNormal(2.0, 3.0);
+            count += x;
+        }
+        NSFX_TEST_EXPECT_RC(expected, count / N, 0.01) << "normal";
     }
 
     void TestLognormalDistribution(void)
@@ -462,6 +632,14 @@ struct TestDistributions
         double expected = std::exp(0.1 + 1.0 * 1.0 / 2);
         NSFX_TEST_EXPECT_RC(expected, count / N, 0.1) << "lognormal";
         d->Reset();
+        ////////////////////
+        count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            double x = dg_->GenerateLognormal(0.1, 1.0);
+            count += x;
+        }
+        NSFX_TEST_EXPECT_RC(expected, count / N, 0.1) << "lognormal";
     }
 
     void TestChiSquaredDistribution(void)
@@ -481,6 +659,14 @@ struct TestDistributions
         double expected = 2.5;
         NSFX_TEST_EXPECT_RC(expected, count / N, 0.2) << "chi-squared";
         d->Reset();
+        ////////////////////
+        count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            double x = dg_->GenerateChiSquared(2.5);
+            count += x;
+        }
+        NSFX_TEST_EXPECT_RC(expected, count / N, 0.2) << "chi-squared";
     }
 
     void TestCauchyDistribution(void)
@@ -502,6 +688,14 @@ struct TestDistributions
         // double expected = ?;
         // NSFX_TEST_EXPECT_RC(expected, count / N, 0.2) << "Cauchy";
         d->Reset();
+        ////////////////////
+        count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            double x = dg_->GenerateCauchy(2.0, 3.0);
+            count += x;
+        }
+        // NSFX_TEST_EXPECT_RC(expected, count / N, 0.2) << "Cauchy";
     }
 
     void TestFisherFDistribution(void)
@@ -522,6 +716,14 @@ struct TestDistributions
         double expected = 3.0 / (3.0 - 2);
         NSFX_TEST_EXPECT_RC(expected, count / N, 0.2) << "Fisher F";
         d->Reset();
+        ////////////////////
+        count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            double x = dg_->GenerateFisherF(2.0, 3.0);
+            count += x;
+        }
+        NSFX_TEST_EXPECT_RC(expected, count / N, 0.2) << "Fisher F";
     }
 
     void TestStudentTDistribution(void)
@@ -542,6 +744,14 @@ struct TestDistributions
         double expected = 0;
         NSFX_TEST_EXPECT_AC(expected, count / N, 0.1) << "Student t";
         d->Reset();
+        ////////////////////
+        count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            double x = dg_->GenerateStudentT(2.5);
+            count += x;
+        }
+        NSFX_TEST_EXPECT_AC(expected, count / N, 0.1) << "Student t";
     }
 
     void TestDiscreteDistribution(void)
@@ -656,6 +866,14 @@ struct TestDistributions
         double expected = (1 + 2 + 5) / 3.0;
         NSFX_TEST_EXPECT_AC(expected, count / N, 0.1) << "triangle";
         d->Reset();
+        ////////////////////
+        count = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            double x = dg_->GenerateTriangle(1, 2, 5);
+            count += x;
+        }
+        NSFX_TEST_EXPECT_AC(expected, count / N, 0.1) << "triangle";
     }
 
     nsfx::Ptr<nsfx::IRandom> dg_;

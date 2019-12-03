@@ -55,49 +55,64 @@
 
 #include <nsfx/random/distribution/i-triangle-distribution.h>
 
+/**
+ * @ingroup Random
+ * @{
+ */
 
 NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
- * @ingroup Random
  * @brief A statistical distribution generator.
  *
  * # Supported statistical distributions
  * ## Uniform distributions
- * * \c IUniformUint32Distribution
- * * \c IUniformInt32Distribution
- * * \c IUniformUint64Distribution
- * * \c IUniformInt64Distribution
- * * \c IUniformDoubleDistribution
- * * \c IUniformFloatDistribution
+ * * `IUniformUint32Distribution`
+ * * `IUniformInt32Distribution`
+ * * `IUniformUint64Distribution`
+ * * `IUniformInt64Distribution`
+ * * `IUniformDoubleDistribution`
+ * * `IUniformFloatDistribution`
  * ## Bernoulli distributions
- * * \c IBernoulliDistribution
- * * \c IBinomialDistribution
- * * \c INegativeBinomialDistribution
- * * \c IGeometricDistribution
+ * * `IBernoulliDistribution`
+ * * `IBinomialDistribution`
+ * * `INegativeBinomialDistribution`
+ * * `IGeometricDistribution`
  * ## Poisson distributions
- * * \c IPoissonDistribution
- * * \c IExponentialDistribution
- * * \c IGammaDistribution
- * * \c IWeibullDistribution
- * * \c IExtremeValueDistribution
- * * \c IBetaDistribution
- * * \c ILaplaceDistribution
+ * * `IPoissonDistribution`
+ * * `IExponentialDistribution`
+ * * `IGammaDistribution`
+ * * `IWeibullDistribution`
+ * * `IExtremeValueDistribution`
+ * * `IBetaDistribution`
+ * * `ILaplaceDistribution`
  * ## Normal distributions
- * * \c INormalDistribution
- * * \c ILognormalDistribution
- * * \c IChiSquaredDistribution
- * * \c ICauchyDistribution
- * * \c IFisherFDistribution
- * * \c IStudentTDistribution
+ * * `INormalDistribution`
+ * * `ILognormalDistribution`
+ * * `IChiSquaredDistribution`
+ * * `ICauchyDistribution`
+ * * `IFisherFDistribution`
+ * * `IStudentTDistribution`
  * ## Sampling distributions
- * * \c IDiscreteDistribution
- * * \c IPiecewiseConstantDistribution
- * * \c IPiecewiseLinearDistribution
+ * * `IDiscreteDistribution`
+ * * `IPiecewiseConstantDistribution`
+ * * `IPiecewiseLinearDistribution`
  * ## Miscellaneous Distributions
- * * \c ITriangleDistribution
+ * * `ITriangleDistribution`
+ *
+ * This class provides two means of generating random numbers.
+ * * `CreateXxxDistribution()`: Create a random distribution with fixed
+ *   parameters, and use it to generate random numbers.
+ * * `GenerateXxx()`: Generate random numbers directly.
+ *   It would be convenient when random numbers are not generated repeatedly,
+ *   or it is undesired to create and keep a random distribution.
+ *   However, sampling distributions are not supported.
+ *
+ * It is recommended to use `GenerateUniform01()` to generate uniform double
+ * random numbers within `[0, 1)`, since it is generally *faster* than other means
+ * provided by `IRandom`.
  */
 class IRandom :
     virtual public IObject
@@ -110,87 +125,97 @@ public:
      *
      * @param[in] lb The lower bound of the range.
      * @param[in] ub The upper bound of the range.
-     *            It <b>must</b> be greater than or equal to \c lb.
+     *            It **must** be greater than or equal to `lb`.
      *
-     * The possible values the distribution can generate is within
-     * <i>[lb, ub]</i>.
+     * The possible values the distribution can generate is within `[lb, ub]`.
      */
     virtual Ptr<IUniformUint32Distribution>
             CreateUniformUint32Distribution(uint32_t lb, uint32_t ub) = 0;
 
+    virtual uint32_t GenerateUniformUint32(uint32_t lb, uint32_t ub) = 0;
+
     /**
      * @brief Create a discrete uniform distribution.
      *
      * @param[in] lb The lower bound of the range.
      * @param[in] ub The upper bound of the range.
-     *            It <b>must</b> be greater than or equal to \c lb.
+     *            It **must** be greater than or equal to `lb`.
      *
-     * The possible values the distribution can generate is within
-     * <i>[lb, ub]</i>.
+     * The possible values the distribution can generate is within `[lb, ub]`.
      */
     virtual Ptr<IUniformInt32Distribution>
             CreateUniformInt32Distribution(int32_t lb, int32_t ub) = 0;
 
+    virtual int32_t GenerateUniformInt32(int32_t lb, int32_t ub) = 0;
+
     /**
      * @brief Create a discrete uniform distribution.
      *
      * @param[in] lb The lower bound of the range.
      * @param[in] ub The upper bound of the range.
-     *            It <b>must</b> be greater than or equal to \c lb.
+     *            It **must** be greater than or equal to `lb`.
      *
-     * The possible values the distribution can generate is within
-     * <i>[lb, ub]</i>.
+     * The possible values the distribution can generate is within `[lb, ub]`.
      */
     virtual Ptr<IUniformUint64Distribution>
             CreateUniformUint64Distribution(uint64_t lb, uint64_t ub) = 0;
 
+    virtual uint64_t GenerateUniformUint64(uint64_t lb, uint64_t ub) = 0;
+
     /**
      * @brief Create a discrete uniform distribution.
      *
      * @param[in] lb The lower bound of the range.
      * @param[in] ub The upper bound of the range.
-     *            It <b>must</b> be greater than or equal to \c lb.
+     *            It **must** be greater than or equal to `lb`.
      *
-     * The possible values the distribution can generate is within
-     * <i>[lb, ub]</i>.
+     * The possible values the distribution can generate is within `[lb, ub]`.
      */
     virtual Ptr<IUniformInt64Distribution>
             CreateUniformInt64Distribution(int64_t lb, int64_t ub) = 0;
 
+    virtual int64_t GenerateUniformInt64(int64_t lb, int64_t ub) = 0;
+
     /**
      * @brief Create a continous uniform distribution.
      *
      * @param[in] lb The lower bound of the range.
      * @param[in] ub The upper bound of the range.
-     *            It <b>must</b> be greater than or equal to \c lb.
+     *            It **must** be greater than or equal to `lb`.
      *
-     * The possible values the distribution can generate is within
-     * <i>[lb, ub)</i>.
+     * The possible values the distribution can generate is within `[lb, ub)`.
      */
     virtual Ptr<IUniformDoubleDistribution>
             CreateUniformDoubleDistribution(double lb, double ub) = 0;
 
+    virtual double GenerateUniformDouble(double lb, double ub) = 0;
+
+    virtual double GenerateUniform01(void) = 0;
+
     /**
      * @brief Create a continous uniform distribution.
      *
      * @param[in] lb The lower bound of the range.
      * @param[in] ub The upper bound of the range.
-     *            It <b>must</b> be greater than or equal to \c lb.
+     *            It <b>must</b> be greater than or equal to `lb`.
      *
-     * The possible values the distribution can generate is within
-     * <i>[lb, ub)</i>.
+     * The possible values the distribution can generate is within `[lb, ub)`.
      */
     virtual Ptr<IUniformFloatDistribution>
             CreateUniformFloatDistribution(float lb, float ub) = 0;
 
+    virtual float GenerateUniformFloat(float lb, float ub) = 0;
+
     /**
      * @brief Create a Bernoulli distribution.
      *
-     * @param[in] prob Probability of producing a value of \c true.
-     *                 It <b>must</b> be within <i>[0, 1]</i> .
+     * @param[in] prob Probability of producing a value of `true`.
+     *                 It <b>must</b> be within `[0, 1]` .
      */
     virtual Ptr<IBernoulliDistribution>
             CreateBernoulliDistribution(double prob) = 0;
+
+    virtual bool GenerateBernoulli(double prob) = 0;
 
     /**
      * @brief Create a binomial distribution.
@@ -199,10 +224,12 @@ public:
      *                      experiments.
      * @param[in] prob Probability of success of the independent
      *                 Bernoulli-distributed experiments.
-     *                 It <b>must</b> be within <i>[0, 1]</i> .
+     *                 It <b>must</b> be within `[0, 1]` .
      */
     virtual Ptr<IBinomialDistribution>
             CreateBinomialDistribution(uint32_t numTrials, double prob) = 0;
+
+    virtual uint32_t GenerateBinomial(uint32_t numTrials, double prob) = 0;
 
     /**
      * @brief Create a negative binomial distribution.
@@ -212,20 +239,25 @@ public:
      *                      experiments.
      * @param[in] prob Probability of success of the independent
      *                 Bernoulli-distributed experiments.
-     *                 It <b>must</b> be within <i>[0, 1]</i> .
+     *                 It <b>must</b> be within `[0, 1]` .
      */
     virtual Ptr<INegativeBinomialDistribution>
             CreateNegativeBinomialDistribution(
+                uint32_t numTrials, double prob) = 0;
+
+    virtual uint32_t GenerateNegativeBinomial(
                 uint32_t numTrials, double prob) = 0;
 
     /**
      * @brief Create a geometric distribution.
      *
      * @param[in] prob Probability of success.
-     *                 It <b>must</b> be within <i>[0, 1]</i> .
+     *                 It <b>must</b> be within `[0, 1]` .
      */
     virtual Ptr<IGeometricDistribution>
             CreateGeometricDistribution(double prob) = 0;
+
+    virtual uint32_t GenerateGeometric(double prob) = 0;
 
     /**
      * @brief Create a Poisson distribution.
@@ -236,6 +268,8 @@ public:
     virtual Ptr<IPoissonDistribution>
             CreatePoissonDistribution(double mean) = 0;
 
+    virtual uint32_t GeneratePoisson(double mean) = 0;
+
     /**
      * @brief Create an exponential distribution.
      *
@@ -244,6 +278,8 @@ public:
      */
     virtual Ptr<IExponentialDistribution>
             CreateExponentialDistribution(double lambda) = 0;
+
+    virtual double GenerateExponential(double lambda) = 0;
 
     /**
      * @brief Create a gamma distribution.
@@ -256,6 +292,8 @@ public:
     virtual Ptr<IGammaDistribution>
             CreateGammaDistribution(double shape, double scale) = 0;
 
+    virtual double GenerateGamma(double shape, double scale) = 0;
+
     /**
      * @brief Create a gamma distribution.
      *
@@ -267,6 +305,8 @@ public:
     virtual Ptr<IWeibullDistribution>
             CreateWeibullDistribution(double shape, double scale) = 0;
 
+    virtual double GenerateWeibull(double shape, double scale) = 0;
+
     /**
      * @brief Create an extreme value distribution.
      *
@@ -276,6 +316,8 @@ public:
      */
     virtual Ptr<IExtremeValueDistribution>
             CreateExtremeValueDistribution(double location, double scale) = 0;
+
+    virtual double GenerateExtremeValue(double location, double scale) = 0;
 
     /**
      * @brief Create a beta distribution.
@@ -288,6 +330,8 @@ public:
     virtual Ptr<IBetaDistribution>
             CreateBetaDistribution(double alpha, double beta) = 0;
 
+    virtual double GenerateBeta(double alpha, double beta) = 0;
+
     /**
      * @brief Create a laplace distribution.
      *
@@ -298,6 +342,8 @@ public:
     virtual Ptr<ILaplaceDistribution>
             CreateLaplaceDistribution(double mean, double scale) = 0;
 
+    virtual double GenerateLaplace(double mean, double scale) = 0;
+
     /**
      * @brief Create a normal distribution.
      *
@@ -307,6 +353,8 @@ public:
      */
     virtual Ptr<INormalDistribution>
             CreateNormalDistribution(double mean, double stddev) = 0;
+
+    virtual double GenerateNormal(double mean, double stddev) = 0;
 
     /**
      * @brief Create a lognormal distribution.
@@ -319,6 +367,8 @@ public:
     virtual Ptr<ILognormalDistribution>
             CreateLognormalDistribution(double mean, double stddev) = 0;
 
+    virtual double GenerateLognormal(double mean, double stddev) = 0;
+
     /**
      * @brief Create a chi-squared distribution.
      *
@@ -327,6 +377,8 @@ public:
      */
     virtual Ptr<IChiSquaredDistribution>
             CreateChiSquaredDistribution(double degreesOfFreedom) = 0;
+
+    virtual double GenerateChiSquared(double degreesOfFreedom) = 0;
 
     /**
      * @brief Create a Cauchy distribution.
@@ -337,6 +389,8 @@ public:
      */
     virtual Ptr<ICauchyDistribution>
             CreateCauchyDistribution(double location, double scale) = 0;
+
+    virtual double GenerateCauchy(double location, double scale) = 0;
 
     /**
      * @brief Create a Fisher F-distribution.
@@ -349,6 +403,8 @@ public:
     virtual Ptr<IFisherFDistribution>
             CreateFisherFDistribution(double numerator, double denominator) = 0;
 
+    virtual double GenerateFisherF(double numerator, double denominator) = 0;
+
     /**
      * @brief Create a Student t-distribution.
      *
@@ -357,6 +413,8 @@ public:
      */
     virtual Ptr<IStudentTDistribution>
             CreateStudentTDistribution(double degreesOfFreedom) = 0;
+
+    virtual double GenerateStudentT(double degreesOfFreedom) = 0;
 
     /**
      * @brief Create a discrete distribution.
@@ -389,12 +447,25 @@ public:
     virtual Ptr<ITriangleDistribution>
             CreateTriangleDistribution(double a, double b, double c) = 0;
 
+    virtual double GenerateTriangle(double a, double b, double c) = 0;
+
 };
 
 NSFX_DEFINE_CLASS_UID(IRandom, "edu.uestc.nsfx.IRandom");
 
 
 ////////////////////////////////////////
+/**
+ * @class IRandomUser
+ * @brief The user interface of `IRandom`.
+ *
+ * # Prototype
+ * @code{.cpp}
+ * void Use(Ptr<IRandom> random);
+ * @endcode
+ *
+ * @see `IRandom`
+ */
 NSFX_DEFINE_USER_INTERFACE(
     IRandomUser, "edu.uestc.nsfx.IRandomUser",
     IRandom);
@@ -402,6 +473,9 @@ NSFX_DEFINE_USER_INTERFACE(
 
 NSFX_CLOSE_NAMESPACE
 
+/**
+ * @}
+ */
 
 #endif // I_RANDOM_H__9373C92B_7102_42B6_871A_7B6675C33E2C
 
