@@ -25,6 +25,7 @@
 #include <nsfx/utility/lollipop-sequence-number.h>
 #include <nsfx/utility/bi-array.h>
 #include <nsfx/utility/bi-matrix.h>
+#include <nsfx/utility/bi-vector.h>
 #include <nsfx/utility/lexical-compare.h>
 
 

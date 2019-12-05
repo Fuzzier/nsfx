@@ -111,6 +111,27 @@ inline void array_init(T* p, size_t size, const T& v)
 
 
 ////////////////////////////////////////////////////////////////////////////////
+/**
+ * @brief Initialize an array by copying from another range.
+ *
+ * @tparam T The type of the element.
+ * @param[in] first The first iterator.
+ * @param[in]  last The last iterator.
+ * @param[out]  dst The destination array.
+ *                  It **must** be an *uninitialized* array.
+ */
+template<class T, class InputIterator>
+inline void array_copy_init(InputIterator first, InputIterator last, T* dst)
+{
+    while (first != last)
+    {
+        new (dst) T(*first);
+        ++dst;
+        ++first;
+    }
+}
+
+////////////////////////////////////////
 template<class T>
 inline void array_copy_init(T* src, T* dst, size_t size, is_pod_t)
 {
@@ -120,13 +141,7 @@ inline void array_copy_init(T* src, T* dst, size_t size, is_pod_t)
 template<class T>
 inline void array_copy_init(T* src, T* dst, size_t size, not_pod_t)
 {
-    T* last = src + size;
-    while (src < last)
-    {
-        new (dst) T(*src);
-        ++dst;
-        ++src;
-    }
+    array_copy_init(src, src + size, dst);
 }
 
 /**
@@ -146,6 +161,22 @@ inline void array_copy_init(T* src, T* dst, size_t size)
     // is_pod_t or not_pod_t.
     typedef typename pod_tag<T>::type  tag;
     array_copy_init(src, dst, size, tag());
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+ * @brief Initialize an element by moving a value.
+ *
+ * @tparam T The type of the element.
+ * @param[in] p The element.
+ *              It **must** be an *uninitialized* element.
+ * @param[in] v The value.
+ */
+template<class T>
+inline void array_move_init(T* p, T&& v)
+{
+    new (p) T(std::move(v));
 }
 
 

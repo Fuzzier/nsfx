@@ -704,6 +704,8 @@ public:
     typedef detail::bi_array<T, I>     container_type;
     typedef BiArrayIterator<T, I>      iterator;
     typedef ConstBiArrayIterator<T, I> const_iterator;
+    typedef std::reverse_iterator<iterator>       reverse_iterator;
+    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
 public:
     /**
@@ -857,10 +859,13 @@ public:
 
     void swap(BiArray& rhs) BOOST_NOEXCEPT
     {
-        boost::swap(ar_.size_, rhs.ar_.size_);
-        boost::swap(ar_.data_, rhs.ar_.data_);
+        container_type tmp = ar_;
+        ar_ = rhs.ar_;
+        rhs.ar_ = tmp;
     }
 
+    ////////////////////
+    // Iterators.
     iterator begin(void) BOOST_NOEXCEPT
     {
         return iterator(bi_array_begin(&ar_));
@@ -889,6 +894,38 @@ public:
     const_iterator cend(void) const BOOST_NOEXCEPT
     {
         return const_iterator(bi_array_end(&ar_));
+    }
+
+    ////////////////////
+    // Reverse iterators.
+    reverse_iterator rbegin(void) BOOST_NOEXCEPT
+    {
+        return reverse_iterator(end());
+    }
+
+    reverse_iterator rend(void) BOOST_NOEXCEPT
+    {
+        return reverse_iterator(begin());
+    }
+
+    const_reverse_iterator rbegin(void) const BOOST_NOEXCEPT
+    {
+        return const_reverse_iterator(cend());
+    }
+
+    const_reverse_iterator rend(void) const BOOST_NOEXCEPT
+    {
+        return const_reverse_iterator(cbegin());
+    }
+
+    const_reverse_iterator crbegin(void) const BOOST_NOEXCEPT
+    {
+        return const_reverse_iterator(cend());
+    }
+
+    const_reverse_iterator crend(void) const BOOST_NOEXCEPT
+    {
+        return const_reverse_iterator(cbegin());
     }
 
 private:

@@ -280,6 +280,24 @@ NSFX_TEST_SUITE(BiArray)
             NSFX_TEST_EXPECT_EQ(it[1], ar(I+1));
             NSFX_TEST_EXPECT_EQ(it[2], ar(I+2));
         }
+
+        NSFX_TEST_CASE(ReverseIterator)
+        {
+            ArrayType ar(3);
+            ar(I) = 12;
+            ar(I+1) = 34;
+            ar(I+2) = 56;
+            ArrayType::reverse_iterator it = ar.rbegin();
+            NSFX_TEST_EXPECT_EQ(*it++, ar(I+2));
+            NSFX_TEST_EXPECT_EQ(*it++, ar(I+1));
+            NSFX_TEST_EXPECT_EQ(*it++, ar(I));
+            NSFX_TEST_EXPECT(it == ar.rend());
+            it = ar.rend();
+            NSFX_TEST_EXPECT_EQ(*--it, ar(I));
+            NSFX_TEST_EXPECT_EQ(*--it, ar(I+1));
+            NSFX_TEST_EXPECT_EQ(*--it, ar(I+2));
+            NSFX_TEST_EXPECT(it == ar.rbegin());
+        }
     }/*}}}*/
 
     NSFX_TEST_SUITE(Class)/*{{{*/
