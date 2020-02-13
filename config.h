@@ -227,15 +227,26 @@ NSFX_CLOSE_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// Use `boost::swap()` to support user-defined `void swap(lhs, rhs)` functions.
+// There is no need to inject code into the `std` namespace.
+#include <boost/core/swap.hpp>
+
+// Use `boost::hash<>` to support user-defined `size_t hash_value(v)` functions.
+// There is no need to inject code into the `std` namespace.
+// Note that, the third type parameter of `unordered_set` and `unordered_map`
+// **shall** be supplied as `boost::hash<T>`.
+#include <boost/functional/hash.hpp>
+
 // Import standard containers.
-#include <boost/functional/hash.hpp>  // use boost::hash<> for extensibility.
-#include <boost/container/vector.hpp>
-#include <boost/container/deque.hpp>
-#include <boost/container/list.hpp>
-#include <boost/container/set.hpp>
-#include <boost/container/map.hpp>
-#include <boost/unordered_set.hpp>
-#include <boost/unordered_map.hpp>
+// MSVC && Microsoft Visual C++ 2010
+#if defined(NSFX_MSVC) && (NSFX_MSVC) <= 1600
+# include <boost/container/vector.hpp>
+# include <boost/container/deque.hpp>
+# include <boost/container/list.hpp>
+# include <boost/container/set.hpp>
+# include <boost/container/map.hpp>
+# include <boost/unordered_set.hpp>
+# include <boost/unordered_map.hpp>
 
 NSFX_OPEN_NAMESPACE
 using boost::container::vector;
@@ -247,6 +258,27 @@ using boost::unordered_set;
 using boost::unordered_map;
 NSFX_CLOSE_NAMESPACE
 
+// MSVC && Microsoft Visual C++ 2012+, GCC, CLANG
+#else
+# include <vector>
+# include <deque>
+# include <list>
+# include <set>
+# include <map>
+# include <unordered_set>
+# include <unordered_map>
+
+NSFX_OPEN_NAMESPACE
+using std::vector;
+using std::deque;
+using std::list;
+using std::set;
+using std::map;
+using std::unordered_set;
+using std::unordered_map;
+NSFX_CLOSE_NAMESPACE
+
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // assert.

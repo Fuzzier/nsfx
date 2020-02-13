@@ -342,7 +342,7 @@ private:
     NSFX_INTERFACE_MAP_END()
 
 private:
-    unordered_map<Uid, Ptr<IClassFactory>>  map_;
+    unordered_map<Uid, Ptr<IClassFactory>, boost::hash<Uid>>  map_;
 
 };
 

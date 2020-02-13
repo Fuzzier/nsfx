@@ -20,7 +20,7 @@
 #include <nsfx/test/config.h>
 #include <nsfx/test/visitor-concept.h>
 #include <nsfx/test/case.h>
-#include <memory>
+#include <memory> // unique_ptr
 
 
 NSFX_TEST_OPEN_NAMESPACE
@@ -32,13 +32,13 @@ NSFX_TEST_OPEN_NAMESPACE
  * Child test cases of the test suite run run first,
  * then the child test suites are run.
  *
- * @remarks As \c Case stores a pointer to its parent \c Suite,
- *          the address of \c Suite must be stable.
- *          e.g. \c Suite cannot be stored directly inside a vector,
- *          as the vector may reallocate space, and move \c Suite around.
+ * @remarks As `Case` stores a pointer to its parent `Suite`,
+ *          the address of `Suite` must be stable.
+ *          e.g. `Suite` cannot be stored directly inside a vector,
+ *          as the vector may reallocate space, and move `Suite` around.
  *          <p>
- *          The current solution is to store \c Suite objects in an
- *          \c unordered_map to avoid the dirty work of memory management.
+ *          The current solution is to store `Suite` objects in an
+ *          `unordered_map` to avoid the dirty work of memory management.
  */
 class Suite
 {
@@ -47,14 +47,13 @@ public:
     typedef vector<Case* > CaseVectorType;
     typedef vector<Suite*> SuiteVectorType;
 
-    typedef unordered_map<std::string, Case > CaseMapType;
-    typedef unordered_map<std::string, Suite> SuiteMapType;
-
+    typedef unordered_map<std::string, std::unique_ptr<Case> > CaseMapType;
+    typedef unordered_map<std::string, std::unique_ptr<Suite>> SuiteMapType;
 
     // Constructors.
 public:
     /**
-     * @brief Users must use \c AddSuite() to create test suites.
+     * @brief Users must use `AddSuite()` to create test suites.
      */
     Suite(void) :
         parent_(nullptr),
@@ -63,7 +62,7 @@ public:
     }
 
     /**
-     * @brief Users must use \c AddSuite() to create test suites.
+     * @brief Users must use `AddSuite()` to create test suites.
      */
     Suite(Suite* parent, const std::string& name) :
         parent_(parent),
@@ -117,13 +116,13 @@ public:
         auto it = suiteMap_.find(name);
         if (it == suiteMap_.end())
         {
-            auto result = suiteMap_.emplace(name, Suite(this, name));
-            suite = &result.first->second;
+            auto result = suiteMap_.emplace(name, new Suite(this, name));
+            suite = result.first->second.get();
             suiteVector_.push_back(suite);
         }
         else
         {
-            suite = &it->second;
+            suite = it->second.get();
         }
         return suite;
     }
@@ -139,13 +138,13 @@ public:
         if (it == caseMap_.end())
         {
             auto result = caseMap_.emplace(
-                name, Case(this, name, std::forward<Functor>(functor)));
-            casei = &result.first->second;
+                name, new Case(this, name, std::forward<Functor>(functor)));
+            casei = result.first->second.get();
             caseVector_.push_back(casei);
         }
         else
         {
-            casei = &it->second;
+            casei = it->second.get();
         }
         return casei;
     }

@@ -22,6 +22,8 @@
 #include <boost/functional/hash.hpp>
 #include <boost/core/swap.hpp>
 #include <boost/preprocessor/iterate.hpp>
+#include <boost/preprocessor/repetition/enum_params.hpp>
+#include <boost/preprocessor/repetition/enum_binary_params.hpp>
 #include <type_traits> // conditional, is_integral, is_signed
 #include <sstream>
 #include <nsfx/network/buffer/iterator/basic-buffer-iterator.h>
