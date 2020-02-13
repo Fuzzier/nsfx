@@ -53,11 +53,11 @@ public:
 
 public:
     // IClassFactory
-    virtual void* CreateObject(const Uid& iid, IObject* controller) NSFX_FINAL NSFX_OVERRIDE;
+    virtual Ptr<IObject> CreateObject(IObject* controller) NSFX_FINAL NSFX_OVERRIDE;
 
 private:
-    void* CreateNonAggregable(const Uid& iid);
-    void* CreateAggregable(IObject* controller);
+    Ptr<IObject> CreateNonAggregable(void);
+    Ptr<IObject> CreateAggregable(IObject* controller);
 
 private:
     NSFX_INTERFACE_MAP_BEGIN(ClassFactory)
@@ -69,35 +69,29 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 template<class T>
-inline void*
-ClassFactory<T>::CreateObject(const Uid& iid, IObject* controller)
+inline Ptr<IObject>
+ClassFactory<T>::CreateObject(IObject* controller)
 {
-    if (controller && iid != uid_of<IObject>())
-    {
-        BOOST_THROW_EXCEPTION(BadAggregation());
-    }
     return controller ? CreateAggregable(controller)
-                      : CreateNonAggregable(iid);
+                      : CreateNonAggregable();
 }
 
 template<class T>
-inline void*
-ClassFactory<T>::CreateNonAggregable(const Uid& iid)
+inline Ptr<IObject>
+ClassFactory<T>::CreateNonAggregable(void)
 {
     typedef Object<T>  ObjectClass;
-    std::unique_ptr<ObjectClass> o(new ObjectClass);
-    void* result = o->QueryInterface(iid);  // May throw NoInterface.
-    o.release();
-    return result;
+    IObject* o = new ObjectClass;
+    return o;
 }
 
 template<class T>
-inline void*
+inline Ptr<IObject>
 ClassFactory<T>::CreateAggregable(IObject* controller)
 {
     typedef AggObject<T>  ObjectClass;
-    ObjectClass* o = new ObjectClass(controller);
-    return o->QueryInterface(uid_of<IObject>());
+    IObject* o = new ObjectClass(controller);
+    return o;
 }
 
 

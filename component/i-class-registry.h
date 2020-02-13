@@ -31,7 +31,7 @@ NSFX_OPEN_NAMESPACE
  * @ingroup Component
  * @brief The class registry interface.
  */
-class IClassRegistry :/*{{{*/
+class IClassRegistry :
     virtual public IObject
 {
 public:
@@ -47,9 +47,9 @@ public:
      *
      * @throw OutOfMemory
      * @throw ClassAlreadyRegistered The class is already registered.
-     * @throw InvalidPointer The factory is `nullptr`.
+     * @throw InvalidPointer         The factory is `nullptr`.
      */
-    virtual void Register(const Uid& cid, Ptr<IClassFactory> factory) = 0;
+    virtual void Register(Ptr<IClassFactory> factory, const Uid& cid) = 0;
 
     /**
      * @brief Unregister a class factory.
@@ -73,7 +73,7 @@ public:
      */
     virtual Ptr<IClassFactory> GetClassFactory(const Uid& cid) = 0;
 
-}; // class IClassRegistry /*}}}*/
+}; // class IClassRegistry
 
 
 NSFX_DEFINE_CLASS_UID(IClassRegistry, "edu.uestc.nsfx.IClassRegistry");

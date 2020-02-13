@@ -790,6 +790,85 @@
  * must be careful if it wants to dispose the event source, as the event
  * source may still be executing the loop to invoke event sinks.
  *
+ * ===================
+ * Non-virtual backend
+ * ===================
+ *
+ * Sometimes, to improve performance, it is desired to define a class with
+ * *non-virtual* methods that can be reused to either implement the pure-virtual
+ * interfaces, or as a building block to implement larger non-virtual classes.
+ *
+ * The depth of aggregation **must** be as small as possible, since each level of
+ * aggregation introduces an extra layer of virtual function calls, and
+ * increases the overhead of lifetime management and interface inquiry.
+ * For example, assigning a smart pointer needs to increase the reference
+ * counter of the object, and several layers of `AddRef()` have to be invoked.
+ *
+ * In all situations, one **shall** prevent frequent interface inquiry, event
+ * connection and disconnection.
+ * The rule of thumb is to query interfaces during initialization, and connect
+ * events before startup.
+ * When smart pointers are passed, use `move` semantic whenever possible.
+ *
+ * However, such non-virtual class is almost *impossible* to design, since it
+ * cannot avoid the dependency upon the component model, and it must deal with
+ * lifetime management and support interface inquiry.
+ *
+ * ## Dependency
+ *
+ * Dependent objects **must** keep their lifetimes consistent.
+ *
+ * When a dependent object is destructed, the dependency **must** be ended to
+ * prevent other objects from accessing the object that does no longer exist.
+ *
+ * One of the methods to end dependency is to release smart pointers.
+ * However, dependency can be complex.
+ *
+ * ### Event scheduling
+ *
+ * To schedule an event, a class provides an event sink and pass it to the
+ * scheduler.
+ * Usually, the event sink holds an object pointer and a pointer to its member
+ * function.
+ *
+ * When the object is destructed, make sure the event handle is *cancelled*.
+ * By doing this, the event sink is *released*, and the dependency is ended.
+ * Since the event sink is released from the event handle, the event handle
+ * will no longer invoke the member function of the object.
+ * Thus, the event sink does not have to be aggregated.
+ *
+ * ### Event sink
+ *
+ * The processing of an event can be done by providing a public member function.
+ * It can be encapsulated in an event sink by an outer object and provided to
+ * other components.
+ *
+ * To prevent the event sink from using the object after the object has been
+ * destructed, make sure the event sink is *disconnected* from the event source.
+ * However, the object **may not** hold a smart pointer to the event source.
+ * It is **not** possible to ensure the disconnection by the object itself.
+ * Thus, an event sink object **must** be aggregated with the outer object.
+ *
+ * ### Event source
+ *
+ * An event is provided to allow event sinks to connect and disconnect.
+ * An object uses the event to notify the event sinks.
+ *
+ * When the object is destructed, nothing needs to be done to the event.
+ * Even if the event sources are still held by other components, since the
+ * object has been destructed, the event will never be fired.
+ * Also, it is still safe to connect and disconnect event sinks, as the event
+ * is a complete object.
+ *
+ * If the outer object wants to expose the event, it can expose it as is.
+ * However, the exposed event has a *non-standard* behavior, as the event **cannot
+ * not** provide other interfaces of the object.
+ * Thus, the event does not have to be aggregated.
+ *
+ * ### Other interfaces
+ *
+ * If the object **have to** provide interfaces, it have to be a component itself.
+ *
  * =========================
  * Component organization
  * =========================
@@ -801,7 +880,7 @@
  * There can be multiple hierarchies in a program.
  *
  * ## Naming a component
- * A component **should** have a name.
+ * A component **can** have a name.
  *
  * ## Access a component
  * A component can be accessed by its hierarchical full path.

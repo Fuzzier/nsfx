@@ -19,6 +19,7 @@
 
 #include <nsfx/component/config.h>
 #include <nsfx/component/i-object.h>
+#include <nsfx/component/ptr.h>
 
 
 NSFX_OPEN_NAMESPACE
@@ -30,7 +31,7 @@ NSFX_OPEN_NAMESPACE
  * @ingroup Component
  * @brief The class factory interface.
  */
-class IClassFactory :/*{{{*/
+class IClassFactory :
     virtual public IObject
 {
 public:
@@ -38,21 +39,16 @@ public:
 
 public:
     /**
-     * @brief Create an uninitialized object.
+     * @brief Create an object.
      *
-     * Users pass a valid `controller` to create an aggregable object.
-     * In such condition, the `iid` must be the UID of `IObject` to obtain
-     * the the navigator of the aggregated object.
-     * Otherwise, the function throws `BadAggregation`.
+     * Users can pass a valid `controller` to create an aggregable object.
+     * In such condition, the navigator of the aggregated object is created.
      *
-     * @throw BadAggregation The exception is thrown if `controller` is not
-     *                       `nullptr`, and `iid` is not the UID of `IObject`.
      * @throw OutOfMemory
-     * @throw NoInterface
      */
-    virtual void* CreateObject(const Uid& iid, IObject* controller) = 0;
+    virtual Ptr<IObject> CreateObject(IObject* controller) = 0;
 
-}; // class IClassFactory /*}}}*/
+}; // class IClassFactory
 
 
 NSFX_DEFINE_CLASS_UID(IClassFactory, "edu.uestc.nsfx.IClassFactory");

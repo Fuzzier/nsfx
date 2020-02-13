@@ -18,7 +18,8 @@ INCLUDES=/I"$(NSFX_PATH)/.."
 LIBS=
 
 ################################################################################
-# Updated: 2019-11-19
+# Common section. {{{
+# Updated: 2020-02-03
 ################################################################################
 CC=cl.exe
 LD=link.exe
@@ -61,11 +62,11 @@ ARFLAGS=/NOLOGO
 ! ERROR Make aborted.
 !ENDIF
 
-## `/source-charset:utf-8`
-# * From VC 2012: `/source-charset:utf-8`.
+## `/utf-8`
+# * From VC 2012: `utf-8`.
 # * Otherwise, disable warning C4819: file contains non-ascii characters.
 !IF $(MSC_VER) >= 1700
-CFLAGS=$(CFLAGS) /source-charset:utf-8
+CFLAGS=$(CFLAGS) /utf-8
 !ELSE # IF $(MSC_VER) < 1700
 CFLAGS=$(CFLAGS) /wd4819
 !ENDIF
@@ -135,6 +136,7 @@ run :
 		"%~d" )
 
 # Clean all except for the pre-compiled header.
+PCH=config.pch
 PCHOBJ=config.obj
 cl :
 	for /f "delims=" %d in ('dir /s /b *.obj 2^>nul') do @( \
@@ -150,6 +152,8 @@ cl :
 	del /s /q *.log 1>nul 2>nul
 !CMDSWITCHES -I
 
+################################################################################
+# }}}
 ################################################################################
 
 .PHONY: all clean run                                             \

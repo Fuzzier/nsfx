@@ -84,7 +84,7 @@ public:
  *                              IEvent<> ---> user-defined event interface
  *                                              |
  *                                              V
- *                                            Event<> (a concrete class)
+ *                                            Event<> (implements IEvent<>)
  * @endverbatim
  *
  * The class provides a `Visit()` function template to visit the event sinks.

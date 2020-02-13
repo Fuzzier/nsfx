@@ -22,13 +22,15 @@
 #include <nsfx/component/class-factory.h>
 #include <nsfx/component/exception.h>
 #include <boost/mpl/identity.hpp>
+#include <memory>  // unique_ptr
 #include <iostream>
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macros.
 /**
- * @brief A macro that registers a class with a default factory.
+ * @brief A macro that registers a class with a default factory that creates
+ *        *uninitialized* objects.
  *
  * @param T   It **must** conform to `ObjectImplConcept`.
  *            It **must not** be a qualified name.
@@ -186,7 +188,7 @@
             {                                                             \
                 try                                                       \
                 {                                                         \
-                    ::nsfx::RegisterClassFactory<T>(CID);                 \
+                    ::nsfx::RegisterDefaultClassFactory<T>(CID);          \
                 }                                                         \
                 catch (boost::exception& e)                               \
                 {                                                         \
@@ -198,6 +200,44 @@
     };                                                                    \
     template<class T> typename Nsfx ## T ## Register<T>::Helper           \
                                Nsfx ## T ## Register<T>::helper_;         \
+    template class Nsfx ## T ## Register<T>;
+
+
+ /**
+  * @ingroup Component
+  * @brief A macro that registers a customized class factory that usually
+  *        creates *initialized* objects.
+  *
+  * @param F   The class factory that implements `IClassFactory`.
+  *            It must conform to `HasUidConcept` and `ObjectImplConcept`.
+  * @param CID The UID of the class.
+  *
+  * @remarks For each `CID`, at most **one** class factory can be registered.
+  *          Therefore, this macro **cannot** be used together with
+  *          `NSFX_REGISTER_CLASS()`.
+  */
+#define NSFX_REGISTER_CLASS_FACTORY(F, CID)                                \
+    template<class T>                                                      \
+    class Nsfx ## T ## Register                                            \
+    {                                                                      \
+        static struct Helper                                               \
+        {                                                                  \
+            Helper(void)                                                   \
+            {                                                              \
+                try                                                        \
+                {                                                          \
+                    ::nsfx::RegisterClassFactory<F>(CID);                  \
+                }                                                          \
+                catch (boost::exception& e)                                \
+                {                                                          \
+                    std::cerr << diagnostic_information(e) << std::endl;   \
+                    throw;                                                 \
+                }                                                          \
+            }                                                              \
+        } helper_;                                                         \
+    };                                                                     \
+    template<class T> typename Nsfx ## T ## Register<T>::Helper            \
+                               Nsfx ## T ## Register<T>::helper_;          \
     template class Nsfx ## T ## Register<T>;
 
 
@@ -245,7 +285,7 @@ public:
     /**
      * @brief Get the `IClassRegistry` interface.
      */
-    static IClassRegistry* GetIClassRegistry(void)
+    static IClassRegistry* GetInstance(void)
     {
         static StaticObject<ClassRegistry>  registry;
         // Omit AddRef() as there is no need to do so.
@@ -257,7 +297,7 @@ public:
     virtual ~ClassRegistry(void) BOOST_NOEXCEPT {}
 
     // IClassRegistry
-    virtual void Register(const Uid& cid, Ptr<IClassFactory> factory) NSFX_FINAL NSFX_OVERRIDE
+    virtual void Register(Ptr<IClassFactory> factory, const Uid& cid) NSFX_FINAL NSFX_OVERRIDE
     {
         if (!factory)
         {
@@ -316,43 +356,70 @@ NSFX_DEFINE_CLASS_UID(ClassRegistry, "edu.uestc.nsfx.ClassRegistry");
  * @ingroup Component
  * @brief Register a class with the default class factory.
  *
- * @param[in] C The class to register.
- *              It must conform to `HasUidConcept` and `ObjectImplConcept`.
+ * @tparam C The class to register.
+ *           It must conform to `HasUidConcept` and `ObjectImplConcept`.
+ *
+ * @param[in] cid The CID of the component.
  *
  * @see `IClassRegistry::Register()`.
  */
 template<class C>
-inline void RegisterClassFactory(const Uid& cid)
+inline void RegisterDefaultClassFactory(const Uid& cid)
 {
     BOOST_CONCEPT_ASSERT((ObjectImplConcept<C>));
     typedef Object<ClassFactory<C>>  ClassFactoryClass;
     Ptr<IClassFactory> factory(new ClassFactoryClass);
-    IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
-    registry->Register(cid, std::move(factory));
+    IClassRegistry* registry = ClassRegistry::GetInstance();
+    registry->Register(std::move(factory), cid);
 }
 
 /**
  * @ingroup Component
- * @brief Register a class.
+ * @brief Register a class factory.
+ *
+ * @tparam Factory The class factory that implements `IClassFactory`.
+ *                 It must conform to `HasUidConcept` and `ObjectImplConcept`.
+ * @param[in] cid  The CID of the component.
  *
  * @see `IClassRegistry::Register()`.
  */
-inline void RegisterClassFactory(const Uid& cid, Ptr<IClassFactory> factory)
+template<class Factory>
+inline void RegisterClassFactory(const Uid& cid)
 {
-    IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
-    registry->Register(cid, std::move(factory));
+    IClassRegistry* registry = ClassRegistry::GetInstance();
+    // If `Factory` does not implement `IClassFactory`, `unique_ptr`
+    // automatically releases the object.
+    typedef Object<Factory>  FactoryClass;
+    std::unique_ptr<FactoryClass> p(new FactoryClass);
+    Ptr<IClassFactory> factory(p.get());
+    p.release();
+    registry->Register(std::move(factory), cid);
 }
 
 /**
  * @ingroup Component
- * @brief Register a class.
+ * @brief Unregister a class factory.
+ *
+ * @param[in] cid The CID of the component.
  *
  * @see `IClassRegistry::Register()`.
  */
 inline void UnregisterClassFactory(const Uid& cid)
 {
-    IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
+    IClassRegistry* registry = ClassRegistry::GetInstance();
     registry->Unregister(cid);
+}
+
+/**
+ * @ingroup Component
+ * @brief Get the registered class factory.
+ *
+ * @param[in] cid The CID of the component.
+ */
+inline Ptr<IClassFactory> GetClassFactory(const Uid& cid)
+{
+    IClassRegistry* registry = ClassRegistry::GetInstance();
+    return registry->GetClassFactory(cid);
 }
 
 /**
@@ -378,10 +445,9 @@ inline Ptr<I> CreateObject(const Uid& cid, IObject* controller = nullptr)
     BOOST_CONCEPT_ASSERT((HasUidConcept<I>));
     try
     {
-        IClassRegistry* registry = ClassRegistry::GetIClassRegistry();
+        IClassRegistry* registry = ClassRegistry::GetInstance();
         Ptr<IClassFactory> factory = registry->GetClassFactory(cid);
-        I* p = static_cast<I*>(factory->CreateObject(uid_of<I>(), controller));
-        return Ptr<I>(p, true);
+        return factory->CreateObject(controller);
     }
     catch (NoInterface& e)
     {

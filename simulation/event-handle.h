@@ -34,7 +34,7 @@ NSFX_OPEN_NAMESPACE
  *
  * # Interfaces
  * * Provides
- *   + \c IEventHandle
+ *   + `IEventHandle`
  */
 class EventHandle :
     public IEventHandle
