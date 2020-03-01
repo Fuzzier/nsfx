@@ -125,7 +125,7 @@ public:
      *
      * @param[in] lb The lower bound of the range.
      * @param[in] ub The upper bound of the range.
-     *            It **must** be greater than or equal to `lb`.
+     *               It **must** be greater than or equal to `lb`.
      *
      * The possible values the distribution can generate is within `[lb, ub]`.
      */
@@ -139,7 +139,7 @@ public:
      *
      * @param[in] lb The lower bound of the range.
      * @param[in] ub The upper bound of the range.
-     *            It **must** be greater than or equal to `lb`.
+     *               It **must** be greater than or equal to `lb`.
      *
      * The possible values the distribution can generate is within `[lb, ub]`.
      */
@@ -153,7 +153,7 @@ public:
      *
      * @param[in] lb The lower bound of the range.
      * @param[in] ub The upper bound of the range.
-     *            It **must** be greater than or equal to `lb`.
+     *               It **must** be greater than or equal to `lb`.
      *
      * The possible values the distribution can generate is within `[lb, ub]`.
      */
@@ -167,7 +167,7 @@ public:
      *
      * @param[in] lb The lower bound of the range.
      * @param[in] ub The upper bound of the range.
-     *            It **must** be greater than or equal to `lb`.
+     *               It **must** be greater than or equal to `lb`.
      *
      * The possible values the distribution can generate is within `[lb, ub]`.
      */
@@ -181,7 +181,7 @@ public:
      *
      * @param[in] lb The lower bound of the range.
      * @param[in] ub The upper bound of the range.
-     *            It **must** be greater than or equal to `lb`.
+     *               It **must** be greater than or equal to `lb`.
      *
      * The possible values the distribution can generate is within `[lb, ub)`.
      */
@@ -197,7 +197,7 @@ public:
      *
      * @param[in] lb The lower bound of the range.
      * @param[in] ub The upper bound of the range.
-     *            It <b>must</b> be greater than or equal to `lb`.
+     *               It <b>must</b> be greater than or equal to `lb`.
      *
      * The possible values the distribution can generate is within `[lb, ub)`.
      */
