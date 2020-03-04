@@ -16,6 +16,7 @@
 #include <nsfx/test.h>
 #include <nsfx/utility/bi-vector.h>
 #include <iostream>
+#include <vector>
 
 
 NSFX_TEST_SUITE(BiVector)

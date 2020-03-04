@@ -38,9 +38,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <boost/version.hpp>
 // BOOST 1.63.0 or above
-#if (BOOST_VERSION < 106300)
-# error BOOST version 1.63.0 or above is required. However, an unsupported version is used.
-#endif // (BOOST_VERSION < 106300)
+#if (BOOST_VERSION < 106000)
+# error BOOST version 1.60.0 or above is required. However, an unsupported version is used.
+#endif // (BOOST_VERSION < 106000)
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -239,7 +239,7 @@ NSFX_CLOSE_NAMESPACE
 
 // Import standard containers.
 // MSVC && Microsoft Visual C++ 2010
-#if defined(NSFX_MSVC) && (NSFX_MSVC) <= 1600
+#if defined(NSFX_MSVC) && (NSFX_MSVC <= 1600)
 # include <boost/container/vector.hpp>
 # include <boost/container/deque.hpp>
 # include <boost/container/list.hpp>

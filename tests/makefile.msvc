@@ -19,7 +19,7 @@ LIBS=
 
 ################################################################################
 # Common section. {{{
-# Updated: 2020-02-03
+# Updated: 2020-03-04
 ################################################################################
 CC=cl.exe
 LD=link.exe
@@ -55,16 +55,29 @@ ARFLAGS=/NOLOGO
 ! ENDIF
 !ENDIF
 
+!IF [for /f "skip=1 tokens=1-3 delims=." %i in ('wmic os get version') do @(echo.OS_MAJOR_VER=%i>osver.~ & echo.OS_MINOR_VER=%j>>osver.~ & echo.OS_BUILD_NUMBER=%k>>osver.~ & echo.OS_FULL_VER=%i%j%k>>osver.~ & exit /b)]
+! MESSAGE *** WARNING ***
+! MESSAGE Cannot determine OS version, defaults to Microsft Windows XP SP3.
+OS_MAJOR_VER=5
+OS_MINOR_VER=1
+OS_BUILD_NUMBER=2600
+OS_FULL_VER=5012600
+!ELSE
+! INCLUDE osver.~
+! IF [del osver.~]
+! ENDIF
+!ENDIF
+
 # VC 2010 SP1 or above is required.
-!IF $(MSC_VER) < 1600 || $(MSC_FULL_VER) < 160040219
+!IF $(MSC_VER) < 1600 || $(MSC_FULL_VER) < 160030219
 ! MESSAGE *** ERROR ***
 ! MESSAGE Unsupported VC version. Make sure VC 2010 SP1 or above versions are used.
 ! ERROR Make aborted.
 !ENDIF
 
 ## `/utf-8`
-# * From VC 2012: `utf-8`.
-# * Otherwise, disable warning C4819: file contains non-ascii characters.
+# * `utf-8`: From VC 2012.
+# * `/wd4819`: Disable warning C4819: file contains non-ascii characters.
 !IF $(MSC_VER) >= 1700
 CFLAGS=$(CFLAGS) /utf-8
 !ELSE # IF $(MSC_VER) < 1700
@@ -72,8 +85,8 @@ CFLAGS=$(CFLAGS) /wd4819
 !ENDIF
 
 ## `/std:c++14|c++17|c++latest`
-# * From VC 2017 15.3    : `c++17`
-# * From VC 2015 Update 3: `c++14`
+# * `c++14`: From VC 2015 Update 3
+# * `c++17`: From VC 2017 15.3
 !IF $(MSC_VER) >= 1911
 CPPFLAGS=$(CPPFLAGS) /std:c++17
 !ELSEIF $(MSC_FULL_VER) >= 190024210
@@ -89,18 +102,23 @@ CPPFLAGS=$(CPPFLAGS) /Zm250
 !ENDIF
 
 ## `/analyze`
-# * From VC 2012: supported.
+# * From VC 2012.
 # !IF $(MSC_VER) >= 1700
 # CFLAGS=$(CFLAGS) /analyze
 # !ENDIF
 
-## `/arch:<AVX|AVX2>`
-# * From VC 2013 Update 2: `AVX2`
-# * From VC 2010         : `AVX`
-!IF $(MSC_FULL_VER) >= 180030501
+## `/arch:<SSE2|AVX|AVX2>`
+# * `AVX` From Windows 7 SP1 and Windows Server 2008 R2 SP1 (6.1.7601)
+# * `AVX`: From VC 2010
+# * `AVX2`: From VC 2013 Update 2
+!IF $(OS_FULL_VER) < 617601
+ARCH=SSE2
+!ELSE
+! IF $(MSC_FULL_VER) >= 180030501
 ARCH=AVX2
-!ElSE
+! ElSE
 ARCH=AVX
+! ENDIF
 !ENDIF
 
 !IF "$(BUILD_TYPE)"=="Release"
