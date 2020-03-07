@@ -1900,6 +1900,33 @@ Ptr<INormalDistribution>        n   = random->CreateNormalDistribution(/*mean*/0
 double nr = n->Generate();
 ~~~
 
+### Code snippets
+
+~~~
+class Module
+{
+    Ptr<IRandom> random_;
+
+    virtual void Use(Ptr<IRandom> random) NSFX_OVERRIDE
+    {
+        random_ = random;
+    }
+
+    Ptr<IExponentialDistribution> exp_;
+
+    void Initialize(void)
+    {
+        exp_ = random_->CreateExponentialDistribution(1.0);
+    }
+
+    void Method(void)
+    {
+        double e = exp_->Generate();
+        double u = random_->GenerateUniform01();
+    }
+};
+~~~
+
 ## Statistics
 
 The library provides tools to collect statistics.
@@ -2071,6 +2098,70 @@ double stddev   = summary->Stddev();
 summary->Reset();
 
 simulator->RunFor(Seconds(20));
+~~~
+
+### Code snippets
+
+~~~
+class Provider
+{
+    MemberAggObject<ProbeContainer> probes_;
+
+    NSFX_INTERFACE_MAP_BEGIN(Provider)
+        NSFX_INTERFACE_AGGREGATED_ENTRY(IProbeContainer, &probes_)
+    NSFX_INTERFACE_MAP_END()
+
+    Provider(void) :
+        probes_(/* controller */this)
+    {
+    }
+
+    Ptr<Probe>   probe1_;
+    Ptr<Probe>   probe2_;
+    Ptr<IObject> aggObj_;
+
+    void Initialize(void)
+    {
+        probe1_ = probes_.GetImpl()->Add("probe1");
+        probe1_ = probes_.GetImpl()->Add("probe2");
+
+        // Suppose `aggObj_` provides "probe3", it is exposed as "obj.probe3".
+        probes_.GetImpl()->MergeFrom("obj.", aggObj_);
+    }
+
+    void Fire(void)
+    {
+        probe1_->Fire(1);
+        probe2_->Fire(1);
+    }
+};
+~~~
+
+~~~
+class Collector
+{
+    Collector(Ptr<IObject> provider)
+    {
+        Ptr<IProbeContainer> probes(provider);
+
+        Ptr<IProbeEventSink> stat1 =
+            CreateEventSink<IProbeEventSink>(nullptr, [&] (double v){
+            // ...
+        });
+        Ptr<IProbeEventSink> stat2 =
+            CreateEventSink<IProbeEventSink>(nullptr, [&] (double v){
+            // ...
+        });
+        Ptr<IProbeEventSink> stat3 =
+            CreateEventSink<IProbeEventSink>(nullptr, [&] (double v){
+            // ...
+        });
+
+        probes->GetProbe("probe1")->Connect(stat1);
+        probes->GetProbe("probe2")->Connect(stat2);
+        probes->GetProbe("obj.probe3")->Connect(stat3);
+    }
+};
 ~~~
 
 ## Logging
@@ -2295,7 +2386,7 @@ Ptr<ILogEventSink> sink = CreateEventSink<ILogEventSink>(nullptr, [&] (LogRecord
                               record = r; });
 
 // Create second-order log value to generate timestamps.
-LogValue ts = MakeLogValue<LogValue>([&] {
+LogValue ts = MakeLogValue<LogValue>([=] {
                   MakeConstantLogValue<TimePoint>(clock->Now()); });
 
 // Add the pending value to the logger.
@@ -2468,4 +2559,93 @@ The log records created by the macros carry the following named log values:
 * `"LogFunction"`: `const char*` (if `NSFX_LOG_FUNCTION_NAME` is defined)
 * `"LogFile"`    : `const char*` (if `NSFX_LOG_FILE_NAME` is defined)
 * `"LogLine"`    : `uint32_t`    (if `NSFX_LOG_LINE_NUMBER` is defined)
+
+### Code snippet
+
+~~~
+class Module
+{
+    Ptr<IObject>         logObj_;
+    Ptr<ILogEventSinkEx> log_;
+
+    NSFX_INTERFACE_MAP_BEGIN(Module)
+        NSFX_INTERFACE_AGGREGATED_ENTRY(ILogEvent, &*logObj_)
+    NSFX_INTERFACE_MAP_END()
+
+    Module(void) :
+        logObj_(CreateObject<IObject>("edu.uestc.nsfx.Logger", this)),
+        log_(logObj_)
+    {
+    }
+
+    void Initialize(void)
+    {
+        log_->AddValue("Module", MakeCstrLogValue("Module"));
+    }
+
+    void Method(void)
+    {
+        NSFX_LOG_DEBUG(log_) << "Some message.";
+    }
+};
+~~~
+
+~~~
+class Node
+{
+    Ptr<IObject>         logObj_;
+    Ptr<ILogEventSinkEx> log_;
+
+    NSFX_INTERFACE_MAP_BEGIN(Node)
+        NSFX_INTERFACE_AGGREGATED_ENTRY(ILogEvent, &*logObj_)
+    NSFX_INTERFACE_MAP_END()
+
+    Node(void) :
+        logObj_(CreateObject<IObject>("edu.uestc.nsfx.Logger", this)),
+        log_(logObj_)
+    {
+    }
+
+    std::string  name_;
+    Ptr<IObject> moduleObj_;
+
+    void Initialize(void)
+    {
+        log_->AddValue("Node", MakeCstrLogValue(name_.c_str()));
+        log_->RegisterSource(moduleObj_);
+    }
+
+    void Method(void)
+    {
+        NSFX_LOG_DEBUG(log_) << "Some message.";
+    }
+};
+~~~
+
+~~~
+class Consumer
+{
+    Ptr<IClock> clock_;
+
+    void Initialize(void)
+    {
+        log_ = CreateObject<ILogStreamSink>("edu.uestc.nsfx.LogStreamSink");
+
+        Ptr<ILogFormatter> fmtr = CreateLogFormatter(
+            [&] (std::ostream& os, const LogRecord& r) {
+                os << clock_->Now() << ": "
+                    << r.Get<const char*>("Node") << " ("
+                    << r.Get<const char*>("Module") << ") "
+                    << r.Get<const char*>("LogMessage")
+                    << std::endl;
+            });
+        Ptr<ILogFormatterUser>(log_)->Use(fmtr);
+
+        log_->AddStream(std::cout);
+        log_->AddFile("some.log");
+    }
+
+    Ptr<ILogStreamSink> log_;
+};
+~~~
 
