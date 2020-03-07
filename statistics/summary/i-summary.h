@@ -55,14 +55,14 @@ public:
     /**
      * @brief The number of the sample points.
      *
-     * @return If no data has been collected, \c 0 is returned.
+     * @return If no data has been collected, `0` is returned.
      */
     virtual double Count(void) = 0;
 
     /**
      * @brief The summation of the sample points.
      *
-     * @return If no data has been collected, \c 0 is returned.
+     * @return If no data has been collected, `0` is returned.
      */
     virtual double Sum(void) = 0;
 
@@ -77,7 +77,7 @@ public:
     /**
      * @brief The sample standard deviation.
      *
-     * @return If there are less than \c 2 sample points, a quiet NaN
+     * @return If there are less than `2` sample points, a quiet NaN
      *         (Not-a-Number) is returned.
      */
     virtual double Stddev(void) = 0;

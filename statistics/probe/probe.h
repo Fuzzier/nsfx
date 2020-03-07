@@ -38,7 +38,7 @@ NSFX_STATISTICS_OPEN_NAMESPACE
  * # Interfaces
  * * Provides
  * * Events
- *   + \c IProbeEvent
+ *   + `IProbeEvent`
  */
 class Probe :
     virtual public IObject

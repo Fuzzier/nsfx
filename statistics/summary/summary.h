@@ -37,15 +37,13 @@ NSFX_STATISTICS_OPEN_NAMESPACE
  * @brief The summary of sample.
  *
  * # Uid
- * @code
- * "edu.uestc.nsfx.statistics.Summary"
- * @endcode
+ * `"edu.uestc.nsfx.statistics.Summary"`
  *
  * # Interfaces
  * * Provides
- *   + \c ISummary
+ *   + `ISummary`
  * * Event sinks
- *   + \c IProbeEventSink
+ *   + `IProbeEventSink`
  */
 class Summary :
     public ISummary

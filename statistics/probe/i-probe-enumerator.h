@@ -49,7 +49,7 @@ public:
     /**
      * @brief Get the name of the next supported probe.
      *
-     * @pre <code>HasNext() == true</code>.
+     * @pre `HasNext() == true`.
      *
      * @throw OutOfBounds
      */

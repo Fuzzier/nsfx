@@ -37,7 +37,7 @@ NSFX_STATISTICS_OPEN_NAMESPACE
  *
  * # Interfaces
  * * Provides
- *   + \c IProbeContainer
+ *   + `IProbeContainer`
  */
 class ProbeContainer :
     public IProbeContainer
@@ -62,11 +62,11 @@ public:
      * @param[in] prefix The prefix to the names of the merged probes.
      * @param[in] merged The probe container to be merged.
      *
-     * The current set of probes in the \c merged is merged.
-     * If the \c merged is changed, there is no guarantee that the this
+     * The current set of probes in the `merged` is merged.
+     * If the `merged` is changed, there is no guarantee that the this
      * container would change accordingly.
      *
-     * If the name already exists, the existing probe is <b>not</b> replaced.
+     * If the name already exists, the existing probe is **not** replaced.
      */
     void MergeFrom(const std::string& prefix, Ptr<IProbeContainer> merged);
 

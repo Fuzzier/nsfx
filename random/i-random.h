@@ -197,7 +197,7 @@ public:
      *
      * @param[in] lb The lower bound of the range.
      * @param[in] ub The upper bound of the range.
-     *               It <b>must</b> be greater than or equal to `lb`.
+     *               It **must** be greater than or equal to `lb`.
      *
      * The possible values the distribution can generate is within `[lb, ub)`.
      */
@@ -210,7 +210,7 @@ public:
      * @brief Create a Bernoulli distribution.
      *
      * @param[in] prob Probability of producing a value of `true`.
-     *                 It <b>must</b> be within `[0, 1]` .
+     *                 It **must** be within `[0, 1]` .
      */
     virtual Ptr<IBernoulliDistribution>
             CreateBernoulliDistribution(double prob) = 0;
@@ -224,7 +224,7 @@ public:
      *                      experiments.
      * @param[in] prob Probability of success of the independent
      *                 Bernoulli-distributed experiments.
-     *                 It <b>must</b> be within `[0, 1]` .
+     *                 It **must** be within `[0, 1]` .
      */
     virtual Ptr<IBinomialDistribution>
             CreateBinomialDistribution(uint32_t numTrials, double prob) = 0;
@@ -239,7 +239,7 @@ public:
      *                      experiments.
      * @param[in] prob Probability of success of the independent
      *                 Bernoulli-distributed experiments.
-     *                 It <b>must</b> be within `[0, 1]` .
+     *                 It **must** be within `[0, 1]` .
      */
     virtual Ptr<INegativeBinomialDistribution>
             CreateNegativeBinomialDistribution(
@@ -252,7 +252,7 @@ public:
      * @brief Create a geometric distribution.
      *
      * @param[in] prob Probability of success.
-     *                 It <b>must</b> be within `[0, 1]` .
+     *                 It **must** be within `[0, 1]` .
      */
     virtual Ptr<IGeometricDistribution>
             CreateGeometricDistribution(double prob) = 0;
@@ -263,7 +263,7 @@ public:
      * @brief Create a Poisson distribution.
      *
      * @param[in] mean The expected number of events in interval.
-     *                 It <b>must</b> be positive.
+     *                 It **must** be positive.
      */
     virtual Ptr<IPoissonDistribution>
             CreatePoissonDistribution(double mean) = 0;
@@ -274,7 +274,7 @@ public:
      * @brief Create an exponential distribution.
      *
      * @param[in] lambda The average rate of occurrence.
-     *                   It <b>must</b> be positive.
+     *                   It **must** be positive.
      */
     virtual Ptr<IExponentialDistribution>
             CreateExponentialDistribution(double lambda) = 0;
@@ -285,9 +285,9 @@ public:
      * @brief Create a gamma distribution.
      *
      * @param[in] shape The shape of the distribution.
-     *                  It <b>must</b> be positive.
+     *                  It **must** be positive.
      * @param[in] scale The scale of the distribution.
-     *                  It <b>must</b> be positive.
+     *                  It **must** be positive.
      */
     virtual Ptr<IGammaDistribution>
             CreateGammaDistribution(double shape, double scale) = 0;
@@ -298,9 +298,9 @@ public:
      * @brief Create a gamma distribution.
      *
      * @param[in] shape The shape of the distribution.
-     *                  It <b>must</b> be positive.
+     *                  It **must** be positive.
      * @param[in] scale The scale of the distribution.
-     *                  It <b>must</b> be positive.
+     *                  It **must** be positive.
      */
     virtual Ptr<IWeibullDistribution>
             CreateWeibullDistribution(double shape, double scale) = 0;
@@ -312,7 +312,7 @@ public:
      *
      * @param[in] location The location (shift) of the distribution.
      * @param[in] scale    The scale of the distribution.
-     *                     It <b>must</b> be positive.
+     *                     It **must** be positive.
      */
     virtual Ptr<IExtremeValueDistribution>
             CreateExtremeValueDistribution(double location, double scale) = 0;
@@ -323,9 +323,9 @@ public:
      * @brief Create a beta distribution.
      *
      * @param[in] alpha The first shape of the distribution.
-     *                  It <b>must</b> be positive.
+     *                  It **must** be positive.
      * @param[in] beta  The second shape of the distribution.
-     *                  It <b>must</b> be positive.
+     *                  It **must** be positive.
      */
     virtual Ptr<IBetaDistribution>
             CreateBetaDistribution(double alpha, double beta) = 0;
@@ -337,7 +337,7 @@ public:
      *
      * @param[in] mean  The mean (location) of the distribution.
      * @param[in] scale The shape of the distribution.
-     *                  It <b>must</b> be positive.
+     *                  It **must** be positive.
      */
     virtual Ptr<ILaplaceDistribution>
             CreateLaplaceDistribution(double mean, double scale) = 0;
@@ -349,7 +349,7 @@ public:
      *
      * @param[in] mean   The mean of the distribution (its expected value).
      * @param[in] stddev The standard deviation of the distribution.
-     *                   It <b>must</b> be positive.
+     *                   It **must** be positive.
      */
     virtual Ptr<INormalDistribution>
             CreateNormalDistribution(double mean, double stddev) = 0;
@@ -362,7 +362,7 @@ public:
      * @param[in] mean   The mean of the underlying normal distribution.
      * @param[in] stddev The standard deviation of the underlying normal
      *                   distribution.
-     *                   It <b>must</b> be positive.
+     *                   It **must** be positive.
      */
     virtual Ptr<ILognormalDistribution>
             CreateLognormalDistribution(double mean, double stddev) = 0;
@@ -373,7 +373,7 @@ public:
      * @brief Create a chi-squared distribution.
      *
      * @param[in] degreesOfFreedom The degrees of freedom.
-     *                             It <b>must</b> be positive.
+     *                             It **must** be positive.
      */
     virtual Ptr<IChiSquaredDistribution>
             CreateChiSquaredDistribution(double degreesOfFreedom) = 0;
@@ -385,7 +385,7 @@ public:
      *
      * @param[in] location The location of the peak (its mode).
      * @param[in] scale    The scale of the distribution.
-     *                     It <b>must</b> be positive.
+     *                     It **must** be positive.
      */
     virtual Ptr<ICauchyDistribution>
             CreateCauchyDistribution(double location, double scale) = 0;
@@ -396,9 +396,9 @@ public:
      * @brief Create a Fisher F-distribution.
      *
      * @param[in] numerator   The numerator's degrees of freedom.
-     *                        It <b>must</b> be positive.
+     *                        It **must** be positive.
      * @param[in] denominator The denominator's degrees of freedom.
-     *                        It <b>must</b> be positive.
+     *                        It **must** be positive.
      */
     virtual Ptr<IFisherFDistribution>
             CreateFisherFDistribution(double numerator, double denominator) = 0;
@@ -409,7 +409,7 @@ public:
      * @brief Create a Student t-distribution.
      *
      * @param[in] degreesOfFreedom The degrees of freedom.
-     *                             It <b>must</b> be positive.
+     *                             It **must** be positive.
      */
     virtual Ptr<IStudentTDistribution>
             CreateStudentTDistribution(double degreesOfFreedom) = 0;

@@ -35,7 +35,7 @@ NSFX_STATISTICS_OPEN_NAMESPACE
  *
  * # Interfaces
  * * Provides
- *   + \c IProbeEnumerator
+ *   + `IProbeEnumerator`
  */
 class ProbeEnumerator :
     public IProbeEnumerator
