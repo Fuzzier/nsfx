@@ -19,7 +19,7 @@ LIBS=
 
 ################################################################################
 # Common section. {{{
-# Updated: 2020-03-04
+# Updated: 2020-03-12
 ################################################################################
 CC=cl.exe
 LD=link.exe
@@ -68,10 +68,10 @@ OS_FULL_VER=5012600
 ! ENDIF
 !ENDIF
 
-# VC 2010 SP1 or above is required.
-!IF $(MSC_VER) < 1600 || $(MSC_FULL_VER) < 160030219
+# VC 2010 or above is required.
+!IF $(MSC_VER) < 1600
 ! MESSAGE *** ERROR ***
-! MESSAGE Unsupported VC version. Make sure VC 2010 SP1 or above versions are used.
+! MESSAGE Unsupported VC version. Make sure VC 2010 or above versions are used.
 ! ERROR Make aborted.
 !ENDIF
 
