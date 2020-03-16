@@ -1934,8 +1934,6 @@ The statistics collection is implemented by the event model.
 A component that provides/generates statistics is an event source, while
 a component that collects/consumes statistics is an event sink.
 Each sample point of a statistic is a *double* value.
-Statistics related interfaces and components are defined in
-the `nsfx::statistics` namespace.
 
 ### Provide statistics
 
@@ -2081,7 +2079,7 @@ initial state.
 For example,
 
 ~~~
-Ptr<ISummary> summary = CreateObject<ISummary>("edu.uestc.nsfx.statistics.Summary");
+Ptr<ISummary> summary = CreateObject<ISummary>("edu.uestc.nsfx.Summary");
 sizeProbe->Connect(summary);
 
 simulator->RunFor(Seconds(100));
@@ -2145,15 +2143,15 @@ class Collector
         Ptr<IProbeContainer> probes(provider);
 
         Ptr<IProbeEventSink> stat1 =
-            CreateEventSink<IProbeEventSink>(nullptr, [&] (double v){
+            CreateEventSink<IProbeEventSink>(nullptr, [&] (double v) {
             // ...
         });
         Ptr<IProbeEventSink> stat2 =
-            CreateEventSink<IProbeEventSink>(nullptr, [&] (double v){
+            CreateEventSink<IProbeEventSink>(nullptr, [&] (double v) {
             // ...
         });
         Ptr<IProbeEventSink> stat3 =
-            CreateEventSink<IProbeEventSink>(nullptr, [&] (double v){
+            CreateEventSink<IProbeEventSink>(nullptr, [&] (double v) {
             // ...
         });
 
