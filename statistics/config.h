@@ -79,15 +79,5 @@
  */
 
 
-#define NSFX_STATISTICS_OPEN_NAMESPACE  \
-    NSFX_OPEN_NAMESPACE                 \
-    namespace statistics {
-
-
-#define NSFX_STATISTICS_CLOSE_NAMESPACE  \
-    } /* namespace statistics */         \
-    NSFX_CLOSE_NAMESPACE
-
-
 #endif // CONFIG_H__4908DD8B_0960_4EDF_A60C_F5367B7D8748
 

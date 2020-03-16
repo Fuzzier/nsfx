@@ -21,7 +21,7 @@
 #include <nsfx/component/exception.h>
 
 
-NSFX_STATISTICS_OPEN_NAMESPACE
+NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -43,7 +43,7 @@ struct ProbeAlreadyRegistered : ComponentException {};
 typedef boost::error_info<struct tag_ProbeName, std::string>  ProbeNameErrorInfo;
 
 
-NSFX_STATISTICS_CLOSE_NAMESPACE
+NSFX_CLOSE_NAMESPACE
 
 
 #endif // EXCEPTION_H__4DB73FF2_5428_461D_B64F_52242E8744BB

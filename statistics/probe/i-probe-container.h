@@ -23,7 +23,7 @@
 #include <string>
 
 
-NSFX_STATISTICS_OPEN_NAMESPACE
+NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -54,11 +54,10 @@ public:
 };
 
 
-NSFX_DEFINE_CLASS_UID(IProbeContainer,
-                      "edu.uestc.nsfx.statistics.IProbeContainer");
+NSFX_DEFINE_CLASS_UID(IProbeContainer, "edu.uestc.nsfx.IProbeContainer");
 
 
-NSFX_STATISTICS_CLOSE_NAMESPACE
+NSFX_CLOSE_NAMESPACE
 
 
 #endif // I_DATA_SOURCE_H__9979C39C_C242_47D8_A805_A368BE9266D6

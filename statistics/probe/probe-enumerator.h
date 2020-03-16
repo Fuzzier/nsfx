@@ -25,7 +25,7 @@
 #include <string>
 
 
-NSFX_STATISTICS_OPEN_NAMESPACE
+NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -105,7 +105,7 @@ inline std::string ProbeEnumerator::Next(void)
 }
 
 
-NSFX_STATISTICS_CLOSE_NAMESPACE
+NSFX_CLOSE_NAMESPACE
 
 
 #endif // PROBE_ENUMERATOR_H__6796FA4F_4580_4CAE_B604_BB640350FDB9

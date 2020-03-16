@@ -22,7 +22,7 @@
 #include <nsfx/event/i-event-sink.h>
 
 
-NSFX_STATISTICS_OPEN_NAMESPACE
+NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -54,15 +54,15 @@ class IProbeEventSink;
 
 ////////////////////////////////////////////////////////////////////////////////
 NSFX_DEFINE_EVENT_SINK_INTERFACE(
-    IProbeEventSink, "edu.uestc.nsfx.statistics.IProbeEventSink",
+    IProbeEventSink, "edu.uestc.nsfx.IProbeEventSink",
     ( void(double) ));
 
 NSFX_DEFINE_EVENT_INTERFACE(
-    IProbeEvent, "edu.uestc.nsfx.statistics.IProbeEvent",
+    IProbeEvent, "edu.uestc.nsfx.IProbeEvent",
     IProbeEventSink);
 
 
-NSFX_STATISTICS_CLOSE_NAMESPACE
+NSFX_CLOSE_NAMESPACE
 
 
 #endif // I_PROBE_EVENT_H__265AC6BA_6B45_47A1_BF80_0C0977AAF70D

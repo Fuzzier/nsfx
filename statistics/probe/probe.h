@@ -25,7 +25,7 @@
 #include <nsfx/component/object.h>
 
 
-NSFX_STATISTICS_OPEN_NAMESPACE
+NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -83,7 +83,7 @@ inline void Probe::Fire(double data)
 }
 
 
-NSFX_STATISTICS_CLOSE_NAMESPACE
+NSFX_CLOSE_NAMESPACE
 
 
 #endif // PROBE_H__8B0EE0AE_C42E_46F0_AFA6_8C5446A1D7B0

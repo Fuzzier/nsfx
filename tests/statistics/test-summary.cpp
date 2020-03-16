@@ -25,10 +25,10 @@ NSFX_TEST_SUITE(Probe)
 {
     using nsfx::Ptr;
     using nsfx::Object;
-    using nsfx::statistics::IProbeEvent;
-    using nsfx::statistics::Probe;
-    using nsfx::statistics::ProbeContainer;
-    using nsfx::statistics::ISummary;
+    using nsfx::IProbeEvent;
+    using nsfx::Probe;
+    using nsfx::ProbeContainer;
+    using nsfx::ISummary;
 
     NSFX_TEST_CASE(Summary)
     {
@@ -42,7 +42,7 @@ NSFX_TEST_SUITE(Probe)
             Ptr<Probe> p2 = pc->Add(n2);
 
             Ptr<ISummary> s = nsfx::CreateObject<ISummary>(
-                                "edu.uestc.nsfx.statistics.Summary");
+                                "edu.uestc.nsfx.Summary");
             Ptr<IProbeEvent>(p1)->Connect(s);
             Ptr<IProbeEvent>(p2)->Connect(s);
 

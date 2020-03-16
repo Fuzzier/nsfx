@@ -28,7 +28,7 @@
 #include <cmath> // sqrt
 
 
-NSFX_STATISTICS_OPEN_NAMESPACE
+NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -37,7 +37,7 @@ NSFX_STATISTICS_OPEN_NAMESPACE
  * @brief The summary of sample.
  *
  * # Uid
- * `"edu.uestc.nsfx.statistics.Summary"`
+ * `"edu.uestc.nsfx.Summary"`
  *
  * # Interfaces
  * * Provides
@@ -83,7 +83,7 @@ private:
     double sqrSum_;
 };
 
-NSFX_REGISTER_CLASS(Summary, "edu.uestc.nsfx.statistics.Summary");
+NSFX_REGISTER_CLASS(Summary, "edu.uestc.nsfx.Summary");
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -186,7 +186,7 @@ inline void Summary::OnProbe(double data)
 }
 
 
-NSFX_STATISTICS_CLOSE_NAMESPACE
+NSFX_CLOSE_NAMESPACE
 
 
 #endif // SUMMARY_H__308CF850_53A1_4ADE_A024_EFBEF3126DD5

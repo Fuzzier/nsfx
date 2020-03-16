@@ -22,7 +22,7 @@
 #include <string>
 
 
-NSFX_STATISTICS_OPEN_NAMESPACE
+NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -58,11 +58,10 @@ public:
 };
 
 
-NSFX_DEFINE_CLASS_UID(IProbeEnumerator,
-                      "edu.uestc.nsfx.statistics.IProbeEnumerator");
+NSFX_DEFINE_CLASS_UID(IProbeEnumerator, "edu.uestc.nsfx.IProbeEnumerator");
 
 
-NSFX_STATISTICS_CLOSE_NAMESPACE
+NSFX_CLOSE_NAMESPACE
 
 
 #endif // I_PROBE_ENUMERATOR_H__A8D454B4_7743_4FFC_A2F7_424019FDCA5B

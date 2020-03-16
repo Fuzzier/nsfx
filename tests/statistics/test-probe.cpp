@@ -24,11 +24,11 @@ NSFX_TEST_SUITE(Probe)
 {
     using nsfx::Ptr;
     using nsfx::Object;
-    using nsfx::statistics::IProbeEvent;
-    using nsfx::statistics::IProbeContainer;
-    using nsfx::statistics::IProbeEnumerator;
-    using nsfx::statistics::Probe;
-    using nsfx::statistics::ProbeContainer;
+    using nsfx::IProbeEvent;
+    using nsfx::IProbeContainer;
+    using nsfx::IProbeEnumerator;
+    using nsfx::Probe;
+    using nsfx::ProbeContainer;
 
     NSFX_TEST_CASE(ProbeContainer)
     {

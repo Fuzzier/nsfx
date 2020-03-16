@@ -27,7 +27,7 @@
 #include <string>
 
 
-NSFX_STATISTICS_OPEN_NAMESPACE
+NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -225,7 +225,7 @@ inline void ProbeContainer::MergeFrom(const std::string& prefix, Ptr<IProbeConta
 }
 
 
-NSFX_STATISTICS_CLOSE_NAMESPACE
+NSFX_CLOSE_NAMESPACE
 
 
 #endif // PROBE_CONTAINER_H__6B28DFC9_2116_4EFE_8076_E8E1CE07D8A8

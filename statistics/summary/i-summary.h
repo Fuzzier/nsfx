@@ -22,7 +22,7 @@
 #include <nsfx/component/i-object.h>
 
 
-NSFX_STATISTICS_OPEN_NAMESPACE
+NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -90,10 +90,10 @@ public:
 };
 
 
-NSFX_DEFINE_CLASS_UID(ISummary, "edu.uestc.nsfx.statistic.ISummary");
+NSFX_DEFINE_CLASS_UID(ISummary, "edu.uestc.nsfx.ISummary");
 
 
-NSFX_STATISTICS_CLOSE_NAMESPACE
+NSFX_CLOSE_NAMESPACE
 
 
 #endif // I_SUMMARY_H__F35B6455_16D3_4798_B5C4_78E5D2A5AB21
