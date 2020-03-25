@@ -53,7 +53,11 @@ private:
     template<class U>
     friend class PtrBase;
 
-    BOOST_CONCEPT_ASSERT((IObjectConcept<T>));
+    // NOTE: Removed to allow the declaration of class members that are smart
+    //       pointers that point to the class itself, since `std::is_base_of<>`
+    //       cannot be applied upon an undefined class.
+    //       e.g., `class A : virtual public IObject { Ptr<A> p_; };`
+    // BOOST_CONCEPT_ASSERT((IObjectConcept<T>));
 
     typedef PtrBase<T>  ThisType;
 
