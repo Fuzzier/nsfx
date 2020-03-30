@@ -1061,6 +1061,9 @@ public:
 template<class Intf>
 struct InterfaceTag {};
 
+template<class Intf, class X2>
+struct Interface2Tag {};
+
 struct AggregatedTag {};
 
 
@@ -1087,9 +1090,9 @@ public:
     /**
      * @brief Query an interface.
      *
-     * @tparam O       The class that implements the queried interface.
-     * @tparam Intf    The type of the interface.
-     * @param[in] iid  The UID of the interface Intf.
+     * @tparam O      The class that directly implements the queried interface.
+     * @tparam Intf   The type of the interface.
+     * @param[in] iid The UID of the interface Intf.
      * @param[in] o   The pointer to the object.
      */
     template<class O, class Intf>
@@ -1100,6 +1103,29 @@ public:
         {
             o->AddRef();
             result_ = static_cast<Intf*>(o);
+        }
+        return found;
+    }
+
+    /**
+     * @brief Query an interface.
+     *
+     * @tparam O      The class that directly implements the queried interface.
+     * @tparam Intf   The type of the queried interface.
+     * @tparam X2     The type of the class or interface that derives from `Intf`.
+     *                The class `O` **must** derive from `X2`.
+     * @param[in] iid The UID of the interface Intf.
+     * @param[in] o   The pointer to the object.
+     */
+    template<class O, class Intf, class X2>
+    bool operator()(const Uid& iid, O* o, Interface2Tag<Intf, X2>)
+    {
+        bool found = (iid_ == iid);
+        if (found)
+        {
+            o->AddRef();
+            X2* p = static_cast<X2*>(o);
+            result_ = static_cast<Intf*>(p);
         }
         return found;
     }
@@ -1170,7 +1196,8 @@ NSFX_CLOSE_NAMESPACE
 
 /**
  * @ingroup Component
- * @brief Expose an interface implemented by `ThisClass` that defines the interface map.
+ * @brief Expose an interface that is directly implemented by `ThisClass` that
+ *        defines the interface map.
  *
  * @param Intf The interface to expose.
  *             `ThisClass` that defines the interface map **must** implement `Intf`.
@@ -1189,7 +1216,33 @@ NSFX_CLOSE_NAMESPACE
 
 /**
  * @ingroup Component
- * @brief Expose an interface implemented by an aggregated object.
+ * @brief Expose an interface that is directly implemented by `ThisClass` that
+ *        defines the interface map.
+ *
+ * @param Intf The interface to expose.
+ *             `ThisClass` that defines the interface map **must** implement `Intf`.
+ *             It **should not** be `IObject`.
+ * @param X2   The class or interface that derives from `Intf`.
+ *             `ThisClass` **must** derive from `X2`.
+ *             It **should not** be `IObject`.
+ */
+#define NSFX_INTERFACE_ENTRY2(Intf, X2)                           \
+                static_assert(                                    \
+                    ::std::is_base_of<X2, ThisClass_>::value,     \
+                    "Cannot expose an unimplemented interface."); \
+                static_assert(                                    \
+                    ::std::is_base_of<Intf, X2>::value,           \
+                    "Cannot expose an unimplemented interface."); \
+                if (visitor(::nsfx::uid_of<Intf>(),               \
+                            this,                                 \
+                            ::nsfx::Interface2Tag<Intf, X2>()))   \
+                {                                                 \
+                    break;                                        \
+                }
+
+/**
+ * @ingroup Component
+ * @brief Expose an interface that is implemented by an aggregated object.
  *
  * @param Intf The interface to expose.
  *             It **should not** be `IObject`.

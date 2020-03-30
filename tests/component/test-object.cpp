@@ -36,11 +36,11 @@ NSFX_TEST_SUITE(Object)
     NSFX_DEFINE_CLASS_UID(ITest, "edu.uestc.nsfx.test.ITest");
 
     struct IFoobar :/*{{{*/
-        virtual nsfx::IObject
+        ITest
     {
         virtual ~IFoobar(void) {}
 
-        virtual refcount_t GetRefCount(void) = 0;
+        virtual refcount_t GetRefCount(void) NSFX_OVERRIDE = 0;
     };/*}}}*/
 
     NSFX_DEFINE_CLASS_UID(IFoobar, "edu.uestc.nsfx.test.IFoobar");
@@ -688,6 +688,52 @@ NSFX_TEST_SUITE(Object)
                 NSFX_TEST_EXPECT(false) << e.what() << std::endl;
             }
             NSFX_TEST_EXPECT(deallocated);
+        }
+
+    }/*}}}*/
+
+    NSFX_TEST_SUITE(IntfEntry2)/*{{{*/
+    {
+        struct Wedge : public IFoobar
+        {
+            Wedge(void)
+            {
+            }
+
+            virtual ~Wedge(void) {}
+
+            virtual refcount_t GetRefCount(void)
+            {
+                AddRef();
+                return Release();
+            }
+
+            NSFX_INTERFACE_MAP_BEGIN(Wedge)
+                NSFX_INTERFACE_ENTRY(IFoobar)
+                NSFX_INTERFACE_ENTRY2(ITest, IFoobar)
+            NSFX_INTERFACE_MAP_END()
+        };
+
+        NSFX_TEST_CASE(Test)
+        {
+            try
+            {
+                deallocated = false;
+                typedef nsfx::Object<Wedge> WedgeClass;
+                nsfx::Ptr<WedgeClass> w(new WedgeClass);
+                nsfx::Ptr<ITest> t(w);   // ITest exposed via IFoobar.
+                nsfx::Ptr<IFoobar> f(w); // IFoobar.
+                NSFX_TEST_EXPECT(f == t); // Same object.
+                NSFX_TEST_EXPECT_EQ(w->GetRefCount(), 3);
+            }
+            catch (boost::exception& e)
+            {
+                NSFX_TEST_EXPECT(false) << diagnostic_information(e) << std::endl;
+            }
+            catch (std::exception& e)
+            {
+                NSFX_TEST_EXPECT(false) << e.what() << std::endl;
+            }
         }
 
     }/*}}}*/
