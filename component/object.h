@@ -357,10 +357,6 @@ private:
 }; // class ObjectBase /*}}}*/
 
 
-struct InterfaceTag  {};
-struct AggregatedTag {};
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // ObjectImplConcept
 /**
@@ -1062,6 +1058,13 @@ public:
 
 
 ////////////////////////////////////////////////////////////////////////////////
+template<class Intf>
+struct InterfaceTag {};
+
+struct AggregatedTag {};
+
+
+////////////////////////////////////////////////////////////////////////////////
 /**
  * @brief A visitor to visit the interface map.
  *
@@ -1070,19 +1073,33 @@ public:
 class InternalQueryInterfaceVisitor
 {
 public:
+    /**
+     * @brief Construct an interface visitor.
+     *
+     * @param[in] iid    The IID of the queried interface.
+     * @param[in] result The pointer to store the queried interface.
+     */
     InternalQueryInterfaceVisitor(const Uid& iid, void*& result) :
         iid_(iid),
         result_(result)
     {}
 
-    template<class Intf>
-    bool operator()(const Uid& iid, Intf* intf, InterfaceTag)
+    /**
+     * @brief Query an interface.
+     *
+     * @tparam O       The class that implements the queried interface.
+     * @tparam Intf    The type of the interface.
+     * @param[in] iid  The UID of the interface Intf.
+     * @param[in] o   The pointer to the object.
+     */
+    template<class O, class Intf>
+    bool operator()(const Uid& iid, O* o, InterfaceTag<Intf>)
     {
         bool found = (iid_ == iid);
         if (found)
         {
-            intf->AddRef();
-            result_ = intf;
+            o->AddRef();
+            result_ = static_cast<Intf*>(o);
         }
         return found;
     }
@@ -1098,8 +1115,8 @@ public:
     }
 
 private:
-    const Uid& iid_;
-    void*& result_;
+    const Uid& iid_; ///< The IID of the queried interface.
+    void*& result_;  ///< The poiner to store the queried interface.
 };
 
 
@@ -1115,91 +1132,79 @@ NSFX_CLOSE_NAMESPACE
  * @param ThisClass The class that defines the interface map.
  *                  It is the class that implements or aggregates interfaces.
  *
- * @remarks The macros defines a public member function template
+ * @remarks The macros define a public member function template
  * `InternalVisitInterfaceMap()` for the component class.
- * The template parameter `Visitor` must be a functor class that supports
+ * The template parameter `Visitor` **must** be a functor class that supports
  * tag-based function dispatch.
- *
- * @remarks For example,
- * @code{.cpp}
- * struct Visitor
- * {
- *     // @param[in] iid  The UID of the interface Intf.
- *     // @param[in] intf The pointer to the interface.
- *     template<class Intf>
- *     bool operator()(const Uid& iid, Intf* intf, InterfaceTag);
- *
- *     // @param[in] iid  The UID of the aggregated interface.
- *     // @param[in] navi The pointer to the navigator.
- *     bool operator()(const Uid& iid, IObject* navi, AggregatedTag);
- * };
- * @endcode
  *
  * @remarks The functor (visitor) returns `false` to conitnue the visiting.
  * Or it returns `true` to terminate the visiting.
  *
- * @remarks The funtion template returns the return value of visitor.
+ * @remarks The funtion template delegates the return value of the visitor.
  * i.e., the function template returns `true` if the visiting is terminated
  * by the visitor.
  * Otherwise, it returns `false`.
+ *
+ * @see `InternalQueryInterfaceVisitor`.
  */
-#define NSFX_INTERFACE_MAP_BEGIN(ThisClass)                                   \
-    private:                                                                  \
-        typedef ThisClass  ThisClass_;                                        \
-    public:                                                                   \
-        template<class Visitor>                                               \
-        bool InternalVisitInterfaceMap(Visitor&& visitor)                     \
-        {                                                                     \
-            bool result = true;                                               \
-            do                                                                \
-            {                                                                 \
-                static_assert(                                                \
-                    ::std::is_base_of<::nsfx::IObject, ThisClass_>::value,    \
-                    "Cannot expose an unimplemented interface");              \
-                if (visitor(::nsfx::uid_of<::nsfx::IObject>(),                \
-                            static_cast<::nsfx::IObject*>(this),              \
-                            ::nsfx::InterfaceTag()))                          \
-                {                                                             \
-                    break;                                                    \
+#define NSFX_INTERFACE_MAP_BEGIN(ThisClass)                                \
+    private:                                                               \
+        typedef ThisClass  ThisClass_;                                     \
+    public:                                                                \
+        template<class Visitor>                                            \
+        bool InternalVisitInterfaceMap(Visitor&& visitor)                  \
+        {                                                                  \
+            bool result = true;                                            \
+            do                                                             \
+            {                                                              \
+                static_assert(                                             \
+                    ::std::is_base_of<::nsfx::IObject, ThisClass_>::value, \
+                    "Cannot define interface map for the class, "          \
+                    "since it does not implement IObject.");               \
+                if (visitor(::nsfx::uid_of<::nsfx::IObject>(),             \
+                            this,                                          \
+                            ::nsfx::InterfaceTag<IObject>()))              \
+                {                                                          \
+                    break;                                                 \
                 }
 
 /**
  * @ingroup Component
- * @brief Expose an interface implemented by the `ThisClass` that defines the interface map.
+ * @brief Expose an interface implemented by `ThisClass` that defines the interface map.
  *
- * @param Intf The type of the interface.
- *             `ThisClass` that defines the interface map must derive from `Intf`.
+ * @param Intf The interface to expose.
+ *             `ThisClass` that defines the interface map **must** implement `Intf`.
  *             It **should not** be `IObject`.
  */
-#define NSFX_INTERFACE_ENTRY(Intf)                                 \
-                static_assert(                                     \
-                    ::std::is_base_of<Intf, ThisClass_>::value,    \
-                    "Cannot expose an unimplemented interface");   \
-                if (visitor(::nsfx::uid_of<Intf>(),                \
-                            static_cast<Intf*>(this),              \
-                            ::nsfx::InterfaceTag()))               \
-                {                                                  \
-                    break;                                         \
+#define NSFX_INTERFACE_ENTRY(Intf)                                \
+                static_assert(                                    \
+                    ::std::is_base_of<Intf, ThisClass_>::value,   \
+                    "Cannot expose an unimplemented interface."); \
+                if (visitor(::nsfx::uid_of<Intf>(),               \
+                            this,                                 \
+                            ::nsfx::InterfaceTag<Intf>()))        \
+                {                                                 \
+                    break;                                        \
                 }
 
 /**
  * @ingroup Component
  * @brief Expose an interface implemented by an aggregated object.
  *
- * @param Intf The type of the interface.
- *             It **should not** be "IObject".
- * @param navi It must be a **raw** poiner to an aggregable object that exposes
+ * @param Intf The interface to expose.
+ *             It **should not** be `IObject`.
+ * @param navi It **must** be a *raw* poiner to an *aggregable* object that exposes
  *             the `Intf` interface.
  *             i.e., the object implements `IObject`, and `Intf` can be queried
  *             from the object.
- *             The object must be accessible within the component class.
+ *             The object **must** be accessible within the component class.
  */
-#define NSFX_INTERFACE_AGGREGATED_ENTRY(Intf, navi)               \
-                if (visitor(::nsfx::uid_of<Intf>(),               \
-                            static_cast<::nsfx::IObject*>(navi),  \
-                            ::nsfx::AggregatedTag()))             \
-                {                                                 \
-                    break;                                        \
+#define NSFX_INTERFACE_AGGREGATED_ENTRY(Intf, navi)              \
+                if (visitor(::nsfx::uid_of<Intf>(),              \
+                            static_cast<::nsfx::IObject*>(navi), \
+                            ::nsfx::AggregatedTag()))            \
+                {                                                \
+                    break;                                       \
                 }
 
 /**
@@ -1211,29 +1216,29 @@ NSFX_CLOSE_NAMESPACE
  *
  * @remarks The macros changes the access rights to `protected`.
  */
-#define NSFX_INTERFACE_MAP_END()                                      \
-                result = false;                                       \
-            }                                                         \
-            while (false);                                            \
-            return result;                                            \
-        } /* bool InternalVisitInterfaceMap() */                      \
-    protected:                                                        \
-        void* InternalQueryInterface(const ::nsfx::Uid& iid)          \
-        {                                                             \
-            void* result = nullptr;                                   \
-            InternalVisitInterfaceMap(                                \
-                ::nsfx::InternalQueryInterfaceVisitor(iid, result));  \
-            if (!result)                                              \
-            {                                                         \
-                BOOST_THROW_EXCEPTION(                                \
-                    ::nsfx::NoInterface()                             \
-                    << ::nsfx::QueriedClassErrorInfo(                 \
-                        ::boost::typeindex::type_id<ThisClass_>()     \
-                            .pretty_name())                           \
-                    << ::nsfx::QueriedInterfaceUidErrorInfo(iid)      \
-                );                                                    \
-            }                                                         \
-            return result;                                            \
+#define NSFX_INTERFACE_MAP_END()                                     \
+                result = false;                                      \
+            }                                                        \
+            while (false);                                           \
+            return result;                                           \
+        } /* bool InternalVisitInterfaceMap() */                     \
+    protected:                                                       \
+        void* InternalQueryInterface(const ::nsfx::Uid& iid)         \
+        {                                                            \
+            void* result = nullptr;                                  \
+            InternalVisitInterfaceMap(                               \
+                ::nsfx::InternalQueryInterfaceVisitor(iid, result)); \
+            if (!result)                                             \
+            {                                                        \
+                BOOST_THROW_EXCEPTION(                               \
+                    ::nsfx::NoInterface()                            \
+                    << ::nsfx::QueriedClassErrorInfo(                \
+                        ::boost::typeindex::type_id<ThisClass_>()    \
+                            .pretty_name())                          \
+                    << ::nsfx::QueriedInterfaceUidErrorInfo(iid)     \
+                );                                                   \
+            }                                                        \
+            return result;                                           \
         }
 
 /*}}}*/
