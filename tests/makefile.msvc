@@ -678,14 +678,21 @@ test-pseudo-random-generator.exe : $(SRC) $(HEADERS)
 
 ################################################################################
 # statistics
-statistics :     \
-    test-probe   \
-    test-summary \
+statistics :        \
+    test-statistics \
+    test-probe      \
+    test-summary    \
 
 STATISTICS_HEADERS=                                    \
     $(NSFX_PATH)/statistics.h                          \
     $(NSFX_PATH)/statistics/config.h                   \
     $(NSFX_PATH)/statistics/exception.h                \
+    $(NSFX_PATH)/statistics/i-statistic.h              \
+    $(NSFX_PATH)/statistics/i-statistics-container.h   \
+    $(NSFX_PATH)/statistics/i-statistics-enumerator.h  \
+    $(NSFX_PATH)/statistics/statistic.h                \
+    $(NSFX_PATH)/statistics/statistics-container.h     \
+    $(NSFX_PATH)/statistics/statistics-enumerator.h    \
     $(NSFX_PATH)/statistics/probe/i-probe-event.h      \
     $(NSFX_PATH)/statistics/probe/i-probe-container.h  \
     $(NSFX_PATH)/statistics/probe/i-probe-enumerator.h \
@@ -701,6 +708,14 @@ HEADERS=                  \
     $(COMPONENT_HEADERS)  \
     $(TEST_HEADERS)       \
     $(EXCEPTION_HEADERS)  \
+
+########################################
+test-statistics : test-statistics.exe
+
+SRC=statistics/test-statistics.cpp
+
+test-statistics.exe : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
 test-probe : test-probe.exe

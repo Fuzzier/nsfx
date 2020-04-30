@@ -25,6 +25,25 @@ NSFX_OPEN_NAMESPACE
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// Statistic registration.
+/**
+ * @ingroup Statistics
+ * @brief Cannot obtain the statistic since it is not registered.
+ */
+struct StatisticNotRegistered : ComponentException {};
+
+/**
+ * @ingroup Statistics
+ * @brief Cannot register a statistic that is already registered.
+ */
+struct StatisticAlreadyRegistered : ComponentException {};
+
+
+////////////////////////////////////////////////////////////////////////////////
+typedef boost::error_info<struct tag_StatisticName, std::string>  StatisticNameErrorInfo;
+
+
+////////////////////////////////////////////////////////////////////////////////
 // Probe registration.
 /**
  * @ingroup Statistics

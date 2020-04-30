@@ -20,6 +20,15 @@
 #include <nsfx/statistics/config.h>
 #include <nsfx/statistics/exception.h>
 
+// Statistics.
+#include <nsfx/statistics/i-statistic.h>
+#include <nsfx/statistics/i-statistics-container.h>
+#include <nsfx/statistics/i-statistics-enumerator.h>
+
+#include <nsfx/statistics/statistic.h>
+#include <nsfx/statistics/statistics-container.h>
+#include <nsfx/statistics/statistics-enumerator.h>
+
 // Probe.
 #include <nsfx/statistics/probe/i-probe-event.h>
 #include <nsfx/statistics/probe/i-probe-container.h>
