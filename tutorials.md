@@ -2121,7 +2121,7 @@ class Provider
     void Initialize(void)
     {
         probe1_ = probes_.GetImpl()->Add("probe1");
-        probe1_ = probes_.GetImpl()->Add("probe2");
+        probe2_ = probes_.GetImpl()->Add("probe2");
 
         // Suppose `aggObj_` provides "probe3", it is exposed as "obj.probe3".
         probes_.GetImpl()->MergeFrom("obj.", aggObj_);
@@ -2158,6 +2158,234 @@ class Collector
         probes->GetProbe("probe1")->Connect(stat1);
         probes->GetProbe("probe2")->Connect(stat2);
         probes->GetProbe("obj.probe3")->Connect(stat3);
+    }
+};
+~~~
+
+### Provide statistics revisited
+The probe-based statistics are fairly limited, since only a single `double`
+value can be provided.
+This makes it hard to provide *parameterized* statistics.
+One method is to provide *parameterized* statistics by encoding the parameters
+in the name of the probe.
+
+For example,
+
+~~~
+// Add a probe whose name contains encoded parameters.
+std::ostringstream oss;
+oss << "number of bits sent of piority " << priority_;
+parameterizedProbe_ = probes_.GetImpl()->Add(oss.str());
+~~~
+
+It is dirty and inconvenient.
+
+The statistics framework has several requirements:
+* A statistic have a name.
+* A statistic can provide any number of data.
+* A statistic can be collected by one or more collectors.
+* A provider can provide statistics merged from different sources.
+
+The definition and collection of statistics must be done within the frameworks
+of object model and event model.
+
+To provide any number of data, the statistic is of free-form, and a pair of
+event interfaces **shall** be defined.
+
+For example,
+
+~~~
+NSFX_DEFINE_EVENT_SINK_INTERFACE(
+    IDataWithPriorityStatSink, "edu.uestc.nsfx.tutorial.IDataWithPriorityStatSink",
+    ( void(double v, uint32_t priority) ));
+
+NSFX_DEFINE_EVENT_INTERFACE(
+    IDataWithPriorityStat, "edu.uestc.nsfx.tutorial.IDataWithPriorityStat"
+    IDataWithPriorityStatSink);
+~~~
+
+The library provides a *gray-box* resuable component `StatisticsContainer` to
+manage statistics.
+The provider of the statistic can aggregate `StatisticsContainer`, and expose
+`IStatisticsContainer` interface from it.
+
+The provider can use the function template `Add()` to add statistics to
+the container.
+
+For example,
+
+~~~
+class StatisticsProvider :
+    public ISchedulerUser,
+    public IInitializable
+{
+    typedef StatisticsProvider  ThisClass;
+
+public:
+    StatisticsProvider(void) :
+        priority_(1),
+        stats_(/* container = */ this),
+        generateSampleEventSink_(/* controller = */this, /* o = */this,
+                                 /* ptmf = */&ThisClass::OnGenerateSample)
+    {}
+
+    virtual ~StatisticsProvider(void) {}
+
+    void Use(Ptr<IScheduler> scheduler)
+    {
+        scheduler_ = scheduler;
+    }
+
+    void Initialize(void)
+    {
+        // Add a statistic with its event type and name.
+        sample_ = stats_.GetImpl()->Add<IDataWithPriorityStat>("sample size");
+        // If the statistic name has already been registered, StatisticAlreadyRegistered
+        // exception will be thrown.
+
+        random_ = CreateObject<IRandom>("edu.uestc.nsfx.Xoshiro256Plus01Engine");
+        exp_ = random_->CreateExponentialDistribution(/* lambda = */1.0);
+
+        scheduler_->ScheduleIn(Seconds(1),
+            generateSampleEventSink_.GetImpl()->GetIntf());
+    }
+
+private:
+    void OnGenerateSample(void)
+    {
+        double sample = exp_->Generate();
+
+        // Generate a sample point along with the parameters.
+        sample_->Fire(sample, priority_);
+
+        scheduler_->ScheduleIn(Seconds(1),
+            generateSampleEventSink_.GetImpl()->GetIntf());
+    }
+
+    NSFX_INTERFACE_MAP_BEGIN(StatisticsProvider)
+        NSFX_INTERFACE_ENTRY(ISchedulerUser)
+        NSFX_INTERFACE_ENTRY(IInitializable)
+        NSFX_INTERFACE_AGGREGATED_ENTRY(IStatisticsContainer, &stats_)
+    NSFX_INTERFACE_MAP_END()
+
+private:
+    Ptr<IScheduler> scheduler_;
+
+    Ptr<IRandom> random_;
+    Ptr<IExponentialDistribution> exp_;
+
+    uint32_t priority_;
+
+    MemberAggObject<StatisticsContainer> stats_;
+
+    // The statistic is an event source.
+    Ptr<Event<IDataWithPriorityStat>> sample_;
+
+    // -> OnGenerateSample().
+    MutualObject<MemberFunctionBasedEventSink<IEventSink<>, ThisClass>>
+        generateSampleEventSink_;
+};
+
+NSFX_REGISTER_CLASS(StatisticsProvider, "edu.uestc.nsfx.tutorial.StatisticsProvider");
+~~~
+
+The components that collect the statistic **must** provide the event sink
+interface, and connects to the statistic via its name.
+
+For example,
+
+~~~
+Ptr<IStatisticsContainer> stats = CreateObject<IStatisticsContainer>(
+        "edu.uestc.nsfx.tutorial.StatisticsProvider");
+
+Ptr<ISchedulerUser>(stats)->Use(scheduler);
+Ptr<IInitializable>(stats)->Initialize();
+
+double totalSize[MAX_NUM_PRIORITIES] = {};
+
+// A collector of the statistic is a component that provides IDataWithPriorityStatSink interface.
+Ptr<IObject> collector =
+    CreateEventSink<IDataWithPriorityStatSink>(nullptr, [&] (double v, uint32_t priority) {
+        totalSize[priority] += v;
+    });
+
+// Connect the statistic to the collector.
+cookie_t cookie = stats->Connect("sample size", collector);
+// If the statistic does not exit, StatisticNotRegistered exception will be thrown.
+// If the collector does not provide IDataWithPriorityStatSink interface, NoInterface
+// exception will be thrown.
+
+// The collector can be disconnected.
+stats->Disconnect("sample size", cookie);
+~~~
+
+For convenience, the library provides the following event interfaces:
+* `IStat0` and `IStat0Sink` for statistic with no value.
+* `IStat1` and `IStat1Sink` for statistic with 1 double value.
+* `IStat1` and `IStat2Sink` for statistic with 2 double values.
+* ...
+* `IStat6` and `IStat6Sink` for statistic with 6 double values.
+
+### Code snippets
+
+~~~
+class Provider
+{
+    MemberAggObject<StatisticsContainer> stats_;
+
+    NSFX_INTERFACE_MAP_BEGIN(Provider)
+        NSFX_INTERFACE_AGGREGATED_ENTRY(IStatisticsContainer, &stats_)
+    NSFX_INTERFACE_MAP_END()
+
+    Provider(void) :
+        stats_(/* controller */this)
+    {
+    }
+
+    Ptr<Event<IStat1>> stat1_; // IStat1: single-value statistic.
+    Ptr<Event<IStat2>> stat2_; // IStat2: double-value statistic.
+    Ptr<IObject>      aggObj_;
+
+    void Initialize(void)
+    {
+        stat1_ = stats_.GetImpl()->Add<IStat1>("stat1");
+        stat2_ = stats_.GetImpl()->Add<IStat2>("stat2");
+
+        // Suppose `aggObj_` provides "stat3", it is exposed as "obj.stat3".
+        stats_.GetImpl()->MergeFrom("obj.", aggObj_);
+    }
+
+    void Fire(void)
+    {
+        stat1_->Fire(1);
+        stat2_->Fire(1, 2);
+    }
+};
+~~~
+
+~~~
+class Collector
+{
+    Collector(Ptr<IObject> provider)
+    {
+        Ptr<IStatisticsContainer> stats(provider);
+
+        Ptr<IStat1Sink> sink1 =
+            CreateEventSink<IStat1Sink>(nullptr, [&] (double v1) {
+            // ...
+        });
+        Ptr<IStat2Sink> sink2 =
+            CreateEventSink<IStat2Sink>(nullptr, [&] (double v1, double v2) {
+            // ...
+        });
+        Ptr<IStat3Sink> sink3 =
+            CreateEventSink<IStat3Sink>(nullptr, [&] (double v1, double v2, double v3) {
+            // ...
+        });
+
+        stats->Connect("stat1", sink1);
+        stats->Connect("stat2", sink2);
+        stats->Connect("obj.stat3", sink3);
     }
 };
 ~~~
