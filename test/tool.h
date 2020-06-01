@@ -582,7 +582,7 @@ NSFX_TEST_CLOSE_NAMESPACE
         NSFX_TEST_CLOSENESS_IMPL(                                               \
             ::nsfx::test::ToolType::RC,                                         \
             ::nsfx::test::ToolLevel::EXPECT,                                    \
-            "|" #actual " - " #limit "| <= " #limit " * " #tolerance,           \
+            "|" #actual " - " #limit "| <= |" #limit "| * " #tolerance,         \
             actual, limit, tolerance,                                           \
             RelativeCloseness)
 
@@ -598,7 +598,7 @@ NSFX_TEST_CLOSE_NAMESPACE
         NSFX_TEST_CLOSENESS_IMPL(                                               \
             ::nsfx::test::ToolType::RC,                                         \
             ::nsfx::test::ToolLevel::ASSERT,                                    \
-            "|" #actual " - " #limit "| <= " #limit " * " #tolerance,           \
+            "|" #actual " - " #limit "| <= |" #limit "| * " #tolerance,         \
             actual, limit, tolerance,                                           \
             RelativeCloseness)
 /*}}}*/
@@ -835,7 +835,11 @@ public:
         }
 # else // !(NSFX_TEST_TOOL_OPERATOR == 0) // Relative closeness
         auto tol2 = limit * tol; // Evaluate only once.
-        if ((tol2 < actual - limit ) || (tol2 < limit  - actual))
+        if (tol2 < 0)
+        {
+            tol2 = -tol2;
+        }
+        if ((tol2 < actual - limit) || (tol2 < limit  - actual))
         {
             data_ = new Data(std::forward<A>(actual),
                              std::forward<L>(limit),

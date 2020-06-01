@@ -141,6 +141,7 @@ NSFX_TEST_SUITE(ValueFormat)
         float j = -2.0f;
         float k =  0.1f;
         NSFX_TEST_EXPECT_RC(i, j, k) << SHOULD_SEE;
+        NSFX_TEST_EXPECT_RC(i, j, 0.5f) << SHOULD_NOT_SEE;
     }
 
     NSFX_TEST_CASE(Double)
@@ -149,6 +150,7 @@ NSFX_TEST_SUITE(ValueFormat)
         double j = -2;
         double k = 0.1;
         NSFX_TEST_EXPECT_RC(i, j, k) << SHOULD_SEE;
+        NSFX_TEST_EXPECT_RC(i, j, 0.5) << SHOULD_NOT_SEE;
     }
 
     NSFX_TEST_CASE(StringLiteral)
