@@ -19,7 +19,7 @@
 
 #include <nsfx/component/config.h>
 #include <nsfx/component/exception.h>
-#include <boost/type_traits/type_identity.hpp>
+#include <nsfx/utility/type-identity.h>
 #include <boost/type_index.hpp>
 #include <cstring> // strlen, strcmp
 
@@ -139,7 +139,7 @@ public:
 # define NSFX_DEFINE_CLASS_UID(T, UID)                           \
     /* Declare an overloaded function. */                        \
     NsfxUidTraits<T>                                             \
-    NsfxGetUidTraits(::boost::type_identity<T>) BOOST_NOEXCEPT;  \
+    NsfxGetUidTraits(::nsfx::type_identity<T>) BOOST_NOEXCEPT;  \
     /* Specialization the global traits class template. */       \
     template<> class ::NsfxUidTraits<T>                          \
     {                                                            \
@@ -182,7 +182,7 @@ NsfxUidTraitsFallback NsfxGetUidTraits(T) BOOST_NOEXCEPT;
     template<class > class NsfxUidTraits;                        \
     /* Declare an overloaded function. */                        \
     NsfxUidTraits<T>                                             \
-    NsfxGetUidTraits(::boost::type_identity<T>) BOOST_NOEXCEPT;  \
+    NsfxGetUidTraits(::nsfx::type_identity<T>) BOOST_NOEXCEPT;  \
     /* Specialization the local traits class template. */        \
     template<> class NsfxUidTraits<T>                            \
     {                                                            \
@@ -252,15 +252,15 @@ NSFX_OPEN_NAMESPACE
  * };
  *
  * // Just declare the function without defining it.
- * // Use ::boost::type_identity<> to prevent argument deduction to
+ * // Use ::nsfx::type_identity<> to prevent argument deduction to
  * // accedentially bring in unwanted related classes (inheritance, et al).
- * NsfxUidTraitsXxx NsfxGetUidTraits(::boost::type_identity<Xxx>);
+ * NsfxUidTraitsXxx NsfxGetUidTraits(::nsfx::type_identity<Xxx>);
  *
  * // There can be several overloads.
- * NsfxUidTraitsYyy NsfxGetUidTraits(::boost::type_identity<Yyy>);
+ * NsfxUidTraitsYyy NsfxGetUidTraits(::nsfx::type_identity<Yyy>);
  *
  * // Obtain the traits class, and the correct overload will be selected.
- * typedef decltype(NsfxGetUidTraits<::boost::type_identity<Xxx>()) TraitsType;
+ * typedef decltype(NsfxGetUidTraits<::nsfx::type_identity<Xxx>()) TraitsType;
  * @endcode
  *
  * If an overloaded function `NsfxGetUidTraits()` is not defined for
@@ -322,7 +322,7 @@ NSFX_OPEN_NAMESPACE
  * in the following example.
  * @code{.cpp}
  * template<> class ::NsfxUidTraits<class A> { ... };
- * ::NsfxUidTraits<A> NsfxGetUidTraits(::boost::type_identity<A>);
+ * ::NsfxUidTraits<A> NsfxGetUidTraits(::nsfx::type_identity<A>);
  *
  * class A; // Declared after the overloaded function NsfxGetUidTraits().
  * @endcode
@@ -333,7 +333,7 @@ NSFX_OPEN_NAMESPACE
  * class A; // Declared before the overloaded function NsfxGetUidTraits().
  *
  * template<> class ::NsfxUidTraits<class A> { ... };
- * ::NsfxUidTraits<A> NsfxGetUidTraits(::boost::type_identity<A>);
+ * ::NsfxUidTraits<A> NsfxGetUidTraits(::nsfx::type_identity<A>);
  * @endcode
  *
  * ## MSVC implementation
@@ -362,7 +362,7 @@ class UidTraits
 #if defined(NSFX_MSVC)
     typedef ::NsfxUidTraits<T>  TraitsType;
 #else // !defined(NSFX_MSVC)
-    typedef decltype(NsfxGetUidTraits(typename ::boost::type_identity<T>()))
+    typedef decltype(NsfxGetUidTraits(typename ::nsfx::type_identity<T>()))
             TraitsType;
 #endif // defined(NSFX_MSVC)
 

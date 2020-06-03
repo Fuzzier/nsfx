@@ -245,6 +245,7 @@ UTILITY_HEADERS=                                    \
     $(NSFX_PATH)/utility/nop.h                      \
     $(NSFX_PATH)/utility/ratio.h                    \
     $(NSFX_PATH)/utility/endian.h                   \
+    $(NSFX_PATH)/utility/type-identity.h            \
     $(NSFX_PATH)/utility/rounding.h                 \
     $(NSFX_PATH)/utility/circular-sequence-number.h \
     $(NSFX_PATH)/utility/lollipop-sequence-number.h \

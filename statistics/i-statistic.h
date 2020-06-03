@@ -20,9 +20,17 @@
 #include <nsfx/statistics/config.h>
 #include <nsfx/component/i-object.h>
 #include <nsfx/component/ptr.h>
+#include <nsfx/event/i-event.h>
+#include <nsfx/event/i-event-sink.h>
 
 
 NSFX_OPEN_NAMESPACE
+
+
+/**
+ * @addtogroup Statistics
+ * @{
+ */
 
 
 ////////////////////////////////////////////////////////////////////////////////

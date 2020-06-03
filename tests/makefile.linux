@@ -15,13 +15,13 @@
 
 SHELL=/bin/sh
 NSFX_PATH=..
-CC=g++
+CC=g++-5
 LD=ld
 LIBS=
 AR=
 
 CFLAGS=
-CPPFLAGS=-I$(NSFX_PATH)/.. -std=c++17
+CPPFLAGS=-I$(NSFX_PATH)/.. -std=c++11
 LDFLAGS=
 ARFLAGS=
 
@@ -110,6 +110,7 @@ UTILITY_HEADERS=                                    \
     $(NSFX_PATH)/utility/nop.h                      \
     $(NSFX_PATH)/utility/ratio.h                    \
     $(NSFX_PATH)/utility/endian.h                   \
+    $(NSFX_PATH)/utility/type-identity.h            \
     $(NSFX_PATH)/utility/rounding.h                 \
     $(NSFX_PATH)/utility/circular-sequence-number.h \
     $(NSFX_PATH)/utility/lollipop-sequence-number.h \

@@ -20,7 +20,7 @@
 #include <nsfx/network/config.h>
 #include <nsfx/network/buffer/iterator/basic-buffer-iterator.h>
 #include <nsfx/utility/endian.h>
-#include <boost/type_traits/type_identity.hpp>
+#include <nsfx/utility/type-identity.h>
 #include <type_traits> // is_integral, is_floating_point, make_unsigned
 
 
@@ -125,7 +125,7 @@ public:
      * @tparam T Must be an integral type.
      */
     template<class T>
-    void Write(typename boost::type_identity<T>::type  data) BOOST_NOEXCEPT;
+    void Write(typename type_identity<T>::type  data) BOOST_NOEXCEPT;
 
     /**
      * @brief Write data in little endian order.
@@ -133,7 +133,7 @@ public:
      * @tparam T Must be an integral type.
      */
     template<class T>
-    void WriteL(typename boost::type_identity<T>::type  data) BOOST_NOEXCEPT;
+    void WriteL(typename type_identity<T>::type  data) BOOST_NOEXCEPT;
 
     /**
      * @brief Write data in big endian order.
@@ -141,7 +141,7 @@ public:
      * @tparam T Must be an integral type.
      */
     template<class T>
-    void WriteB(typename boost::type_identity<T>::type  data) BOOST_NOEXCEPT;
+    void WriteB(typename type_identity<T>::type  data) BOOST_NOEXCEPT;
 
 private:
     /**
@@ -439,21 +439,21 @@ BufferIterator::MoveBackward(size_t numBytes) BOOST_NOEXCEPT
 
 template<class T>
 inline void
-BufferIterator::Write(typename boost::type_identity<T>::type  data) BOOST_NOEXCEPT
+BufferIterator::Write(typename type_identity<T>::type  data) BOOST_NOEXCEPT
 {
     WriteInOrder<T>(data, native_endian);
 }
 
 template<class T>
 inline void
-BufferIterator::WriteL(typename boost::type_identity<T>::type  data) BOOST_NOEXCEPT
+BufferIterator::WriteL(typename type_identity<T>::type  data) BOOST_NOEXCEPT
 {
     WriteInOrder<T>(data, little_endian);
 }
 
 template<class T>
 inline void
-BufferIterator::WriteB(typename boost::type_identity<T>::type  data) BOOST_NOEXCEPT
+BufferIterator::WriteB(typename type_identity<T>::type  data) BOOST_NOEXCEPT
 {
     WriteInOrder<T>(data, big_endian);
 }

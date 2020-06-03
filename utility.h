@@ -21,6 +21,8 @@
 #include <nsfx/utility/nop.h>
 #include <nsfx/utility/ratio.h>
 #include <nsfx/utility/endian.h>
+#include <nsfx/utility/type-identity.h>
+#include <nsfx/utility/rounding.h>
 #include <nsfx/utility/circular-sequence-number.h>
 #include <nsfx/utility/lollipop-sequence-number.h>
 #include <nsfx/utility/bi-array.h>
