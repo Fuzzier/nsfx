@@ -116,7 +116,8 @@ public:
         auto it = suiteMap_.find(name);
         if (it == suiteMap_.end())
         {
-            auto result = suiteMap_.emplace(name, new Suite(this, name));
+            auto result = suiteMap_.emplace(name, std::unique_ptr<Suite>(
+                    new Suite(this, name)));
             suite = result.first->second.get();
             suiteVector_.push_back(suite);
         }
@@ -137,8 +138,8 @@ public:
         auto it = caseMap_.find(name);
         if (it == caseMap_.end())
         {
-            auto result = caseMap_.emplace(
-                name, new Case(this, name, std::forward<Functor>(functor)));
+            auto result = caseMap_.emplace(name, std::unique_ptr<Case>(
+                    new Case(this, name, std::forward<Functor>(functor))));
             casei = result.first->second.get();
             caseVector_.push_back(casei);
         }
