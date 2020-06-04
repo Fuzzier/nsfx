@@ -111,7 +111,33 @@ public:
 public:
     virtual void Run(void) NSFX_OVERRIDE
     {
-        RunUntil(TimePoint::Max());
+        if (!initialized_)
+        {
+            BOOST_THROW_EXCEPTION(Uninitialized());
+        }
+        if (!scheduler_->GetNumEvents())
+        {
+            BOOST_THROW_EXCEPTION(NoScheduledEvent());
+        }
+        CheckBeginOfSimulation();
+        paused_ = false;
+        FireSimulationRunEvent();
+        // An external object can schedule events in its event sink.
+        while (!paused_)
+        {
+            Ptr<IEventHandle> handle = scheduler_->GetNextEvent();
+            if (!handle)
+            {
+                // End the loop when the scheduler is empty.
+                break;
+            }
+            now_ = handle->GetTimePoint();
+            // Can pause simulation.
+            scheduler_->FireAndRemoveNextEvent();
+        }
+        paused_ = true;
+        FireSimulationPauseEvent();
+        CheckEndOfSimulation();
     }
 
     virtual void RunUntil(const TimePoint& t) NSFX_OVERRIDE
@@ -134,12 +160,14 @@ public:
             if (!handle)
             {
                 // End the loop when the scheduler is empty.
+                now_ = t;
                 break;
             }
             TimePoint t0 = handle->GetTimePoint();
             if (t0 > t)
             {
                 // End the loop if the event is scheduled for a later time.
+                now_ = t;
                 break;
             }
             now_ = t0;

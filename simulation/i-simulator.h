@@ -59,6 +59,11 @@ public:
      * @brief Run until there is no scheduled alarm.
      *
      * @throw NoScheduledEvent There are no events in the scheduler.
+     *
+     * @post The simulation time is the time point of the last fired event.
+     *       <p>
+     *       If the scheduler is empty, then no event is fired, and
+     *       the simulation time is unchanged.
      */
     virtual void Run(void) = 0;
 
@@ -66,6 +71,12 @@ public:
      * @brief Run until a specific time point.
      *
      * @throw NoScheduledEvent There are no events in the scheduler.
+     *
+     * @post If the simulation is *paused* via `Pause()`, the simulation time is
+     *       the time point of the last fired event.
+     *       <p>
+     *       Otherwise, the simulation time advances to `t`, which *may* beyond
+     *       the time point of the last fired event.
      */
     virtual void RunUntil(const TimePoint& t) = 0;
 
@@ -73,6 +84,12 @@ public:
      * @brief Run for a specific duration.
      *
      * @throw NoScheduledEvent There are no events in the scheduler.
+     *
+     * @post If the simulation is *paused* via `Pause()`, the simulation time is
+     *       the time point of the last fired event.
+     *       <p>
+     *       Otherwise, the simulation time advances for `dt`, which *may* beyond
+     *       the time point of the last fired event.
      */
     virtual void RunFor(const Duration& dt) = 0;
 

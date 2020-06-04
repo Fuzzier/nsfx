@@ -43,9 +43,9 @@ NSFX_OPEN_NAMESPACE
  *
  * # Interfaces
  * * Uses
- *   + \c IClock
+ *   + `IClock`
  * * Provides
- *   + \c IScheduler
+ *   + `IScheduler`
  */
 class HeapScheduler :
     public IClockUser,

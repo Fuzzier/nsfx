@@ -160,6 +160,8 @@ NSFX_TEST_SUITE(Simulator)
                 sink->Use(scheduler);
             }
 
+            nsfx::TimePoint t0;
+
             // start at 1s.
             scheduler->ScheduleAt(clock->Now() + nsfx::Seconds(1), eventSink);
 
@@ -168,12 +170,16 @@ NSFX_TEST_SUITE(Simulator)
             NSFX_TEST_EXPECT_EQ(counter, 1);
             NSFX_TEST_EXPECT(begin);
             NSFX_TEST_EXPECT(!run);
+            t0 += nsfx::Seconds(1);
+            NSFX_TEST_EXPECT_EQ(clock->Now(), t0);
 
             // run to 10s.
-            simulator->RunFor(nsfx::chrono::Seconds(9));
+            simulator->RunFor(nsfx::Seconds(9));
             NSFX_TEST_EXPECT_EQ(counter, 10);
             NSFX_TEST_EXPECT(begin);
             NSFX_TEST_EXPECT(!run);
+            t0 += nsfx::Seconds(9);
+            NSFX_TEST_EXPECT_EQ(clock->Now(), t0);
 
             // run to the end (20s).
             // The simulator will be paused at 15s.
@@ -181,13 +187,54 @@ NSFX_TEST_SUITE(Simulator)
             NSFX_TEST_EXPECT_EQ(counter, 15);
             NSFX_TEST_EXPECT(begin);
             NSFX_TEST_EXPECT(!run);
+            t0 = nsfx::TimePoint(nsfx::Seconds(15));
+            NSFX_TEST_EXPECT_EQ(clock->Now(), t0);
+
+            // run to 16.5s.
+            // RunUntil() and RunFor() behave differently from Run() that
+            // simulation time will advance to the requested time point.
+            t0 = nsfx::TimePoint(nsfx::MilliSeconds(16500));
+            simulator->RunUntil(t0);
+            NSFX_TEST_EXPECT_EQ(counter, 16);
+            NSFX_TEST_EXPECT(begin);
+            NSFX_TEST_EXPECT(!run);
+            NSFX_TEST_EXPECT_EQ(clock->Now(), t0);
+
+            // run to 17.5s.
+            // RunUntil() and RunFor() behave differently from Run() that
+            // simulation time will advance to the requested time point.
+            simulator->RunFor(nsfx::Seconds(1));
+            NSFX_TEST_EXPECT_EQ(counter, 17);
+            NSFX_TEST_EXPECT(begin);
+            NSFX_TEST_EXPECT(!run);
+            t0 += nsfx::Seconds(1);
+            NSFX_TEST_EXPECT_EQ(clock->Now(), t0);
 
             // run to the end (20s).
             simulator->Run();
             NSFX_TEST_EXPECT_EQ(counter, 20);
             NSFX_TEST_EXPECT(!begin);
             NSFX_TEST_EXPECT(!run);
+            t0 = nsfx::TimePoint(nsfx::Seconds(20));
+            NSFX_TEST_EXPECT_EQ(clock->Now(), t0);
 
+            // Schedule at 21s.
+            nsfx::ScheduleAt(scheduler, clock->Now() + nsfx::Seconds(1), [] {});
+            // run to 22s.
+            // RunUntil() and RunFor() behave differently from Run() that
+            // simulation time will advance to the requested time point.
+            simulator->RunUntil(clock->Now() + nsfx::Seconds(2));
+            t0 += nsfx::Seconds(2);
+            NSFX_TEST_EXPECT_EQ(clock->Now(), t0);
+
+            // Schedule at 23s.
+            nsfx::ScheduleAt(scheduler, clock->Now() + nsfx::Seconds(1), [] {});
+            // run to 24s.
+            // RunUntil() and RunFor() behave differently from Run() that
+            // simulation time will advance to the requested time point.
+            simulator->RunFor(nsfx::Seconds(2));
+            t0 += nsfx::Seconds(2);
+            NSFX_TEST_EXPECT_EQ(clock->Now(), t0);
         }
         catch (boost::exception& e)
         {
