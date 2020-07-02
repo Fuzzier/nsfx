@@ -18,6 +18,8 @@
 
 
 #include <nsfx/utility/config.h>
+#include <boost/integer.hpp> // uint_t
+#include <type_traits>       // enable_if, is_integral
 
 
 NSFX_OPEN_NAMESPACE
@@ -65,7 +67,7 @@ enum native_endian_t
  * * `is_native`: `bool`, is native endian.
  * * `is_big`: `bool`, is big endian.
  * * `is_little`: `bool`, is little endian.
- * * `endian_t`: type, one of `native_endian_t`, `big_endian_t` and `little_endian_t`.
+ * * `endian_t`: type, one of `big_endian_t` and `little_endian_t`.
  */
 template<class endian_t>
 struct endian_traits;
@@ -113,6 +115,172 @@ struct endian_traits<native_endian_t>
 
 
 ////////////////////////////////////////
+// Tags and meta-functions.
+struct same_byte_order_t {};
+struct reverse_byte_order_t {};
+
+namespace aux
+{
+    template<bool diff_order = false>
+    struct byte_order_f
+    {
+        typedef same_byte_order_t type;
+    };
+
+    template<>
+    struct byte_order_f</*diffe_order=*/true>
+    {
+        typedef reverse_byte_order_t type;
+    };
+} // namespace aux
+
+
+/**
+ * @brief Generate a tag: `endian_t` is native byte order or not.
+ *
+ * @tparam endian1_t Can be either one of `little_endian_t`, `big_endian_t`,
+ *                   or `native_endian_t`.
+ *
+ * @tparam endian2_t Can be either one of `little_endian_t`, `big_endian_t`,
+ *                   or `native_endian_t`.
+ *                   <p>
+ *                   Defaults to `native_endian_t`.
+ *
+ * @return If `endian1_t` and `endian2_t` have the same byte order, then `type` is
+ *         `same_byte_order_t`.
+ *         <p>
+ *         Otherwise, `type` is `reverse_byte_order_t`.
+ */
+template<class endian1_t, class endian2_t = native_endian_t>
+struct byte_order_f : aux::byte_order_f<endian_traits<endian1_t>::is_native ^
+                                        endian_traits<endian2_t>::is_native>
+{};
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Free functions.
+namespace aux {
+
+inline uint8_t ReorderBytes(uint8_t v) BOOST_NOEXCEPT
+{
+    return v;
+}
+
+inline uint16_t ReorderBytes(uint16_t v) BOOST_NOEXCEPT
+{
+    return (uint16_t)((v << 8) | (v >> 8));
+}
+
+inline uint32_t ReorderBytes(uint32_t v) BOOST_NOEXCEPT
+{
+    return ((v & 0x000000ff) << 24)
+         | ((v & 0x0000ff00) <<  8)
+         | ((v & 0x00ff0000) >>  8)
+         | ((v & 0xff000000) >> 24);
+}
+
+inline uint64_t ReorderBytes(uint64_t v) BOOST_NOEXCEPT
+{
+    return ((v & 0x00000000000000ff) << 56)
+         | ((v & 0x000000000000ff00) << 40)
+         | ((v & 0x0000000000ff0000) << 24)
+         | ((v & 0x00000000ff000000) <<  8)
+         | ((v & 0x000000ff00000000) >>  8)
+         | ((v & 0x0000ff0000000000) >> 24)
+         | ((v & 0x00ff000000000000) >> 40)
+         | ((v & 0xff00000000000000) >> 56);
+}
+
+} // namespace aux
+
+////////////////////////////////////////
+/**
+ * @brief Reorder bytes of an integral according to the tag.
+ *
+ * @tparam T The type of the value.
+ * @param[in] v The value.
+ *              It **must** be an *integral*.
+ * @param[in] same_byte_order_t The tag.
+ */
+template<class T>
+inline typename std::enable_if<std::is_integral<T>::value, T>::type
+ReorderBytes(T v, same_byte_order_t) BOOST_NOEXCEPT
+{
+    return v;
+}
+
+/**
+ * @brief Reorder bytes of an integral according to the tag.
+ *
+ * @tparam T The type of the value.
+ * @param[in] v The value.
+ *              It **must** be an *integral*.
+ * @param[in] reverse_byte_order_t The tag.
+ */
+template<class T>
+inline typename std::enable_if<std::is_integral<T>::value, T>::type
+ReorderBytes(T v, reverse_byte_order_t) BOOST_NOEXCEPT
+{
+    typedef typename boost::uint_t<sizeof(T) * 8>::exact  V;
+    return static_cast<T>(aux::ReorderBytes(static_cast<V>(v)));
+}
+
+////////////////////////////////////////
+/**
+ * @brief Convert an integral from native endian to little endian.
+ *
+ * @tparam T The type of the value.
+ * @param[in] v The value.
+ *              It **must** be an *integral*.
+ */
+template<class T>
+inline typename std::enable_if<std::is_integral<T>::value, T>::type
+NativeToLittleEndian(T v) BOOST_NOEXCEPT
+{
+    typedef byte_order_f<little_endian_t>::type  tag;
+    return ReorderBytes(v, tag());
+}
+
+template<class T>
+inline typename std::enable_if<std::is_integral<T>::value, T>::type
+LittleToNativeEndian(T v) BOOST_NOEXCEPT
+{
+    typedef byte_order_f<little_endian_t>::type  tag;
+    return ReorderBytes(v, tag());
+}
+
+template<class T>
+inline typename std::enable_if<std::is_integral<T>::value, T>::type
+NativeToBigEndian(T v) BOOST_NOEXCEPT
+{
+    typedef byte_order_f<big_endian_t>::type  tag;
+    return ReorderBytes(v, tag());
+}
+
+template<class T>
+inline typename std::enable_if<std::is_integral<T>::value, T>::type
+BigToNativeEndian(T v) BOOST_NOEXCEPT
+{
+    typedef byte_order_f<big_endian_t>::type  tag;
+    return ReorderBytes(v, tag());
+}
+
+template<class T>
+inline typename std::enable_if<std::is_integral<T>::value, T>::type
+LittleToBigEndian(T v) BOOST_NOEXCEPT
+{
+    return ReorderBytes(v, reverse_byte_order_t());
+}
+
+template<class T>
+inline typename std::enable_if<std::is_integral<T>::value, T>::type
+BigToLittleEndian(T v) BOOST_NOEXCEPT
+{
+    return ReorderBytes(v, reverse_byte_order_t());
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 // Traits.
 /**
  * @ingroup Utility

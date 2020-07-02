@@ -96,6 +96,7 @@ test-suite : $(SRC) $(HEADERS)
 # utility
 utility :                         \
     test-nop                      \
+	test-endian                   \
     test-circular-sequence-number \
     test-lollipop-sequence-number \
     test-bi-array                 \
@@ -128,6 +129,12 @@ HEADERS=                  \
 SRC=utility/test-nop.cpp
 
 test-nop : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
+
+########################################
+SRC=utility/test-endian.cpp
+
+test-endian : $(SRC) $(HEADERS)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 ########################################

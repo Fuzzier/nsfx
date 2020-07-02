@@ -232,6 +232,7 @@ test-suite.exe : $(SRC) $(HEADERS)
 # utility
 utility :                         \
 	test-nop                      \
+	test-endian                   \
     test-circular-sequence-number \
     test-lollipop-sequence-number \
     test-bi-array                 \
@@ -265,6 +266,14 @@ test-nop : test-nop.exe
 SRC=utility/test-nop.cpp
 
 test-nop.exe : $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
+
+########################################
+test-endian : test-endian.exe
+
+SRC=utility/test-endian.cpp
+
+test-endian.exe : $(SRC) $(HEADERS)
 	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo"./" /Fd"./" /Fe"$@" $(SRC) /link $(LDFLAGS) $(LIBS) /PDB:"./"
 
 ########################################
