@@ -15,7 +15,7 @@
 
 SHELL=/bin/sh
 NSFX_PATH=..
-CC=g++-5
+CC=g++
 LD=ld
 LIBS=
 AR=
