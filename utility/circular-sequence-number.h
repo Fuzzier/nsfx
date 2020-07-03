@@ -19,7 +19,7 @@
 
 #include <nsfx/utility/config.h>
 #include <nsfx/utility/tags.h> // compare_tag
-#include <boost/integer.hpp>
+#include <boost/integer.hpp>   // uint_t
 #include <boost/functional/hash.hpp>
 #include <boost/core/swap.hpp>
 #include <type_traits> // conditional
