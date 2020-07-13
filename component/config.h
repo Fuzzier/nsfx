@@ -774,12 +774,11 @@
  * ## Rules of disposal
  * A component exposes `IDisposable` interface, which has a single method
  * `Dispose()`, which **must** perform the following actions:
+ * * Become uninitialized and unconfigured.
  * * Cancel all scheduled events.
- * * Disconnect from all events and connections.
- * * Release all interfaces it holds.
- *   + Release all used interfaces.
- *   + Release all connected event sinks and interfaces.
- * * Become uninitialized.
+ * * Disconnect all event connections made by itself.
+ * * Dispose all objects created by itself.
+ * * Release all used interfaces.
  *
  * There are several aspects to notify:
  * * A component **do not** release or deallocate itself during disposal.
