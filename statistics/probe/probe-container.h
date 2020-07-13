@@ -51,6 +51,8 @@ public:
     // IProbeContainer
     virtual Ptr<IProbeEnumerator> GetEnumerator(void) NSFX_OVERRIDE;
     virtual Ptr<IProbeEvent> GetProbe(const std::string& name) NSFX_OVERRIDE;
+    virtual cookie_t Connect(const std::string& name, Ptr<IProbeEventSink> sink) NSFX_OVERRIDE;
+    virtual void Disconnect(const std::string& name, cookie_t cookie) NSFX_OVERRIDE;
 
 public:
     Ptr<Probe> Add(const std::string& name);
@@ -184,6 +186,17 @@ inline Ptr<IProbeEvent> ProbeContainer::GetProbe(const std::string& name)
             ProbeNameErrorInfo(name));
     }
     return it->second;
+}
+
+inline cookie_t ProbeContainer::Connect(const std::string& name,
+                                        Ptr<IProbeEventSink> sink)
+{
+    return GetProbe(name)->Connect(sink);
+}
+
+inline void ProbeContainer::Disconnect(const std::string& name, cookie_t cookie)
+{
+    GetProbe(name)->Disconnect(cookie);
 }
 
 inline Ptr<Probe> ProbeContainer::Add(const std::string& name)

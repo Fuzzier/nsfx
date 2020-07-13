@@ -51,6 +51,29 @@ public:
      */
     virtual Ptr<IProbeEvent> GetProbe(const std::string& name) = 0;
 
+    /**
+     * @brief Connect a sink to a probe.
+     *
+     * @param[in] name The name of the probe.
+     * @param[in] sink The sink of the probe.
+     *
+     * @throw StatisticsNotRegistered
+     * @throw NoInterface
+     *
+     * @return A cookie that can be used to disconnect.
+     */
+    virtual cookie_t Connect(const std::string& name, Ptr<IProbeEventSink> sink) = 0;
+
+    /**
+     * @brief Disconnect a sink from a probe.
+     *
+     * @param[in] name The name of the probe.
+     * @param[in] sink The cookie.
+     *
+     * @throw StatisticsNotRegistered
+     */
+    virtual void Disconnect(const std::string& name, cookie_t cookie) = 0;
+
 };
 
 

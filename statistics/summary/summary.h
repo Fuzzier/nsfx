@@ -73,8 +73,10 @@ private:
     NSFX_INTERFACE_MAP_END()
 
 private:
-    MemberAggObject<MemberFunctionBasedEventSink<IProbeEventSink, ThisClass>>
-        probeEventSink_;
+    // OnProbe().
+    MemberAggObject<MemberFunctionBasedEventSink<
+        IProbeEventSink, ThisClass>>
+            probeEventSink_;
 
     double min_;
     double max_;
